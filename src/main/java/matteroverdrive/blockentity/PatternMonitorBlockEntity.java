@@ -150,33 +150,84 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
 
     public boolean requestReplication(int displayIndex) {
         if (level == null || level.isClientSide || displayIndex < 0 || displayIndex >= DISPLAY_SLOTS) {
+            LOGGER.warn("M2 NETWORK: Pattern Monitor {} rejected click for slot {} before queueing", worldPosition, displayIndex);
             return false;
         }
+
         refreshPatterns();
-        if (displayIndex >= displayPatterns.size() || queue.size() >= TASK_QUEUE_CAPACITY) {
+        if (displayIndex >= displayPatterns.size()) {
+            LOGGER.warn("M2 NETWORK: Pattern Monitor {} click slot {} has no displayed pattern", worldPosition, displayIndex);
             return false;
         }
+        if (queue.size() >= TASK_QUEUE_CAPACITY) {
+            LOGGER.warn("M2 NETWORK: Pattern Monitor {} queue is full ({}/{})", worldPosition, queue.size(), TASK_QUEUE_CAPACITY);
+            return false;
+        }
+
         PatternData pattern = displayPatterns.get(displayIndex);
         if (pattern.stack().isEmpty() || pattern.matter() <= 0 || pattern.progress() <= 0) {
+            LOGGER.warn(
+                    "M2 NETWORK: Pattern Monitor {} rejected invalid pattern in slot {} (item={}, matter={}, progress={})",
+                    worldPosition, displayIndex, pattern.stack(), pattern.matter(), pattern.progress()
+            );
             return false;
         }
+
         queue.addLast(new ReplicationRequest(pattern.copy(), 1));
         setChanged();
+        LOGGER.info(
+                "M2 NETWORK: Pattern Monitor {} queued replication request for {} (slot {}, queue {}/{})",
+                worldPosition, pattern.stack().getHoverName().getString(), displayIndex, queue.size(), TASK_QUEUE_CAPACITY
+        );
+
+        // Match the legacy behavior more closely: make an immediate attempt when the
+        // request is created, then fall back to the 40-tick retry cadence while busy
+        // or disconnected.
+        dispatchTicker = 0;
+        dispatchNextRequest();
         return true;
     }
 
-    private void dispatchNextRequest() {
+    private boolean dispatchNextRequest() {
         if (level == null || queue.isEmpty()) {
-            return;
+            return false;
         }
+
         ReplicationRequest request = queue.peekFirst();
-        for (ReplicatorBlockEntity replicator : MatterNetworkUtil.findConnected(level, worldPosition, ReplicatorBlockEntity.class)) {
+        List<ReplicatorBlockEntity> connectedReplicators =
+                MatterNetworkUtil.findConnected(level, worldPosition, ReplicatorBlockEntity.class);
+
+        if (connectedReplicators.isEmpty()) {
+            LOGGER.warn(
+                    "M2 NETWORK: Pattern Monitor {} has {} queued request(s) but discovered 0 Replicators",
+                    worldPosition, queue.size()
+            );
+            return false;
+        }
+
+        LOGGER.info(
+                "M2 NETWORK: Pattern Monitor {} dispatching {} to {} connected Replicator(s)",
+                worldPosition, request.pattern().stack().getHoverName().getString(), connectedReplicators.size()
+        );
+
+        for (ReplicatorBlockEntity replicator : connectedReplicators) {
             if (replicator.queueNetworkReplication(request.pattern(), request.amount())) {
                 queue.removeFirst();
                 setChanged();
-                return;
+                LOGGER.info(
+                        "M2 NETWORK: Replicator {} accepted {} from Pattern Monitor {}; remaining monitor queue={}",
+                        replicator.getBlockPos(), request.pattern().stack().getHoverName().getString(), worldPosition, queue.size()
+                );
+                return true;
             }
+
+            LOGGER.warn(
+                    "M2 NETWORK: Replicator {} rejected {} from Pattern Monitor {} (alreadyHasNetworkTask={})",
+                    replicator.getBlockPos(), request.pattern().stack().getHoverName().getString(), worldPosition,
+                    replicator.hasNetworkTask()
+            );
         }
+        return false;
     }
 
     public ItemStackHandler getDisplayItems() {
