@@ -1,6 +1,9 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "matteroverdrive:item/container_2"
+    "layer0": "matteroverdrive:item/container",
+    "layer1": "matteroverdrive:item/container_bottom_overlay",
+    "layer2": "matteroverdrive:item/container_bottom_full",
+    "layer3": "matteroverdrive:item/container_top_full"
   }
 }
