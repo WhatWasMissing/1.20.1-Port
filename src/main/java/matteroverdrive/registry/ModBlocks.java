@@ -70,7 +70,6 @@ public final class ModBlocks {
         "inscriber",
         "machine_hull",
         "matter_analyzer",
-        "matter_container",
         "matter_pipe",
         "matter_plasma",
         "matter_recycler",
