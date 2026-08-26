@@ -1,3 +1,17 @@
 {
-  "parent": "matteroverdrive:block/matter_container"
+  "parent": "matteroverdrive:item/matter_container_empty",
+  "overrides": [
+    {
+      "predicate": {
+        "matteroverdrive:matter_fill": 0.0001
+      },
+      "model": "matteroverdrive:item/matter_container_partial"
+    },
+    {
+      "predicate": {
+        "matteroverdrive:matter_fill": 1.0
+      },
+      "model": "matteroverdrive:item/matter_container_full"
+    }
+  ]
 }
