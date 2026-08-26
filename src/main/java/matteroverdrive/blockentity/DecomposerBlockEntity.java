@@ -1,5 +1,6 @@
 package matteroverdrive.blockentity;
 
+import com.mojang.logging.LogUtils;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.capability.MachineMatterStorage;
@@ -30,11 +31,15 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Random;
 
 public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
+    private static final Logger LOGGER = LogUtils.getLogger();
+
     public static final int INPUT_SLOT = 0;
     public static final int ENERGY_SLOT = 1;
     public static final int OUTPUT_SLOT = 2;
@@ -180,29 +185,84 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
             if (neighbor == null || matterStorage.getMatterStored() <= 0) {
                 continue;
             }
-            neighbor.getCapability(ModCapabilities.MATTER, direction.getOpposite()).ifPresent(target -> {
-                int offered = matterStorage.getMatterStored();
-                int accepted = target.receiveMatter(offered, false);
-                if (accepted > 0) {
-                    matterStorage.extractMatter(accepted, false);
-                }
-            });
-        }
 
-        if (matterStorage.getMatterStored() > 0) {
-            for (BlockEntity targetEntity : MatterNetworkUtil.findMatterTargets(level, worldPosition)) {
-                if (matterStorage.getMatterStored() <= 0) {
-                    break;
-                }
-                targetEntity.getCapability(ModCapabilities.MATTER).ifPresent(target -> {
-                    int offered = matterStorage.getMatterStored();
-                    int accepted = target.receiveMatter(offered, false);
-                    if (accepted > 0) {
-                        matterStorage.extractMatter(accepted, false);
-                    }
-                });
+            int offered = matterStorage.getMatterStored();
+            int accepted;
+            if (neighbor instanceof ReplicatorBlockEntity replicator) {
+                // Direct machine-to-machine fallback. The old 1.12.2 pipe system
+                // exposed a matter capability on the conduit itself; the 1.20.1
+                // placeholder pipes do not yet have BlockEntities, so direct access
+                // keeps the endpoint semantics reliable while the transport layer is
+                // being reconstructed.
+                accepted = replicator.getMatterStorage().receiveMatter(offered, false);
+            } else {
+                accepted = receiveMatterCapability(neighbor, direction.getOpposite(), offered);
+            }
+
+            if (accepted > 0) {
+                matterStorage.extractMatter(accepted, false);
+                LOGGER.info(
+                        "M2 MATTER: Decomposer {} transferred {} kM directly to {} at {}; remaining={} kM",
+                        worldPosition, accepted, neighbor.getClass().getSimpleName(), neighbor.getBlockPos(),
+                        matterStorage.getMatterStored()
+                );
             }
         }
+
+        if (matterStorage.getMatterStored() <= 0) {
+            return;
+        }
+
+        List<BlockEntity> targets = MatterNetworkUtil.findMatterTargets(level, worldPosition);
+        if (targets.isEmpty()) {
+            LOGGER.warn(
+                    "M2 MATTER: Decomposer {} has {} kM ready but found 0 endpoints through Matter Pipe/Heavy Matter Pipe",
+                    worldPosition, matterStorage.getMatterStored()
+            );
+            return;
+        }
+
+        LOGGER.info(
+                "M2 MATTER: Decomposer {} found {} endpoint(s) through Matter Pipe network",
+                worldPosition, targets.size()
+        );
+
+        for (BlockEntity targetEntity : targets) {
+            if (matterStorage.getMatterStored() <= 0) {
+                break;
+            }
+
+            int offered = matterStorage.getMatterStored();
+            int accepted;
+            if (targetEntity instanceof ReplicatorBlockEntity replicator) {
+                // Explicit endpoint fallback for the currently functional matter
+                // consumer. This bypasses any capability lookup ambiguity while the
+                // placeholder Matter Pipe blocks are still BE-less.
+                accepted = replicator.getMatterStorage().receiveMatter(offered, false);
+            } else {
+                accepted = receiveMatterCapability(targetEntity, null, offered);
+            }
+
+            if (accepted > 0) {
+                matterStorage.extractMatter(accepted, false);
+                LOGGER.info(
+                        "M2 MATTER: Decomposer {} transferred {} kM through Matter Pipe to {} at {}; remaining={} kM",
+                        worldPosition, accepted, targetEntity.getClass().getSimpleName(), targetEntity.getBlockPos(),
+                        matterStorage.getMatterStored()
+                );
+            }
+        }
+    }
+
+    private int receiveMatterCapability(BlockEntity targetEntity, @Nullable Direction side, int offered) {
+        if (offered <= 0) {
+            return 0;
+        }
+        final int[] accepted = {0};
+        targetEntity.getCapability(ModCapabilities.MATTER, side).ifPresent(target ->
+                accepted[0] = target.receiveMatter(offered, false)
+        );
+        return accepted[0];
     }
 
     private void manageDecompose() {
@@ -256,8 +316,13 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
         if (RANDOM.nextFloat() < FAIL_CHANCE) {
             failDecompose(matter);
+            LOGGER.info("M2 MATTER: Decomposer {} failed decomposition for {} kM item", worldPosition, matter);
         } else {
             matterStorage.addMatterInternal(matter, false);
+            LOGGER.info(
+                    "M2 MATTER: Decomposer {} produced {} kM; stored={} kM",
+                    worldPosition, matter, matterStorage.getMatterStored()
+            );
         }
 
         input.shrink(1);
