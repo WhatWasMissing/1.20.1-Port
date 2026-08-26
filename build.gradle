@@ -1,0 +1,328 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+    copyIdeResources = true
+
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                "${mod_id}" {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        client {
+        }
+
+        server {
+            args '--nogui'
+        }
+
+        gameTestServer {
+        }
+
+        data {
+            workingDirectory project.file('run-data')
+            args '--mod', mod_id,
+                    '--all',
+                    '--output', file('src/generated/resources/'),
+                    '--existing', file('src/main/resources/')
+        }
+    }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+}
+
+repositories {
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    def replaceProperties = [
+            minecraft_version: minecraft_version,
+            forge_version: forge_version,
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_license: mod_license,
+            mod_version: mod_version,
+            mod_authors: mod_authors,
+            mod_description: mod_description
+    ]
+
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors
+        ])
+    }
+
+    finalizedBy 'reobfJar'
+}
+
+
+tasks.register('verifyM1Resources') {
+    group = 'verification'
+    description = 'Validates the Milestone 1 registry inventory and active JSON resources.'
+
+    doLast {
+        def inventoryFile = file('PORT_INVENTORY.json')
+        if (!inventoryFile.exists()) {
+            throw new GradleException('PORT_INVENTORY.json is missing')
+        }
+
+        def json = new groovy.json.JsonSlurper()
+        def inventory = json.parse(inventoryFile)
+
+        def expected = [blocks: 75, blockItems: 72, standaloneItems: 98, sounds: 57]
+        def actual = [
+                blocks: inventory.blockIds.size(),
+                blockItems: inventory.blockItemIds.size(),
+                standaloneItems: inventory.standaloneItemIds.size(),
+                sounds: inventory.soundEventIds.size()
+        ]
+        expected.each { key, value ->
+            if (actual[key] != value) {
+                throw new GradleException("M1 inventory mismatch for ${key}: expected ${value}, got ${actual[key]}")
+            }
+        }
+
+        inventory.blockIds.each { id ->
+            [
+                    file("src/main/resources/assets/${mod_id}/blockstates/${id}.json"),
+                    file("src/main/resources/assets/${mod_id}/models/block/${id}.json")
+            ].each { required ->
+                if (!required.exists()) throw new GradleException("Missing M1 block resource: ${required}")
+            }
+        }
+
+        inventory.blockItemIds.each { id ->
+            def model = file("src/main/resources/assets/${mod_id}/models/item/${id}.json")
+            def loot = file("src/main/resources/data/${mod_id}/loot_tables/blocks/${id}.json")
+            if (!model.exists()) throw new GradleException("Missing M1 block item model: ${model}")
+            if (!loot.exists()) throw new GradleException("Missing M1 block loot table: ${loot}")
+        }
+
+        inventory.standaloneItemIds.each { id ->
+            def model = file("src/main/resources/assets/${mod_id}/models/item/${id}.json")
+            if (!model.exists()) throw new GradleException("Missing M1 item model: ${model}")
+        }
+
+        def jsonFiles = fileTree('src/main/resources') { include '**/*.json' }.files
+        jsonFiles.each { f ->
+            try {
+                json.parse(f)
+            } catch (Exception ex) {
+                throw new GradleException("Invalid JSON resource: ${f}", ex)
+            }
+        }
+
+        // Minecraft 1.20.1's block/item atlases use the modern singular texture roots.
+        // Legacy 1.12 Matter Overdrive models used matteroverdrive:blocks/... and
+        // matteroverdrive:items/..., which compile successfully but render as missing textures.
+        def modelFiles = fileTree("src/main/resources/assets/${mod_id}/models") {
+            include '**/*.json', '**/*.mtl'
+        }.files
+        modelFiles.each { f ->
+            def text = f.getText('UTF-8')
+            if (text.contains("${mod_id}:items/") || text.contains("${mod_id}:blocks/")) {
+                throw new GradleException("Legacy plural texture path remains in active model resource: ${f}")
+            }
+        }
+
+        def checkTextureLocation = { File owner, String location ->
+            if (!location.startsWith("${mod_id}:") || location.startsWith('#')) return
+            def path = location.substring(location.indexOf(':') + 1)
+            def texture = file("src/main/resources/assets/${mod_id}/textures/${path}.png")
+            if (!texture.exists()) {
+                throw new GradleException("Missing Matter Overdrive texture ${location} referenced by ${owner}")
+            }
+        }
+
+        fileTree("src/main/resources/assets/${mod_id}/models") { include '**/*.json' }.files.each { f ->
+            def model = json.parse(f)
+            if (model.textures instanceof Map) {
+                model.textures.values().each { value ->
+                    if (value instanceof String) checkTextureLocation(f, value)
+                }
+            }
+        }
+
+        fileTree("src/main/resources/assets/${mod_id}/models") { include '**/*.mtl' }.files.each { f ->
+            f.readLines('UTF-8').each { line ->
+                def trimmed = line.trim()
+                if (trimmed.startsWith('map_Kd ')) {
+                    checkTextureLocation(f, trimmed.substring('map_Kd '.length()).trim())
+                }
+            }
+        }
+
+        [
+                file("src/main/resources/assets/${mod_id}/textures/item"),
+                file("src/main/resources/assets/${mod_id}/textures/block")
+        ].each { requiredDir ->
+            if (!requiredDir.isDirectory()) {
+                throw new GradleException("Missing modern texture directory: ${requiredDir}")
+            }
+        }
+
+        println "M1 RESOURCE VERIFICATION PASSED"
+        println "  blocks=${actual.blocks}"
+        println "  blockItems=${actual.blockItems}"
+        println "  standaloneItems=${actual.standaloneItems}"
+        println "  sounds=${actual.sounds}"
+        println "  activeJson=${jsonFiles.size()}"
+    }
+}
+
+tasks.named('check').configure {
+    dependsOn tasks.named('verifyM1Resources')
+}
+
+tasks.register('verifyM2Sources') {
+    group = 'verification'
+    description = 'Validates Milestone 2 functional machine and matter-network sources before compilation.'
+
+    doLast {
+        def required = [
+                'src/main/java/matteroverdrive/block/DecomposerBlock.java',
+                'src/main/java/matteroverdrive/block/MatterRecyclerBlock.java',
+                'src/main/java/matteroverdrive/block/MatterAnalyzerBlock.java',
+                'src/main/java/matteroverdrive/block/ReplicatorBlock.java',
+                'src/main/java/matteroverdrive/block/PatternStorageBlock.java',
+                'src/main/java/matteroverdrive/block/PatternMonitorBlock.java',
+                'src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/MatterRecyclerBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/MatterAnalyzerBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/ReplicatorBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/PatternStorageBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/PatternMonitorBlockEntity.java',
+                'src/main/java/matteroverdrive/capability/IMatterStorage.java',
+                'src/main/java/matteroverdrive/capability/MachineEnergyStorage.java',
+                'src/main/java/matteroverdrive/capability/MachineMatterStorage.java',
+                'src/main/java/matteroverdrive/capability/ModCapabilities.java',
+                'src/main/java/matteroverdrive/item/CreativeBatteryItem.java',
+                'src/main/java/matteroverdrive/item/MatterDustItem.java',
+                'src/main/java/matteroverdrive/item/PatternDriveItem.java',
+                'src/main/java/matteroverdrive/matter/MatterValueRegistry.java',
+                'src/main/java/matteroverdrive/network/PatternData.java',
+                'src/main/java/matteroverdrive/network/MatterNetworkUtil.java',
+                'src/main/java/matteroverdrive/menu/DecomposerMenu.java',
+                'src/main/java/matteroverdrive/menu/MatterRecyclerMenu.java',
+                'src/main/java/matteroverdrive/menu/MatterAnalyzerMenu.java',
+                'src/main/java/matteroverdrive/menu/ReplicatorMenu.java',
+                'src/main/java/matteroverdrive/menu/PatternStorageMenu.java',
+                'src/main/java/matteroverdrive/menu/PatternMonitorMenu.java',
+                'src/main/java/matteroverdrive/client/screen/DecomposerScreen.java',
+                'src/main/java/matteroverdrive/client/screen/MatterRecyclerScreen.java',
+                'src/main/java/matteroverdrive/client/screen/MatterAnalyzerScreen.java',
+                'src/main/java/matteroverdrive/client/screen/ReplicatorScreen.java',
+                'src/main/java/matteroverdrive/client/screen/PatternStorageScreen.java',
+                'src/main/java/matteroverdrive/client/screen/PatternMonitorScreen.java',
+                'src/main/java/matteroverdrive/registry/ModBlockEntities.java',
+                'src/main/java/matteroverdrive/registry/ModMenus.java'
+        ]
+        required.each { path ->
+            if (!file(path).exists()) throw new GradleException("Missing M2 source: ${path}")
+        }
+
+        def blocks = file('src/main/java/matteroverdrive/registry/ModBlocks.java').getText('UTF-8')
+        ['DecomposerBlock', 'MatterRecyclerBlock', 'MatterAnalyzerBlock', 'ReplicatorBlock', 'PatternStorageBlock', 'PatternMonitorBlock'].each { name ->
+            if (!blocks.contains("new ${name}(propertiesFor(id))")) throw new GradleException("${name} is not wired into ModBlocks")
+        }
+
+        def items = file('src/main/java/matteroverdrive/registry/ModItems.java').getText('UTF-8')
+        ['CreativeBatteryItem', 'MatterDustItem', 'PatternDriveItem'].each { name ->
+            if (!items.contains("new ${name}")) throw new GradleException("${name} is not wired into ModItems")
+        }
+
+        ['decomposer', 'matter_recycler', 'matter_analyzer', 'replicator'].each { id ->
+            def blockstate = new groovy.json.JsonSlurper().parse(file("src/main/resources/assets/matteroverdrive/blockstates/${id}.json"))
+            if (!(blockstate.multipart instanceof List) || blockstate.multipart.isEmpty()) {
+                throw new GradleException("${id} blockstate must be property-independent multipart JSON")
+            }
+        }
+        ['pattern_storage', 'pattern_monitor', 'network_pipe', 'matter_pipe', 'heavy_matter_pipe'].each { id ->
+            new groovy.json.JsonSlurper().parse(file("src/main/resources/assets/matteroverdrive/blockstates/${id}.json"))
+        }
+
+        def beRegistry = file('src/main/java/matteroverdrive/registry/ModBlockEntities.java').getText('UTF-8')
+        def menuRegistry = file('src/main/java/matteroverdrive/registry/ModMenus.java').getText('UTF-8')
+        ['DECOMPOSER', 'MATTER_RECYCLER', 'MATTER_ANALYZER', 'REPLICATOR', 'PATTERN_STORAGE', 'PATTERN_MONITOR'].each { key ->
+            if (!beRegistry.contains(key) || !menuRegistry.contains(key)) throw new GradleException("Missing M2 registry entry: ${key}")
+        }
+
+        def decomposer = file('src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java').getText('UTF-8')
+        def recycler = file('src/main/java/matteroverdrive/blockentity/MatterRecyclerBlockEntity.java').getText('UTF-8')
+        def analyzer = file('src/main/java/matteroverdrive/blockentity/MatterAnalyzerBlockEntity.java').getText('UTF-8')
+        def replicator = file('src/main/java/matteroverdrive/blockentity/ReplicatorBlockEntity.java').getText('UTF-8')
+        def storage = file('src/main/java/matteroverdrive/blockentity/PatternStorageBlockEntity.java').getText('UTF-8')
+        def monitor = file('src/main/java/matteroverdrive/blockentity/PatternMonitorBlockEntity.java').getText('UTF-8')
+        def drive = file('src/main/java/matteroverdrive/item/PatternDriveItem.java').getText('UTF-8')
+        if (!decomposer.contains('DECOMPOSE_SPEED_PER_MATTER = 80') || !decomposer.contains('DECOMPOSE_ENERGY_PER_MATTER = 6000')) throw new GradleException('Legacy decomposer constants changed')
+        if (!recycler.contains('RECYCLE_SPEED_PER_MATTER = 80') || !recycler.contains('RECYCLE_ENERGY_PER_MATTER = 1000')) throw new GradleException('Legacy recycler constants missing')
+        if (!analyzer.contains('PROGRESS_AMOUNT_PER_ITEM = 20') || !analyzer.contains('ANALYZE_SPEED = 800') || !analyzer.contains('ENERGY_DRAIN_PER_ITEM = 64000') || !analyzer.contains('ENERGY_STORAGE = 512000')) throw new GradleException('Legacy analyzer constants missing')
+        if (!replicator.contains('REPLICATE_SPEED_PER_MATTER = 120') || !replicator.contains('REPLICATE_ENERGY_PER_MATTER = 16000') || !replicator.contains('FAIL_CHANCE = 0.005')) throw new GradleException('Legacy replicator constants missing')
+        if (!storage.contains('DRIVE_COUNT = 6') || !storage.contains('ENERGY_CAPACITY = 64000') || !storage.contains('ENERGY_TRANSFER = 128')) throw new GradleException('Legacy Pattern Storage constants missing')
+        if (!monitor.contains('TASK_QUEUE_CAPACITY = 8') || !monitor.contains('REPLICATION_SEARCH_TIME = 40')) throw new GradleException('Legacy Pattern Monitor constants missing')
+        if (!drive.contains('LEGACY_CAPACITY = 2')) throw new GradleException('Legacy Pattern Drive capacity must remain 2')
+        if (!decomposer.contains('findMatterTargets') || !analyzer.contains('findNetworkStorageFor') || !replicator.contains('queueNetworkReplication')) throw new GradleException('M2 network bridge wiring is incomplete')
+
+        if (mod_version != '0.8.0.0-alpha.4.1') throw new GradleException("Unexpected M2 version: ${mod_version}")
+
+        println 'M2 SOURCE VERIFICATION PASSED'
+        println '  functionalBlocks=decomposer,matter_recycler,matter_analyzer,replicator,pattern_storage,pattern_monitor'
+        println '  blockEntities=6'
+        println '  menus=6'
+        println '  patternDriveCapacity=2'
+        println '  patternStorageDriveSlots=6 (12 normal patterns total)'
+        println '  networkPipe=pattern/task transport'
+        println '  matterPipe=matter capability transport'
+        println '  capabilities=item/energy/matter'
+        println '  creativeBattery=infinite FE'
+    }
+}
+
+tasks.named('check').configure {
+    dependsOn tasks.named('verifyM2Sources')
+}

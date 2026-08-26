@@ -1,0 +1,12 @@
+.gradle/
+build/
+out/
+run/
+run-data/
+.idea/
+*.iml
+*.ipr
+*.iws
+eclipse/
+bin/
+legacy_reference/

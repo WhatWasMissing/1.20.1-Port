@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "matteroverdrive:block/pattern_monitor"
+    }
+  }
+}

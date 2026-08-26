@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "matteroverdrive:block/charging_station"
+    }
+  }
+}
