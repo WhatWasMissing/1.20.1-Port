@@ -103,6 +103,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                 case 9 -> getCurrentPatternProgress();
                 case 10 -> getEnergyDrainPerTick();
                 case 11 -> (int) Math.round(getFailChance() * 10000.0D);
+                case 12 -> hasNetworkTask() ? networkTaskAmount : 0;
                 default -> 0;
             };
         }
@@ -116,7 +117,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int getCount() {
-            return 12;
+            return 13;
         }
     };
 
@@ -173,9 +174,22 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public boolean queueNetworkReplication(PatternData pattern, int amount) {
         if (pattern == null || pattern.stack().isEmpty() || pattern.matter() <= 0 || pattern.progress() <= 0
-                || amount <= 0 || networkTaskAmount > 0) {
+                || amount <= 0) {
             return false;
         }
+
+        if (hasNetworkTask()) {
+            boolean samePattern = ItemStack.isSameItemSameTags(networkPattern, pattern.stack())
+                    && networkPatternMatter == pattern.matter()
+                    && networkPatternProgress == pattern.progress();
+            if (!samePattern || networkTaskAmount > Integer.MAX_VALUE - amount) {
+                return false;
+            }
+            networkTaskAmount += amount;
+            setChanged();
+            return true;
+        }
+
         networkPattern = pattern.stack().copy();
         networkPattern.setCount(1);
         networkPatternMatter = pattern.matter();
@@ -240,6 +254,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
 
+        boolean networkTask = hasNetworkTask();
         boolean failed = RANDOM.nextDouble() < getFailChance();
         if (failed) {
             ItemStack failure = items.getStackInSlot(FAILURE_SLOT);
@@ -257,11 +272,12 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             } else {
                 output.grow(1);
             }
-            if (hasNetworkTask()) {
-                networkTaskAmount--;
-                if (networkTaskAmount <= 0) {
-                    clearNetworkTask();
-                }
+        }
+
+        if (networkTask) {
+            networkTaskAmount--;
+            if (networkTaskAmount <= 0) {
+                clearNetworkTask();
             }
         }
 
