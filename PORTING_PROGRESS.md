@@ -67,7 +67,8 @@ The branch currently modifies `DecomposerBlockEntity` and `MatterNetworkUtil`. I
 
 ## Verification still required
 
-- Run `gradlew.bat compileJava` or the repository's M2 verification script.
+- Java compilation passed on 2026-08-27.
+- Rerun the repository's M2 verification script after pulling the source-gate fix.
 - Test a decomposer outputting through Matter Pipe and Heavy Matter Pipe.
 - Confirm matter reaches a compatible destination across turns and junctions.
 - Confirm routing does not loop or duplicate matter.
@@ -96,3 +97,10 @@ If the verification script succeeds, perform the in-game matter-routing tests ab
 
 - Added this hand-off file.
 - Captured the verified M1/M2 state, active branch, current routing work, test requirements, and resume commands.
+
+### 2026-08-27 — Verification failure: stale routing source gate
+
+- `VERIFY_M2_BUILD.bat` completed Java compilation successfully.
+- Step 3, `:verifyM2Sources`, failed because the gate still searched for the old decomposer call `findMatterTargets`.
+- Updated the gate to require the new generic `MatterNetworkUtil.transferMatter` call.
+- Runtime routing remains unverified until the complete script and in-game checks pass.

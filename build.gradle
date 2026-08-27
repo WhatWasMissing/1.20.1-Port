@@ -306,7 +306,7 @@ tasks.register('verifyM2Sources') {
         if (!storage.contains('DRIVE_COUNT = 6') || !storage.contains('ENERGY_CAPACITY = 64000') || !storage.contains('ENERGY_TRANSFER = 128')) throw new GradleException('Legacy Pattern Storage constants missing')
         if (!monitor.contains('TASK_QUEUE_CAPACITY = 8') || !monitor.contains('REPLICATION_SEARCH_TIME = 40')) throw new GradleException('Legacy Pattern Monitor constants missing')
         if (!drive.contains('LEGACY_CAPACITY = 2')) throw new GradleException('Legacy Pattern Drive capacity must remain 2')
-        if (!decomposer.contains('findMatterTargets') || !analyzer.contains('findNetworkStorageFor') || !replicator.contains('queueNetworkReplication')) throw new GradleException('M2 network bridge wiring is incomplete')
+        if (!decomposer.contains('MatterNetworkUtil.transferMatter') || !analyzer.contains('findNetworkStorageFor') || !replicator.contains('queueNetworkReplication')) throw new GradleException('M2 network bridge wiring is incomplete')
 
         if (mod_version != '0.8.0.0-alpha.4.1') throw new GradleException("Unexpected M2 version: ${mod_version}")
 
