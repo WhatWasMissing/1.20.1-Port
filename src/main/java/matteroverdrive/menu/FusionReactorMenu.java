@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class FusionReactorMenu extends AbstractContainerMenu {
-    private static final int UPGRADE_SLOTS = 4, PLAYER_START = 4, PLAYER_END = 40, HOTBAR_START = 40, HOTBAR_END = 49;
+    private static final int UPGRADE_SLOTS = 4, PLAYER_START = 4, PLAYER_END = 31, HOTBAR_START = 31, HOTBAR_END = 40;
     private final FusionReactorControllerBlockEntity reactor;
     private final ContainerData data;
 

@@ -564,3 +564,9 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 
 - Corrected the Fusion Reactor screen render call to pass Minecraft's required `partialTick` parameter to `AbstractContainerScreen`.
 - This fixes the compile failure reported by `RUN_M2_CLIENT.bat`; re-run the client and the standard M2 gates after pulling this commit.
+
+
+## Fusion Reactor menu shift-click correction — awaiting verification
+
+- Fixed Fusion Reactor controller inventory slot boundaries: the menu has four upgrade slots plus 36 player slots (indices 0–39), not 49 slots.
+- This resolves the client crash `Index 40 out of bounds for length 40` caused by shift-clicking an item in the controller UI.
