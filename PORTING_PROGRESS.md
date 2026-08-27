@@ -351,3 +351,18 @@ Legacy findings:
 - The legacy panel could not receive external FE.
 
 Exact next step: implement the block, block entity, menu, screen, registrations, source checks, and debug synchronization without changing unupgraded constants.
+
+
+### 2026-08-27 — Implement functional Solar Panel
+
+- Replaced the `solar_panel` placeholder with a ticking block entity and interactive GUI.
+- Restored the legacy 8 FE/t peak daylight curve, 64000 FE base storage, and 512 FE/t output limit per adjacent receiver.
+- Generation requires a skylight dimension, clear sky above the panel, effective sky light 15, and a legacy daylight factor above 0.5.
+- The panel cannot receive external FE and automatically pushes stored FE to Forge Energy receivers on all six sides.
+- Added two persistent upgrade slots that accept only Power Storage upgrades.
+- Removing an upgrade clamps stored FE to the reduced capacity, and breaking the block drops installed upgrades.
+- Added always-visible synchronized debug values for actual generated FE/t, total FE sent last tick, sky visibility, effective sky light, daylight factor, and output limit.
+- Registered the Solar Panel block entity, menu, and client screen.
+- Expanded the M2 source gate to require the Solar Panel implementation, legacy constants, energy flow, upgrade wiring, and seven block entities/menus.
+- Build and runtime behavior remain unverified until the Windows development-client test passes.
+- Exact next step: pull `feature/solar-power`, run `RUN_M2_CLIENT.bat`, and test daylight, night, cover, weather, dimensions, adjacent output, upgrades, persistence, drops, GUI layout, and runtime logs.

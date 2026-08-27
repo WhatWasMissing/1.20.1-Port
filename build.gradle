@@ -231,12 +231,14 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/block/ReplicatorBlock.java',
                 'src/main/java/matteroverdrive/block/PatternStorageBlock.java',
                 'src/main/java/matteroverdrive/block/PatternMonitorBlock.java',
+                'src/main/java/matteroverdrive/block/SolarPanelBlock.java',
                 'src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/MatterRecyclerBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/MatterAnalyzerBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/ReplicatorBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/PatternStorageBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/PatternMonitorBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/SolarPanelBlockEntity.java',
                 'src/main/java/matteroverdrive/capability/IMatterStorage.java',
                 'src/main/java/matteroverdrive/capability/MachineEnergyStorage.java',
                 'src/main/java/matteroverdrive/capability/MachineMatterStorage.java',
@@ -253,12 +255,14 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/menu/ReplicatorMenu.java',
                 'src/main/java/matteroverdrive/menu/PatternStorageMenu.java',
                 'src/main/java/matteroverdrive/menu/PatternMonitorMenu.java',
+                'src/main/java/matteroverdrive/menu/SolarPanelMenu.java',
                 'src/main/java/matteroverdrive/client/screen/DecomposerScreen.java',
                 'src/main/java/matteroverdrive/client/screen/MatterRecyclerScreen.java',
                 'src/main/java/matteroverdrive/client/screen/MatterAnalyzerScreen.java',
                 'src/main/java/matteroverdrive/client/screen/ReplicatorScreen.java',
                 'src/main/java/matteroverdrive/client/screen/PatternStorageScreen.java',
                 'src/main/java/matteroverdrive/client/screen/PatternMonitorScreen.java',
+                'src/main/java/matteroverdrive/client/screen/SolarPanelScreen.java',
                 'src/main/java/matteroverdrive/registry/ModBlockEntities.java',
                 'src/main/java/matteroverdrive/registry/ModMenus.java'
         ]
@@ -267,7 +271,7 @@ tasks.register('verifyM2Sources') {
         }
 
         def blocks = file('src/main/java/matteroverdrive/registry/ModBlocks.java').getText('UTF-8')
-        ['DecomposerBlock', 'MatterRecyclerBlock', 'MatterAnalyzerBlock', 'ReplicatorBlock', 'PatternStorageBlock', 'PatternMonitorBlock'].each { name ->
+        ['DecomposerBlock', 'MatterRecyclerBlock', 'MatterAnalyzerBlock', 'ReplicatorBlock', 'PatternStorageBlock', 'PatternMonitorBlock', 'SolarPanelBlock'].each { name ->
             if (!blocks.contains("new ${name}(propertiesFor(id))")) throw new GradleException("${name} is not wired into ModBlocks")
         }
 
@@ -288,7 +292,7 @@ tasks.register('verifyM2Sources') {
 
         def beRegistry = file('src/main/java/matteroverdrive/registry/ModBlockEntities.java').getText('UTF-8')
         def menuRegistry = file('src/main/java/matteroverdrive/registry/ModMenus.java').getText('UTF-8')
-        ['DECOMPOSER', 'MATTER_RECYCLER', 'MATTER_ANALYZER', 'REPLICATOR', 'PATTERN_STORAGE', 'PATTERN_MONITOR'].each { key ->
+        ['DECOMPOSER', 'MATTER_RECYCLER', 'MATTER_ANALYZER', 'REPLICATOR', 'PATTERN_STORAGE', 'PATTERN_MONITOR', 'SOLAR_PANEL'].each { key ->
             if (!beRegistry.contains(key) || !menuRegistry.contains(key)) throw new GradleException("Missing M2 registry entry: ${key}")
         }
 
@@ -298,6 +302,7 @@ tasks.register('verifyM2Sources') {
         def replicator = file('src/main/java/matteroverdrive/blockentity/ReplicatorBlockEntity.java').getText('UTF-8')
         def storage = file('src/main/java/matteroverdrive/blockentity/PatternStorageBlockEntity.java').getText('UTF-8')
         def monitor = file('src/main/java/matteroverdrive/blockentity/PatternMonitorBlockEntity.java').getText('UTF-8')
+        def solar = file('src/main/java/matteroverdrive/blockentity/SolarPanelBlockEntity.java').getText('UTF-8')
         def drive = file('src/main/java/matteroverdrive/item/PatternDriveItem.java').getText('UTF-8')
         if (!decomposer.contains('DECOMPOSE_SPEED_PER_MATTER = 80') || !decomposer.contains('DECOMPOSE_ENERGY_PER_MATTER = 6000')) throw new GradleException('Legacy decomposer constants changed')
         if (!recycler.contains('RECYCLE_SPEED_PER_MATTER = 80') || !recycler.contains('RECYCLE_ENERGY_PER_MATTER = 1000')) throw new GradleException('Legacy recycler constants missing')
@@ -305,6 +310,8 @@ tasks.register('verifyM2Sources') {
         if (!replicator.contains('REPLICATE_SPEED_PER_MATTER = 120') || !replicator.contains('REPLICATE_ENERGY_PER_MATTER = 16000') || !replicator.contains('FAIL_CHANCE = 0.005')) throw new GradleException('Legacy replicator constants missing')
         if (!storage.contains('DRIVE_COUNT = 6') || !storage.contains('ENERGY_CAPACITY = 64000') || !storage.contains('ENERGY_TRANSFER = 128')) throw new GradleException('Legacy Pattern Storage constants missing')
         if (!monitor.contains('TASK_QUEUE_CAPACITY = 8') || !monitor.contains('REPLICATION_SEARCH_TIME = 40')) throw new GradleException('Legacy Pattern Monitor constants missing')
+        if (!solar.contains('PEAK_GENERATION = 8') || !solar.contains('ENERGY_CAPACITY = 64000') || !solar.contains('MAX_OUTPUT_PER_SIDE = 512')) throw new GradleException('Legacy Solar Panel constants missing')
+        if (!solar.contains('MachineUpgradeItem.Upgrade.POWER_STORAGE') || !solar.contains('getLegacyDaylightFactor') || !solar.contains('pushEnergy')) throw new GradleException('Solar Panel generation or upgrade wiring is incomplete')
         if (!drive.contains('LEGACY_CAPACITY = 2')) throw new GradleException('Legacy Pattern Drive capacity must remain 2')
         if (!decomposer.contains('MatterNetworkUtil.transferMatter') || !analyzer.contains('findNetworkStorageFor') || !replicator.contains('queueNetworkReplication')) throw new GradleException('M2 network bridge wiring is incomplete')
 
@@ -312,14 +319,15 @@ tasks.register('verifyM2Sources') {
 
         println 'M2 SOURCE VERIFICATION PASSED'
         println '  functionalBlocks=decomposer,matter_recycler,matter_analyzer,replicator,pattern_storage,pattern_monitor'
-        println '  blockEntities=6'
-        println '  menus=6'
+        println '  blockEntities=7'
+        println '  menus=7'
         println '  patternDriveCapacity=2'
         println '  patternStorageDriveSlots=6 (12 normal patterns total)'
         println '  networkPipe=pattern/task transport'
         println '  matterPipe=matter capability transport'
         println '  capabilities=item/energy/matter'
         println '  creativeBattery=infinite FE'
+        println '  solarPanel=8 FE/t peak, 64000 FE storage, 512 FE/t/side output'
     }
 }
 

@@ -5,6 +5,7 @@ import matteroverdrive.client.screen.DecomposerScreen;
 import matteroverdrive.client.screen.MatterAnalyzerScreen;
 import matteroverdrive.client.screen.MatterRecyclerScreen;
 import matteroverdrive.client.screen.ReplicatorScreen;
+import matteroverdrive.client.screen.SolarPanelScreen;
 import matteroverdrive.client.screen.PatternStorageScreen;
 import matteroverdrive.client.screen.PatternMonitorScreen;
 import matteroverdrive.item.MatterContainerItem;
@@ -31,6 +32,7 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.REPLICATOR.get(), ReplicatorScreen::new);
             MenuScreens.register(ModMenus.PATTERN_STORAGE.get(), PatternStorageScreen::new);
             MenuScreens.register(ModMenus.PATTERN_MONITOR.get(), PatternMonitorScreen::new);
+            MenuScreens.register(ModMenus.SOLAR_PANEL.get(), SolarPanelScreen::new);
 
             ItemProperties.register(
                     ModItems.get("matter_container").get(),

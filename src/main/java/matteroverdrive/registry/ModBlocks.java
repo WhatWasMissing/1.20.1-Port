@@ -5,6 +5,7 @@ import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.block.ReplicatorBlock;
+import matteroverdrive.block.SolarPanelBlock;
 import matteroverdrive.block.PatternStorageBlock;
 import matteroverdrive.block.PatternMonitorBlock;
 import net.minecraft.world.level.block.Block;
@@ -128,6 +129,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternStorageBlock(propertiesFor(id))));
         } else if (id.equals("pattern_monitor")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternMonitorBlock(propertiesFor(id))));
+        } else if (id.equals("solar_panel")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SolarPanelBlock(propertiesFor(id))));
         } else {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new Block(propertiesFor(id))));
         }
@@ -170,7 +173,8 @@ public final class ModBlocks {
                 || id.contains("monitor")
                 || id.contains("accelerator")
                 || id.contains("inscriber")
-                || id.contains("microwave");
+                || id.contains("microwave")
+                || id.contains("solar");
     }
 
     public static Map<String, RegistryObject<Block>> all() {

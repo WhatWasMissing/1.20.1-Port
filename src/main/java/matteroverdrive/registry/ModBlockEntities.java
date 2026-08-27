@@ -5,6 +5,7 @@ import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.blockentity.MatterAnalyzerBlockEntity;
 import matteroverdrive.blockentity.MatterRecyclerBlockEntity;
 import matteroverdrive.blockentity.ReplicatorBlockEntity;
+import matteroverdrive.blockentity.SolarPanelBlockEntity;
 import matteroverdrive.blockentity.PatternStorageBlockEntity;
 import matteroverdrive.blockentity.PatternMonitorBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,5 +21,6 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<ReplicatorBlockEntity>> REPLICATOR = BLOCK_ENTITIES.register("replicator", () -> BlockEntityType.Builder.of(ReplicatorBlockEntity::new, ModBlocks.get("replicator").get()).build(null));
     public static final RegistryObject<BlockEntityType<PatternStorageBlockEntity>> PATTERN_STORAGE = BLOCK_ENTITIES.register("pattern_storage", () -> BlockEntityType.Builder.of(PatternStorageBlockEntity::new, ModBlocks.get("pattern_storage").get()).build(null));
     public static final RegistryObject<BlockEntityType<PatternMonitorBlockEntity>> PATTERN_MONITOR = BLOCK_ENTITIES.register("pattern_monitor", () -> BlockEntityType.Builder.of(PatternMonitorBlockEntity::new, ModBlocks.get("pattern_monitor").get()).build(null));
+    public static final RegistryObject<BlockEntityType<SolarPanelBlockEntity>> SOLAR_PANEL = BLOCK_ENTITIES.register("solar_panel", () -> BlockEntityType.Builder.of(SolarPanelBlockEntity::new, ModBlocks.get("solar_panel").get()).build(null));
     private ModBlockEntities() {}
 }
