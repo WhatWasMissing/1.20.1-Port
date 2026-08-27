@@ -30,7 +30,12 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
             if (direction == Direction.DOWN || controller.getEnergy().getEnergyStored() <= 0) continue;
             BlockEntity receiver = level.getBlockEntity(pos.relative(direction));
             if (receiver == null) continue;
-            IEnergyStorage storage = receiver.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+            IEnergyStorage storage;
+            if (receiver instanceof EnergyPipeBlockEntity cable) {
+                storage = cable.getEnergy();
+            } else {
+                storage = receiver.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+            }
             if (storage == null || !storage.canReceive()) continue;
             int offer = Math.min(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE,
                     controller.getEnergy().getEnergyStored());
