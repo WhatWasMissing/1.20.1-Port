@@ -46,7 +46,24 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
     public EnergyPipeBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.ENERGY_PIPE.get(), pos, state); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, EnergyPipeBlockEntity pipe) {
+        pipe.pullFromReactorIO();
         pipe.lastOutput = pipe.pushEnergy();
+    }
+
+    private void pullFromReactorIO() {
+        if (level == null || energy.getEnergyStored() >= energy.getMaxEnergyStored()) return;
+        for (Direction direction : Direction.values()) {
+            BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
+            if (!(neighbor instanceof FusionReactorIOBlockEntity)) continue;
+            IEnergyStorage source = neighbor.getCapability(
+                    ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+            if (source == null || !source.canExtract()) continue;
+            int room = energy.receiveEnergy(TRANSFER_PER_SIDE, true);
+            int offered = source.extractEnergy(room, true);
+            if (offered <= 0) continue;
+            int accepted = energy.receiveEnergy(offered, false);
+            if (accepted > 0) source.extractEnergy(accepted, false);
+        }
     }
 
     private int pushEnergy() {
