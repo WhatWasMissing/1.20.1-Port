@@ -1,7 +1,7 @@
 package matteroverdrive.capability;
 
 public class MachineMatterStorage implements IMatterStorage {
-    private final int capacity;
+    private int capacity;
     private final boolean allowReceive;
     private final boolean allowExtract;
     private final Runnable changeListener;
@@ -50,6 +50,17 @@ public class MachineMatterStorage implements IMatterStorage {
             changed();
         }
         return accepted;
+    }
+
+    public void setCapacity(int capacity) {
+        int clampedCapacity = Math.max(0, capacity);
+        if (this.capacity != clampedCapacity) {
+            this.capacity = clampedCapacity;
+            if (stored > this.capacity) {
+                stored = this.capacity;
+            }
+            changed();
+        }
     }
 
     public void setMatterStored(int amount) {

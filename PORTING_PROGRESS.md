@@ -188,3 +188,11 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Updated `ModItems` so upgrade IDs create typed upgrade items instead of inert placeholders.
 - No machine consumes these effects yet.
 - Next step: compile this isolated foundation, then add four upgrade slots to the Decomposer and apply supported multipliers.
+
+### 2026-08-27 — Add upgrade-ready dynamic storage capacity
+
+- Confirmed commit `4f5d7d1` compiles successfully.
+- Added runtime capacity setters to `MachineEnergyStorage` and `MachineMatterStorage`.
+- Capacity changes clamp existing contents safely, preventing upgraded storage from retaining impossible values when an upgrade is removed.
+- No machine capacity is changed yet.
+- Next step: compile the storage foundation, then integrate the Decomposer upgrade inventory and effects.

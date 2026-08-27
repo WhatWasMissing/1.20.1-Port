@@ -28,6 +28,17 @@ public class MachineEnergyStorage extends EnergyStorage {
         return extracted;
     }
 
+    public void setCapacity(int capacity) {
+        int clampedCapacity = Math.max(0, capacity);
+        if (this.capacity != clampedCapacity) {
+            this.capacity = clampedCapacity;
+            if (energy > this.capacity) {
+                energy = this.capacity;
+            }
+            changed();
+        }
+    }
+
     public void setEnergyStored(int amount) {
         int clamped = Math.max(0, Math.min(capacity, amount));
         if (energy != clamped) {
