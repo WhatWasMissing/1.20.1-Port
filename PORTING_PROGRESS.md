@@ -71,11 +71,9 @@ The branch currently modifies `DecomposerBlockEntity` and `MatterNetworkUtil`. I
 - M1 resources, M2 sources, and clean Forge compilation all passed.
 - Generated JAR: `build/libs/matteroverdrive-0.8.0.0-alpha.4.1.jar`.
 - Three non-blocking deprecation warnings remain in `ClientModEvents.java`, `MatterOverdrive.java`, and `ModSounds.java`.
-- Test a decomposer outputting through Matter Pipe and Heavy Matter Pipe.
-- Confirm matter reaches a compatible destination across turns and junctions.
-- Confirm routing does not loop or duplicate matter.
-- Confirm disconnected/full destinations do not delete matter.
-- Confirm multiple sources and destinations behave deterministically or fairly.
+- Runtime routing tests passed for direct transfer, Matter Pipe, Heavy Matter Pipe, mixed pipes, turns, junctions, two destinations, full destinations, and broken/reconnected routes.
+- No matter loss, duplication, routing lockup, or crash was observed.
+- Remaining behaviour note: a routing attempt transfers the full available amount immediately rather than visibly moving matter in smaller batches.
 - Recheck client and dedicated-server startup.
 - Remove temporary chat/log diagnostics only after the gameplay path is confirmed.
 
@@ -116,3 +114,14 @@ If the verification script succeeds, perform the in-game matter-routing tests ab
 - Clean Forge compilation passed with 10 tasks executed.
 - Output JAR: `build/libs/matteroverdrive-0.8.0.0-alpha.4.1.jar`.
 - Next step: install this JAR and perform the matter-routing runtime test matrix before merging.
+
+### 2026-08-27 — Matter routing verified in development client
+
+- Launched the source tree with `RUN_M2_CLIENT.bat`.
+- Direct Decomposer-to-Replicator transfer passed.
+- Normal Matter Pipe, Heavy Matter Pipe, mixed pipes, long routes, and turns passed.
+- Two-destination junction routing passed.
+- Full-destination handling passed.
+- Breaking and reconnecting a route stopped and resumed transfer correctly.
+- No loss or duplication was observed.
+- Transfer appears instantaneous because the current route operation offers the full stored amount per routing attempt; retain as an accepted alpha behaviour unless a throttled transfer rate is added before merge.
