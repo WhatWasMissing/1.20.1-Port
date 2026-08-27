@@ -439,3 +439,27 @@ Exact next step: inspect the current block/item/loot setup and implement the sha
 - The portable-drop, shift-click, Forge item capability, and debug readout implementation is now ready for the normal final gate pass.
 - Tritanium Crate milestone is complete and ready to fast-forward into `main`.
 - Exact next step: merge the verified crate branch, then select the next legacy system that has real gameplay value without depending on unported Android capability infrastructure.
+
+
+## Current work: Inscriber production bundle
+
+Branch `feature/inscriber-production` starts from the verified Tritanium Crate milestone commit `58ed97c`.
+
+This is intentionally a larger, complete production-system port rather than another isolated placeholder:
+
+- make the Molecular Inscriber a functional FE-powered workstation with its original three inputs/outputs and four upgrade slots;
+- restore all three legacy Isolinear Circuit tier-upgrade operations: Mk1 + Gold → Mk2, Mk2 + Diamond → Mk3, and Mk3 + Emerald → Mk4;
+- add the missing modern crafting recipes needed to obtain the Mk1 input and the Inscriber itself, then port a focused set of existing machine progression recipes that consume upgraded circuits;
+- restore normal item capability automation, recipe-aware slot filtering, shift-clicking, persistence, upgrade drops, and capacity clamping;
+- add persistent visible debug values for selected recipe, current progress, effective cycle time, and FE/t;
+- extend source/runtime verification for the expanded production loop.
+
+Legacy values to preserve:
+
+- base FE capacity: 512000;
+- FE input/output transfer limits: 256 FE/t;
+- cycle time and total energy: Mk2 300 ticks / 64000 FE, Mk3 600 / 88000, Mk4 1200 / 114000;
+- primary circuit input holds one item, secondary material holds 64, output is extraction-only;
+- accepted upgrades: Power, Speed, Power Storage, and Power Transfer (the latter remains documented but has no current transfer-side use until machine IO controls are ported).
+
+Exact next step: implement the complete Inscriber, its recipe model, core recipes, GUI/debug synchronization, registrations, and verification in one feature branch before the next runtime test.
