@@ -388,3 +388,25 @@ Exact next step: implement the block, block entity, menu, screen, registrations,
 - The source gate confirms seven functional block entities and menus, including Solar Panel at 8 FE/t peak, 64000 FE base storage, and 512 FE/t per-side output.
 - Three existing non-blocking deprecation warnings remain in `ClientModEvents.java`, `MatterOverdrive.java`, and `ModSounds.java`.
 - Solar power generation milestone is complete and ready to fast-forward into `main`.
+
+
+## Current work: Tritanium Crates
+
+Branch `feature/tritanium-crates` starts from verified Solar Panel milestone commit `9bb0bbb`.
+
+Why this precedes Charging Station:
+
+- legacy Charging Station only charged Android player energy;
+- Android capabilities are not yet ported, so adding it now would make a visibly functional but purposeless machine;
+- the 17 registered Tritanium Crate variants are self-contained and immediately useful for the existing production/network loop.
+
+Planned scope:
+
+- replace the base Tritanium Crate and all 16 dyed crate placeholders with a shared functional storage block entity;
+- restore the legacy 54-slot capacity for every variant;
+- provide a GUI, shift-click transfers, persistent storage, Forge item capability access, and drop handling;
+- retain the crate contents in its dropped item and restore them when placed again, matching legacy portable-storage behavior;
+- expose a visible debug line for used slots and total item count;
+- ensure all variants use the same block entity registration and add focused source/runtime verification.
+
+Exact next step: inspect the current block/item/loot setup and implement the shared crate behavior without changing the registered IDs or resources.
