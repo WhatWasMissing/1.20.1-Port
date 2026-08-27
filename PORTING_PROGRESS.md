@@ -593,3 +593,9 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 - Added `CHANGELOG.md` covering the complete M2 functional-systems test build: machines, upgrades, solar, crates, inscriber, transporter, Fusion Reactor, and Heavy Energy Cable.
 - Added `PACKAGE_TEST_JAR.bat`, which runs the project’s Gradle `jar` task and prints the generated test JAR path under `build\\libs`.
 - The current feature branch is ready for final `VERIFY_M2_BUILD.bat` validation after packaging.
+
+
+## Working-feature reference — ready for test distribution
+
+- Added `WORKING_FEATURES.md`, an exhaustive current-branch reference for installing the test JAR, functional machines, items, networks, upgrades, Inscriber recipes, Fusion Reactor, Heavy Energy Cable, verified checks, and known non-functional legacy shells.
+- The document is deliberately explicit that only listed systems are gameplay-functional; remaining registered legacy content is not claimed as complete.
