@@ -4,6 +4,7 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
+import matteroverdrive.block.TransporterBlock;
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.block.ReplicatorBlock;
 import matteroverdrive.block.SolarPanelBlock;
@@ -123,6 +124,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DecomposerBlock(propertiesFor(id))));
         } else if (id.equals("matter_recycler")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterRecyclerBlock(propertiesFor(id))));
+        } else if (id.equals("transporter")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TransporterBlock(propertiesFor(id))));
         } else if (id.equals("inscriber")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new InscriberBlock(propertiesFor(id))));
         } else if (id.equals("matter_analyzer")) {

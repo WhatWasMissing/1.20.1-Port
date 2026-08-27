@@ -6,6 +6,7 @@ import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.PatternDriveItem;
+import matteroverdrive.item.TransportFlashDriveItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -157,6 +158,9 @@ public final class ModItems {
         }
         if (id.equals("matter_dust_refined")) {
             return new MatterDustItem(propertiesFor(id), true);
+        }
+        if (id.equals("transport_flash_drive")) {
+            return new TransportFlashDriveItem(propertiesFor(id));
         }
         if (id.equals("pattern_drive") || id.equals("creative_pattern_drive")) {
             return new PatternDriveItem(propertiesFor(id), id.equals("creative_pattern_drive"));

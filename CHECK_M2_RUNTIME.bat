@@ -16,13 +16,15 @@ if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
 echo        blocks=74, blockItems=71, standaloneItems=97, sounds=57
 
-findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=9, menus=9" "%LOG%" >nul
+findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=10, menus=10" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"solarPanel=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"tritaniumCrate=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"inscriber=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"transporter=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 echo [PASS] M2 machine/network/solar/crate/inscriber framework marker found.
 

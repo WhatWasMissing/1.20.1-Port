@@ -502,3 +502,18 @@ Exact next step: implement the complete Inscriber, its recipe model, core recipe
 - The Creative Battery input and the current-world three-slot-to-four-slot inventory migration both worked without a server crash.
 - The Inscriber production bundle, including its supporting material/crafting recipes and visible debug values, is complete and ready to fast-forward into `main`.
 - Exact next step: merge the verified bundle, then take the next larger self-contained legacy system rather than another individual placeholder.
+
+
+## Current work: Transporter network bundle
+
+Branch `feature/transporter-network` starts from verified Inscriber production bundle commit `d93116c`.
+
+### 2026-08-27 — Implement Transporter network bundle
+
+- Replaced the Transporter placeholder with a powered functional Transporter, bound Transport Flash Drives, GUI, automation capabilities, five upgrade slots, persistence, drops, and always-visible debug values.
+- A Transport Flash Drive is bound by right-clicking the destination block. The Transporter reads that drive from its first slot and teleports entities standing on top of it to the stored same-dimension target.
+- Restored legacy base behaviour: 1024000 FE storage, 32-block range, 70-tick transport cycle, 80-tick delay, and 16 FE per travelled block.
+- Restored Speed, Power, Range, and Power Storage effects; added a Creative Battery-compatible energy slot.
+- Added the linked legacy Transport Flash Drive and Transporter crafting recipes.
+- Runtime behavior is unverified until the development-client test passes.
+- Exact next step: pull the branch, bind a drive to a destination, insert it and a Creative Battery, stand on the Transporter, and verify target/range/energy/debug/upgrade/persistence behavior.
