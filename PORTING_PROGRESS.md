@@ -577,3 +577,12 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 - Capped the effective anomaly scan range at **16 blocks**. Range upgrades still extend the reactor's reach from the 3-block base, but cannot create the runaway cubic scan that locked the integrated server and prevented world interaction/closing.
 - Corrected Speed upgrade behaviour: its legacy `0.75x` speed multiplier now increases generation (by reducing the cycle factor) instead of reducing output.
 - Reworked Reactor IO transfer to use the proven Solar Panel simulation/extract/refund flow, including a receiver `canReceive` check. IO exports up to 512 FE/t to each adjacent receiving side, excluding the Controller below it.
+
+
+## Energy Cable implementation — awaiting build and runtime verification
+
+- Converted the existing **Heavy Matter Pipe** block into the functional **Heavy Energy Cable**. This preserves the port's legacy block/resource inventory while giving the player a dedicated FE conduit with no missing texture or registry expansion.
+- Each cable buffers **8,192 FE** and relays up to **1,024 FE/t per connected receiving side**. Reactor IO pushes FE into the first cable; chained cables then pass it onward to FE-accepting machines.
+- Added a cable GUI with persistent `[DEBUG]` readouts for stored FE, last output, and the six-sided relay behaviour.
+- Updated M2 source/runtime gates for 13 block entities, 12 menus, and the Energy Cable marker.
+- Test with `Reactor IO -> Heavy Energy Cable(s) -> powered machine`. Matter Pipe and Network Pipe remain matter/task-only.

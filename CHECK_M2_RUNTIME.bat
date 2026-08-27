@@ -16,7 +16,9 @@ if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
 echo        blocks=74, blockItems=71, standaloneItems=97, sounds=57
 
-findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=12, menus=11" "%LOG%" >nul
+findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=13, menus=12" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"energyPipe=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"fusionReactor=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
@@ -28,7 +30,7 @@ findstr /c:"inscriber=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"transporter=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
-echo [PASS] M2 machine/network/fusion/solar/crate/inscriber framework marker found.
+echo [PASS] M2 machine/network/energy/fusion/solar/crate/inscriber framework marker found.
 
 findstr /c:"Missing textures in model matteroverdrive:" "%LOG%" >nul
 if not errorlevel 1 goto :fail33

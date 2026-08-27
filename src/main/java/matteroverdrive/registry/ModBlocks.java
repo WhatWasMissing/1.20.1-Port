@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.DecomposerBlock;
+import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
 import matteroverdrive.block.FusionReactorControllerBlock;
@@ -122,7 +123,9 @@ public final class ModBlocks {
     }
 
     private static void registerPlaceholder(String id) {
-        if (id.equals("fusion_reactor_controller")) {
+        if (id.equals("heavy_matter_pipe")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
+        } else if (id.equals("fusion_reactor_controller")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
         } else if (id.equals("fusion_reactor_io")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorIOBlock(propertiesFor(id))));

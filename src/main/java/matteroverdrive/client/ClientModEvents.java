@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.client.screen.DecomposerScreen;
+import matteroverdrive.client.screen.EnergyPipeScreen;
 import matteroverdrive.client.screen.InscriberScreen;
 import matteroverdrive.client.screen.TransporterScreen;
 import matteroverdrive.client.screen.FusionReactorScreen;
@@ -30,6 +31,7 @@ public final class ClientModEvents {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            MenuScreens.register(ModMenus.ENERGY_PIPE.get(), EnergyPipeScreen::new);
             MenuScreens.register(ModMenus.FUSION_REACTOR_CONTROLLER.get(), FusionReactorScreen::new);
             MenuScreens.register(ModMenus.TRANSPORTER.get(), TransporterScreen::new);
             MenuScreens.register(ModMenus.INSCRIBER.get(), InscriberScreen::new);
