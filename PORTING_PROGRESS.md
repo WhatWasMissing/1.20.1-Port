@@ -324,3 +324,30 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Verified upgrade integration now covers Decomposer, Matter Recycler, Matter Analyzer, Replicator, and Pattern Storage, including synchronized debug values, persistence, shift-clicking, capacity clamping, and block drops.
 - Legacy Pattern Monitor rejects every upgrade, so no inert upgrade UI was added.
 - Machine-upgrade milestone is complete and ready to fast-forward into `main`.
+
+
+## Current work: solar power generation
+
+Branch `feature/solar-power` starts from verified machine-upgrade milestone commit `6e83cc1`.
+
+Planned scope:
+
+- replace the registered `solar_panel` placeholder with a functional block entity;
+- preserve legacy base values: 8 FE/t peak generation, 64000 FE storage, and 512 FE/t extraction per adjacent receiver;
+- generate only with skylight, a clear view of the sky, and sufficient daytime sky light;
+- stop generation at night, under cover, during weather-reduced sky light, and in dimensions without skylight;
+- push stored FE into adjacent Forge Energy receivers;
+- restore the two legacy upgrade slots, accepting only Power Storage upgrades;
+- persist energy and upgrades, clamp capacity safely, and drop installed upgrades when broken;
+- add a compact GUI with always-visible synchronized debug values for actual generation, sky eligibility, storage capacity, and output limit;
+- extend the M2 source gate and provide a focused runtime test matrix.
+
+Legacy findings:
+
+- `TileEntityMachineSolarPanel` used two upgrade slots and accepted only `PowerStorage`.
+- Peak generation was `CHARGE_AMOUNT = 8` FE/t, scaled by the legacy daylight cosine and rounded.
+- Storage was 64000 FE.
+- The panel attempted to send up to 512 FE/t to each adjacent receiver while energy remained.
+- The legacy panel could not receive external FE.
+
+Exact next step: implement the block, block entity, menu, screen, registrations, source checks, and debug synchronization without changing unupgraded constants.
