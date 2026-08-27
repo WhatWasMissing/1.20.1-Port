@@ -6,6 +6,7 @@ import matteroverdrive.menu.MatterAnalyzerMenu;
 import matteroverdrive.menu.MatterRecyclerMenu;
 import matteroverdrive.menu.ReplicatorMenu;
 import matteroverdrive.menu.SolarPanelMenu;
+import matteroverdrive.menu.TritaniumCrateMenu;
 import matteroverdrive.menu.PatternStorageMenu;
 import matteroverdrive.menu.PatternMonitorMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -23,5 +24,6 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<PatternStorageMenu>> PATTERN_STORAGE = MENUS.register("pattern_storage", () -> IForgeMenuType.create(PatternStorageMenu::new));
     public static final RegistryObject<MenuType<PatternMonitorMenu>> PATTERN_MONITOR = MENUS.register("pattern_monitor", () -> IForgeMenuType.create(PatternMonitorMenu::new));
     public static final RegistryObject<MenuType<SolarPanelMenu>> SOLAR_PANEL = MENUS.register("solar_panel", () -> IForgeMenuType.create(SolarPanelMenu::new));
+    public static final RegistryObject<MenuType<TritaniumCrateMenu>> TRITANIUM_CRATE = MENUS.register("tritanium_crate", () -> IForgeMenuType.create(TritaniumCrateMenu::new));
     private ModMenus() {}
 }

@@ -410,3 +410,15 @@ Planned scope:
 - ensure all variants use the same block entity registration and add focused source/runtime verification.
 
 Exact next step: inspect the current block/item/loot setup and implement the shared crate behavior without changing the registered IDs or resources.
+
+
+### 2026-08-27 — Implement functional Tritanium Crates
+
+- Replaced the base Tritanium Crate and all 16 coloured crate placeholders with one shared functional storage block entity.
+- Restored the legacy 54-slot inventory for every variant, with normal shift-click transfers and a Forge item-handler capability for automation.
+- Crate contents persist in the block entity, are written into the dropped crate item's NBT, and restore when that crate item is placed again.
+- Added a compact 6×9 crate GUI with the required always-visible debug readout: used slots out of 54 and total stored item count.
+- Registered one common crate block entity type across all 17 existing block IDs, plus the menu and client screen.
+- Updated the M2 source and runtime gates for eight block entities/menus and the explicit crate marker.
+- Runtime behavior is unverified until the development-client test passes.
+- Exact next step: pull this branch, run `RUN_M2_CLIENT.bat`, test storage, all-colour variants, shift-clicking, portable drops/replacement, debug values, and the runtime/build gates.
