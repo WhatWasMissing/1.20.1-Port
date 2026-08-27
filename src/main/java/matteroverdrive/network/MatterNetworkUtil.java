@@ -24,20 +24,11 @@ import java.util.Set;
 
 public final class MatterNetworkUtil {
     private static final int MAX_NETWORK_NODES = 2048;
+    private static final long LEGACY_MATTER_ROUTE_PERIOD = 32L;
 
     private MatterNetworkUtil() {
     }
 
-    /**
-     * Finds block entities on the same data-network graph as {@code origin}.
-     *
-     * Alpha.4 only traversed Network Pipe blocks. That made a machine behave as
-     * an endpoint which could accidentally split what was visually one network.
-     * The 1.20.1 port now treats the currently implemented data-network clients
-     * and transport blocks as nodes in the same graph. This keeps direct machine
-     * adjacency working while also allowing branches through Storage/Monitor and
-     * the placeholder Router/Switch blocks.
-     */
     public static <T extends BlockEntity> List<T> findConnected(Level level, BlockPos origin, Class<T> type) {
         Map<BlockPos, T> found = new LinkedHashMap<>();
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
@@ -77,13 +68,6 @@ public final class MatterNetworkUtil {
         return new ArrayList<>(found.values());
     }
 
-    /**
-     * Transfers matter either directly to a neighboring capability or through a
-     * connected Matter Pipe graph. The route index selects the first endpoint to
-     * try, so callers can rotate successful transfers without keeping global pipe
-     * state. Each target block is represented only once even if several pipe faces
-     * touch it.
-     */
     public static int transferMatter(Level level, BlockPos origin, int maxAmount, long routeIndex) {
         if (maxAmount <= 0) {
             return 0;
@@ -110,8 +94,16 @@ public final class MatterNetworkUtil {
     }
 
     public static List<BlockEntity> findMatterTargets(Level level, BlockPos origin) {
+        List<MatterEndpoint> endpoints = findMatterEndpoints(level, origin);
         List<BlockEntity> found = new ArrayList<>();
-        for (MatterEndpoint endpoint : findMatterEndpoints(level, origin)) {
+        if (endpoints.isEmpty()) {
+            return found;
+        }
+
+        long routeEpoch = Math.floorDiv(level.getGameTime(), LEGACY_MATTER_ROUTE_PERIOD);
+        int start = (int) Math.floorMod(routeEpoch + origin.asLong(), (long) endpoints.size());
+        for (int offset = 0; offset < endpoints.size(); offset++) {
+            MatterEndpoint endpoint = endpoints.get((start + offset) % endpoints.size());
             BlockEntity blockEntity = level.getBlockEntity(endpoint.pos());
             if (blockEntity != null) {
                 found.add(blockEntity);
