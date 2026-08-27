@@ -12,9 +12,9 @@ This file is the durable hand-off record for continuing the port in a new ChatGP
 
 ## Current repository state
 
-- Active work branch: `feature/matter-pipe-routing`
+- Active work branch: `feature/network-routing-controls`
 - Base branch: `main`
-- Base commit: `7c67199bd6c038d642f98670e5e492bb0dea65e7`
+- Base commit: `4af59cea15dd6db7c088fa6c5b84130bb8f67666`
 - Latest code commit before this checkpoint: `b71ddc9d544a4b6bad7c25e74853ee0094c3a0e4`
 - Branch status before this checkpoint: 3 commits ahead of `main`, 0 behind.
 - Files changed relative to `main`:
@@ -125,3 +125,24 @@ If the verification script succeeds, perform the in-game matter-routing tests ab
 - Breaking and reconnecting a route stopped and resumed transfer correctly.
 - No loss or duplication was observed.
 - Transfer appears instantaneous because the current route operation offers the full stored amount per routing attempt; retain as an accepted alpha behaviour unless a throttled transfer rate is added before merge.
+
+## Current work: network routing controls
+
+Branch `feature/network-routing-controls` starts from merged routing commit `4af59ce`.
+
+Planned scope:
+
+- inspect the registered Network Router and Network Switch placeholders and legacy behavior;
+- define a minimal 1.20.1-safe routing-control model;
+- allow network paths to be enabled or excluded without breaking existing passive pipes;
+- persist and synchronize routing-control state;
+- add focused source/build checks and a runtime test matrix;
+- keep the already verified matter-routing behavior intact.
+
+Exact next step: inspect current and legacy Router/Switch implementations before selecting block-entity, interaction, menu, and networking changes.
+
+### 2026-08-27 — Start network routing controls milestone
+
+- Merged verified generic matter-pipe routing into `main` as `4af59ce`.
+- Created `feature/network-routing-controls` from that merge.
+- Recorded the next milestone scope before implementation.
