@@ -1,6 +1,7 @@
 package matteroverdrive.block;
 
 import matteroverdrive.blockentity.ReplicatorBlockEntity;
+import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,6 +43,10 @@ public class ReplicatorBlock extends BaseEntityBlock {
         return (tickerLevel, pos, tickerState, blockEntity) -> ReplicatorBlockEntity.serverTick(tickerLevel, pos, tickerState, (ReplicatorBlockEntity) blockEntity);
     }
     @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (player.getItemInHand(hand).getItem() instanceof MatterContainerItem) {
+            return InteractionResult.PASS;
+        }
+
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof ReplicatorBlockEntity replicator) NetworkHooks.openScreen(serverPlayer, replicator, pos);
