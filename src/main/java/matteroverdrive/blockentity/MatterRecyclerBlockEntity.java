@@ -3,6 +3,8 @@ package matteroverdrive.blockentity;
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.item.MatterDustItem;
+import matteroverdrive.item.MachineUpgradeItem;
+import matteroverdrive.item.MachineUpgradeInventory;
 import matteroverdrive.menu.MatterRecyclerMenu;
 import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModItems;
@@ -34,6 +36,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
     public static final int ENERGY_SLOT = 1;
     public static final int OUTPUT_SLOT = 2;
     public static final int SLOT_COUNT = 3;
+    public static final int UPGRADE_SLOT_COUNT = 4;
 
     public static final int ENERGY_STORAGE = 512000;
     public static final int RECYCLE_SPEED_PER_MATTER = 80;
@@ -56,6 +59,14 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
 
     private final MachineEnergyStorage energyStorage =
             new MachineEnergyStorage(ENERGY_STORAGE, ENERGY_STORAGE, ENERGY_STORAGE, this::setChanged);
+    private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
+            UPGRADE_SLOT_COUNT,
+            upgrade -> upgrade == MachineUpgradeItem.Upgrade.SPEED
+                    || upgrade == MachineUpgradeItem.Upgrade.POWER
+                    || upgrade == MachineUpgradeItem.Upgrade.POWER_STORAGE
+                    || upgrade == MachineUpgradeItem.Upgrade.HYPER_SPEED,
+            this::onUpgradesChanged
+    );
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> items);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
 
@@ -104,6 +115,12 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         });
     }
 
+    private void onUpgradesChanged() {
+        energyStorage.setCapacity((int) Math.min(Integer.MAX_VALUE,
+                Math.round(ENERGY_STORAGE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerStorage))));
+        setChanged();
+    }
+
     private void manageRecycle() {
         if (!canRecycle()) {
             running = false;
@@ -139,12 +156,14 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         if (matter <= 0) return 1;
         double scaled = Math.log1p(matter);
         scaled *= scaled;
-        return Math.max(1, (int) Math.round(RECYCLE_SPEED_PER_MATTER * scaled));
+        return Math.max(1, (int) Math.round(RECYCLE_SPEED_PER_MATTER * scaled
+                * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed)));
     }
 
     public int getEnergyDrainMax() {
         int matter = getRecycleMatter();
-        return matter <= 0 ? 0 : matter * RECYCLE_ENERGY_PER_MATTER;
+        return matter <= 0 ? 0 : Math.max(1, (int) Math.round(matter * RECYCLE_ENERGY_PER_MATTER
+                * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerUsage)));
     }
 
     public int getEnergyDrainPerTick() {
@@ -181,6 +200,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
 
     public ItemStackHandler getItemHandler() { return items; }
     public MachineEnergyStorage getEnergyStorage() { return energyStorage; }
+    public MachineUpgradeInventory getUpgradeInventory() { return upgrades; }
     public ContainerData getContainerData() { return data; }
 
     public void dropContents() {
@@ -192,11 +212,19 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
                 items.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
+        for (int slot = 0; slot < upgrades.getSlots(); slot++) {
+            ItemStack stack = upgrades.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX()+0.5, worldPosition.getY()+0.5, worldPosition.getZ()+0.5, stack.copy());
+                upgrades.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+        }
     }
 
     @Override protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Items", items.serializeNBT());
+        tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("RecycleTime", recycleTime);
         tag.putBoolean("Running", running);
@@ -204,6 +232,8 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
     @Override public void load(CompoundTag tag) {
         super.load(tag);
         if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items"));
+        if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
+        onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
         recycleTime = Math.max(0, tag.getInt("RecycleTime"));
         running = tag.getBoolean("Running");

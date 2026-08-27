@@ -315,6 +315,14 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
                 items.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
+        for (int slot = 0; slot < upgrades.getSlots(); slot++) {
+            ItemStack stack = upgrades.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5D,
+                        worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, stack.copy());
+                upgrades.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+        }
     }
 
     @Override

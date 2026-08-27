@@ -235,3 +235,13 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Expanded the GUI vertically and moved upgrade/player slots to prevent overlap.
 - Expected values: 0.5000 percent with no upgrade and 0.1250 percent with one Fail-Safe Upgrade.
 - Next step: compile and visually verify the values and revised layout.
+
+### 2026-08-27 — Integrate Matter Recycler upgrades
+
+- Confirmed the Decomposer failure debug display and all expected upgrade values work in the development client.
+- Added four visible, persistent upgrade slots to the Matter Recycler.
+- Recycler accepts Speed, Power, Power Storage, and Hyper Speed; it rejects Fail-Safe, Range, and Matter Storage, matching legacy supported effect types.
+- Applied upgrade multipliers to processing speed, energy usage, and energy capacity.
+- Added shift-click upgrade routing and adjusted the Recycler GUI layout.
+- Fixed Decomposer and Recycler block breaking so installed upgrades drop instead of being lost.
+- Runtime behavior remains unverified until the development client test passes.
