@@ -15,13 +15,14 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class InscriberMenu extends AbstractContainerMenu {
-    private static final int MACHINE_SLOTS = 7;
-    private static final int PLAYER_INV_START = 7;
-    private static final int PLAYER_INV_END = 34;
-    private static final int HOTBAR_END = 43;
+    private static final int MACHINE_SLOTS = 8;
+    private static final int PLAYER_INV_START = 8;
+    private static final int PLAYER_INV_END = 35;
+    private static final int HOTBAR_END = 44;
 
     private final InscriberBlockEntity machine;
     private final ContainerData data;
@@ -47,6 +48,7 @@ public class InscriberMenu extends AbstractContainerMenu {
                 return false;
             }
         });
+        addSlot(new SlotItemHandler(machine.getItemHandler(), InscriberBlockEntity.ENERGY_SLOT, 105, 43));
         for (int slot = 0; slot < InscriberBlockEntity.UPGRADE_SLOT_COUNT; slot++) {
             addSlot(new SlotItemHandler(machine.getUpgradeInventory(), slot, 53 + slot * 18, 78));
         }
@@ -88,6 +90,10 @@ public class InscriberMenu extends AbstractContainerMenu {
             moved = false;
             if (source.getItem() instanceof MachineUpgradeItem) {
                 moved = moveItemStackTo(source, 3, MACHINE_SLOTS, false);
+            }
+            if (!moved && source.getCapability(ForgeCapabilities.ENERGY)
+                    .map(energy -> energy.canExtract()).orElse(false)) {
+                moved = moveItemStackTo(source, 3, 4, false);
             }
             if (!moved && machine.getItemHandler().isItemValid(InscriberBlockEntity.PRIMARY_SLOT, source)) {
                 moved = moveItemStackTo(source, 0, 1, false);

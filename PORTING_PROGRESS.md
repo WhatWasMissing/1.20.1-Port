@@ -476,3 +476,12 @@ Exact next step: implement the complete Inscriber, its recipe model, core recipe
 - Registered the new block entity and menu, bringing the framework to nine block entities and nine menus, and extended M2 source/runtime gates accordingly.
 - Runtime behavior is unverified until the development-client test passes.
 - Exact next step: pull this branch, run `RUN_M2_CLIENT.bat`, and test all three circuit recipes, energy input, upgrades, debug values, automation slots, persistence/drops, the new crafting chain, and the standard runtime/build gates.
+
+
+### 2026-08-27 — Restore Inscriber battery input
+
+- Runtime testing correctly exposed that the first Inscriber implementation had FE capability access but no item battery input slot, unlike the existing M2 machine workflow.
+- Added a dedicated battery slot that accepts Forge Energy items, including the Creative Battery, and charges the Inscriber at its restored 256 FE/t receive limit.
+- Shift-click now prioritizes compatible energy items into that slot; the GUI includes the visible battery slot alongside the recipe inputs and output.
+- Extended the source gate to require battery-charging wiring.
+- Exact next step: pull the correction, run the development client, insert a Creative Battery, and verify the Inscriber gains FE and completes the Mk1-to-Mk2 recipe.

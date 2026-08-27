@@ -32,6 +32,7 @@ public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
         graphics.fill(leftPos + 9, topPos + 68 - energy, leftPos + 13, topPos + 68, 0xFFCC3333);
         slot(graphics, leftPos + 26, topPos + 43);
         slot(graphics, leftPos + 78, topPos + 43);
+        slot(graphics, leftPos + 104, topPos + 43);
         slot(graphics, leftPos + 132, topPos + 43);
         for (int slot = 0; slot < 4; slot++) {
             slot(graphics, leftPos + 52 + slot * 18, topPos + 77);

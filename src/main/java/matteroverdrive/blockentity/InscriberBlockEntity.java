@@ -34,7 +34,8 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
     public static final int PRIMARY_SLOT = 0;
     public static final int SECONDARY_SLOT = 1;
     public static final int OUTPUT_SLOT = 2;
-    public static final int SLOT_COUNT = 3;
+    public static final int ENERGY_SLOT = 3;
+    public static final int SLOT_COUNT = 4;
     public static final int UPGRADE_SLOT_COUNT = 4;
 
     public static final int ENERGY_CAPACITY = 512000;
@@ -45,6 +46,7 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
     public static final int MK3_ENERGY = 88000;
     public static final int MK4_TIME = 1200;
     public static final int MK4_ENERGY = 114000;
+    public static final int ENERGY_ITEM_TRANSFER_PER_TICK = 16000;
 
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override
@@ -53,6 +55,8 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
                 case PRIMARY_SLOT -> isPrimaryCircuit(stack);
                 case SECONDARY_SLOT -> isInscribingMaterial(stack);
                 case OUTPUT_SLOT -> false;
+                case ENERGY_SLOT -> stack.getCapability(ForgeCapabilities.ENERGY)
+                        .map(IEnergyStorage::canExtract).orElse(false);
                 default -> false;
             };
         }
@@ -123,7 +127,27 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
 
     public static void serverTick(
             Level level, BlockPos pos, BlockState state, InscriberBlockEntity inscriber) {
+        inscriber.chargeFromEnergyItem();
         inscriber.manageInscription();
+    }
+
+    private void chargeFromEnergyItem() {
+        ItemStack stack = items.getStackInSlot(ENERGY_SLOT);
+        if (stack.isEmpty() || energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) {
+            return;
+        }
+        stack.getCapability(ForgeCapabilities.ENERGY).ifPresent(source -> {
+            if (!source.canExtract()) {
+                return;
+            }
+            int request = Math.min(ENERGY_ITEM_TRANSFER_PER_TICK,
+                    energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored());
+            int offered = source.extractEnergy(request, true);
+            int accepted = energyStorage.receiveEnergy(offered, false);
+            if (accepted > 0) {
+                source.extractEnergy(accepted, false);
+            }
+        });
     }
 
     private void manageInscription() {
