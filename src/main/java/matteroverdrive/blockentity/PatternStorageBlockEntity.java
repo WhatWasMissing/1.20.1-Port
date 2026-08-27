@@ -1,6 +1,8 @@
 package matteroverdrive.blockentity;
 
 import matteroverdrive.capability.MachineEnergyStorage;
+import matteroverdrive.item.MachineUpgradeInventory;
+import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.menu.PatternStorageMenu;
 import matteroverdrive.network.PatternData;
@@ -35,6 +37,7 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
     public static final int FIRST_DRIVE_SLOT = 1;
     public static final int DRIVE_COUNT = 6;
     public static final int SLOT_COUNT = 7;
+    public static final int UPGRADE_SLOT_COUNT = 4;
 
     public static final int ENERGY_CAPACITY = 64000;
     public static final int ENERGY_TRANSFER = 128;
@@ -56,6 +59,12 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
 
     private final MachineEnergyStorage energyStorage =
             new MachineEnergyStorage(ENERGY_CAPACITY, ENERGY_TRANSFER, ENERGY_TRANSFER, this::setChanged);
+    private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
+            UPGRADE_SLOT_COUNT,
+            upgrade -> upgrade == MachineUpgradeItem.Upgrade.POWER
+                    || upgrade == MachineUpgradeItem.Upgrade.POWER_STORAGE,
+            this::onUpgradesChanged
+    );
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> items);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
 
@@ -68,6 +77,7 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
                 case 2 -> lowWord(energyStorage.getMaxEnergyStored());
                 case 3 -> highWord(energyStorage.getMaxEnergyStored());
                 case 4 -> getPatternCount();
+                case 5 -> getIdleEnergyUsePerTick();
                 default -> 0;
             };
         }
@@ -78,7 +88,7 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
 
         @Override
         public int getCount() {
-            return 5;
+            return 6;
         }
     };
 
@@ -106,6 +116,16 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
                 source.extractEnergy(accepted, false);
             }
         });
+    }
+
+    private void onUpgradesChanged() {
+        energyStorage.setCapacity((int) Math.min(Integer.MAX_VALUE,
+                Math.round(ENERGY_CAPACITY * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerStorage))));
+        setChanged();
+    }
+
+    public int getIdleEnergyUsePerTick() {
+        return 0;
     }
 
     public boolean isNetworkActive() {
@@ -205,6 +225,10 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
         return energyStorage;
     }
 
+    public MachineUpgradeInventory getUpgradeInventory() {
+        return upgrades;
+    }
+
     public ContainerData getContainerData() {
         return data;
     }
@@ -221,12 +245,21 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
                 items.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
+        for (int slot = 0; slot < upgrades.getSlots(); slot++) {
+            ItemStack stack = upgrades.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
+                        worldPosition.getZ() + 0.5, stack.copy());
+                upgrades.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+        }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Items", items.serializeNBT());
+        tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
     }
 
@@ -236,6 +269,10 @@ public class PatternStorageBlockEntity extends BlockEntity implements MenuProvid
         if (tag.contains("Items")) {
             items.deserializeNBT(tag.getCompound("Items"));
         }
+        if (tag.contains("Upgrades")) {
+            upgrades.deserializeNBT(tag.getCompound("Upgrades"));
+        }
+        onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
     }
 

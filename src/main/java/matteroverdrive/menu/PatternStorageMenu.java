@@ -1,6 +1,7 @@
 package matteroverdrive.menu;
 
 import matteroverdrive.blockentity.PatternStorageBlockEntity;
+import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
@@ -19,16 +20,16 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class PatternStorageMenu extends AbstractContainerMenu {
-    private static final int MACHINE_SLOTS = 7;
-    private static final int PLAYER_INV_START = 7;
-    private static final int PLAYER_INV_END = 34;
-    private static final int HOTBAR_END = 43;
+    private static final int MACHINE_SLOTS = 11;
+    private static final int PLAYER_INV_START = 11;
+    private static final int PLAYER_INV_END = 38;
+    private static final int HOTBAR_END = 47;
 
     private final PatternStorageBlockEntity machine;
     private final ContainerData data;
 
     public PatternStorageMenu(int id, Inventory inv, FriendlyByteBuf buf) {
-        this(id, inv, getMachine(inv, buf.readBlockPos()), new SimpleContainerData(5));
+        this(id, inv, getMachine(inv, buf.readBlockPos()), new SimpleContainerData(6));
     }
 
     public PatternStorageMenu(int id, Inventory inv, PatternStorageBlockEntity machine) {
@@ -45,6 +46,9 @@ public class PatternStorageMenu extends AbstractContainerMenu {
             addSlot(new SlotItemHandler(machine.getItemHandler(), PatternStorageBlockEntity.FIRST_DRIVE_SLOT + i,
                     62 + (i % 3) * 24, 32 + (i / 3) * 24));
         }
+        for (int slot = 0; slot < PatternStorageBlockEntity.UPGRADE_SLOT_COUNT; slot++) {
+            addSlot(new SlotItemHandler(machine.getUpgradeInventory(), slot, 53 + slot * 18, 80));
+        }
         addPlayer(inv);
         addDataSlots(data);
     }
@@ -60,11 +64,11 @@ public class PatternStorageMenu extends AbstractContainerMenu {
     private void addPlayer(Inventory inv) {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inv, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
+                addSlot(new Slot(inv, col + row * 9 + 9, 8 + col * 18, 138 + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inv, col, 8 + col * 18, 142));
+            addSlot(new Slot(inv, col, 8 + col * 18, 196));
         }
     }
 
@@ -82,7 +86,10 @@ public class PatternStorageMenu extends AbstractContainerMenu {
             moved = moveItemStackTo(source, PLAYER_INV_START, HOTBAR_END, true);
         } else {
             moved = false;
-            if (source.getItem() instanceof PatternDriveItem) {
+            if (source.getItem() instanceof MachineUpgradeItem) {
+                moved = moveItemStackTo(source, 7, MACHINE_SLOTS, false);
+            }
+            if (!moved && source.getItem() instanceof PatternDriveItem) {
                 moved = moveItemStackTo(source, 1, 7, false);
             }
             if (!moved && source.getCapability(ForgeCapabilities.ENERGY).map(e -> e.canExtract()).orElse(false)) {
@@ -123,6 +130,10 @@ public class PatternStorageMenu extends AbstractContainerMenu {
 
     public int getPatternCount() {
         return data.get(4) & 0xFFFF;
+    }
+
+    public int getIdleEnergyUsePerTick() {
+        return data.get(5) & 0xFFFF;
     }
 
     private static int combine(int low, int high) {

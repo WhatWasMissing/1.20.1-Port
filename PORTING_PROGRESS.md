@@ -285,3 +285,16 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Without a direct pattern or network task, both fields explicitly display `inactive`.
 - With an active pattern, the fields display synchronized effective ticks, seconds, and failure percentage.
 - Reaffirmed that debug visibility is required for every newly changed runtime mechanic going forward.
+
+
+### 2026-08-27 — Integrate Pattern Storage upgrades and debug values
+
+- Confirmed the Replicator's always-visible debug values, direct and network replication, upgrade effects, persistence, block drops, GUI layout, and runtime gate all work.
+- Added four visible, persistent upgrade slots to Pattern Storage.
+- Pattern Storage accepts Power and Power Storage upgrades, matching the legacy machine's declared supported upgrade types; all other upgrades are rejected.
+- Power Storage upgrades multiply the 64000 FE capacity and removing them clamps stored energy safely.
+- Preserved the legacy quirk that Pattern Storage requires stored energy to stay network-active but consumes no idle FE, so Power upgrades are accepted yet have no operating-cost effect.
+- Added always-visible synchronized debug lines for effective capacity and actual idle usage (0 FE/t).
+- Added shift-click routing and ensured installed upgrades drop when the block is broken.
+- Runtime behavior remains unverified until the development client test passes.
+- Exact next step: pull this commit, run `RUN_M2_CLIENT.bat`, and verify Pattern Storage upgrade acceptance, capacity, persistence, drops, layout, network activity, and runtime gate.

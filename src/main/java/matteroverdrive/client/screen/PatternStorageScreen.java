@@ -10,8 +10,8 @@ public class PatternStorageScreen extends AbstractContainerScreen<PatternStorage
     public PatternStorageScreen(PatternStorageMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
-        imageHeight = 166;
-        inventoryLabelY = 73;
+        imageHeight = 220;
+        inventoryLabelY = 127;
     }
 
     @Override
@@ -34,6 +34,11 @@ public class PatternStorageScreen extends AbstractContainerScreen<PatternStorage
             graphics.fill(sx, sy, sx + 20, sy + 20, 0xFF454545);
             graphics.fill(sx + 1, sy + 1, sx + 19, sy + 19, 0xFF9A9A9A);
         }
+        for (int slot = 0; slot < 4; slot++) {
+            int sx = x + 52 + slot * 18;
+            graphics.fill(sx, y + 79, sx + 20, y + 99, 0xFF454545);
+            graphics.fill(sx + 1, y + 80, sx + 19, y + 98, 0xFF9A9A9A);
+        }
         graphics.fill(x + 8, y + 20, x + 14, y + 69, 0xFF4A4A4A);
         int energyHeight = scale(menu.getEnergy(), menu.getEnergyCapacity(), 48);
         graphics.fill(x + 9, y + 68 - energyHeight, x + 13, y + 68, 0xFFCC3333);
@@ -44,6 +49,8 @@ public class PatternStorageScreen extends AbstractContainerScreen<PatternStorage
         graphics.drawString(font, title, 8, 6, 0x404040, false);
         graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 18, 20, 0x404040, false);
         graphics.drawString(font, "Patterns: " + menu.getPatternCount() + " / 12", 62, 20, 0x404040, false);
+        graphics.drawString(font, "[DEBUG] Capacity: " + menu.getEnergyCapacity() + " FE", 18, 104, 0x7A1F1F, false);
+        graphics.drawString(font, "[DEBUG] Idle use: " + menu.getIdleEnergyUsePerTick() + " FE/t", 18, 114, 0x7A1F1F, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
     }
 
