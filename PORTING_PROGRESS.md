@@ -422,3 +422,11 @@ Exact next step: inspect the current block/item/loot setup and implement the sha
 - Updated the M2 source and runtime gates for eight block entities/menus and the explicit crate marker.
 - Runtime behavior is unverified until the development-client test passes.
 - Exact next step: pull this branch, run `RUN_M2_CLIENT.bat`, test storage, all-colour variants, shift-clicking, portable drops/replacement, debug values, and the runtime/build gates.
+
+
+### 2026-08-27 — Fix Tritanium Crate item comparison compile error
+
+- The first crate branch compile correctly identified an item/block comparison in portable drop handling: `ItemStack.is` accepts an item, not a block.
+- Corrected the comparison to use the crate block's item form, preserving all-colour portable inventory serialization.
+- This is a compile-only correction; runtime behavior remains unverified.
+- Exact next step: pull the fix, run `RUN_M2_CLIENT.bat`, then perform the crate storage and portable-drop test matrix.

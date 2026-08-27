@@ -76,7 +76,7 @@ public class TritaniumCrateBlock extends BaseEntityBlock {
         BlockEntity blockEntity = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (blockEntity instanceof TritaniumCrateBlockEntity crate) {
             for (ItemStack drop : drops) {
-                if (drop.is(this)) {
+                if (drop.is(this.asItem())) {
                     crate.writeInventoryToItem(drop);
                     break;
                 }
