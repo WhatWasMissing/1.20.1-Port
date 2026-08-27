@@ -277,3 +277,11 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Added shift-click routing, upgrade drops on block break, and a taller non-overlapping GUI.
 - Preserved direct Pattern Drive and Pattern Monitor network-task replication paths.
 - Runtime behavior remains unverified until the development client test passes.
+
+### 2026-08-27 — Keep Replicator debug section always visible
+
+- Corrected the first Replicator debug implementation, which only rendered while a valid pattern was active.
+- Cycle and failure debug lines now remain visible at all times.
+- Without a direct pattern or network task, both fields explicitly display `inactive`.
+- With an active pattern, the fields display synchronized effective ticks, seconds, and failure percentage.
+- Reaffirmed that debug visibility is required for every newly changed runtime mechanic going forward.
