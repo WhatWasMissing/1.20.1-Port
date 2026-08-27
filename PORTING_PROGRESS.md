@@ -179,3 +179,12 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Fast-forwarded the completed Router/Switch investigation into `main` at `701be7b`.
 - Created `feature/machine-upgrades`.
 - Chose machine upgrades as the next missing system because upgrade items are registered but currently have no machine effect.
+
+### 2026-08-27 — Restore typed legacy upgrade items
+
+- Added a shared `MachineUpgradeItem` model for all seven registered upgrade items.
+- Restored the original legacy multipliers for Speed, Power, Fail-Safe, Range, Power Storage, Hyper Speed, and Matter Storage.
+- Added tooltips that expose every non-neutral multiplier.
+- Updated `ModItems` so upgrade IDs create typed upgrade items instead of inert placeholders.
+- No machine consumes these effects yet.
+- Next step: compile this isolated foundation, then add four upgrade slots to the Decomposer and apply supported multipliers.

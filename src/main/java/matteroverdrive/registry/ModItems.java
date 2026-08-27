@@ -4,6 +4,7 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.CreativeBatteryItem;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.MatterDustItem;
+import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.PatternDriveItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -159,6 +160,10 @@ public final class ModItems {
         }
         if (id.equals("pattern_drive") || id.equals("creative_pattern_drive")) {
             return new PatternDriveItem(propertiesFor(id), id.equals("creative_pattern_drive"));
+        }
+        MachineUpgradeItem.Upgrade upgrade = MachineUpgradeItem.Upgrade.fromItemId(id);
+        if (upgrade != null) {
+            return new MachineUpgradeItem(propertiesFor(id), upgrade);
         }
         return new Item(propertiesFor(id));
     }
