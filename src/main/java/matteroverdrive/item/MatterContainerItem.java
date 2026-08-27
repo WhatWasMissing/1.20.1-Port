@@ -6,6 +6,7 @@ import matteroverdrive.capability.ModCapabilities;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -24,6 +25,7 @@ import java.util.List;
 
 public class MatterContainerItem extends Item {
     public static final int CAPACITY = 1000;
+    private static final String SYNC_TAG = "MatterContainerSync";
 
     public MatterContainerItem(Properties properties) {
         super(properties.stacksTo(8));
@@ -59,7 +61,7 @@ public class MatterContainerItem extends Item {
 
         int movedToTarget = transferMatter(container, target);
         if (movedToTarget > 0) {
-            markInventoryChanged(player);
+            syncTransfer(level, targetEntity, player, stack, container);
             sendDebug(player,
                     "[MO DEBUG] MATTER: moved " + movedToTarget + " from Matter Container -> " + targetName
                             + " | container " + containerBefore + " -> " + container.getMatterStored()
@@ -71,7 +73,7 @@ public class MatterContainerItem extends Item {
 
         int movedFromTarget = transferMatter(target, container);
         if (movedFromTarget > 0) {
-            markInventoryChanged(player);
+            syncTransfer(level, targetEntity, player, stack, container);
             sendDebug(player,
                     "[MO DEBUG] MATTER: pulled " + movedFromTarget + " from " + targetName + " -> Matter Container"
                             + " | machine " + targetBefore + " -> " + target.getMatterStored()
@@ -89,9 +91,24 @@ public class MatterContainerItem extends Item {
         return InteractionResult.CONSUME;
     }
 
-    private static void markInventoryChanged(@Nullable Player player) {
+    private static void syncTransfer(Level level, BlockEntity targetEntity, @Nullable Player player,
+                                     ItemStack stack, IMatterStorage container) {
+        targetEntity.setChanged();
+        level.sendBlockUpdated(targetEntity.getBlockPos(), targetEntity.getBlockState(), targetEntity.getBlockState(), 3);
+
+        // Capability contents alone do not always make an ItemStack compare as changed
+        // for vanilla slot synchronization. Mirror the current amount into a harmless
+        // root tag so the held stack is guaranteed to differ and immediately broadcast
+        // the player's inventory. The capability remains the authoritative storage.
+        stack.getOrCreateTag().putInt(SYNC_TAG, container.getMatterStored());
+
         if (player != null) {
             player.getInventory().setChanged();
+            player.inventoryMenu.broadcastChanges();
+            player.containerMenu.broadcastChanges();
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.inventoryMenu.broadcastFullState();
+            }
         }
     }
 
