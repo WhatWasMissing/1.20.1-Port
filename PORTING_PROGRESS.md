@@ -266,3 +266,14 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Expanded the Analyzer layout and moved upgrade/player slots to prevent overlap.
 - Expected cycle values: 800 ticks / 40.00 seconds with no upgrade, 600 / 30.00 with Speed, 1200 / 60.00 with Power, and 120 / 6.00 with Hyper Speed.
 - Runtime layout and values remain unverified until the development client test passes.
+
+### 2026-08-27 — Integrate Replicator upgrades and debug values
+
+- Confirmed Matter Analyzer upgrades, debug timing, direct-drive/network analysis, persistence, block drops, and runtime gate work.
+- Added four visible, persistent upgrade slots to the Replicator.
+- Replicator accepts Speed, Power, Fail-Safe, Power Storage, Matter Storage, and Hyper Speed; Range is rejected.
+- Applied legacy formulas to cycle speed, total energy usage, energy capacity, matter capacity, and pattern-progress-dependent failure chance.
+- Added synchronized debug lines for effective cycle ticks/seconds and failure percentage.
+- Added shift-click routing, upgrade drops on block break, and a taller non-overlapping GUI.
+- Preserved direct Pattern Drive and Pattern Monitor network-task replication paths.
+- Runtime behavior remains unverified until the development client test passes.

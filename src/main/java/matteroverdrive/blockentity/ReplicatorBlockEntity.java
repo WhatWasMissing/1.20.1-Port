@@ -6,6 +6,8 @@ import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.capability.MachineMatterStorage;
 import matteroverdrive.capability.ModCapabilities;
 import matteroverdrive.item.MatterDustItem;
+import matteroverdrive.item.MachineUpgradeItem;
+import matteroverdrive.item.MachineUpgradeInventory;
 import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.menu.ReplicatorMenu;
 import matteroverdrive.network.PatternData;
@@ -43,6 +45,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     public static final int OUTPUT_SLOT = 2;
     public static final int FAILURE_SLOT = 3;
     public static final int SLOT_COUNT = 4;
+    public static final int UPGRADE_SLOT_COUNT = 4;
 
     public static final double FAIL_CHANCE = 0.005D;
     public static final int REPLICATE_SPEED_PER_MATTER = 120;
@@ -76,6 +79,11 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             new MachineEnergyStorage(ENERGY_STORAGE, ENERGY_STORAGE, ENERGY_STORAGE, this::setChanged);
     private final MachineMatterStorage matterStorage =
             new MachineMatterStorage(MATTER_STORAGE, true, false, this::setChanged);
+    private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
+            UPGRADE_SLOT_COUNT,
+            upgrade -> upgrade != MachineUpgradeItem.Upgrade.RANGE,
+            this::onUpgradesChanged
+    );
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> items);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
     private LazyOptional<IMatterStorage> matterCapability = LazyOptional.of(() -> matterStorage);
@@ -153,6 +161,18 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                 source.extractEnergy(accepted, false);
             }
         });
+    }
+
+    private void onUpgradesChanged() {
+        energyStorage.setCapacity(scaleCapacity(
+                ENERGY_STORAGE, upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerStorage)));
+        matterStorage.setCapacity(scaleCapacity(
+                MATTER_STORAGE, upgrades.getMultiplier(MachineUpgradeItem.Upgrade::matterStorage)));
+        setChanged();
+    }
+
+    private static int scaleCapacity(int baseCapacity, double multiplier) {
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, Math.round(baseCapacity * multiplier)));
     }
 
     private void manageReplicate() {
@@ -321,7 +341,8 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         }
         double scaled = Math.log1p(matter);
         scaled *= scaled;
-        int speed = (int) Math.round((REPLICATE_SPEED_PER_MATTER * Math.log1p(scaled * 0.05D) * 10.0D) - 60.0D) + 60;
+        int speed = (int) Math.round(((REPLICATE_SPEED_PER_MATTER * Math.log1p(scaled * 0.05D) * 10.0D) - 60.0D)
+                * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed)) + 60;
         return Math.max(1, speed);
     }
 
@@ -330,7 +351,8 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         if (matter <= 0) {
             return 0;
         }
-        return Math.max(1, (int) Math.round(Math.log1p(matter * 0.05D) * 4.0D * REPLICATE_ENERGY_PER_MATTER));
+        return Math.max(1, (int) Math.round(Math.log1p(matter * 0.05D) * 4.0D * REPLICATE_ENERGY_PER_MATTER
+                * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerUsage)));
     }
 
     public int getEnergyDrainPerTick() {
@@ -341,7 +363,11 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     public double getFailChance() {
         int progress = getCurrentPatternProgress();
         double progressChance = 1.0D - (progress / 100.0D);
-        return Math.min(1.0D, FAIL_CHANCE + progressChance);
+        double multiplier = upgrades.getMultiplier(MachineUpgradeItem.Upgrade::failureChance);
+        return Math.min(1.0D,
+                FAIL_CHANCE * multiplier
+                        + progressChance * 0.5D
+                        + progressChance * 0.5D * multiplier);
     }
 
     public ItemStackHandler getItemHandler() {
@@ -354,6 +380,10 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public MachineMatterStorage getMatterStorage() {
         return matterStorage;
+    }
+
+    public MachineUpgradeInventory getUpgradeInventory() {
+        return upgrades;
     }
 
     public ContainerData getContainerData() {
@@ -372,12 +402,21 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                 items.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
+        for (int slot = 0; slot < upgrades.getSlots(); slot++) {
+            ItemStack stack = upgrades.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
+                        worldPosition.getZ() + 0.5, stack.copy());
+                upgrades.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+        }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Items", items.serializeNBT());
+        tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("Matter", matterStorage.getMatterStored());
         tag.putInt("ReplicateTime", replicateTime);
@@ -401,6 +440,10 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         if (tag.contains("Items")) {
             items.deserializeNBT(tag.getCompound("Items"));
         }
+        if (tag.contains("Upgrades")) {
+            upgrades.deserializeNBT(tag.getCompound("Upgrades"));
+        }
+        onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
         matterStorage.setMatterStored(tag.getInt("Matter"));
         replicateTime = Math.max(0, tag.getInt("ReplicateTime"));
