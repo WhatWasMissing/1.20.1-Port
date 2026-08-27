@@ -463,3 +463,16 @@ Legacy values to preserve:
 - accepted upgrades: Power, Speed, Power Storage, and Power Transfer (the latter remains documented but has no current transfer-side use until machine IO controls are ported).
 
 Exact next step: implement the complete Inscriber, its recipe model, core recipes, GUI/debug synchronization, registrations, and verification in one feature branch before the next runtime test.
+
+
+### 2026-08-27 — Implement Inscriber production bundle
+
+- Replaced the Molecular Inscriber placeholder with a functional FE-powered block entity, GUI, and Forge item/energy capabilities.
+- Restored the full legacy Isolinear Circuit sequence: Mk1 plus Gold becomes Mk2 at 64000 FE over 300 ticks; Mk2 plus Diamond becomes Mk3 at 88000 FE over 600 ticks; Mk3 plus Emerald becomes Mk4 at 114000 FE over 1200 ticks.
+- Restored 512000 FE base storage and 256 FE/t input/output limits, recipe-aware one-slot primary input, 64-slot secondary material input, extraction-only output, shift-click routing, persistence, and block-break drops.
+- Added four persistent upgrade slots. They accept Speed, Power, Power Storage, and Hyper Speed, using the shared 1.20.1 upgrade model; legacy Power Transfer has no corresponding registered current upgrade and remains deferred with machine-side IO controls.
+- Added always-visible synchronized debug values for selected recipe, running/idle state, effective cycle ticks/seconds, FE/t, and total energy.
+- Ported the supporting survival material chain: Tritanium dust/ore smelting, ingot/nugget conversion, Tritanium Plates, Machine Casings, Isolinear Circuit Mk1, and the Inscriber crafting recipe.
+- Registered the new block entity and menu, bringing the framework to nine block entities and nine menus, and extended M2 source/runtime gates accordingly.
+- Runtime behavior is unverified until the development-client test passes.
+- Exact next step: pull this branch, run `RUN_M2_CLIENT.bat`, and test all three circuit recipes, energy input, upgrades, debug values, automation slots, persistence/drops, the new crafting chain, and the standard runtime/build gates.

@@ -225,6 +225,7 @@ tasks.register('verifyM2Sources') {
 
     doLast {
         def required = [
+                'src/main/java/matteroverdrive/block/InscriberBlock.java',
                 'src/main/java/matteroverdrive/block/DecomposerBlock.java',
                 'src/main/java/matteroverdrive/block/MatterRecyclerBlock.java',
                 'src/main/java/matteroverdrive/block/MatterAnalyzerBlock.java',
@@ -233,6 +234,7 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/block/PatternMonitorBlock.java',
                 'src/main/java/matteroverdrive/block/SolarPanelBlock.java',
                 'src/main/java/matteroverdrive/block/TritaniumCrateBlock.java',
+                'src/main/java/matteroverdrive/blockentity/InscriberBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/MatterRecyclerBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/MatterAnalyzerBlockEntity.java',
@@ -251,6 +253,7 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/matter/MatterValueRegistry.java',
                 'src/main/java/matteroverdrive/network/PatternData.java',
                 'src/main/java/matteroverdrive/network/MatterNetworkUtil.java',
+                'src/main/java/matteroverdrive/menu/InscriberMenu.java',
                 'src/main/java/matteroverdrive/menu/DecomposerMenu.java',
                 'src/main/java/matteroverdrive/menu/MatterRecyclerMenu.java',
                 'src/main/java/matteroverdrive/menu/MatterAnalyzerMenu.java',
@@ -259,6 +262,7 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/menu/PatternMonitorMenu.java',
                 'src/main/java/matteroverdrive/menu/SolarPanelMenu.java',
                 'src/main/java/matteroverdrive/menu/TritaniumCrateMenu.java',
+                'src/main/java/matteroverdrive/client/screen/InscriberScreen.java',
                 'src/main/java/matteroverdrive/client/screen/DecomposerScreen.java',
                 'src/main/java/matteroverdrive/client/screen/MatterRecyclerScreen.java',
                 'src/main/java/matteroverdrive/client/screen/MatterAnalyzerScreen.java',
@@ -275,7 +279,7 @@ tasks.register('verifyM2Sources') {
         }
 
         def blocks = file('src/main/java/matteroverdrive/registry/ModBlocks.java').getText('UTF-8')
-        ['DecomposerBlock', 'MatterRecyclerBlock', 'MatterAnalyzerBlock', 'ReplicatorBlock', 'PatternStorageBlock', 'PatternMonitorBlock', 'SolarPanelBlock', 'TritaniumCrateBlock'].each { name ->
+        ['InscriberBlock', 'DecomposerBlock', 'MatterRecyclerBlock', 'MatterAnalyzerBlock', 'ReplicatorBlock', 'PatternStorageBlock', 'PatternMonitorBlock', 'SolarPanelBlock', 'TritaniumCrateBlock'].each { name ->
             if (!blocks.contains("new ${name}(propertiesFor(id))")) throw new GradleException("${name} is not wired into ModBlocks")
         }
 
@@ -296,10 +300,11 @@ tasks.register('verifyM2Sources') {
 
         def beRegistry = file('src/main/java/matteroverdrive/registry/ModBlockEntities.java').getText('UTF-8')
         def menuRegistry = file('src/main/java/matteroverdrive/registry/ModMenus.java').getText('UTF-8')
-        ['DECOMPOSER', 'MATTER_RECYCLER', 'MATTER_ANALYZER', 'REPLICATOR', 'PATTERN_STORAGE', 'PATTERN_MONITOR', 'SOLAR_PANEL', 'TRITANIUM_CRATE'].each { key ->
+        ['INSCRIBER', 'DECOMPOSER', 'MATTER_RECYCLER', 'MATTER_ANALYZER', 'REPLICATOR', 'PATTERN_STORAGE', 'PATTERN_MONITOR', 'SOLAR_PANEL', 'TRITANIUM_CRATE'].each { key ->
             if (!beRegistry.contains(key) || !menuRegistry.contains(key)) throw new GradleException("Missing M2 registry entry: ${key}")
         }
 
+        def inscriber = file('src/main/java/matteroverdrive/blockentity/InscriberBlockEntity.java').getText('UTF-8')
         def decomposer = file('src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java').getText('UTF-8')
         def recycler = file('src/main/java/matteroverdrive/blockentity/MatterRecyclerBlockEntity.java').getText('UTF-8')
         def analyzer = file('src/main/java/matteroverdrive/blockentity/MatterAnalyzerBlockEntity.java').getText('UTF-8')
@@ -309,6 +314,8 @@ tasks.register('verifyM2Sources') {
         def solar = file('src/main/java/matteroverdrive/blockentity/SolarPanelBlockEntity.java').getText('UTF-8')
         def crate = file('src/main/java/matteroverdrive/blockentity/TritaniumCrateBlockEntity.java').getText('UTF-8')
         def drive = file('src/main/java/matteroverdrive/item/PatternDriveItem.java').getText('UTF-8')
+        if (!inscriber.contains('MK2_TIME = 300') || !inscriber.contains('MK2_ENERGY = 64000') || !inscriber.contains('MK3_TIME = 600') || !inscriber.contains('MK3_ENERGY = 88000') || !inscriber.contains('MK4_TIME = 1200') || !inscriber.contains('MK4_ENERGY = 114000')) throw new GradleException('Legacy Inscriber recipe constants missing')
+        if (!inscriber.contains('ENERGY_CAPACITY = 512000') || !inscriber.contains('ENERGY_TRANSFER = 256') || !inscriber.contains('ForgeCapabilities.ITEM_HANDLER')) throw new GradleException('Inscriber storage, transfer, or item capability wiring is incomplete')
         if (!decomposer.contains('DECOMPOSE_SPEED_PER_MATTER = 80') || !decomposer.contains('DECOMPOSE_ENERGY_PER_MATTER = 6000')) throw new GradleException('Legacy decomposer constants changed')
         if (!recycler.contains('RECYCLE_SPEED_PER_MATTER = 80') || !recycler.contains('RECYCLE_ENERGY_PER_MATTER = 1000')) throw new GradleException('Legacy recycler constants missing')
         if (!analyzer.contains('PROGRESS_AMOUNT_PER_ITEM = 20') || !analyzer.contains('ANALYZE_SPEED = 800') || !analyzer.contains('ENERGY_DRAIN_PER_ITEM = 64000') || !analyzer.contains('ENERGY_STORAGE = 512000')) throw new GradleException('Legacy analyzer constants missing')
@@ -324,9 +331,9 @@ tasks.register('verifyM2Sources') {
         if (mod_version != '0.8.0.0-alpha.4.1') throw new GradleException("Unexpected M2 version: ${mod_version}")
 
         println 'M2 SOURCE VERIFICATION PASSED'
-        println '  functionalBlocks=decomposer,matter_recycler,matter_analyzer,replicator,pattern_storage,pattern_monitor,tritanium_crate_variants'
-        println '  blockEntities=8'
-        println '  menus=8'
+        println '  functionalBlocks=inscriber,decomposer,matter_recycler,matter_analyzer,replicator,pattern_storage,pattern_monitor,tritanium_crate_variants'
+        println '  blockEntities=9'
+        println '  menus=9'
         println '  patternDriveCapacity=2'
         println '  patternStorageDriveSlots=6 (12 normal patterns total)'
         println '  networkPipe=pattern/task transport'
@@ -335,6 +342,7 @@ tasks.register('verifyM2Sources') {
         println '  creativeBattery=infinite FE'
         println '  solarPanel=8 FE/t peak, 64000 FE storage, 512 FE/t/side output'
         println '  tritaniumCrates=17 variants, 54 slots each, portable item NBT'
+        println '  inscriber=3 legacy circuit recipes, 512000 FE, 256 FE/t transfer'
     }
 }
 

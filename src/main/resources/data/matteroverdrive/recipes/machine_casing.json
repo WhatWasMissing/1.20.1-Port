@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":[" T ","I I","GRG"],"key":{"T":{"item":"matteroverdrive:tritanium_plate"},"I":{"item":"matteroverdrive:tritanium_ingot"},"G":{"item":"minecraft:gold_ingot"},"R":{"item":"minecraft:redstone"}},"result":{"item":"matteroverdrive:machine_casing"}}

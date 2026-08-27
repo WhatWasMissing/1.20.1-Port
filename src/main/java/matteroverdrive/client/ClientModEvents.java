@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.client.screen.DecomposerScreen;
+import matteroverdrive.client.screen.InscriberScreen;
 import matteroverdrive.client.screen.MatterAnalyzerScreen;
 import matteroverdrive.client.screen.MatterRecyclerScreen;
 import matteroverdrive.client.screen.ReplicatorScreen;
@@ -27,6 +28,7 @@ public final class ClientModEvents {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            MenuScreens.register(ModMenus.INSCRIBER.get(), InscriberScreen::new);
             MenuScreens.register(ModMenus.DECOMPOSER.get(), DecomposerScreen::new);
             MenuScreens.register(ModMenus.MATTER_RECYCLER.get(), MatterRecyclerScreen::new);
             MenuScreens.register(ModMenus.MATTER_ANALYZER.get(), MatterAnalyzerScreen::new);
