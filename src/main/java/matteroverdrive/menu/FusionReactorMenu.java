@@ -21,17 +21,23 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private static final int UPGRADE_SLOTS = 4, PLAYER_START = 4, PLAYER_END = 31, HOTBAR_START = 31, HOTBAR_END = 40;
     private final FusionReactorControllerBlockEntity reactor;
     private final ContainerData data;
+    private final boolean remote;
 
     public FusionReactorMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, getReactor(inventory, buffer.readBlockPos()), new SimpleContainerData(12));
+        this(id, inventory, getReactor(inventory, buffer.readBlockPos()), new SimpleContainerData(12), true);
     }
     public FusionReactorMenu(int id, Inventory inventory, FusionReactorControllerBlockEntity reactor) {
-        this(id, inventory, reactor, reactor.getData());
+        this(id, inventory, reactor, reactor.getData(), false);
     }
-    private FusionReactorMenu(int id, Inventory inventory, FusionReactorControllerBlockEntity reactor, ContainerData data) {
+    public FusionReactorMenu(int id, Inventory inventory, FusionReactorControllerBlockEntity reactor, boolean remote) {
+        this(id, inventory, reactor, reactor.getData(), remote);
+    }
+
+    private FusionReactorMenu(int id, Inventory inventory, FusionReactorControllerBlockEntity reactor, ContainerData data, boolean remote) {
         super(ModMenus.FUSION_REACTOR_CONTROLLER.get(), id);
         this.reactor = reactor;
         this.data = data;
+        this.remote = remote;
         for (int slot = 0; slot < UPGRADE_SLOTS; slot++) addSlot(new SlotItemHandler(reactor.getUpgrades(), slot, 52 + slot * 18, 52));
         for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 138 + row * 18));
         for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column, 8 + column * 18, 196));
@@ -58,7 +64,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
         slot.onTake(player, stack);
         return copy;
     }
-    @Override public boolean stillValid(Player player) { return stillValid(ContainerLevelAccess.create(reactor.getLevel(), reactor.getBlockPos()), player, ModBlocks.get("fusion_reactor_controller").get()); }
+    @Override public boolean stillValid(Player player) { return remote || stillValid(ContainerLevelAccess.create(reactor.getLevel(), reactor.getBlockPos()), player, ModBlocks.get("fusion_reactor_controller").get()); }
     public int energy() { return value(0, 1); } public int capacity() { return value(2, 3); }
     public int matter() { return data.get(4); } public int matterCapacity() { return data.get(5); }
     public boolean valid() { return data.get(6) != 0; } public int anomalyDistance() { return data.get(7); }
