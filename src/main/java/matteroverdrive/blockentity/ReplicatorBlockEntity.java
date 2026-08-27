@@ -361,13 +361,13 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public double getFailChance() {
-        int progress = getCurrentPatternProgress();
-        double progressChance = 1.0D - (progress / 100.0D);
-        double multiplier = upgrades.getMultiplier(MachineUpgradeItem.Upgrade::failureChance);
+        /*
+         * Pattern progress controls whether a pattern may be used; it must not
+         * turn a valid normal-drive replication into an almost-guaranteed
+         * failure when the drive contains multiple analysed items.
+         */
         return Math.min(1.0D,
-                FAIL_CHANCE * multiplier
-                        + progressChance * 0.5D
-                        + progressChance * 0.5D * multiplier);
+                FAIL_CHANCE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::failureChance));
     }
 
     public ItemStackHandler getItemHandler() {
