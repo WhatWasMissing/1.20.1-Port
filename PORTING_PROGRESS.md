@@ -378,3 +378,13 @@ Exact next step: implement the block, block entity, menu, screen, registrations,
 - The runtime checker produced error 32 only because it still expected the pre-Solar exact marker with six block entities and menus.
 - Updated the gate to require seven block entities, seven menus, and the explicit `solarPanel=enabled` marker without depending on the entire marker line.
 - Exact next step: pull this checker fix, rerun `CHECK_M2_RUNTIME.bat` against the existing `run\logs\latest.log`, then run `VERIFY_M2_BUILD.bat`.
+
+
+### 2026-08-27 — Complete and verify Solar Panel milestone
+
+- The corrected `CHECK_M2_RUNTIME.bat` passed all five gates against the completed Solar Panel development-client log.
+- `VERIFY_M2_BUILD.bat` passed all four stages with JDK 17.0.20.1 and Gradle 8.1.1.
+- M1 resources, M2 sources, and a clean Forge compilation passed; the full build executed 10 tasks.
+- The source gate confirms seven functional block entities and menus, including Solar Panel at 8 FE/t peak, 64000 FE base storage, and 512 FE/t per-side output.
+- Three existing non-blocking deprecation warnings remain in `ClientModEvents.java`, `MatterOverdrive.java`, and `ModSounds.java`.
+- Solar power generation milestone is complete and ready to fast-forward into `main`.
