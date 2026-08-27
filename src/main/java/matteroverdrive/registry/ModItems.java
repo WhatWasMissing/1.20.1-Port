@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.CreativeBatteryItem;
+import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.PatternDriveItem;
 import net.minecraft.world.item.BlockItem;
@@ -52,8 +53,7 @@ public final class ModItems {
         "isolinear_circuit_mk3",
         "isolinear_circuit_mk4",
         "machine_casing",
-        "matter_container_empty",
-        "matter_container_full",
+        "matter_container",
         "matter_dust",
         "matter_dust_refined",
         "matter_scanner",
@@ -147,6 +147,9 @@ public final class ModItems {
     private static Item createStandaloneItem(String id) {
         if (id.equals("creative_battery")) {
             return new CreativeBatteryItem(propertiesFor(id));
+        }
+        if (id.equals("matter_container")) {
+            return new MatterContainerItem(propertiesFor(id));
         }
         if (id.equals("matter_dust")) {
             return new MatterDustItem(propertiesFor(id), false);

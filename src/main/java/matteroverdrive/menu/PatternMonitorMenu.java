@@ -68,7 +68,7 @@ public class PatternMonitorMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        return id >= 0 && id < GHOST_SLOTS && machine.requestReplication(id);
+        return id >= 0 && id < GHOST_SLOTS && machine.requestReplication(id, player);
     }
 
     @Override

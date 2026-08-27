@@ -34,6 +34,7 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Random;
 
 public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
@@ -86,6 +87,8 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     private int networkPatternMatter;
     private int networkPatternProgress;
     private int networkTaskAmount;
+    @Nullable
+    private BlockPos networkTaskSource;
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -173,6 +176,10 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public boolean queueNetworkReplication(PatternData pattern, int amount) {
+        return queueNetworkReplication(pattern, amount, null);
+    }
+
+    public boolean queueNetworkReplication(PatternData pattern, int amount, @Nullable BlockPos sourceMonitor) {
         if (pattern == null || pattern.stack().isEmpty() || pattern.matter() <= 0 || pattern.progress() <= 0
                 || amount <= 0) {
             return false;
@@ -182,7 +189,8 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             boolean samePattern = ItemStack.isSameItemSameTags(networkPattern, pattern.stack())
                     && networkPatternMatter == pattern.matter()
                     && networkPatternProgress == pattern.progress();
-            if (!samePattern || networkTaskAmount > Integer.MAX_VALUE - amount) {
+            boolean sameSource = Objects.equals(networkTaskSource, sourceMonitor);
+            if (!samePattern || !sameSource || networkTaskAmount > Integer.MAX_VALUE - amount) {
                 return false;
             }
             networkTaskAmount += amount;
@@ -195,6 +203,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         networkPatternMatter = pattern.matter();
         networkPatternProgress = pattern.progress();
         networkTaskAmount = amount;
+        networkTaskSource = sourceMonitor == null ? null : sourceMonitor.immutable();
         replicateTime = 0;
         setChanged();
         return true;
@@ -255,6 +264,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         boolean networkTask = hasNetworkTask();
+        BlockPos taskSource = networkTaskSource;
         boolean failed = RANDOM.nextDouble() < getFailChance();
         if (failed) {
             ItemStack failure = items.getStackInSlot(FAILURE_SLOT);
@@ -276,6 +286,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
         if (networkTask) {
             networkTaskAmount--;
+            acknowledgeNetworkTask(taskSource, pattern, failed);
             if (networkTaskAmount <= 0) {
                 clearNetworkTask();
             }
@@ -285,11 +296,22 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         setChanged();
     }
 
+    private void acknowledgeNetworkTask(@Nullable BlockPos sourceMonitor, ItemStack pattern, boolean failed) {
+        if (level == null || sourceMonitor == null) {
+            return;
+        }
+        BlockEntity source = level.getBlockEntity(sourceMonitor);
+        if (source instanceof PatternMonitorBlockEntity monitor) {
+            monitor.completeNetworkRequest(pattern, failed);
+        }
+    }
+
     private void clearNetworkTask() {
         networkPattern = ItemStack.EMPTY;
         networkPatternMatter = 0;
         networkPatternProgress = 0;
         networkTaskAmount = 0;
+        networkTaskSource = null;
     }
 
     public int getSpeed() {
@@ -367,6 +389,9 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             tag.putInt("NetworkPatternMatter", networkPatternMatter);
             tag.putInt("NetworkPatternProgress", networkPatternProgress);
             tag.putInt("NetworkTaskAmount", networkTaskAmount);
+            if (networkTaskSource != null) {
+                tag.putLong("NetworkTaskSource", networkTaskSource.asLong());
+            }
         }
     }
 
@@ -392,6 +417,9 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                 networkPatternMatter = matter;
                 networkPatternProgress = Math.min(100, progress);
                 networkTaskAmount = amount;
+                if (tag.contains("NetworkTaskSource", Tag.TAG_LONG)) {
+                    networkTaskSource = BlockPos.of(tag.getLong("NetworkTaskSource"));
+                }
             }
         }
     }
