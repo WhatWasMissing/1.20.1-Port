@@ -196,3 +196,13 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Capacity changes clamp existing contents safely, preventing upgraded storage from retaining impossible values when an upgrade is removed.
 - No machine capacity is changed yet.
 - Next step: compile the storage foundation, then integrate the Decomposer upgrade inventory and effects.
+
+### 2026-08-27 — Fix runtime gate and stale Matter Container block tag
+
+- Runtime regression test passed: all seven upgrade tooltips appeared, the Decomposer operated normally, and default capacities remained 512000 FE and 1024 kM.
+- Logs confirmed the M1 marker exists with live counts blocks=74, blockItems=71, standaloneItems=97, sounds=57.
+- These live counts intentionally differ from the historical M1 inventory counts after the old Matter Container block and two-state item placeholders were replaced by one functional standalone item.
+- Removed stale `matteroverdrive:matter_container` from the pickaxe block tag; it caused a real data-pack load error because Matter Container is no longer a block.
+- Reworked `CHECK_M2_RUNTIME.bat` into explicit success/failure labels so a failure cannot be followed by a contradictory pass banner.
+- Added detection for Matter Overdrive data-pack tag failures.
+- Next step: rerun the development client and confirm the corrected runtime gate passes, then integrate Decomposer upgrade slots.
