@@ -139,10 +139,21 @@ Planned scope:
 - add focused source/build checks and a runtime test matrix;
 - keep the already verified matter-routing behavior intact.
 
-Exact next step: inspect current and legacy Router/Switch implementations before selecting block-entity, interaction, menu, and networking changes.
+Decision: preserve effective legacy behaviour. The current traversal already treats Router and Switch as passive network bridges. Do not add invented redstone or side-filter controls in this milestone.
+
+Exact next step: close this investigation without unnecessary runtime code and begin the machine-upgrade milestone.
 
 ### 2026-08-27 — Start network routing controls milestone
 
 - Merged verified generic matter-pipe routing into `main` as `4af59ce`.
 - Created `feature/network-routing-controls` from that merge.
 - Recorded the next milestone scope before implementation.
+
+### 2026-08-27 — Complete Router/Switch legacy investigation
+
+- Inspected the archived MatterOverdrive Legacy Edition source.
+- Legacy `TileEntityMachineNetworkRouter` and `TileEntityMachineNetworkSwitch` both extend the same packet-queue base and accept connections from every side.
+- Router used four upgrade slots; Switch used zero. Their completed connection/routing behaviour was otherwise effectively identical.
+- Current 1.20.1 `MatterNetworkUtil` already treats Network Pipe, Router, and Switch as traversable network transports.
+- Chose legacy fidelity: no invented redstone toggle, side filter, or subnet GUI will be added at this stage.
+- No runtime code change was necessary; move next to the missing machine-upgrade system.
