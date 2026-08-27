@@ -485,3 +485,12 @@ Exact next step: implement the complete Inscriber, its recipe model, core recipe
 - Shift-click now prioritizes compatible energy items into that slot; the GUI includes the visible battery slot alongside the recipe inputs and output.
 - Extended the source gate to require battery-charging wiring.
 - Exact next step: pull the correction, run the development client, insert a Creative Battery, and verify the Inscriber gains FE and completes the Mk1-to-Mk2 recipe.
+
+
+### 2026-08-27 — Migrate existing Inscribers to the battery-slot inventory
+
+- The battery-slot update revealed an expected save-format edge case: already-placed Inscribers had a serialized three-slot inventory, while the new implementation reads a fourth battery slot.
+- Replaced generic inventory deserialization with explicit bounded loading of known slots. Old three-slot saves now retain their inputs/output and receive an empty battery slot; new four-slot saves continue to load normally.
+- This prevents ticking old placed Inscribers from crashing the integrated server after an update.
+- The source gate now requires the save migration path.
+- Exact next step: pull the fix, reopen the existing test world, put the Creative Battery into the new slot, and verify FE charging plus Mk1-to-Mk2 processing.

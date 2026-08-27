@@ -9,6 +9,8 @@ import matteroverdrive.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
@@ -316,7 +318,7 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
     public void load(CompoundTag tag) {
         super.load(tag);
         if (tag.contains("Items")) {
-            items.deserializeNBT(tag.getCompound("Items"));
+            deserializeItems(tag.getCompound("Items"));
         }
         if (tag.contains("Upgrades")) {
             upgrades.deserializeNBT(tag.getCompound("Upgrades"));
@@ -325,6 +327,20 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
         energyStorage.setEnergyStored(tag.getInt("Energy"));
         progress = Math.max(0, tag.getInt("Progress"));
         running = tag.getBoolean("Running");
+    }
+
+    private void deserializeItems(CompoundTag itemTag) {
+        for (int slot = 0; slot < SLOT_COUNT; slot++) {
+            items.setStackInSlot(slot, ItemStack.EMPTY);
+        }
+        ListTag serialized = itemTag.getList("Items", Tag.TAG_COMPOUND);
+        for (int index = 0; index < serialized.size(); index++) {
+            CompoundTag entry = serialized.getCompound(index);
+            int slot = entry.getByte("Slot") & 0xFF;
+            if (slot >= 0 && slot < SLOT_COUNT) {
+                items.setStackInSlot(slot, ItemStack.of(entry));
+            }
+        }
     }
 
     @Override
