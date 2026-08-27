@@ -558,3 +558,9 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 - Added Controller GUI with four upgrade slots and persistent debug readouts for structure, output, anomaly distance, efficiency, matter drain, stored energy and matter. Supported upgrades: Speed, Range, Power Storage, and Matter Storage.
 - Updated M2 source/runtime gates for 12 block entities, 11 menus, and the Fusion Reactor marker.
 - This commit is an implementation checkpoint only; run RUN_M2_CLIENT.bat plus the standard M2 checks before marking verified. The large legacy reactor exterior/rendering and Gravitational Stabilizer behavior remain future work.
+
+
+## Fusion Reactor compile correction — awaiting verification
+
+- Corrected the Fusion Reactor screen render call to pass Minecraft's required `partialTick` parameter to `AbstractContainerScreen`.
+- This fixes the compile failure reported by `RUN_M2_CLIENT.bat`; re-run the client and the standard M2 gates after pulling this commit.

@@ -12,7 +12,7 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         imageWidth = 176; imageHeight = 223; inventoryLabelY = 126;
     }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics); super.render(graphics, mouseX, mouseY); renderTooltip(graphics, mouseX, mouseY);
+        renderBackground(graphics); super.render(graphics, mouseX, mouseY, partialTick); renderTooltip(graphics, mouseX, mouseY);
     }
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xffc6c6c6);
