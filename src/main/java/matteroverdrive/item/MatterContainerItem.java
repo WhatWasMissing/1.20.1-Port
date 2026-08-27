@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -50,12 +51,54 @@ public class MatterContainerItem extends Item {
 
         IMatterStorage target = targetOptional.orElseThrow(IllegalStateException::new);
         IMatterStorage container = containerOptional.orElseThrow(IllegalStateException::new);
-        int moved = transferMatter(container, target);
-        if (moved <= 0) {
-            moved = transferMatter(target, container);
+        Player player = context.getPlayer();
+        String targetName = targetEntity.getBlockState().getBlock().getName().getString();
+
+        int containerBefore = container.getMatterStored();
+        int targetBefore = target.getMatterStored();
+
+        int movedToTarget = transferMatter(container, target);
+        if (movedToTarget > 0) {
+            markInventoryChanged(player);
+            sendDebug(player,
+                    "[MO DEBUG] MATTER: moved " + movedToTarget + " from Matter Container -> " + targetName
+                            + " | container " + containerBefore + " -> " + container.getMatterStored()
+                            + "/" + container.getMatterCapacity()
+                            + " | machine " + targetBefore + " -> " + target.getMatterStored()
+                            + "/" + target.getMatterCapacity());
+            return InteractionResult.CONSUME;
         }
 
-        return moved > 0 ? InteractionResult.CONSUME : InteractionResult.PASS;
+        int movedFromTarget = transferMatter(target, container);
+        if (movedFromTarget > 0) {
+            markInventoryChanged(player);
+            sendDebug(player,
+                    "[MO DEBUG] MATTER: pulled " + movedFromTarget + " from " + targetName + " -> Matter Container"
+                            + " | machine " + targetBefore + " -> " + target.getMatterStored()
+                            + "/" + target.getMatterCapacity()
+                            + " | container " + containerBefore + " -> " + container.getMatterStored()
+                            + "/" + container.getMatterCapacity());
+            return InteractionResult.CONSUME;
+        }
+
+        sendDebug(player,
+                "[MO DEBUG] MATTER: no transfer with " + targetName
+                        + " | machine=" + target.getMatterStored() + "/" + target.getMatterCapacity()
+                        + " receive=" + target.canReceive() + " extract=" + target.canExtract()
+                        + " | container=" + container.getMatterStored() + "/" + container.getMatterCapacity());
+        return InteractionResult.CONSUME;
+    }
+
+    private static void markInventoryChanged(@Nullable Player player) {
+        if (player != null) {
+            player.getInventory().setChanged();
+        }
+    }
+
+    private static void sendDebug(@Nullable Player player, String message) {
+        if (player != null) {
+            player.sendSystemMessage(Component.literal(message));
+        }
     }
 
     private static int transferMatter(IMatterStorage source, IMatterStorage destination) {
@@ -104,7 +147,7 @@ public class MatterContainerItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Amount: " + getMatter(stack)));
+        tooltip.add(Component.literal("Matter: " + getMatter(stack) + " / " + CAPACITY));
     }
 
     @Override
