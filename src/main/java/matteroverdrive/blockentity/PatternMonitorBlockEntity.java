@@ -10,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,12 +21,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.ItemStackHandler;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import org.slf4j.Logger;
+import java.util.UUID;
 
 public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvider {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -84,11 +87,11 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
             monitor.refreshPatterns();
         }
 
-        if (!monitor.queue.isEmpty()) {
+        if (monitor.hasUndispatchedRequests()) {
             monitor.dispatchTicker++;
             if (monitor.dispatchTicker >= REPLICATION_SEARCH_TIME) {
                 monitor.dispatchTicker = 0;
-                monitor.dispatchNextRequest();
+                monitor.dispatchNextRequest(null);
             }
         } else {
             monitor.dispatchTicker = 0;
@@ -149,6 +152,10 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
     }
 
     public boolean requestReplication(int displayIndex) {
+        return requestReplication(displayIndex, null);
+    }
+
+    public boolean requestReplication(int displayIndex, @Nullable Player requester) {
         if (level == null || level.isClientSide || displayIndex < 0 || displayIndex >= DISPLAY_SLOTS) {
             LOGGER.warn("M2 NETWORK: Pattern Monitor {} rejected click for slot {} before queueing", worldPosition, displayIndex);
             return false;
@@ -161,6 +168,7 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
         }
         if (queue.size() >= TASK_QUEUE_CAPACITY) {
             LOGGER.warn("M2 NETWORK: Pattern Monitor {} queue is full ({}/{})", worldPosition, queue.size(), TASK_QUEUE_CAPACITY);
+            sendDebug(requester, "Pattern Monitor queue is full (" + queue.size() + "/" + TASK_QUEUE_CAPACITY + ")");
             return false;
         }
 
@@ -170,30 +178,51 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
                     "M2 NETWORK: Pattern Monitor {} rejected invalid pattern in slot {} (item={}, matter={}, progress={})",
                     worldPosition, displayIndex, pattern.stack(), pattern.matter(), pattern.progress()
             );
+            sendDebug(requester, "Pattern Monitor rejected an invalid pattern in slot " + displayIndex);
             return false;
         }
 
-        queue.addLast(new ReplicationRequest(pattern.copy(), 1));
+        UUID requesterId = requester == null ? null : requester.getUUID();
+        queue.addLast(new ReplicationRequest(pattern.copy(), 1, false, requesterId));
         setChanged();
         LOGGER.info(
                 "M2 NETWORK: Pattern Monitor {} queued replication request for {} (slot {}, queue {}/{})",
                 worldPosition, pattern.stack().getHoverName().getString(), displayIndex, queue.size(), TASK_QUEUE_CAPACITY
         );
+        sendDebug(requester,
+                "Pattern Monitor queued " + pattern.stack().getHoverName().getString()
+                        + " | Queue: " + queue.size() + "/" + TASK_QUEUE_CAPACITY);
 
-        // Match the legacy behavior more closely: make an immediate attempt when the
-        // request is created, then fall back to the 40-tick retry cadence while busy
-        // or disconnected.
         dispatchTicker = 0;
-        dispatchNextRequest();
+        dispatchNextRequest(requester);
         return true;
     }
 
-    private boolean dispatchNextRequest() {
+    private boolean hasUndispatchedRequests() {
+        for (ReplicationRequest request : queue) {
+            if (!request.dispatched) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean dispatchNextRequest(@Nullable Player debugPlayer) {
         if (level == null || queue.isEmpty()) {
             return false;
         }
 
-        ReplicationRequest request = queue.peekFirst();
+        ReplicationRequest request = null;
+        for (ReplicationRequest candidate : queue) {
+            if (!candidate.dispatched) {
+                request = candidate;
+                break;
+            }
+        }
+        if (request == null) {
+            return false;
+        }
+
         List<ReplicatorBlockEntity> connectedReplicators =
                 MatterNetworkUtil.findConnected(level, worldPosition, ReplicatorBlockEntity.class);
 
@@ -202,32 +231,92 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
                     "M2 NETWORK: Pattern Monitor {} has {} queued request(s) but discovered 0 Replicators",
                     worldPosition, queue.size()
             );
+            sendDebug(debugPlayer,
+                    "Pattern Monitor queued " + request.pattern.stack().getHoverName().getString()
+                            + " but found no connected Replicator");
             return false;
         }
 
         LOGGER.info(
                 "M2 NETWORK: Pattern Monitor {} dispatching {} to {} connected Replicator(s)",
-                worldPosition, request.pattern().stack().getHoverName().getString(), connectedReplicators.size()
+                worldPosition, request.pattern.stack().getHoverName().getString(), connectedReplicators.size()
         );
 
         for (ReplicatorBlockEntity replicator : connectedReplicators) {
-            if (replicator.queueNetworkReplication(request.pattern(), request.amount())) {
-                queue.removeFirst();
+            if (replicator.queueNetworkReplication(request.pattern, request.amount, worldPosition)) {
+                request.dispatched = true;
                 setChanged();
                 LOGGER.info(
-                        "M2 NETWORK: Replicator {} accepted {} from Pattern Monitor {}; remaining monitor queue={}",
-                        replicator.getBlockPos(), request.pattern().stack().getHoverName().getString(), worldPosition, queue.size()
+                        "M2 NETWORK: Replicator {} accepted {} from Pattern Monitor {}; monitor queue remains {}/{} until completion",
+                        replicator.getBlockPos(), request.pattern.stack().getHoverName().getString(), worldPosition,
+                        queue.size(), TASK_QUEUE_CAPACITY
                 );
+                sendDebug(debugPlayer,
+                        "Dispatched " + request.pattern.stack().getHoverName().getString()
+                                + " to Replicator " + formatPos(replicator.getBlockPos())
+                                + " | Queue stays " + queue.size() + "/" + TASK_QUEUE_CAPACITY + " until completion");
                 return true;
             }
 
             LOGGER.warn(
                     "M2 NETWORK: Replicator {} rejected {} from Pattern Monitor {} (alreadyHasNetworkTask={})",
-                    replicator.getBlockPos(), request.pattern().stack().getHoverName().getString(), worldPosition,
+                    replicator.getBlockPos(), request.pattern.stack().getHoverName().getString(), worldPosition,
                     replicator.hasNetworkTask()
             );
         }
+
+        sendDebug(debugPlayer,
+                "Pattern Monitor kept " + request.pattern.stack().getHoverName().getString()
+                        + " queued because connected Replicator(s) are busy");
         return false;
+    }
+
+    public boolean completeNetworkRequest(ItemStack completedPattern, boolean failed) {
+        if (completedPattern.isEmpty()) {
+            return false;
+        }
+
+        Iterator<ReplicationRequest> iterator = queue.iterator();
+        while (iterator.hasNext()) {
+            ReplicationRequest request = iterator.next();
+            if (request.dispatched && request.pattern.matches(completedPattern)) {
+                iterator.remove();
+                setChanged();
+                LOGGER.info(
+                        "M2 NETWORK: Pattern Monitor {} completed {} request (failed={}); queue now {}/{}",
+                        worldPosition, completedPattern.getHoverName().getString(), failed, queue.size(), TASK_QUEUE_CAPACITY
+                );
+                notifyRequester(request,
+                        "Replication " + (failed ? "failed" : "completed") + " for "
+                                + completedPattern.getHoverName().getString()
+                                + " | Pattern Monitor Queue: " + queue.size() + "/" + TASK_QUEUE_CAPACITY);
+                return true;
+            }
+        }
+
+        LOGGER.warn(
+                "M2 NETWORK: Pattern Monitor {} received completion for {} but found no matching dispatched queue entry",
+                worldPosition, completedPattern.getHoverName().getString()
+        );
+        return false;
+    }
+
+    private void notifyRequester(ReplicationRequest request, String message) {
+        if (request.requester == null || level == null || level.getServer() == null) {
+            return;
+        }
+        ServerPlayer player = level.getServer().getPlayerList().getPlayer(request.requester);
+        sendDebug(player, message);
+    }
+
+    private static void sendDebug(@Nullable Player player, String message) {
+        if (player != null) {
+            player.sendSystemMessage(Component.literal("[MO DEBUG] " + message));
+        }
+    }
+
+    private static String formatPos(BlockPos pos) {
+        return "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
     }
 
     public ItemStackHandler getDisplayItems() {
@@ -249,11 +338,15 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
         for (ReplicationRequest request : queue) {
             CompoundTag entry = new CompoundTag();
             CompoundTag stackTag = new CompoundTag();
-            request.pattern().stack().save(stackTag);
+            request.pattern.stack().save(stackTag);
             entry.put("Stack", stackTag);
-            entry.putInt("Matter", request.pattern().matter());
-            entry.putInt("Progress", request.pattern().progress());
-            entry.putInt("Amount", request.amount());
+            entry.putInt("Matter", request.pattern.matter());
+            entry.putInt("Progress", request.pattern.progress());
+            entry.putInt("Amount", request.amount);
+            entry.putBoolean("Dispatched", request.dispatched);
+            if (request.requester != null) {
+                entry.putUUID("Requester", request.requester);
+            }
             queueTag.add(entry);
         }
         tag.put("ReplicationQueue", queueTag);
@@ -271,8 +364,11 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
                 int matter = entry.getInt("Matter");
                 int progress = entry.getInt("Progress");
                 int amount = Math.max(1, entry.getInt("Amount"));
+                boolean dispatched = entry.getBoolean("Dispatched");
+                UUID requester = entry.hasUUID("Requester") ? entry.getUUID("Requester") : null;
                 if (!stack.isEmpty() && matter > 0 && progress > 0) {
-                    queue.addLast(new ReplicationRequest(new PatternData(stack, matter, progress), amount));
+                    queue.addLast(new ReplicationRequest(
+                            new PatternData(stack, matter, progress), amount, dispatched, requester));
                 }
             }
         }
@@ -290,6 +386,18 @@ public class PatternMonitorBlockEntity extends BlockEntity implements MenuProvid
         return new PatternMonitorMenu(containerId, playerInventory, this);
     }
 
-    private record ReplicationRequest(PatternData pattern, int amount) {
+    private static final class ReplicationRequest {
+        private final PatternData pattern;
+        private final int amount;
+        private boolean dispatched;
+        @Nullable
+        private final UUID requester;
+
+        private ReplicationRequest(PatternData pattern, int amount, boolean dispatched, @Nullable UUID requester) {
+            this.pattern = pattern;
+            this.amount = amount;
+            this.dispatched = dispatched;
+            this.requester = requester;
+        }
     }
 }
