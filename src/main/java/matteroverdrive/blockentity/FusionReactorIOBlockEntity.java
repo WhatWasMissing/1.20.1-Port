@@ -1,5 +1,7 @@
 package matteroverdrive.blockentity;
 
+import matteroverdrive.capability.IMatterStorage;
+import matteroverdrive.capability.ModCapabilities;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,9 +53,15 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
     }
 
     @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+        FusionReactorControllerBlockEntity controller = controller();
+        if (controller == null) {
+            return super.getCapability(capability, side);
+        }
         if (capability == ForgeCapabilities.ENERGY) {
-            FusionReactorControllerBlockEntity controller = controller();
-            return controller == null ? LazyOptional.empty() : LazyOptional.of(controller::getEnergy).cast();
+            return LazyOptional.of(controller::getEnergy).cast();
+        }
+        if (capability == ModCapabilities.MATTER) {
+            return LazyOptional.of(controller::getMatter).cast();
         }
         return super.getCapability(capability, side);
     }
