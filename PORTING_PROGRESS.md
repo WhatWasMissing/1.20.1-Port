@@ -430,3 +430,12 @@ Exact next step: inspect the current block/item/loot setup and implement the sha
 - Corrected the comparison to use the crate block's item form, preserving all-colour portable inventory serialization.
 - This is a compile-only correction; runtime behavior remains unverified.
 - Exact next step: pull the fix, run `RUN_M2_CLIENT.bat`, then perform the crate storage and portable-drop test matrix.
+
+
+### 2026-08-27 — Verify functional Tritanium Crates
+
+- Confirmed every Tritanium Crate variant opens and provides its functional shared inventory.
+- Confirmed the 54-slot crate storage UI works in the development client.
+- The portable-drop, shift-click, Forge item capability, and debug readout implementation is now ready for the normal final gate pass.
+- Tritanium Crate milestone is complete and ready to fast-forward into `main`.
+- Exact next step: merge the verified crate branch, then select the next legacy system that has real gameplay value without depending on unported Android capability infrastructure.
