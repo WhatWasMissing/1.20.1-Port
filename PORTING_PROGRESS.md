@@ -311,3 +311,16 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Inspected legacy Pattern Monitor behavior: it constructed four upgrade slots but rejected every upgrade through `isAffectedByUpgrade`; do not add inert upgrade slots to the current monitor.
 - Functional machine-upgrade integration scope is complete once the Power Storage-specific Pattern Storage checks pass.
 - Exact next step: verify one Power Storage Upgrade shows 128000 FE, test persistence and block drops, close the client for the runtime gate, then run `VERIFY_M2_BUILD.bat` before merging.
+
+
+### 2026-08-27 — Complete and verify machine-upgrade milestone
+
+- Pattern Storage Power Storage Upgrade runtime checks passed: one upgrade showed 128000 FE capacity, installed upgrades persisted across reload, and installed upgrades dropped when the block was broken.
+- The final development-client run completed normally.
+- Runtime verification passed live registry counts (74 blocks, 71 block items, 97 standalone items, 57 sounds), the M2 framework marker, missing-texture checks, runtime-failure checks, and data-pack tag checks.
+- `VERIFY_M2_BUILD.bat` passed with JDK 17.0.20.1 and Gradle 8.1.1.
+- M1 resources, M2 sources, and clean Forge compilation all passed; 10 clean-build tasks executed.
+- Three existing non-blocking deprecation warnings remain in `ClientModEvents.java`, `MatterOverdrive.java`, and `ModSounds.java`.
+- Verified upgrade integration now covers Decomposer, Matter Recycler, Matter Analyzer, Replicator, and Pattern Storage, including synchronized debug values, persistence, shift-clicking, capacity clamping, and block drops.
+- Legacy Pattern Monitor rejects every upgrade, so no inert upgrade UI was added.
+- Machine-upgrade milestone is complete and ready to fast-forward into `main`.
