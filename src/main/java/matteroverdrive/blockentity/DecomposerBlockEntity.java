@@ -5,6 +5,8 @@ import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.capability.MachineMatterStorage;
 import matteroverdrive.capability.ModCapabilities;
 import matteroverdrive.item.MatterDustItem;
+import matteroverdrive.item.MachineUpgradeItem;
+import matteroverdrive.item.MachineUpgradeInventory;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.menu.DecomposerMenu;
 import matteroverdrive.network.MatterNetworkUtil;
@@ -39,6 +41,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     public static final int ENERGY_SLOT = 1;
     public static final int OUTPUT_SLOT = 2;
     public static final int SLOT_COUNT = 3;
+    public static final int UPGRADE_SLOT_COUNT = 4;
     public static final int MATTER_EXTRACT_SPEED = 32;
     public static final float FAIL_CHANCE = 0.005F;
     public static final int MATTER_STORAGE = 1024;
@@ -72,6 +75,11 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
             new MachineEnergyStorage(ENERGY_STORAGE, ENERGY_STORAGE, ENERGY_STORAGE, this::setChanged);
     private final MachineMatterStorage matterStorage =
             new MachineMatterStorage(MATTER_STORAGE, false, true, this::setChanged);
+    private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
+            UPGRADE_SLOT_COUNT,
+            upgrade -> upgrade != MachineUpgradeItem.Upgrade.RANGE,
+            this::onUpgradesChanged
+    );
 
     private LazyOptional<IItemHandler> itemHandlerCapability = LazyOptional.of(() -> items);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
@@ -162,6 +170,20 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         setChanged();
     }
 
+    private void onUpgradesChanged() {
+        energyStorage.setCapacity(scaleCapacity(ENERGY_STORAGE, getUpgradeMultiplier(MachineUpgradeItem.Upgrade::powerStorage)));
+        matterStorage.setCapacity(scaleCapacity(MATTER_STORAGE, getUpgradeMultiplier(MachineUpgradeItem.Upgrade::matterStorage)));
+        setChanged();
+    }
+
+    private static int scaleCapacity(int baseCapacity, double multiplier) {
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, Math.round(baseCapacity * multiplier)));
+    }
+
+    private double getUpgradeMultiplier(java.util.function.ToDoubleFunction<MachineUpgradeItem.Upgrade> effect) {
+        return upgrades.getMultiplier(effect);
+    }
+
     private void manageDecompose() {
         int matter = getCurrentMatterValue();
         if (!canDecompose(matter)) {
@@ -201,7 +223,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     private void decomposeItem(int matter) {
         ItemStack input = items.getStackInSlot(INPUT_SLOT);
         if (input.isEmpty() || !canPutInOutput(matter)) return;
-        if (RANDOM.nextFloat() < FAIL_CHANCE) {
+        if (RANDOM.nextDouble() < FAIL_CHANCE * getUpgradeMultiplier(MachineUpgradeItem.Upgrade::failureChance)) {
             failDecompose(matter);
         } else {
             matterStorage.addMatterInternal(matter, false);
@@ -231,14 +253,16 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         if (matter <= 0) return 0;
         double scaled = Math.log1p(matter);
         scaled *= scaled;
-        return Math.max(1, (int) Math.round((scaled + 6.0D) * DECOMPOSE_SPEED_PER_MATTER));
+        return Math.max(1, (int) Math.round((scaled + 6.0D) * DECOMPOSE_SPEED_PER_MATTER
+                * getUpgradeMultiplier(MachineUpgradeItem.Upgrade::speed)));
     }
 
     public int getEnergyDrainMax() {
         int matter = getCurrentMatterValue();
         if (matter <= 0) return 0;
         return Math.max(1, (int) Math.round(
-                Math.log1p(matter * 0.01D) * 15.0D * DECOMPOSE_ENERGY_PER_MATTER));
+                Math.log1p(matter * 0.01D) * 15.0D * DECOMPOSE_ENERGY_PER_MATTER
+                        * getUpgradeMultiplier(MachineUpgradeItem.Upgrade::powerUsage)));
     }
 
     public int getEnergyDrainPerTick() {
@@ -262,6 +286,10 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         return matterStorage;
     }
 
+    public MachineUpgradeInventory getUpgradeInventory() {
+        return upgrades;
+    }
+
     public ContainerData getContainerData() {
         return data;
     }
@@ -282,6 +310,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Items", items.serializeNBT());
+        tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putInt("Matter", matterStorage.getMatterStored());
         tag.putInt("DecomposeTime", decomposeTime);
@@ -294,6 +323,8 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     public void load(CompoundTag tag) {
         super.load(tag);
         if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items"));
+        if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
+        onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
         matterStorage.setMatterStored(tag.getInt("Matter"));
         decomposeTime = Math.max(0, tag.getInt("DecomposeTime"));

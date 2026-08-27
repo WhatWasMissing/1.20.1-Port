@@ -2,6 +2,7 @@ package matteroverdrive.menu;
 
 import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.matter.MatterValueRegistry;
+import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
 import net.minecraft.core.BlockPos;
@@ -19,7 +20,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class DecomposerMenu extends AbstractContainerMenu {
-    private static final int MACHINE_SLOTS = 3;
+    private static final int MACHINE_SLOTS = 7;
     private static final int PLAYER_INV_START = MACHINE_SLOTS;
     private static final int PLAYER_INV_END = PLAYER_INV_START + 27;
     private static final int HOTBAR_END = PLAYER_INV_END + 9;
@@ -49,6 +50,10 @@ public class DecomposerMenu extends AbstractContainerMenu {
             }
         });
 
+        for (int slot = 0; slot < DecomposerBlockEntity.UPGRADE_SLOT_COUNT; slot++) {
+            addSlot(new SlotItemHandler(decomposer.getUpgradeInventory(), slot, 53 + slot * 18, 66));
+        }
+
         addPlayerInventory(playerInventory);
         addDataSlots(this.data);
     }
@@ -64,11 +69,11 @@ public class DecomposerMenu extends AbstractContainerMenu {
     private void addPlayerInventory(Inventory playerInventory) {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
+                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 102 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(playerInventory, column, 8 + column * 18, 142));
+            addSlot(new Slot(playerInventory, column, 8 + column * 18, 160));
         }
     }
 
@@ -89,7 +94,10 @@ public class DecomposerMenu extends AbstractContainerMenu {
             }
         } else {
             boolean moved = false;
-            if (source.getCapability(ForgeCapabilities.ENERGY).map(storage -> storage.canExtract()).orElse(false)) {
+            if (source.getItem() instanceof MachineUpgradeItem) {
+                moved = moveItemStackTo(source, 3, MACHINE_SLOTS, false);
+            }
+            if (!moved && source.getCapability(ForgeCapabilities.ENERGY).map(storage -> storage.canExtract()).orElse(false)) {
                 moved = moveItemStackTo(source, DecomposerBlockEntity.ENERGY_SLOT, DecomposerBlockEntity.ENERGY_SLOT + 1, false);
             }
             if (!moved && MatterValueRegistry.containsMatter(source)) {

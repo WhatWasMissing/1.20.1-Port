@@ -10,8 +10,8 @@ public class DecomposerScreen extends AbstractContainerScreen<DecomposerMenu> {
     public DecomposerScreen(DecomposerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         imageWidth = 176;
-        imageHeight = 166;
-        inventoryLabelY = 73;
+        imageHeight = 184;
+        inventoryLabelY = 91;
     }
 
     @Override
@@ -35,6 +35,9 @@ public class DecomposerScreen extends AbstractContainerScreen<DecomposerMenu> {
         drawSlot(graphics, x + 25, y + 43);
         drawSlot(graphics, x + 79, y + 43);
         drawSlot(graphics, x + 133, y + 43);
+        for (int slot = 0; slot < 4; slot++) {
+            drawSlot(graphics, x + 52 + slot * 18, y + 65);
+        }
 
         int progressWidth = scale(menu.getProgress(), menu.getMaxProgress(), 42);
         graphics.fill(x + 48, y + 48, x + 91, y + 53, 0xFF5B5B5B);

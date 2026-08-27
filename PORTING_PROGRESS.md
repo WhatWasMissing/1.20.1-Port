@@ -206,3 +206,15 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Reworked `CHECK_M2_RUNTIME.bat` into explicit success/failure labels so a failure cannot be followed by a contradictory pass banner.
 - Added detection for Matter Overdrive data-pack tag failures.
 - Next step: rerun the development client and confirm the corrected runtime gate passes, then integrate Decomposer upgrade slots.
+
+### 2026-08-27 — Integrate Decomposer upgrade slots and effects
+
+- Confirmed the corrected runtime checker passes all gates and the stale Matter Container tag error is gone.
+- Added a reusable four-slot `MachineUpgradeInventory` with one upgrade per slot.
+- Added four visible upgrade slots to the Decomposer GUI and adjusted the player inventory layout.
+- Added shift-click routing for supported upgrades.
+- Decomposer supports Speed, Power, Fail-Safe, Power Storage, Matter Storage, and Hyper Speed upgrades; Range is rejected.
+- Applied legacy multipliers to processing speed, energy usage, failure chance, energy capacity, and matter capacity.
+- Persisted upgrade inventory contents in block-entity NBT.
+- Removing storage upgrades clamps stored contents to the resulting capacity.
+- Runtime behavior remains unverified until the development client test passes.
