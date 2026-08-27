@@ -1,6 +1,5 @@
 package matteroverdrive.blockentity;
 
-import com.mojang.logging.LogUtils;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.capability.MachineMatterStorage;
@@ -31,20 +30,15 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Random;
 
 public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
-    private static final Logger LOGGER = LogUtils.getLogger();
-
     public static final int INPUT_SLOT = 0;
     public static final int ENERGY_SLOT = 1;
     public static final int OUTPUT_SLOT = 2;
     public static final int SLOT_COUNT = 3;
-
     public static final int MATTER_EXTRACT_SPEED = 32;
     public static final float FAIL_CHANCE = 0.005F;
     public static final int MATTER_STORAGE = 1024;
@@ -62,8 +56,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
                 case INPUT_SLOT -> MatterValueRegistry.containsMatter(stack)
                         && (!(stack.getItem() instanceof MatterDustItem dust) || dust.isRefined());
                 case ENERGY_SLOT -> stack.getCapability(ForgeCapabilities.ENERGY)
-                        .map(IEnergyStorage::canExtract)
-                        .orElse(false);
+                        .map(IEnergyStorage::canExtract).orElse(false);
                 case OUTPUT_SLOT -> false;
                 default -> false;
             };
@@ -86,11 +79,9 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
     private int decomposeTime;
     private long lastMatterExtractTick;
+    private long matterOutputSequence;
     private boolean running;
 
-    // Vanilla menu data packets encode each data-slot value as a signed 16-bit
-    // short. Split the 512000 FE values into low/high words so the GUI can
-    // reconstruct them without truncation.
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
@@ -111,9 +102,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public void set(int index, int value) {
-            if (index == 0) {
-                decomposeTime = Math.max(0, value);
-            }
+            if (index == 0) decomposeTime = Math.max(0, value);
         }
 
         @Override
@@ -121,6 +110,10 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
             return 10;
         }
     };
+
+    public DecomposerBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.DECOMPOSER.get(), pos, state);
+    }
 
     private static int lowWord(int value) {
         return value & 0xFFFF;
@@ -130,15 +123,10 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         return (value >>> 16) & 0xFFFF;
     }
 
-    public DecomposerBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.DECOMPOSER.get(), pos, state);
-    }
-
     public static void serverTick(Level level, BlockPos pos, BlockState state, DecomposerBlockEntity decomposer) {
         decomposer.chargeFromEnergyItem();
         decomposer.outputMatterToNeighbors();
         decomposer.manageDecompose();
-
         boolean active = decomposer.running;
         if (state.hasProperty(DecomposerBlock.ACTIVE) && state.getValue(DecomposerBlock.ACTIVE) != active) {
             level.setBlock(pos, state.setValue(DecomposerBlock.ACTIVE, active), 3);
@@ -147,122 +135,31 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
     private void chargeFromEnergyItem() {
         ItemStack stack = items.getStackInSlot(ENERGY_SLOT);
-        if (stack.isEmpty() || energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) {
-            return;
-        }
-
+        if (stack.isEmpty() || energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) return;
         stack.getCapability(ForgeCapabilities.ENERGY).ifPresent(source -> {
-            if (!source.canExtract()) {
-                return;
-            }
-            int request = Math.min(
-                    ENERGY_ITEM_TRANSFER_PER_TICK,
-                    energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored()
-            );
+            if (!source.canExtract()) return;
+            int request = Math.min(ENERGY_ITEM_TRANSFER_PER_TICK,
+                    energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored());
             int simulated = source.extractEnergy(request, true);
-            if (simulated <= 0) {
-                return;
-            }
+            if (simulated <= 0) return;
             int accepted = energyStorage.receiveEnergy(simulated, false);
-            if (accepted > 0) {
-                source.extractEnergy(accepted, false);
-            }
+            if (accepted > 0) source.extractEnergy(accepted, false);
         });
     }
 
     private void outputMatterToNeighbors() {
-        if (level == null || matterStorage.getMatterStored() <= 0) {
-            return;
-        }
+        if (level == null || matterStorage.getMatterStored() <= 0) return;
         long gameTime = level.getGameTime();
-        if (gameTime - lastMatterExtractTick < MATTER_EXTRACT_SPEED) {
-            return;
-        }
+        if (gameTime - lastMatterExtractTick < MATTER_EXTRACT_SPEED) return;
         lastMatterExtractTick = gameTime;
 
-        for (Direction direction : Direction.values()) {
-            BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
-            if (neighbor == null || matterStorage.getMatterStored() <= 0) {
-                continue;
-            }
+        int accepted = MatterNetworkUtil.transferMatter(
+                level, worldPosition, matterStorage.getMatterStored(), matterOutputSequence);
+        if (accepted <= 0) return;
 
-            int offered = matterStorage.getMatterStored();
-            int accepted;
-            if (neighbor instanceof ReplicatorBlockEntity replicator) {
-                // Direct machine-to-machine fallback. The old 1.12.2 pipe system
-                // exposed a matter capability on the conduit itself; the 1.20.1
-                // placeholder pipes do not yet have BlockEntities, so direct access
-                // keeps the endpoint semantics reliable while the transport layer is
-                // being reconstructed.
-                accepted = replicator.getMatterStorage().receiveMatter(offered, false);
-            } else {
-                accepted = receiveMatterCapability(neighbor, direction.getOpposite(), offered);
-            }
-
-            if (accepted > 0) {
-                matterStorage.extractMatter(accepted, false);
-                LOGGER.info(
-                        "M2 MATTER: Decomposer {} transferred {} kM directly to {} at {}; remaining={} kM",
-                        worldPosition, accepted, neighbor.getClass().getSimpleName(), neighbor.getBlockPos(),
-                        matterStorage.getMatterStored()
-                );
-            }
-        }
-
-        if (matterStorage.getMatterStored() <= 0) {
-            return;
-        }
-
-        List<BlockEntity> targets = MatterNetworkUtil.findMatterTargets(level, worldPosition);
-        if (targets.isEmpty()) {
-            LOGGER.warn(
-                    "M2 MATTER: Decomposer {} has {} kM ready but found 0 endpoints through Matter Pipe/Heavy Matter Pipe",
-                    worldPosition, matterStorage.getMatterStored()
-            );
-            return;
-        }
-
-        LOGGER.info(
-                "M2 MATTER: Decomposer {} found {} endpoint(s) through Matter Pipe network",
-                worldPosition, targets.size()
-        );
-
-        for (BlockEntity targetEntity : targets) {
-            if (matterStorage.getMatterStored() <= 0) {
-                break;
-            }
-
-            int offered = matterStorage.getMatterStored();
-            int accepted;
-            if (targetEntity instanceof ReplicatorBlockEntity replicator) {
-                // Explicit endpoint fallback for the currently functional matter
-                // consumer. This bypasses any capability lookup ambiguity while the
-                // placeholder Matter Pipe blocks are still BE-less.
-                accepted = replicator.getMatterStorage().receiveMatter(offered, false);
-            } else {
-                accepted = receiveMatterCapability(targetEntity, null, offered);
-            }
-
-            if (accepted > 0) {
-                matterStorage.extractMatter(accepted, false);
-                LOGGER.info(
-                        "M2 MATTER: Decomposer {} transferred {} kM through Matter Pipe to {} at {}; remaining={} kM",
-                        worldPosition, accepted, targetEntity.getClass().getSimpleName(), targetEntity.getBlockPos(),
-                        matterStorage.getMatterStored()
-                );
-            }
-        }
-    }
-
-    private int receiveMatterCapability(BlockEntity targetEntity, @Nullable Direction side, int offered) {
-        if (offered <= 0) {
-            return 0;
-        }
-        final int[] accepted = {0};
-        targetEntity.getCapability(ModCapabilities.MATTER, side).ifPresent(target ->
-                accepted[0] = target.receiveMatter(offered, false)
-        );
-        return accepted[0];
+        matterStorage.extractMatter(accepted, false);
+        matterOutputSequence++;
+        setChanged();
     }
 
     private void manageDecompose() {
@@ -272,17 +169,14 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
             decomposeTime = 0;
             return;
         }
-
         int energyPerTick = getEnergyDrainPerTick();
         if (energyStorage.getEnergyStored() < energyPerTick) {
             running = false;
             return;
         }
-
         running = true;
         energyStorage.extractEnergy(energyPerTick, false);
         decomposeTime++;
-
         if (decomposeTime >= getSpeed()) {
             decomposeTime = 0;
             decomposeItem(matter);
@@ -291,18 +185,14 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
     private boolean canDecompose(int matter) {
         ItemStack input = items.getStackInSlot(INPUT_SLOT);
-        return matter > 0
-                && !input.isEmpty()
-                && items.isItemValid(INPUT_SLOT, input)
+        return matter > 0 && !input.isEmpty() && items.isItemValid(INPUT_SLOT, input)
                 && matter <= matterStorage.getMatterCapacity() - matterStorage.getMatterStored()
                 && canPutInOutput(matter);
     }
 
     private boolean canPutInOutput(int matter) {
         ItemStack output = items.getStackInSlot(OUTPUT_SLOT);
-        if (output.isEmpty()) {
-            return true;
-        }
+        if (output.isEmpty()) return true;
         return output.is(ModItems.get("matter_dust").get())
                 && MatterDustItem.getMatter(output) == matter
                 && output.getCount() < output.getMaxStackSize();
@@ -310,25 +200,14 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
     private void decomposeItem(int matter) {
         ItemStack input = items.getStackInSlot(INPUT_SLOT);
-        if (input.isEmpty() || !canPutInOutput(matter)) {
-            return;
-        }
-
+        if (input.isEmpty() || !canPutInOutput(matter)) return;
         if (RANDOM.nextFloat() < FAIL_CHANCE) {
             failDecompose(matter);
-            LOGGER.info("M2 MATTER: Decomposer {} failed decomposition for {} kM item", worldPosition, matter);
         } else {
             matterStorage.addMatterInternal(matter, false);
-            LOGGER.info(
-                    "M2 MATTER: Decomposer {} produced {} kM; stored={} kM",
-                    worldPosition, matter, matterStorage.getMatterStored()
-            );
         }
-
         input.shrink(1);
-        if (input.isEmpty()) {
-            items.setStackInSlot(INPUT_SLOT, ItemStack.EMPTY);
-        }
+        if (input.isEmpty()) items.setStackInSlot(INPUT_SLOT, ItemStack.EMPTY);
         setChanged();
     }
 
@@ -349,9 +228,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
     public int getSpeed() {
         int matter = getCurrentMatterValue();
-        if (matter <= 0) {
-            return 0;
-        }
+        if (matter <= 0) return 0;
         double scaled = Math.log1p(matter);
         scaled *= scaled;
         return Math.max(1, (int) Math.round((scaled + 6.0D) * DECOMPOSE_SPEED_PER_MATTER));
@@ -359,20 +236,14 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
     public int getEnergyDrainMax() {
         int matter = getCurrentMatterValue();
-        if (matter <= 0) {
-            return 0;
-        }
+        if (matter <= 0) return 0;
         return Math.max(1, (int) Math.round(
-                Math.log1p(matter * 0.01D) * 15.0D * DECOMPOSE_ENERGY_PER_MATTER
-        ));
+                Math.log1p(matter * 0.01D) * 15.0D * DECOMPOSE_ENERGY_PER_MATTER));
     }
 
     public int getEnergyDrainPerTick() {
         int speed = getSpeed();
-        if (speed <= 0) {
-            return 0;
-        }
-        return Math.max(1, getEnergyDrainMax() / speed);
+        return speed <= 0 ? 0 : Math.max(1, getEnergyDrainMax() / speed);
     }
 
     public boolean isRunning() {
@@ -396,19 +267,12 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public void dropContents() {
-        if (level == null || level.isClientSide) {
-            return;
-        }
+        if (level == null || level.isClientSide) return;
         for (int slot = 0; slot < items.getSlots(); slot++) {
             ItemStack stack = items.getStackInSlot(slot);
             if (!stack.isEmpty()) {
-                Containers.dropItemStack(
-                        level,
-                        worldPosition.getX() + 0.5D,
-                        worldPosition.getY() + 0.5D,
-                        worldPosition.getZ() + 0.5D,
-                        stack.copy()
-                );
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5D,
+                        worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, stack.copy());
                 items.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
@@ -422,33 +286,27 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         tag.putInt("Matter", matterStorage.getMatterStored());
         tag.putInt("DecomposeTime", decomposeTime);
         tag.putLong("LastMatterExtractTick", lastMatterExtractTick);
+        tag.putLong("MatterOutputSequence", matterOutputSequence);
         tag.putBoolean("Running", running);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        if (tag.contains("Items")) {
-            items.deserializeNBT(tag.getCompound("Items"));
-        }
+        if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items"));
         energyStorage.setEnergyStored(tag.getInt("Energy"));
         matterStorage.setMatterStored(tag.getInt("Matter"));
         decomposeTime = Math.max(0, tag.getInt("DecomposeTime"));
         lastMatterExtractTick = tag.getLong("LastMatterExtractTick");
+        matterOutputSequence = Math.max(0L, tag.getLong("MatterOutputSequence"));
         running = tag.getBoolean("Running");
     }
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return itemHandlerCapability.cast();
-        }
-        if (cap == ForgeCapabilities.ENERGY) {
-            return energyCapability.cast();
-        }
-        if (cap == ModCapabilities.MATTER) {
-            return matterCapability.cast();
-        }
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return itemHandlerCapability.cast();
+        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        if (cap == ModCapabilities.MATTER) return matterCapability.cast();
         return super.getCapability(cap, side);
     }
 
