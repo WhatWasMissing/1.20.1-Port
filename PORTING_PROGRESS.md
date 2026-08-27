@@ -12,9 +12,9 @@ This file is the durable hand-off record for continuing the port in a new ChatGP
 
 ## Current repository state
 
-- Active work branch: `feature/network-routing-controls`
+- Active work branch: `feature/machine-upgrades`
 - Base branch: `main`
-- Base commit: `4af59cea15dd6db7c088fa6c5b84130bb8f67666`
+- Base commit: `701be7bfd7bfdd4e6e4aec77fe908ed735c6a866`
 - Latest code commit before this checkpoint: `b71ddc9d544a4b6bad7c25e74853ee0094c3a0e4`
 - Branch status before this checkpoint: 3 commits ahead of `main`, 0 behind.
 - Files changed relative to `main`:
@@ -157,3 +157,25 @@ Exact next step: close this investigation without unnecessary runtime code and b
 - Current 1.20.1 `MatterNetworkUtil` already treats Network Pipe, Router, and Switch as traversable network transports.
 - Chose legacy fidelity: no invented redstone toggle, side filter, or subnet GUI will be added at this stage.
 - No runtime code change was necessary; move next to the missing machine-upgrade system.
+
+## Current work: machine upgrades
+
+Branch `feature/machine-upgrades` starts from `701be7b`.
+
+Initial scope:
+
+- inspect registered legacy upgrade items and archived upgrade formulas;
+- create a reusable upgrade inventory/effect model;
+- implement the smallest useful set first: Speed, Power, Power Storage, Matter Storage, and Fail-Safe;
+- integrate upgrades into one machine before applying the model across Decomposer, Recycler, Analyzer, Replicator, and legacy-compatible network machines;
+- persist upgrade inventories and synchronize machine GUI data;
+- preserve current unupgraded constants and behaviour;
+- add verification checks and record runtime tests before merging.
+
+Exact next step: map the archived upgrade API and current item registrations, then select the first machine integration.
+
+### 2026-08-27 — Start machine-upgrade milestone
+
+- Fast-forwarded the completed Router/Switch investigation into `main` at `701be7b`.
+- Created `feature/machine-upgrades`.
+- Chose machine upgrades as the next missing system because upgrade items are registered but currently have no machine effect.
