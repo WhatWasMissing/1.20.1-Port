@@ -298,3 +298,16 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Added shift-click routing and ensured installed upgrades drop when the block is broken.
 - Runtime behavior remains unverified until the development client test passes.
 - Exact next step: pull this commit, run `RUN_M2_CLIENT.bat`, and verify Pattern Storage upgrade acceptance, capacity, persistence, drops, layout, network activity, and runtime gate.
+
+
+### 2026-08-27 — Verify queued replication and close upgrade integration scope
+
+- Pattern Storage rendered its four upgrade slots and always-visible baseline debug values: 64000 FE capacity and 0 FE/t idle use.
+- Confirmed that the ordinary Power Upgrade does not change Pattern Storage capacity; this is expected because it affects power usage, while the legacy-compatible storage consumes no idle FE.
+- A Pattern Monitor successfully queued three network replication requests.
+- The Replicator correctly waited while it had 0 kM despite having full FE and active queued patterns.
+- Supplying matter from the Decomposer made the queued requests replicate successfully.
+- Clarified the gameplay rule: Network Pipes carry pattern/task discovery, while Matter Pipes or a Matter Container must separately supply replication matter.
+- Inspected legacy Pattern Monitor behavior: it constructed four upgrade slots but rejected every upgrade through `isAffectedByUpgrade`; do not add inert upgrade slots to the current monitor.
+- Functional machine-upgrade integration scope is complete once the Power Storage-specific Pattern Storage checks pass.
+- Exact next step: verify one Power Storage Upgrade shows 128000 FE, test persistence and block drops, close the client for the runtime gate, then run `VERIFY_M2_BUILD.bat` before merging.
