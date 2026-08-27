@@ -586,3 +586,10 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 - Added a cable GUI with persistent `[DEBUG]` readouts for stored FE, last output, and the six-sided relay behaviour.
 - Updated M2 source/runtime gates for 13 block entities, 12 menus, and the Energy Cable marker.
 - Test with `Reactor IO -> Heavy Energy Cable(s) -> powered machine`. Matter Pipe and Network Pipe remain matter/task-only.
+
+
+## Test build packaging — ready for local JAR creation
+
+- Added `CHANGELOG.md` covering the complete M2 functional-systems test build: machines, upgrades, solar, crates, inscriber, transporter, Fusion Reactor, and Heavy Energy Cable.
+- Added `PACKAGE_TEST_JAR.bat`, which runs the project’s Gradle `jar` task and prints the generated test JAR path under `build\\libs`.
+- The current feature branch is ready for final `VERIFY_M2_BUILD.bat` validation after packaging.
