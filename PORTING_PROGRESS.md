@@ -494,3 +494,11 @@ Exact next step: implement the complete Inscriber, its recipe model, core recipe
 - This prevents ticking old placed Inscribers from crashing the integrated server after an update.
 - The source gate now requires the save migration path.
 - Exact next step: pull the fix, reopen the existing test world, put the Creative Battery into the new slot, and verify FE charging plus Mk1-to-Mk2 processing.
+
+
+### 2026-08-27 — Verify Inscriber production bundle
+
+- Runtime testing confirmed all three Molecular Inscriber recipes work: Mk1 plus Gold to Mk2, Mk2 plus Diamond to Mk3, and Mk3 plus Emerald to Mk4.
+- The Creative Battery input and the current-world three-slot-to-four-slot inventory migration both worked without a server crash.
+- The Inscriber production bundle, including its supporting material/crafting recipes and visible debug values, is complete and ready to fast-forward into `main`.
+- Exact next step: merge the verified bundle, then take the next larger self-contained legacy system rather than another individual placeholder.
