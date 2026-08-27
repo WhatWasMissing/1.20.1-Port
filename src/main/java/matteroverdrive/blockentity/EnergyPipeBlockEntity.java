@@ -56,8 +56,13 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
             if (energy.getEnergyStored() <= 0) break;
             BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
             if (neighbor == null) continue;
-            IEnergyStorage receiver = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
-            if (receiver == null || !receiver.canReceive()) continue;
+            IEnergyStorage receiver;
+            if (neighbor instanceof EnergyPipeBlockEntity cable) {
+                receiver = cable.getEnergy();
+            } else {
+                receiver = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+            }
+            if (receiver == null || receiver == energy || !receiver.canReceive()) continue;
             int offered = Math.min(TRANSFER_PER_SIDE, energy.getEnergyStored());
             int accepted = receiver.receiveEnergy(offered, true);
             int extracted = energy.extractEnergy(accepted, false);
