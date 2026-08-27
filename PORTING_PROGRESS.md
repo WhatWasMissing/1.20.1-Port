@@ -7,6 +7,7 @@ This file is the durable hand-off record for continuing the port in a new ChatGP
 - Update this file in every commit made during assisted porting work.
 - Record what changed, what was verified, known problems, and the exact next step.
 - Do not mark runtime behavior as verified until it has been tested in Minecraft.
+- Add a temporary, clearly labelled debug UI readout for new or changed runtime mechanics so their effective server-side values can be tested directly; remove or convert these only during later UI polish.
 - Target: Minecraft 1.20.1, Forge 47.4.10, Java 17.
 - Current port version: `0.8.0.0-alpha.4.1`.
 
@@ -256,3 +257,12 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Installed Analyzer upgrades drop when the block is broken.
 - Existing direct Pattern Drive and networked Pattern Storage analysis paths remain available.
 - Runtime behavior remains unverified until the development client test passes.
+
+### 2026-08-27 — Add Analyzer debug cycle readout
+
+- Added a standing workflow rule requiring visible debug readouts for newly changed runtime mechanics.
+- Added the Analyzer's synchronized effective cycle duration in ticks and seconds.
+- Existing Analyzer readouts already show effective FE per tick, energy capacity, input matter, and pattern progress.
+- Expanded the Analyzer layout and moved upgrade/player slots to prevent overlap.
+- Expected cycle values: 800 ticks / 40.00 seconds with no upgrade, 600 / 30.00 with Speed, 1200 / 60.00 with Power, and 120 / 6.00 with Hyper Speed.
+- Runtime layout and values remain unverified until the development client test passes.
