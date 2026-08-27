@@ -38,7 +38,6 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         while (!pending.isEmpty() && controller.getEnergy().getEnergyStored() > 0) {
             BlockPos current = pending.removeFirst();
             for (Direction direction : Direction.values()) {
-                if (direction == Direction.DOWN) continue;
                 BlockPos neighborPos = current.relative(direction);
                 BlockEntity neighbor = level.getBlockEntity(neighborPos);
 
