@@ -245,3 +245,14 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Added shift-click upgrade routing and adjusted the Recycler GUI layout.
 - Fixed Decomposer and Recycler block breaking so installed upgrades drop instead of being lost.
 - Runtime behavior remains unverified until the development client test passes.
+
+### 2026-08-27 — Integrate Matter Analyzer upgrades
+
+- Confirmed the Matter Recycler, upgrade effects, persistence, shift-clicking, block drops, and runtime gate all work.
+- Added four visible, persistent upgrade slots to the Matter Analyzer.
+- Analyzer accepts Speed, Power, Power Storage, and Hyper Speed; it rejects Fail-Safe, Range, and Matter Storage, matching legacy supported effect types.
+- Applied upgrade multipliers to analysis duration, total energy usage, and energy capacity.
+- Added shift-click upgrade routing and adjusted the Analyzer GUI layout.
+- Installed Analyzer upgrades drop when the block is broken.
+- Existing direct Pattern Drive and networked Pattern Storage analysis paths remain available.
+- Runtime behavior remains unverified until the development client test passes.

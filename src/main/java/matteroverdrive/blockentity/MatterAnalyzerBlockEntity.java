@@ -3,6 +3,8 @@ package matteroverdrive.blockentity;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.item.MatterDustItem;
+import matteroverdrive.item.MachineUpgradeItem;
+import matteroverdrive.item.MachineUpgradeInventory;
 import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.menu.MatterAnalyzerMenu;
@@ -37,6 +39,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     public static final int ENERGY_SLOT = 1;
     public static final int DRIVE_SLOT = 2;
     public static final int SLOT_COUNT = 3;
+    public static final int UPGRADE_SLOT_COUNT = 4;
 
     public static final int PROGRESS_AMOUNT_PER_ITEM = 20;
     public static final int ANALYZE_SPEED = 800;
@@ -58,6 +61,14 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     };
 
     private final MachineEnergyStorage energyStorage = new MachineEnergyStorage(ENERGY_STORAGE, ENERGY_STORAGE, ENERGY_STORAGE, this::setChanged);
+    private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
+            UPGRADE_SLOT_COUNT,
+            upgrade -> upgrade == MachineUpgradeItem.Upgrade.SPEED
+                    || upgrade == MachineUpgradeItem.Upgrade.POWER
+                    || upgrade == MachineUpgradeItem.Upgrade.POWER_STORAGE
+                    || upgrade == MachineUpgradeItem.Upgrade.HYPER_SPEED,
+            this::onUpgradesChanged
+    );
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> items);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
     private int analyzeTime;
@@ -67,7 +78,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         @Override public int get(int index) {
             return switch (index) {
                 case 0 -> analyzeTime;
-                case 1 -> ANALYZE_SPEED;
+                case 1 -> getSpeed();
                 case 2 -> lowWord(energyStorage.getEnergyStored());
                 case 3 -> highWord(energyStorage.getEnergyStored());
                 case 4 -> lowWord(energyStorage.getMaxEnergyStored());
@@ -104,6 +115,12 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         });
     }
 
+    private void onUpgradesChanged() {
+        energyStorage.setCapacity((int) Math.min(Integer.MAX_VALUE,
+                Math.round(ENERGY_STORAGE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerStorage))));
+        setChanged();
+    }
+
     private void manageAnalyze() {
         if (!canAnalyze()) {
             running = false;
@@ -115,7 +132,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         running = true;
         energyStorage.extractEnergy(drain, false);
         analyzeTime++;
-        if (analyzeTime >= ANALYZE_SPEED) {
+        if (analyzeTime >= getSpeed()) {
             analyzeTime = 0;
             analyzeItem();
         }
@@ -191,9 +208,18 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     public int getInputMatter() { return MatterValueRegistry.getMatter(items.getStackInSlot(INPUT_SLOT)); }
-    public int getEnergyDrainPerTick() { return Math.max(1, ENERGY_DRAIN_PER_ITEM / ANALYZE_SPEED); }
+    public int getSpeed() {
+        return Math.max(1, (int) Math.round(
+                ANALYZE_SPEED * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed)));
+    }
+    public int getEnergyDrainPerTick() {
+        int total = Math.max(1, (int) Math.round(
+                ENERGY_DRAIN_PER_ITEM * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerUsage)));
+        return Math.max(1, total / getSpeed());
+    }
     public ItemStackHandler getItemHandler() { return items; }
     public MachineEnergyStorage getEnergyStorage() { return energyStorage; }
+    public MachineUpgradeInventory getUpgradeInventory() { return upgrades; }
     public ContainerData getContainerData() { return data; }
 
     public void dropContents() {
@@ -205,13 +231,20 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
                 items.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
+        for (int slot=0; slot<upgrades.getSlots(); slot++) {
+            ItemStack stack=upgrades.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX()+0.5, worldPosition.getY()+0.5, worldPosition.getZ()+0.5, stack.copy());
+                upgrades.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+        }
     }
 
     @Override protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag); tag.put("Items", items.serializeNBT()); tag.putInt("Energy", energyStorage.getEnergyStored()); tag.putInt("AnalyzeTime", analyzeTime); tag.putBoolean("Running", running);
+        super.saveAdditional(tag); tag.put("Items", items.serializeNBT()); tag.put("Upgrades", upgrades.serializeNBT()); tag.putInt("Energy", energyStorage.getEnergyStored()); tag.putInt("AnalyzeTime", analyzeTime); tag.putBoolean("Running", running);
     }
     @Override public void load(CompoundTag tag) {
-        super.load(tag); if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items")); energyStorage.setEnergyStored(tag.getInt("Energy")); analyzeTime=Math.max(0,tag.getInt("AnalyzeTime")); running=tag.getBoolean("Running");
+        super.load(tag); if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items")); if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades")); onUpgradesChanged(); energyStorage.setEnergyStored(tag.getInt("Energy")); analyzeTime=Math.max(0,tag.getInt("AnalyzeTime")); running=tag.getBoolean("Running");
     }
     @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) return itemCapability.cast();
