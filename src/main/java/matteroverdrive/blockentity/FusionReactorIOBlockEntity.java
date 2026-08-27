@@ -14,6 +14,9 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Energy export point for the compact Fusion Reactor multiblock. */
 public class FusionReactorIOBlockEntity extends BlockEntity {
@@ -26,27 +29,56 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, FusionReactorIOBlockEntity io) {
         FusionReactorControllerBlockEntity controller = io.controller();
         if (controller == null || controller.getEnergy().getEnergyStored() <= 0) return;
-        for (Direction direction : Direction.values()) {
-            if (direction == Direction.DOWN || controller.getEnergy().getEnergyStored() <= 0) continue;
-            BlockEntity receiver = level.getBlockEntity(pos.relative(direction));
-            if (receiver == null) continue;
-            IEnergyStorage storage;
-            if (receiver instanceof EnergyPipeBlockEntity cable) {
-                storage = cable.getEnergy();
-            } else {
-                storage = receiver.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
-            }
-            if (storage == null || !storage.canReceive()) continue;
-            int offer = Math.min(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE,
-                    controller.getEnergy().getEnergyStored());
-            int accepted = storage.receiveEnergy(offer, true);
-            int extracted = controller.getEnergy().extractEnergy(accepted, false);
-            if (extracted > 0) {
-                int received = storage.receiveEnergy(extracted, false);
-                if (received < extracted) {
-                    controller.getEnergy().setEnergyStored(controller.getEnergy().getEnergyStored() + extracted - received);
+
+        Set<BlockPos> visited = new HashSet<>();
+        ArrayDeque<BlockPos> pending = new ArrayDeque<>();
+        pending.add(pos);
+        visited.add(pos);
+
+        while (!pending.isEmpty() && controller.getEnergy().getEnergyStored() > 0) {
+            BlockPos current = pending.removeFirst();
+            for (Direction direction : Direction.values()) {
+                if (direction == Direction.DOWN) continue;
+                BlockPos neighborPos = current.relative(direction);
+                BlockEntity neighbor = level.getBlockEntity(neighborPos);
+
+                if (neighbor instanceof EnergyPipeBlockEntity) {
+                    if (visited.add(neighborPos)) {
+                        pending.addLast(neighborPos);
+                    }
+                    continue;
+                }
+
+                if (current.equals(pos) && neighbor instanceof FusionReactorControllerBlockEntity) {
+                    continue;
+                }
+                if (neighbor instanceof FusionReactorIOBlockEntity) continue;
+
+                if (neighbor != null) {
+                    pushToReceiver(controller, neighbor, direction);
                 }
             }
+        }
+    }
+
+    private static void pushToReceiver(FusionReactorControllerBlockEntity controller,
+                                       BlockEntity receiver, Direction direction) {
+        IEnergyStorage storage = receiver.getCapability(
+                ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+        if (storage == null || !storage.canReceive()) return;
+
+        int offer = Math.min(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE,
+                controller.getEnergy().getEnergyStored());
+        int accepted = storage.receiveEnergy(offer, true);
+        if (accepted <= 0) return;
+
+        int extracted = controller.getEnergy().extractEnergy(accepted, false);
+        if (extracted <= 0) return;
+
+        int received = storage.receiveEnergy(extracted, false);
+        if (received < extracted) {
+            controller.getEnergy().setEnergyStored(
+                    controller.getEnergy().getEnergyStored() + extracted - received);
         }
     }
 
