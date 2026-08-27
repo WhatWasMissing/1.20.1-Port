@@ -524,3 +524,27 @@ Branch `feature/transporter-network` starts from verified Inscriber production b
 - Runtime testing confirmed Flash Drive binding, target detection, Creative Battery charging, transport countdown, same-dimension teleporting, debug values, and the linked Transporter workflow all work.
 - Transporter Network is complete and ready to fast-forward into `main`.
 - Exact next step: merge the verified network, then begin the larger Fusion Reactor system bundle.
+
+
+## Current work: Fusion Reactor bundle
+
+Branch `feature/fusion-reactor` starts from verified Transporter Network commit `f90804d`.
+
+This is the next major multi-block system bundle:
+
+- restore the Controller, Coil, and IO block roles as one validated reactor structure;
+- restore legacy reactor values: 100000000 FE capacity, 2048 kM matter buffer, 2048 FE/t baseline output, and 1/80 kM/t baseline matter drain;
+- port the Gravitational Anomaly requirement and its distance-based efficiency; 
+- make IO parts expose the controller's Forge Energy/Matter storage and output power to adjacent receivers;
+- include structure-state, fuel/energy, efficiency, output, and fault-reason debug readouts;
+- port the linked build recipes and provide an explicit in-game build/test plan.
+
+Legacy design findings:
+
+- the controller checked its 28-part structure every 40 ticks;
+- it required a Gravitational Anomaly within three blocks, with closer placement increasing efficiency;
+- reactor coils and the controller's IO parts have distinct required positions;
+- it only generated while the structure was valid and matter remained; its IO parts sent up to 512 FE/t to adjacent receivers;
+- this system is independent of Android capability work, so it is appropriate for the next usable large feature.
+
+Exact next step: map the legacy structure positions into a clear 1.20.1 build validation model, then implement Controller, Coil, IO, anomaly interaction, capabilities, menus, debug data, and recipes as one branch.
