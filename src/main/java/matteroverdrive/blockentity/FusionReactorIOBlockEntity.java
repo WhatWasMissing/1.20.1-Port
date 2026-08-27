@@ -23,19 +23,23 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, FusionReactorIOBlockEntity io) {
         FusionReactorControllerBlockEntity controller = io.controller();
-        if (controller == null) return;
+        if (controller == null || controller.getEnergy().getEnergyStored() <= 0) return;
         for (Direction direction : Direction.values()) {
-            if (direction == Direction.DOWN) continue;
+            if (direction == Direction.DOWN || controller.getEnergy().getEnergyStored() <= 0) continue;
             BlockEntity receiver = level.getBlockEntity(pos.relative(direction));
             if (receiver == null) continue;
-            receiver.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).ifPresent(storage -> {
-                int offer = Math.min(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE,
-                        controller.getEnergy().extractEnergy(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE, true));
-                if (offer > 0) {
-                    int accepted = storage.receiveEnergy(offer, false);
-                    if (accepted > 0) controller.getEnergy().extractEnergy(accepted, false);
+            IEnergyStorage storage = receiver.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+            if (storage == null || !storage.canReceive()) continue;
+            int offer = Math.min(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE,
+                    controller.getEnergy().getEnergyStored());
+            int accepted = storage.receiveEnergy(offer, true);
+            int extracted = controller.getEnergy().extractEnergy(accepted, false);
+            if (extracted > 0) {
+                int received = storage.receiveEnergy(extracted, false);
+                if (received < extracted) {
+                    controller.getEnergy().setEnergyStored(controller.getEnergy().getEnergyStored() + extracted - received);
                 }
-            });
+            }
         }
     }
 

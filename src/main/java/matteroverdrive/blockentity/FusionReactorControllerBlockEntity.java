@@ -41,6 +41,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     public static final int IO_OUTPUT_PER_SIDE = 512;
     public static final int STRUCTURE_CHECK_DELAY = 40;
     public static final int BASE_ANOMALY_RANGE = 3;
+    public static final int MAX_ANOMALY_SCAN_RANGE = 16;
     private static final double BASE_MATTER_DRAIN = 1.0D / 80.0D;
 
     private final MachineEnergyStorage energy = new MachineEnergyStorage(ENERGY_CAPACITY, 0, ENERGY_CAPACITY, this::setChanged);
@@ -105,7 +106,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             fault = "No matter";
             return;
         }
-        int output = Math.max(1, (int) Math.round(BASE_OUTPUT * efficiency() * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed)));
+        int output = Math.max(1, (int) Math.round(BASE_OUTPUT * efficiency() / upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed)));
         int accepted = Math.min(output, energy.getMaxEnergyStored() - energy.getEnergyStored());
         if (accepted <= 0) {
             return;
@@ -157,7 +158,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     }
 
     private int findAnomalyDistance() {
-        int range = Math.max(1, (int) Math.round(BASE_ANOMALY_RANGE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::range)));
+        int range = anomalySearchRange();
         int closest = -1;
         for (int x = -range; x <= range; x++) {
             for (int y = -range; y <= range; y++) {
@@ -176,11 +177,16 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         return closest;
     }
 
+    private int anomalySearchRange() {
+        return Math.min(MAX_ANOMALY_SCAN_RANGE, Math.max(1, (int) Math.round(BASE_ANOMALY_RANGE
+                * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::range))));
+    }
+
     private double efficiency() {
         if (anomalyDistance < 0) {
             return 0.0D;
         }
-        int range = Math.max(1, (int) Math.round(BASE_ANOMALY_RANGE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::range)));
+        int range = anomalySearchRange();
         return Math.max(0.25D, 1.0D - ((anomalyDistance - 1) / (double) Math.max(1, range + 1)));
     }
 

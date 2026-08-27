@@ -570,3 +570,10 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 
 - Fixed Fusion Reactor controller inventory slot boundaries: the menu has four upgrade slots plus 36 player slots (indices 0–39), not 49 slots.
 - This resolves the client crash `Index 40 out of bounds for length 40` caused by shift-clicking an item in the controller UI.
+
+
+## Fusion Reactor range, speed, and IO corrections — awaiting verification
+
+- Capped the effective anomaly scan range at **16 blocks**. Range upgrades still extend the reactor's reach from the 3-block base, but cannot create the runaway cubic scan that locked the integrated server and prevented world interaction/closing.
+- Corrected Speed upgrade behaviour: its legacy `0.75x` speed multiplier now increases generation (by reducing the cycle factor) instead of reducing output.
+- Reworked Reactor IO transfer to use the proven Solar Panel simulation/extract/refund flow, including a receiver `canReceive` check. IO exports up to 512 FE/t to each adjacent receiving side, excluding the Controller below it.
