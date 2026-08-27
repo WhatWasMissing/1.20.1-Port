@@ -20,6 +20,11 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** Forge Energy relay used by the existing heavy_matter_pipe block ID. */
 public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
@@ -53,27 +58,87 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
 
     private int pushEnergy() {
         if (level == null || energy.getEnergyStored() <= 0) return 0;
-        int sent = 0;
-        for (Direction direction : Direction.values()) {
-            if (energy.getEnergyStored() <= 0) break;
-            BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
-            if (neighbor == null) continue;
-            IEnergyStorage receiver;
-            if (neighbor instanceof EnergyPipeBlockEntity cable) {
-                receiver = cable.getEnergy();
-            } else {
-                receiver = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
-            }
-            if (receiver == null || receiver == energy || !receiver.canReceive()) continue;
-            int offered = Math.min(TRANSFER_PER_SIDE, energy.getEnergyStored());
-            int accepted = receiver.receiveEnergy(offered, true);
-            int extracted = energy.extractEnergy(accepted, false);
-            if (extracted <= 0) continue;
-            int received = receiver.receiveEnergy(extracted, false);
-            sent += received;
-            if (received < extracted) energy.setEnergyStored(energy.getEnergyStored() + extracted - received);
+
+        BlockPos nextHop = findNextHopToReceiver();
+        if (nextHop == null) return 0;
+
+        BlockEntity neighbor = level.getBlockEntity(nextHop);
+        if (neighbor == null) return 0;
+
+        Direction direction = directionTo(nextHop);
+        IEnergyStorage receiver;
+        if (neighbor instanceof EnergyPipeBlockEntity cable) {
+            receiver = cable.getEnergy();
+        } else {
+            receiver = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
         }
-        return sent;
+        if (receiver == null || receiver == energy || !receiver.canReceive()) return 0;
+
+        int offered = Math.min(TRANSFER_PER_SIDE, energy.getEnergyStored());
+        int accepted = receiver.receiveEnergy(offered, true);
+        if (accepted <= 0) return 0;
+
+        int extracted = energy.extractEnergy(accepted, false);
+        if (extracted <= 0) return 0;
+
+        int received = receiver.receiveEnergy(extracted, false);
+        if (received < extracted) {
+            energy.setEnergyStored(energy.getEnergyStored() + extracted - received);
+        }
+        return received;
+    }
+
+    /**
+     * Finds the first hop toward an actual energy receiver. This prevents a cable
+     * from sending power back into the cable it came from when a chain has more
+     * than one cable.
+     */
+    @Nullable
+    private BlockPos findNextHopToReceiver() {
+        if (level == null) return null;
+
+        ArrayDeque<BlockPos> pending = new ArrayDeque<>();
+        Set<BlockPos> visited = new HashSet<>();
+        Map<BlockPos, BlockPos> firstHop = new HashMap<>();
+        pending.add(worldPosition);
+        visited.add(worldPosition);
+
+        while (!pending.isEmpty()) {
+            BlockPos current = pending.removeFirst();
+            for (Direction direction : Direction.values()) {
+                BlockPos candidate = current.relative(direction);
+                BlockEntity neighbor = level.getBlockEntity(candidate);
+
+                if (neighbor instanceof EnergyPipeBlockEntity) {
+                    if (visited.add(candidate)) {
+                        firstHop.put(candidate,
+                                current.equals(worldPosition) ? candidate : firstHop.get(current));
+                        pending.addLast(candidate);
+                    }
+                    continue;
+                }
+
+                if (neighbor == null || candidate.equals(worldPosition)
+                        || neighbor instanceof FusionReactorIOBlockEntity
+                        || neighbor instanceof FusionReactorControllerBlockEntity) {
+                    continue;
+                }
+
+                IEnergyStorage receiver = neighbor.getCapability(
+                        ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+                if (receiver != null && receiver.canReceive()) {
+                    return current.equals(worldPosition) ? candidate : firstHop.get(current);
+                }
+            }
+        }
+        return null;
+    }
+
+    private Direction directionTo(BlockPos target) {
+        for (Direction direction : Direction.values()) {
+            if (worldPosition.relative(direction).equals(target)) return direction;
+        }
+        return Direction.UP;
     }
 
     public MachineEnergyStorage getEnergy() { return energy; }
