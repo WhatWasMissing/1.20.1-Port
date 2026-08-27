@@ -366,3 +366,15 @@ Exact next step: implement the block, block entity, menu, screen, registrations,
 - Expanded the M2 source gate to require the Solar Panel implementation, legacy constants, energy flow, upgrade wiring, and seven block entities/menus.
 - Build and runtime behavior remain unverified until the Windows development-client test passes.
 - Exact next step: pull `feature/solar-power`, run `RUN_M2_CLIENT.bat`, and test daylight, night, cover, weather, dimensions, adjacent output, upgrades, persistence, drops, GUI layout, and runtime logs.
+
+
+### 2026-08-27 — Verify Solar Panel runtime and fix stale log gate
+
+- The complete Solar Panel gameplay matrix passed in the development client.
+- Verified open-sky daytime generation, zero generation at night, zero generation under cover, weather response, adjacent Forge Energy output, and always-visible debug values.
+- Verified the 64000 FE base capacity, Power Storage-only upgrade filtering, 128000/256000 FE upgraded capacities, persistence, capacity clamping, and upgrade drops.
+- The client build completed successfully in 3m 25s with 10 tasks (3 executed, 7 up-to-date).
+- Live registry counts, textures, runtime failures, and data-pack tags remained clean.
+- The runtime checker produced error 32 only because it still expected the pre-Solar exact marker with six block entities and menus.
+- Updated the gate to require seven block entities, seven menus, and the explicit `solarPanel=enabled` marker without depending on the entire marker line.
+- Exact next step: pull this checker fix, rerun `CHECK_M2_RUNTIME.bat` against the existing `run\logs\latest.log`, then run `VERIFY_M2_BUILD.bat`.

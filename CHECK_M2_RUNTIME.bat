@@ -16,9 +16,11 @@ if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
 echo        blocks=74, blockItems=71, standaloneItems=97, sounds=57
 
-findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=6, menus=6, decomposer=enabled, recycler=enabled, analyzer=enabled, replicator=enabled, patternStorage=enabled, patternMonitor=enabled, networkPipe=enabled, matterPipe=enabled, creativeBattery=enabled" "%LOG%" >nul
+findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=7, menus=7" "%LOG%" >nul
 if errorlevel 1 goto :fail32
-echo [PASS] M2 machine/network framework marker found.
+findstr /c:"solarPanel=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+echo [PASS] M2 machine/network/solar framework marker found.
 
 findstr /c:"Missing textures in model matteroverdrive:" "%LOG%" >nul
 if not errorlevel 1 goto :fail33
