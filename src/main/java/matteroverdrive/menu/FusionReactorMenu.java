@@ -1,0 +1,68 @@
+package matteroverdrive.menu;
+
+import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
+import matteroverdrive.item.MachineUpgradeItem;
+import matteroverdrive.registry.ModBlocks;
+import matteroverdrive.registry.ModMenus;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraftforge.items.SlotItemHandler;
+
+public class FusionReactorMenu extends AbstractContainerMenu {
+    private static final int UPGRADE_SLOTS = 4, PLAYER_START = 4, PLAYER_END = 40, HOTBAR_START = 40, HOTBAR_END = 49;
+    private final FusionReactorControllerBlockEntity reactor;
+    private final ContainerData data;
+
+    public FusionReactorMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
+        this(id, inventory, getReactor(inventory, buffer.readBlockPos()), new SimpleContainerData(12));
+    }
+    public FusionReactorMenu(int id, Inventory inventory, FusionReactorControllerBlockEntity reactor) {
+        this(id, inventory, reactor, reactor.getData());
+    }
+    private FusionReactorMenu(int id, Inventory inventory, FusionReactorControllerBlockEntity reactor, ContainerData data) {
+        super(ModMenus.FUSION_REACTOR_CONTROLLER.get(), id);
+        this.reactor = reactor;
+        this.data = data;
+        for (int slot = 0; slot < UPGRADE_SLOTS; slot++) addSlot(new SlotItemHandler(reactor.getUpgrades(), slot, 52 + slot * 18, 52));
+        for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 138 + row * 18));
+        for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column, 8 + column * 18, 196));
+        addDataSlots(data);
+    }
+    private static FusionReactorControllerBlockEntity getReactor(Inventory inventory, BlockPos pos) {
+        BlockEntity blockEntity = inventory.player.level().getBlockEntity(pos);
+        if (blockEntity instanceof FusionReactorControllerBlockEntity reactor) return reactor;
+        throw new IllegalStateException("Fusion Reactor controller missing");
+    }
+    @Override public ItemStack quickMoveStack(Player player, int index) {
+        Slot slot = slots.get(index);
+        if (!slot.hasItem()) return ItemStack.EMPTY;
+        ItemStack stack = slot.getItem(), copy = stack.copy();
+        boolean moved;
+        if (index < UPGRADE_SLOTS) moved = moveItemStackTo(stack, PLAYER_START, HOTBAR_END, true);
+        else {
+            moved = false;
+            if (stack.getItem() instanceof MachineUpgradeItem) moved = moveItemStackTo(stack, 0, UPGRADE_SLOTS, false);
+            if (!moved) moved = index < HOTBAR_START ? moveItemStackTo(stack, HOTBAR_START, HOTBAR_END, false) : moveItemStackTo(stack, PLAYER_START, HOTBAR_START, false);
+        }
+        if (!moved) return ItemStack.EMPTY;
+        if (stack.isEmpty()) slot.set(ItemStack.EMPTY); else slot.setChanged();
+        slot.onTake(player, stack);
+        return copy;
+    }
+    @Override public boolean stillValid(Player player) { return stillValid(ContainerLevelAccess.create(reactor.getLevel(), reactor.getBlockPos()), player, ModBlocks.get("fusion_reactor_controller").get()); }
+    public int energy() { return value(0, 1); } public int capacity() { return value(2, 3); }
+    public int matter() { return data.get(4); } public int matterCapacity() { return data.get(5); }
+    public boolean valid() { return data.get(6) != 0; } public int anomalyDistance() { return data.get(7); }
+    public int output() { return data.get(8); } public double efficiency() { return data.get(9) / 1000.0D; }
+    public double matterDrain() { return data.get(10) / 10_000.0D; } public int fault() { return data.get(11); }
+    private int value(int low, int high) { return (data.get(low) & 0xffff) | ((data.get(high) & 0xffff) << 16); }
+}

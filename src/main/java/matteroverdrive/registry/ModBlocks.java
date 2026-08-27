@@ -4,6 +4,8 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
+import matteroverdrive.block.FusionReactorControllerBlock;
+import matteroverdrive.block.FusionReactorIOBlock;
 import matteroverdrive.block.TransporterBlock;
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.block.ReplicatorBlock;
@@ -120,7 +122,11 @@ public final class ModBlocks {
     }
 
     private static void registerPlaceholder(String id) {
-        if (id.equals("decomposer")) {
+        if (id.equals("fusion_reactor_controller")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
+        } else if (id.equals("fusion_reactor_io")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorIOBlock(propertiesFor(id))));
+        } else if (id.equals("decomposer")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DecomposerBlock(propertiesFor(id))));
         } else if (id.equals("matter_recycler")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterRecyclerBlock(propertiesFor(id))));

@@ -548,3 +548,13 @@ Legacy design findings:
 - this system is independent of Android capability work, so it is appropriate for the next usable large feature.
 
 Exact next step: map the legacy structure positions into a clear 1.20.1 build validation model, then implement Controller, Coil, IO, anomaly interaction, capabilities, menus, debug data, and recipes as one branch.
+
+
+## Fusion Reactor implementation — awaiting build and runtime verification
+
+- Added functional Fusion Reactor Controller and Reactor IO block entities with the legacy baseline values: **100,000,000 FE** storage, **2,048 kM** matter storage, **2,048 FE/t** maximum base generation, and **0.0125 kM/t** base matter drain.
+- The first 1.20 structure is deliberately compact and visible: put a **Fusion Reactor Controller** in the centre, a **Fusion Reactor Coil** directly north, south, east, and west, a **Fusion Reactor IO** directly above it, and a **Gravitational Anomaly** within three blocks. The controller’s debug UI states the exact missing condition when invalid.
+- Controller accepts Matter Container transfers through the Matter capability. Reactor IO exposes and exports up to **512 FE/t per adjacent side** from the controller buffer.
+- Added Controller GUI with four upgrade slots and persistent debug readouts for structure, output, anomaly distance, efficiency, matter drain, stored energy and matter. Supported upgrades: Speed, Range, Power Storage, and Matter Storage.
+- Updated M2 source/runtime gates for 12 block entities, 11 menus, and the Fusion Reactor marker.
+- This commit is an implementation checkpoint only; run RUN_M2_CLIENT.bat plus the standard M2 checks before marking verified. The large legacy reactor exterior/rendering and Gravitational Stabilizer behavior remain future work.

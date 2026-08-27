@@ -5,6 +5,8 @@ import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.blockentity.MatterAnalyzerBlockEntity;
 import matteroverdrive.blockentity.InscriberBlockEntity;
 import matteroverdrive.blockentity.TransporterBlockEntity;
+import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
+import matteroverdrive.blockentity.FusionReactorIOBlockEntity;
 import matteroverdrive.blockentity.MatterRecyclerBlockEntity;
 import matteroverdrive.blockentity.ReplicatorBlockEntity;
 import matteroverdrive.blockentity.SolarPanelBlockEntity;
@@ -18,6 +20,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MatterOverdrive.MOD_ID);
+    public static final RegistryObject<BlockEntityType<FusionReactorControllerBlockEntity>> FUSION_REACTOR_CONTROLLER = BLOCK_ENTITIES.register("fusion_reactor_controller", () -> BlockEntityType.Builder.of(FusionReactorControllerBlockEntity::new, ModBlocks.get("fusion_reactor_controller").get()).build(null));
+    public static final RegistryObject<BlockEntityType<FusionReactorIOBlockEntity>> FUSION_REACTOR_IO = BLOCK_ENTITIES.register("fusion_reactor_io", () -> BlockEntityType.Builder.of(FusionReactorIOBlockEntity::new, ModBlocks.get("fusion_reactor_io").get()).build(null));
     public static final RegistryObject<BlockEntityType<TransporterBlockEntity>> TRANSPORTER = BLOCK_ENTITIES.register("transporter", () -> BlockEntityType.Builder.of(TransporterBlockEntity::new, ModBlocks.get("transporter").get()).build(null));
     public static final RegistryObject<BlockEntityType<InscriberBlockEntity>> INSCRIBER = BLOCK_ENTITIES.register("inscriber", () -> BlockEntityType.Builder.of(InscriberBlockEntity::new, ModBlocks.get("inscriber").get()).build(null));
     public static final RegistryObject<BlockEntityType<DecomposerBlockEntity>> DECOMPOSER = BLOCK_ENTITIES.register("decomposer", () -> BlockEntityType.Builder.of(DecomposerBlockEntity::new, ModBlocks.get("decomposer").get()).build(null));

@@ -4,6 +4,7 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.menu.DecomposerMenu;
 import matteroverdrive.menu.InscriberMenu;
 import matteroverdrive.menu.TransporterMenu;
+import matteroverdrive.menu.FusionReactorMenu;
 import matteroverdrive.menu.MatterAnalyzerMenu;
 import matteroverdrive.menu.MatterRecyclerMenu;
 import matteroverdrive.menu.ReplicatorMenu;
@@ -19,6 +20,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModMenus {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MatterOverdrive.MOD_ID);
+    public static final RegistryObject<MenuType<FusionReactorMenu>> FUSION_REACTOR_CONTROLLER = MENUS.register("fusion_reactor_controller", () -> IForgeMenuType.create(FusionReactorMenu::new));
     public static final RegistryObject<MenuType<TransporterMenu>> TRANSPORTER = MENUS.register("transporter", () -> IForgeMenuType.create(TransporterMenu::new));
     public static final RegistryObject<MenuType<InscriberMenu>> INSCRIBER = MENUS.register("inscriber", () -> IForgeMenuType.create(InscriberMenu::new));
     public static final RegistryObject<MenuType<DecomposerMenu>> DECOMPOSER = MENUS.register("decomposer", () -> IForgeMenuType.create(DecomposerMenu::new));
