@@ -29,7 +29,7 @@ public class DecomposerMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public DecomposerMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buffer) {
-        this(containerId, playerInventory, getDecomposer(playerInventory, buffer.readBlockPos()), new SimpleContainerData(10));
+        this(containerId, playerInventory, getDecomposer(playerInventory, buffer.readBlockPos()), new SimpleContainerData(12));
     }
 
     public DecomposerMenu(int containerId, Inventory playerInventory, DecomposerBlockEntity decomposer) {
@@ -39,7 +39,7 @@ public class DecomposerMenu extends AbstractContainerMenu {
     private DecomposerMenu(int containerId, Inventory playerInventory, DecomposerBlockEntity decomposer, ContainerData data) {
         super(ModMenus.DECOMPOSER.get(), containerId);
         this.decomposer = decomposer;
-        this.data = data == null ? new SimpleContainerData(10) : data;
+        this.data = data == null ? new SimpleContainerData(12) : data;
 
         addSlot(new SlotItemHandler(decomposer.getItemHandler(), DecomposerBlockEntity.INPUT_SLOT, 26, 44));
         addSlot(new SlotItemHandler(decomposer.getItemHandler(), DecomposerBlockEntity.ENERGY_SLOT, 80, 44));
@@ -51,7 +51,7 @@ public class DecomposerMenu extends AbstractContainerMenu {
         });
 
         for (int slot = 0; slot < DecomposerBlockEntity.UPGRADE_SLOT_COUNT; slot++) {
-            addSlot(new SlotItemHandler(decomposer.getUpgradeInventory(), slot, 53 + slot * 18, 66));
+            addSlot(new SlotItemHandler(decomposer.getUpgradeInventory(), slot, 53 + slot * 18, 80));
         }
 
         addPlayerInventory(playerInventory);
@@ -69,11 +69,11 @@ public class DecomposerMenu extends AbstractContainerMenu {
     private void addPlayerInventory(Inventory playerInventory) {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 102 + row * 18));
+                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 114 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(playerInventory, column, 8 + column * 18, 160));
+            addSlot(new Slot(playerInventory, column, 8 + column * 18, 172));
         }
     }
 
@@ -163,6 +163,10 @@ public class DecomposerMenu extends AbstractContainerMenu {
 
     public int getEnergyPerTick() {
         return data.get(9) & 0xFFFF;
+    }
+
+    public double getFailureChancePercent() {
+        return combineWords(data.get(10), data.get(11)) / 10_000.0D;
     }
 
     private static int combineWords(int low, int high) {

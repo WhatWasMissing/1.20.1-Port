@@ -10,8 +10,8 @@ public class DecomposerScreen extends AbstractContainerScreen<DecomposerMenu> {
     public DecomposerScreen(DecomposerMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
         imageWidth = 176;
-        imageHeight = 184;
-        inventoryLabelY = 91;
+        imageHeight = 196;
+        inventoryLabelY = 103;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class DecomposerScreen extends AbstractContainerScreen<DecomposerMenu> {
         drawSlot(graphics, x + 79, y + 43);
         drawSlot(graphics, x + 133, y + 43);
         for (int slot = 0; slot < 4; slot++) {
-            drawSlot(graphics, x + 52 + slot * 18, y + 65);
+            drawSlot(graphics, x + 52 + slot * 18, y + 79);
         }
 
         int progressWidth = scale(menu.getProgress(), menu.getMaxProgress(), 42);
@@ -71,8 +71,10 @@ public class DecomposerScreen extends AbstractContainerScreen<DecomposerMenu> {
 
         String energy = menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE";
         String matter = menu.getMatter() + " / " + menu.getMatterCapacity() + " kM";
+        String failure = String.format(java.util.Locale.ROOT, "[DEBUG] Failure: %.4f%%", menu.getFailureChancePercent());
         graphics.drawString(font, energy, 18, 20, 0x404040, false);
         graphics.drawString(font, matter, 18, 30, 0x404040, false);
+        graphics.drawString(font, failure, 48, 68, 0x7A1F1F, false);
 
         int inputMatter = menu.getInputMatterValue();
         if (inputMatter > 0) {

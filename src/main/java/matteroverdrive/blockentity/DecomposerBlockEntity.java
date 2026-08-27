@@ -104,6 +104,8 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
                 case 7 -> matterStorage.getMatterCapacity();
                 case 8 -> getCurrentMatterValue();
                 case 9 -> getEnergyDrainPerTick();
+                case 10 -> lowWord(getFailureChancePartsPerMillion());
+                case 11 -> highWord(getFailureChancePartsPerMillion());
                 default -> 0;
             };
         }
@@ -115,7 +117,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int getCount() {
-            return 10;
+            return 12;
         }
     };
 
@@ -242,6 +244,10 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         } else {
             output.grow(1);
         }
+    }
+
+    private int getFailureChancePartsPerMillion() {
+        return Math.max(0, (int) Math.round(getFailChance() * 1_000_000.0D));
     }
 
     public double getFailChance() {

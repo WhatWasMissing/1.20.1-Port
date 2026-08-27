@@ -226,3 +226,12 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Base failure chance remains the legacy 0.5 percent, making failures uncommon in short tests.
 - Corrected Fail-Safe interaction to match legacy: the combined failure multiplier is squared before applying it to the base chance.
 - One Fail-Safe Upgrade therefore reduces 0.5 percent to 0.125 percent.
+
+### 2026-08-27 — Show effective Decomposer failure chance
+
+- Added a synchronized debug failure-chance value to the Decomposer container data.
+- The server sends the effective probability as parts per million split across two data words, avoiding Forge menu short truncation.
+- Added `[DEBUG] Failure: %.4f%` to the Decomposer GUI.
+- Expanded the GUI vertically and moved upgrade/player slots to prevent overlap.
+- Expected values: 0.5000 percent with no upgrade and 0.1250 percent with one Fail-Safe Upgrade.
+- Next step: compile and visually verify the values and revised layout.
