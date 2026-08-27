@@ -1,6 +1,7 @@
 package matteroverdrive.block;
 
 import matteroverdrive.blockentity.DecomposerBlockEntity;
+import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -71,6 +72,10 @@ public class DecomposerBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
+        if (player.getItemInHand(hand).getItem() instanceof MatterContainerItem) {
+            return InteractionResult.PASS;
+        }
+
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
             if (blockEntity instanceof DecomposerBlockEntity decomposer) {
