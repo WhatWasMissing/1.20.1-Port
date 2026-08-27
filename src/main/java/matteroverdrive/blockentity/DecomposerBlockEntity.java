@@ -223,7 +223,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     private void decomposeItem(int matter) {
         ItemStack input = items.getStackInSlot(INPUT_SLOT);
         if (input.isEmpty() || !canPutInOutput(matter)) return;
-        if (RANDOM.nextDouble() < FAIL_CHANCE * getUpgradeMultiplier(MachineUpgradeItem.Upgrade::failureChance)) {
+        if (RANDOM.nextDouble() < getFailChance()) {
             failDecompose(matter);
         } else {
             matterStorage.addMatterInternal(matter, false);
@@ -242,6 +242,11 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         } else {
             output.grow(1);
         }
+    }
+
+    public double getFailChance() {
+        double multiplier = getUpgradeMultiplier(MachineUpgradeItem.Upgrade::failureChance);
+        return FAIL_CHANCE * multiplier * multiplier;
     }
 
     public int getCurrentMatterValue() {

@@ -218,3 +218,11 @@ Exact next step: map the archived upgrade API and current item registrations, th
 - Persisted upgrade inventory contents in block-entity NBT.
 - Removing storage upgrades clamps stored contents to the resulting capacity.
 - Runtime behavior remains unverified until the development client test passes.
+
+### 2026-08-27 — Correct legacy Decomposer failure multiplier
+
+- Runtime testing confirmed all Decomposer upgrade slots and supported effects work.
+- Clarified that a Decomposer failure consumes the input and creates Matter Dust instead of storing matter.
+- Base failure chance remains the legacy 0.5 percent, making failures uncommon in short tests.
+- Corrected Fail-Safe interaction to match legacy: the combined failure multiplier is squared before applying it to the base chance.
+- One Fail-Safe Upgrade therefore reduces 0.5 percent to 0.125 percent.
