@@ -67,8 +67,10 @@ The branch currently modifies `DecomposerBlockEntity` and `MatterNetworkUtil`. I
 
 ## Verification still required
 
-- Java compilation passed on 2026-08-27.
-- Rerun the repository's M2 verification script after pulling the source-gate fix.
+- `VERIFY_M2_BUILD.bat` passed completely on Windows 10 with JDK 17.0.20.1 and Gradle 8.1.1 on 2026-08-27.
+- M1 resources, M2 sources, and clean Forge compilation all passed.
+- Generated JAR: `build/libs/matteroverdrive-0.8.0.0-alpha.4.1.jar`.
+- Three non-blocking deprecation warnings remain in `ClientModEvents.java`, `MatterOverdrive.java`, and `ModSounds.java`.
 - Test a decomposer outputting through Matter Pipe and Heavy Matter Pipe.
 - Confirm matter reaches a compatible destination across turns and junctions.
 - Confirm routing does not loop or duplicate matter.
@@ -104,3 +106,13 @@ If the verification script succeeds, perform the in-game matter-routing tests ab
 - Step 3, `:verifyM2Sources`, failed because the gate still searched for the old decomposer call `findMatterTargets`.
 - Updated the gate to require the new generic `MatterNetworkUtil.transferMatter` call.
 - Runtime routing remains unverified until the complete script and in-game checks pass.
+
+### 2026-08-27 — M2 routing branch build verified
+
+- Pulled source-gate fix `7ebb8e4`.
+- `VERIFY_M2_BUILD.bat` passed all four stages.
+- M1 resource counts remained blocks=75, blockItems=72, standaloneItems=98, sounds=57, activeJson=404.
+- M2 functional source verification passed.
+- Clean Forge compilation passed with 10 tasks executed.
+- Output JAR: `build/libs/matteroverdrive-0.8.0.0-alpha.4.1.jar`.
+- Next step: install this JAR and perform the matter-routing runtime test matrix before merging.
