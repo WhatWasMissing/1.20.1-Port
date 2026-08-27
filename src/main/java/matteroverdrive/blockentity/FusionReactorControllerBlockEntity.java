@@ -11,6 +11,7 @@ import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Containers;
@@ -42,6 +43,11 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     public static final int STRUCTURE_CHECK_DELAY = 40;
     public static final int BASE_ANOMALY_RANGE = 3;
     public static final int MAX_ANOMALY_SCAN_RANGE = 16;
+    private static final int REQUIRED_COILS = 9;
+    private static final int REQUIRED_HULLS = 16;
+    private static final int REQUIRED_DECOMPOSERS = 2;
+    private static final int REQUIRED_STABILIZERS = 4;
+    private static final int STRUCTURE_SCAN_RADIUS = 4;
     private static final double BASE_MATTER_DRAIN = 1.0D / 80.0D;
 
     private final MachineEnergyStorage energy = new MachineEnergyStorage(ENERGY_CAPACITY, 0, ENERGY_CAPACITY, this::setChanged);
@@ -128,30 +134,65 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     }
 
     private void validateStructure() {
+        structureValid = false;
+        anomalyDistance = -1;
         if (level == null) {
+            fault = "Checking structure";
             return;
         }
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            if (!level.getBlockState(worldPosition.relative(direction)).is(ModBlocks.get("fusion_reactor_coil").get())) {
-                structureValid = false;
-                anomalyDistance = -1;
-                fault = "Missing coil";
-                return;
+
+        int coils = 0;
+        int hulls = 0;
+        int decomposers = 0;
+        int stabilizers = 0;
+        boolean hasIo = false;
+        Block coil = ModBlocks.get("fusion_reactor_coil").get();
+        Block hull = ModBlocks.get("machine_hull").get();
+        Block decomposer = ModBlocks.get("decomposer").get();
+        Block stabilizer = ModBlocks.get("gravitational_stabilizer").get();
+        Block io = ModBlocks.get("fusion_reactor_io").get();
+
+        for (BlockPos candidate : BlockPos.betweenClosed(
+                worldPosition.offset(-STRUCTURE_SCAN_RADIUS, -STRUCTURE_SCAN_RADIUS, -STRUCTURE_SCAN_RADIUS),
+                worldPosition.offset(STRUCTURE_SCAN_RADIUS, STRUCTURE_SCAN_RADIUS, STRUCTURE_SCAN_RADIUS))) {
+            if (candidate.equals(worldPosition)) {
+                continue;
             }
+            Block block = level.getBlockState(candidate).getBlock();
+            if (block == coil) coils++;
+            else if (block == hull) hulls++;
+            else if (block == decomposer) decomposers++;
+            else if (block == stabilizer) stabilizers++;
+            else if (block == io) hasIo = true;
         }
-        if (!level.getBlockState(worldPosition.above()).is(ModBlocks.get("fusion_reactor_io").get())) {
-            structureValid = false;
-            anomalyDistance = -1;
+
+        if (coils < REQUIRED_COILS) {
+            fault = "Missing coils (" + coils + "/" + REQUIRED_COILS + ")";
+            return;
+        }
+        if (hulls < REQUIRED_HULLS) {
+            fault = "Missing hulls (" + hulls + "/" + REQUIRED_HULLS + ")";
+            return;
+        }
+        if (decomposers < REQUIRED_DECOMPOSERS) {
+            fault = "Missing decomposers (" + decomposers + "/" + REQUIRED_DECOMPOSERS + ")";
+            return;
+        }
+        if (stabilizers < REQUIRED_STABILIZERS) {
+            fault = "Missing stabilizers (" + stabilizers + "/" + REQUIRED_STABILIZERS + ")";
+            return;
+        }
+        if (!hasIo) {
             fault = "Missing reactor IO";
             return;
         }
+
         int foundDistance = findAnomalyDistance();
         if (foundDistance < 0) {
-            structureValid = false;
-            anomalyDistance = -1;
             fault = "No anomaly in range";
             return;
         }
+
         structureValid = true;
         anomalyDistance = foundDistance;
         fault = "Ready";
@@ -273,7 +314,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private int faultCode() {
         return switch (fault) {
             case "Running" -> 1; case "Ready" -> 2; case "Missing coil" -> 3; case "Missing reactor IO" -> 4;
-            case "No anomaly in range" -> 5; case "No matter" -> 6; default -> 0;
+            case "No anomaly in range" -> 5; case "No matter" -> 6; default -> fault.startsWith("Missing") ? 3 : 0;
         };
     }
     private static int low(int value) { return value & 0xFFFF; }
