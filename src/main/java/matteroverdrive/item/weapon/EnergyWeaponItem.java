@@ -126,6 +126,16 @@ public class EnergyWeaponItem extends Item {
             return InteractionResultHolder.sidedSuccess(weapon, level.isClientSide);
         }
 
+        if (player.isShiftKeyDown()) {
+            if (!level.isClientSide) {
+                boolean reloaded = tryReload(weapon, player, getCapacity(weapon));
+                player.sendSystemMessage(Component.literal(reloaded
+                        ? "Weapon reloaded" : "No charged battery or Energy Pack available")
+                        .withStyle(reloaded ? ChatFormatting.AQUA : ChatFormatting.RED));
+            }
+            return InteractionResultHolder.sidedSuccess(weapon, level.isClientSide);
+        }
+
         if (!canAttemptFire(weapon, player)) {
             if (!level.isClientSide) {
                 player.sendSystemMessage(Component.literal(isOverheated(weapon)
@@ -446,7 +456,7 @@ public class EnergyWeaponItem extends Item {
     }
 
     private boolean tryReload(ItemStack weapon, Player player, int required) {
-        if (player.getAbilities().instabuild || hasCreativeBattery(weapon)) {
+        if (hasCreativeBattery(weapon)) {
             return true;
         }
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
@@ -471,7 +481,7 @@ public class EnergyWeaponItem extends Item {
     }
 
     private int drawFromBattery(ItemStack weapon, ItemStack candidate, int missing) {
-        if (candidate.isEmpty() || candidate == weapon || missing <= 0) return missing;
+        if (candidate.isEmpty() || candidate == weapon || candidate.getItem() instanceof EnergyWeaponItem || missing <= 0) return missing;
         IEnergyStorage storage = candidate.getCapability(ForgeCapabilities.ENERGY).orElse(null);
         if (storage == null || !storage.canExtract()) return missing;
         int remaining = missing;
