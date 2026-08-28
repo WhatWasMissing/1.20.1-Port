@@ -342,7 +342,7 @@ public class EnergyWeaponItem extends Item {
         return Math.max(1, Math.round(type.energyPerShot * WeaponSystem.energyMultiplier(weapon)));
     }
 
-    private float getDamage(ItemStack weapon) {
+    public float getDamage(ItemStack weapon) {
         if (type == WeaponType.PHASER) {
             int power = getPhaserPower(weapon);
             float base = power >= 3 ? (float) Math.pow(2.0D, power - 2) : 0.0F;
@@ -604,9 +604,9 @@ public class EnergyWeaponItem extends Item {
             if (hasCreativeBattery(stack)) {
                 return 0;
             }
-            int accepted = Math.min(Math.max(0, maxReceive), Math.min(ENERGY_TRANSFER, getCapacity(stack) - getEnergyStored(stack)));
+            int accepted = Math.min(Math.max(0, maxReceive), Math.min(ENERGY_TRANSFER, getCapacity(stack) - EnergyWeaponItem.this.getEnergyStored(stack)));
             if (!simulate && accepted > 0) {
-                setEnergyStored(stack, getEnergyStored(stack) + accepted);
+                setEnergyStored(stack, EnergyWeaponItem.this.getEnergyStored(stack) + accepted);
             }
             return accepted;
         }
@@ -616,9 +616,9 @@ public class EnergyWeaponItem extends Item {
             if (hasCreativeBattery(stack)) {
                 return Math.max(0, maxExtract);
             }
-            int extracted = Math.min(Math.max(0, maxExtract), Math.min(ENERGY_TRANSFER, getEnergyStored(stack)));
+            int extracted = Math.min(Math.max(0, maxExtract), Math.min(ENERGY_TRANSFER, EnergyWeaponItem.this.getEnergyStored(stack)));
             if (!simulate && extracted > 0) {
-                setEnergyStored(stack, getEnergyStored(stack) - extracted);
+                setEnergyStored(stack, EnergyWeaponItem.this.getEnergyStored(stack) - extracted);
             }
             return extracted;
         }

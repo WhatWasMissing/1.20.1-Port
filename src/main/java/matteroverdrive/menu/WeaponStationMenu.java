@@ -12,13 +12,14 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.items.SlotItemHandler;
 
 public class WeaponStationMenu extends AbstractContainerMenu {
     private final WeaponStationBlockEntity station;
     public WeaponStationMenu(int id, Inventory inv, FriendlyByteBuf buf) { this(id, inv, get(inv, buf.readBlockPos())); }
     public WeaponStationMenu(int id, Inventory inv, WeaponStationBlockEntity station) {
         super(ModMenus.WEAPON_STATION.get(), id); this.station = station;
-        for (int i=0;i<7;i++) addSlot(new Slot(station.getInventory(), i, 44 + (i%4)*18, 36 + (i/4)*18));
+        for (int i=0;i<7;i++) addSlot(new SlotItemHandler(station.getInventory(), i, 44 + (i%4)*18, 36 + (i/4)*18));
         for (int r=0;r<3;r++) for (int c=0;c<9;c++) addSlot(new Slot(inv, c+r*9+9, 8+c*18, 84+r*18));
         for (int c=0;c<9;c++) addSlot(new Slot(inv,c,8+c*18,142));
     }
