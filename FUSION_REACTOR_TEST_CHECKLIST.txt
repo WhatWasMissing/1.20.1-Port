@@ -1,0 +1,270 @@
+MATTER OVERDRIVE 1.20.1 - FUSION REACTOR TEST CHECKLIST
+Branch: feature/fusion-reactor
+Minimum implementation commit: e0a0aaf
+
+============================================================
+1. BUILD AND INSTALL
+============================================================
+
+From the repository folder, run:
+
+  git pull origin feature/fusion-reactor
+  gradlew.bat clean build
+
+Copy the newly built Matter Overdrive jar from build\libs into the Minecraft
+mods folder. Remove the older Matter Overdrive jar so only one version is
+installed.
+
+Expected result:
+  [ ] Minecraft starts without a crash.
+  [ ] The Matter Overdrive items listed below exist.
+
+
+============================================================
+2. TEST ITEMS
+============================================================
+
+In a Creative world with cheats enabled, run:
+
+  /give @s matteroverdrive:reactor_assembly_guide
+  /give @s matteroverdrive:fusion_reactor_controller
+  /give @s matteroverdrive:fusion_reactor_coil 16
+  /give @s matteroverdrive:machine_hull 32
+  /give @s matteroverdrive:fusion_reactor_io 4
+  /give @s matteroverdrive:gravitational_anomaly
+  /give @s matteroverdrive:gravitational_stabilizer 4
+  /give @s matteroverdrive:decomposer 2
+  /give @s matteroverdrive:reactor_remote
+
+Also obtain heavy energy cables, matter pipes, a battery or powered machine,
+redstone blocks/levers, and items to throw into the anomaly.
+
+
+============================================================
+3. REACTOR ASSEMBLY GUIDE
+============================================================
+
+Right-click the Reactor Assembly Guide.
+
+Expected result:
+  [ ] A guide screen opens.
+  [ ] It contains four pages.
+  [ ] Previous/next page controls work.
+  [ ] The images and text are readable and are not clipped.
+
+
+============================================================
+4. EXACT REACTOR RING LAYOUT
+============================================================
+
+Place the controller first. The reactor ring extends horizontally in the
+direction you faced when placing the controller. The controller GUI reports
+the ring direction.
+
+Coordinate convention:
+  - Controller = (lateral 0, forward 0)
+  - Positive lateral = right while looking in the ring direction
+  - Positive forward = away from the controller into the ring
+  - All listed ring positions are normally on the controller's Y level
+  - The anomaly center is (0, 5)
+  - The anomaly may be 0 to 3 blocks above or below that center Y level
+
+Controller:
+  ( 0,  0)
+
+Flexible controller-side positions:
+  These accept machine hull, fusion reactor coil, decomposer, or reactor IO.
+
+  ( 1,  0)  (-1,  0)
+
+Machine-hull positions:
+
+  ( 2,  0)  ( 3,  1)  ( 4,  2)  ( 5,  3)
+  ( 5,  7)  ( 4,  8)  ( 3,  9)  ( 2, 10)
+  (-2, 10)  (-3,  9)  (-4,  8)  (-5,  7)
+  (-5,  3)  (-4,  2)  (-3,  1)  (-2,  0)
+
+Coil-or-IO positions:
+  These accept a fusion reactor coil or reactor IO.
+
+  ( 5,  4)  ( 5,  5)  ( 5,  6)
+  ( 1, 10)  ( 0, 10)  (-1, 10)
+  (-5,  6)  (-5,  5)  (-5,  4)
+
+Gravitational anomaly:
+  Horizontal center: (0, 5)
+  Valid vertical offset: -3, -2, -1, 0, 1, 2, or 3
+
+Important:
+  - Gravitational stabilizers are not part of the required ring.
+  - Reactor IO is not mandatory for structure validity.
+  - Multiple IO blocks are supported.
+  - An IO may replace a block in a coil-or-IO position.
+  - A decomposer is only valid in one of the two flexible side positions.
+
+After building, wait at least two seconds before checking the controller.
+
+Expected result:
+  [ ] Controller GUI reports Structure: VALID.
+  [ ] GUI reports the expected anomaly offset.
+  [ ] GUI reports the correct number of linked IO ports.
+  [ ] Reactor begins producing energy when it contains matter.
+
+
+============================================================
+5. STRUCTURE VALIDATION TESTS
+============================================================
+
+Run each test separately and restore the valid structure afterward. Wait up
+to two seconds after every change.
+
+A. Remove one required machine hull.
+Expected:
+  [ ] Structure becomes invalid and identifies a hull-position problem.
+
+B. Remove one required coil.
+Expected:
+  [ ] Structure becomes invalid and identifies a coil/IO-position problem.
+
+C. Replace a valid coil with reactor IO.
+Expected:
+  [ ] Structure remains valid.
+  [ ] Linked IO count increases.
+
+D. Move the anomaly vertically.
+Expected:
+  [ ] Offsets -3 through +3 are valid.
+  [ ] Offset +4 or -4 is invalid.
+  [ ] Output efficiency changes with absolute offset:
+      offset 0 = 100 percent
+      offset 1 = 75 percent
+      offset 2 = 50 percent
+      offset 3 = 25 percent
+
+E. Place a decomposer.
+Expected:
+  [ ] It is accepted in either controller-side flexible position.
+  [ ] It is rejected in a hull-only or coil-or-IO position.
+
+
+============================================================
+6. MATTER INPUT AND ENERGY OUTPUT
+============================================================
+
+Matter input setup:
+
+  Powered Decomposer -> Matter Pipe network -> Reactor IO
+
+Energy output setup:
+
+  Reactor IO -> Heavy Energy Cable -> Heavy Energy Cable ->
+  Heavy Energy Cable -> Heavy Energy Cable -> Heavy Energy Cable ->
+  Battery or machine
+
+Use at least five cables to confirm the old four-cable limit is gone.
+
+Expected result:
+  [ ] Matter moves from the decomposer into the reactor through the IO.
+  [ ] Reactor matter storage rises.
+  [ ] Energy moves through all five or more cables.
+  [ ] The destination battery/machine receives energy.
+
+Network rebuild test:
+  1. Break a cable that is not the cable directly connected to reactor IO.
+  2. Replace that cable.
+  3. Do not break or replace the first cable.
+
+Expected result:
+  [ ] Transfer resumes automatically.
+  [ ] The first cable does not need to be replaced.
+
+IO relink test:
+  1. Break a linked reactor IO.
+  2. Replace it in the same valid position.
+  3. Wait up to two seconds.
+
+Expected result:
+  [ ] Controller linked-IO count recovers.
+  [ ] Matter and energy transfer resume.
+
+
+============================================================
+7. GRAVITATIONAL ANOMALY MASS
+============================================================
+
+Throw ordinary item entities close to the anomaly. Its initial attraction
+range is only several blocks, so begin nearby.
+
+Expected result:
+  [ ] Dropped items move toward the anomaly.
+  [ ] Items reaching the anomaly are consumed.
+  [ ] Anomaly mass increases.
+  [ ] Reactor unsuppressed mass increases.
+  [ ] Reactor energy output increases.
+
+Current intentional limitation:
+  The anomaly does not yet pull players/living entities or destroy blocks.
+  This test concerns dropped item entities only.
+
+
+============================================================
+8. GRAVITATIONAL STABILIZERS
+============================================================
+
+If stabilizers were placed before this update, break and replace them once so
+they receive their new block-entity data.
+
+For each stabilizer:
+  1. Place it with its front aimed directly at the anomaly.
+  2. Keep a clear straight line between stabilizer and anomaly.
+  3. Power it with redstone.
+  4. Right-click it to inspect status.
+
+Expected result for one powered stabilizer:
+  [ ] Status reports a lock and distance to the anomaly.
+  [ ] Reactor safe/suppressed mass decreases.
+  [ ] Reactor normal/unsuppressed mass does not decrease.
+  [ ] Reactor energy output does not decrease.
+
+Expected result for four powered stabilizers:
+  [ ] Safe mass is approximately 24.01 percent of unsuppressed mass.
+      Calculation: 0.7 x 0.7 x 0.7 x 0.7 = 0.2401
+
+Negative tests:
+  [ ] Remove redstone: status reports no signal/inactive.
+  [ ] Put an opaque block in the beam: status reports blocked.
+  [ ] Aim away from anomaly: status reports no anomaly.
+
+
+============================================================
+9. REACTOR REMOTE
+============================================================
+
+  1. Shift-right-click the reactor controller with the reactor remote.
+  2. Move away from the reactor.
+  3. Right-click the linked remote.
+
+Expected result:
+  [ ] Remote records the controller link.
+  [ ] Reactor GUI opens remotely.
+  [ ] Displayed structure, mass, energy, output, and IO data update correctly.
+
+
+============================================================
+10. FAILURE REPORT TEMPLATE
+============================================================
+
+If a test fails, record:
+
+  Test section:
+  Exact setup:
+  Expected result:
+  Actual result:
+  Does breaking/replacing a block change it?:
+  Controller GUI debug text:
+  Cable/pipe GUI debug text:
+  Stabilizer status text:
+  Screenshot attached?:
+  Relevant latest.log lines:
+
+End of checklist.
