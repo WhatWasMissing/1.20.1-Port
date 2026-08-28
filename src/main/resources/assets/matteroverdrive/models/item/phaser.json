@@ -1,6 +1,5 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "matteroverdrive:item/phaser2"
-  }
+  "loader": "forge:obj",
+  "flip_v": true,
+  "model": "matteroverdrive:models/item/phaser2.obj"
 }

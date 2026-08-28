@@ -1,6 +1,5 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "matteroverdrive:item/ion_sniper"
-  }
+  "loader": "forge:obj",
+  "flip_v": true,
+  "model": "matteroverdrive:models/item/ion_sniper.obj"
 }

@@ -1,6 +1,5 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "matteroverdrive:item/plasma_shotgun"
-  }
+  "loader": "forge:obj",
+  "flip_v": true,
+  "model": "matteroverdrive:models/item/plasma_shotgun.obj"
 }
