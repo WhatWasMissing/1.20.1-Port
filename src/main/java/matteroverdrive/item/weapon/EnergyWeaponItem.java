@@ -468,32 +468,26 @@ public class EnergyWeaponItem extends Item {
                 return getEnergyStored(weapon) >= required;
             }
         }
-        int initialEnergy = getEnergyStored(weapon);
-        int missing = Math.max(0, required - initialEnergy);
-        for (int slot = 0; slot < player.getInventory().getContainerSize() && missing > 0; slot++) {
-            missing = drawFromBattery(weapon, player.getInventory().getItem(slot), missing);
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            if (consumeBattery(weapon, player, player.getInventory().getItem(slot))) {
+                playSound(player.level(), player, "weapons.reload", 0.8F, 1.0F);
+                return getEnergyStored(weapon) >= required;
+            }
         }
-        if (missing > 0) missing = drawFromBattery(weapon, player.getOffhandItem(), missing);
-        if (getEnergyStored(weapon) > initialEnergy) {
+        if (consumeBattery(weapon, player, player.getOffhandItem())) {
             playSound(player.level(), player, "weapons.reload", 0.8F, 1.0F);
+            return getEnergyStored(weapon) >= required;
         }
-        return getEnergyStored(weapon) >= required;
+        return false;
     }
 
-    private int drawFromBattery(ItemStack weapon, ItemStack candidate, int missing) {
-        if (candidate.isEmpty() || candidate == weapon || candidate.getItem() instanceof EnergyWeaponItem || missing <= 0) return missing;
+    private boolean consumeBattery(ItemStack weapon, Player player, ItemStack candidate) {
+        if (candidate.isEmpty() || candidate == weapon || !(candidate.getItem() instanceof WeaponBatteryItem)) return false;
         IEnergyStorage storage = candidate.getCapability(ForgeCapabilities.ENERGY).orElse(null);
-        if (storage == null || !storage.canExtract()) return missing;
-        int remaining = missing;
-        int moved;
-        do {
-            moved = storage.extractEnergy(Math.min(remaining, ENERGY_TRANSFER), false);
-            if (moved > 0) {
-                setEnergyStored(weapon, getEnergyStored(weapon) + moved);
-                remaining -= moved;
-            }
-        } while (moved > 0 && remaining > 0);
-        return remaining;
+        if (storage == null || storage.getEnergyStored() <= 0) return false;
+        setEnergyStored(weapon, getCapacity(weapon));
+        if (!player.getAbilities().instabuild) candidate.shrink(1);
+        return true;
     }
 
     public int getEnergyStored(ItemStack weapon) {

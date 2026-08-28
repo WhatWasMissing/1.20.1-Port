@@ -13,6 +13,7 @@
 - Energy packs remain automatic reload items.
 - Shift-right-click reloads non-Phaser weapons in Survival and Creative.
 - Other guns are no longer treated as reload batteries.
+- Charged weapon batteries are consumed once per reload and no longer drained per shot.
 
 ## Important testing note
 
