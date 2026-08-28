@@ -1,5 +1,6 @@
 {
-  "loader": "forge:obj",
-  "flip_v": true,
-  "model": "matteroverdrive:models/item/phaser_rifle.obj"
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "matteroverdrive:item/phaser_rifle"
+  }
 }
