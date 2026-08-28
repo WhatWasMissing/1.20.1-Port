@@ -1,6 +1,7 @@
 package matteroverdrive.blockentity;
 
 import matteroverdrive.capability.IMatterStorage;
+import matteroverdrive.network.MatterNetworkUtil;
 import matteroverdrive.capability.ModCapabilities;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -21,6 +22,7 @@ import java.util.Set;
 /** Energy export point for the compact Fusion Reactor multiblock. */
 public class FusionReactorIOBlockEntity extends BlockEntity {
     private LazyOptional<IEnergyStorage> energyCap = LazyOptional.empty();
+    private long matterOutputSequence;
 
     public FusionReactorIOBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_REACTOR_IO.get(), pos, state);
@@ -28,7 +30,19 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, FusionReactorIOBlockEntity io) {
         FusionReactorControllerBlockEntity controller = io.controller();
-        if (controller == null || controller.getEnergy().getEnergyStored() <= 0) return;
+        if (controller == null) return;
+
+        if (controller.getMatter().getMatterStored() > 0) {
+            int acceptedMatter = MatterNetworkUtil.transferMatter(
+                    level, pos, controller.getMatter().getMatterStored(), io.matterOutputSequence);
+            if (acceptedMatter > 0) {
+                controller.getMatter().extractMatter(acceptedMatter, false);
+                io.matterOutputSequence++;
+                io.setChanged();
+            }
+        }
+
+        if (controller.getEnergy().getEnergyStored() <= 0) return;
 
         Set<BlockPos> visited = new HashSet<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
