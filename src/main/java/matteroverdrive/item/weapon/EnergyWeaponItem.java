@@ -202,7 +202,7 @@ public class EnergyWeaponItem extends Item {
 
         boolean aimed = shooter.isUsingItem();
         float actualSpread = spreadFor(weapon, spread, aimed);
-        float damage = getDamage(weapon) * damageScale / Math.max(1, pellets);
+        float damage = weaponDamage(weapon) * damageScale / Math.max(1, pellets);
         int range = getRange(weapon);
         RandomSource random = shooter.getRandom();
 
@@ -342,7 +342,7 @@ public class EnergyWeaponItem extends Item {
         return Math.max(1, Math.round(type.energyPerShot * WeaponSystem.energyMultiplier(weapon)));
     }
 
-    public float getDamage(ItemStack weapon) {
+    private float weaponDamage(ItemStack weapon) {
         if (type == WeaponType.PHASER) {
             int power = getPhaserPower(weapon);
             float base = power >= 3 ? (float) Math.pow(2.0D, power - 2) : 0.0F;
@@ -567,7 +567,7 @@ public class EnergyWeaponItem extends Item {
         tooltip.add(Component.literal("Energy: " + energy + " FE").withStyle(ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Heat: " + Math.round(getHeat(stack)) + " / " + getMaxHeat(stack)
                 + (isOverheated(stack) ? " OVERHEATED" : "")).withStyle(isOverheated(stack) ? ChatFormatting.RED : ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Damage: " + String.format("%.1f", getDamage(stack))
+        tooltip.add(Component.literal("Damage: " + String.format("%.1f", weaponDamage(stack))
                 + " | Range: " + getRange(stack) + " | Cooldown: " + getCooldown(stack) + "t")
                 .withStyle(ChatFormatting.AQUA));
         if (type == WeaponType.PHASER) {
