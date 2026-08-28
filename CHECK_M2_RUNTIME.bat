@@ -11,12 +11,12 @@ echo.
 
 if not exist "%LOG%" goto :fail30
 
-findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=74, blockItems=71, standaloneItems=98, sounds=57" "%LOG%" >nul
+findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=74, blockItems=71, standaloneItems=99, sounds=57" "%LOG%" >nul
 if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
-echo        blocks=74, blockItems=71, standaloneItems=97, sounds=57
+echo        blocks=74, blockItems=71, standaloneItems=99, sounds=57
 
-findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=13, menus=12" "%LOG%" >nul
+findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=15, menus=12" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"energyPipe=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
@@ -90,3 +90,4 @@ echo ============================================================
 echo.
 pause
 exit /b %EXITCODE%
+

@@ -1,10 +1,10 @@
 package matteroverdrive.block;
 
-import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
+import matteroverdrive.blockentity.GravitationalStabilizerBlockEntity;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -20,14 +20,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
-public class FusionReactorControllerBlock extends BaseEntityBlock {
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+public class GravitationalStabilizerBlock extends BaseEntityBlock {
+    public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
-    public FusionReactorControllerBlock(Properties properties) {
+    public GravitationalStabilizerBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
@@ -35,7 +34,7 @@ public class FusionReactorControllerBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
+        return defaultBlockState().setValue(FACING, context.getNearestLookingDirection());
     }
 
     @Override
@@ -51,39 +50,38 @@ public class FusionReactorControllerBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new FusionReactorControllerBlockEntity(pos, state);
+        return new GravitationalStabilizerBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
             Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide || type != ModBlockEntities.FUSION_REACTOR_CONTROLLER.get()) {
+        if (level.isClientSide || type != ModBlockEntities.GRAVITATIONAL_STABILIZER.get()) {
             return null;
         }
         return (tickerLevel, tickerPos, tickerState, entity) ->
-                FusionReactorControllerBlockEntity.serverTick(
-                        tickerLevel, tickerPos, tickerState, (FusionReactorControllerBlockEntity) entity);
+                GravitationalStabilizerBlockEntity.serverTick(
+                        tickerLevel, tickerPos, tickerState, (GravitationalStabilizerBlockEntity) entity);
     }
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer
-                && level.getBlockEntity(pos) instanceof FusionReactorControllerBlockEntity reactor) {
-            NetworkHooks.openScreen(serverPlayer, reactor, pos);
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof GravitationalStabilizerBlockEntity stabilizer) {
+            Component status;
+            if (!level.hasNeighborSignal(pos)) {
+                status = Component.literal("Stabilizer inactive: supply a redstone signal.");
+            } else if (stabilizer.getAnomalyDistance() >= 0) {
+                status = Component.literal("Stabilizer locked onto an anomaly "
+                        + stabilizer.getAnomalyDistance() + " blocks away.");
+            } else if (stabilizer.isBeamBlocked()) {
+                status = Component.literal("Stabilizer beam is blocked by an opaque block.");
+            } else {
+                status = Component.literal("No anomaly found within 63 blocks in the facing direction.");
+            }
+            player.displayClientMessage(status, true);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
-    }
-
-    @Override
-    public void onRemove(BlockState oldState, Level level, BlockPos pos,
-                         BlockState newState, boolean moving) {
-        if (!oldState.is(newState.getBlock())
-                && level.getBlockEntity(pos) instanceof FusionReactorControllerBlockEntity reactor) {
-            reactor.invalidateStructureLinks();
-            reactor.dropUpgrades();
-        }
-        super.onRemove(oldState, level, pos, newState, moving);
     }
 }

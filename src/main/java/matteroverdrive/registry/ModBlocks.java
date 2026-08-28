@@ -7,6 +7,8 @@ import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
 import matteroverdrive.block.FusionReactorControllerBlock;
 import matteroverdrive.block.FusionReactorIOBlock;
+import matteroverdrive.block.GravitationalAnomalyBlock;
+import matteroverdrive.block.GravitationalStabilizerBlock;
 import matteroverdrive.block.TransporterBlock;
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.block.ReplicatorBlock;
@@ -129,6 +131,10 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
         } else if (id.equals("fusion_reactor_io")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorIOBlock(propertiesFor(id))));
+        } else if (id.equals("gravitational_anomaly")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalAnomalyBlock(propertiesFor(id))));
+        } else if (id.equals("gravitational_stabilizer")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalStabilizerBlock(propertiesFor(id))));
         } else if (id.equals("decomposer")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DecomposerBlock(propertiesFor(id))));
         } else if (id.equals("matter_recycler")) {
@@ -208,3 +214,4 @@ public final class ModBlocks {
         return block;
     }
 }
+

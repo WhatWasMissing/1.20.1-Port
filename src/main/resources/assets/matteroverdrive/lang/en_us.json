@@ -817,5 +817,17 @@
   "itemGroup.matteroverdrive": "Matter Overdrive",
   "container.matteroverdrive.decomposer": "Matter Decomposer",
   "tooltip.matteroverdrive.infinite_energy": "Infinite Energy",
-  "tooltip.matteroverdrive.matter_value": "Matter: %s kM"
+  "tooltip.matteroverdrive.matter_value": "Matter: %s kM",
+  "item.matteroverdrive.reactor_assembly_guide": "Fusion Reactor Assembly Guide",
+  "tooltip.matteroverdrive.reactor_assembly_guide": "Right-click to open the reactor construction guide.",
+  "screen.matteroverdrive.reactor_guide.title": "Fusion Reactor Assembly Guide",
+  "screen.matteroverdrive.reactor_guide.overview.title": "Reactor Overview",
+  "screen.matteroverdrive.reactor_guide.overview.body": "Build an 11 x 11 horizontal ring. The controller sits at the middle of one edge, and the ring extends in the direction you faced when placing it. The gravitational anomaly belongs at the ring centre, five blocks forward.",
+  "screen.matteroverdrive.reactor_guide.coils.title": "Step One: Coils and IO",
+  "screen.matteroverdrive.reactor_guide.coils.body": "Place coil-capable blocks in the highlighted positions. A Reactor IO may replace any coil and multiple IO ports are supported. The two positions immediately beside the controller are flexible special positions.",
+  "screen.matteroverdrive.reactor_guide.hulls.title": "Step Two: Hull and Anomaly",
+  "screen.matteroverdrive.reactor_guide.hulls.body": "Fill all sixteen remaining ring positions with Machine Hulls. The two controller-side positions may instead be coils, IO ports, hulls, or decomposers. Put the anomaly at the centre, up to three blocks above or below the ring.",
+  "screen.matteroverdrive.reactor_guide.operation.title": "Matter, Power, and Stabilizers",
+  "screen.matteroverdrive.reactor_guide.operation.body": "Feed matter through a linked Reactor IO and extract FE from any linked IO. Stabilizers are separate from the ring: point each one directly at the anomaly, keep the beam clear, and power it with redstone. Throw items into the anomaly to increase its mass and reactor output."
 }
+

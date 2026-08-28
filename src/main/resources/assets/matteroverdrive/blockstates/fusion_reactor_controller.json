@@ -1,7 +1,9 @@
 {
   "variants": {
-    "": {
-      "model": "matteroverdrive:block/fusion_reactor_controller"
-    }
+    "facing=north": { "model": "matteroverdrive:block/fusion_reactor_controller" },
+    "facing=east": { "model": "matteroverdrive:block/fusion_reactor_controller" },
+    "facing=south": { "model": "matteroverdrive:block/fusion_reactor_controller" },
+    "facing=west": { "model": "matteroverdrive:block/fusion_reactor_controller" }
   }
 }
+

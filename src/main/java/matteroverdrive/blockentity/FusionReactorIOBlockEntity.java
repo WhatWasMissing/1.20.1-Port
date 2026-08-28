@@ -1,11 +1,11 @@
 package matteroverdrive.blockentity;
 
-import matteroverdrive.capability.IMatterStorage;
-import matteroverdrive.network.MatterNetworkUtil;
 import matteroverdrive.capability.ModCapabilities;
+import matteroverdrive.network.MatterNetworkUtil;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,18 +19,20 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Energy export point for the compact Fusion Reactor multiblock. */
 public class FusionReactorIOBlockEntity extends BlockEntity {
-    private LazyOptional<IEnergyStorage> energyCap = LazyOptional.empty();
+    private BlockPos controllerPosition;
     private long matterOutputSequence;
 
     public FusionReactorIOBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_REACTOR_IO.get(), pos, state);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, FusionReactorIOBlockEntity io) {
+    public static void serverTick(Level level, BlockPos pos, BlockState state,
+                                  FusionReactorIOBlockEntity io) {
         FusionReactorControllerBlockEntity controller = io.controller();
-        if (controller == null) return;
+        if (controller == null) {
+            return;
+        }
 
         if (controller.getMatter().getMatterStored() > 0) {
             int acceptedMatter = MatterNetworkUtil.transferMatter(
@@ -42,7 +44,9 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
             }
         }
 
-        if (controller.getEnergy().getEnergyStored() <= 0) return;
+        if (controller.getEnergy().getEnergyStored() <= 0) {
+            return;
+        }
 
         Set<BlockPos> visited = new HashSet<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
@@ -61,12 +65,10 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
                     }
                     continue;
                 }
-
-                if (current.equals(pos) && neighbor instanceof FusionReactorControllerBlockEntity) {
+                if (neighbor instanceof FusionReactorControllerBlockEntity
+                        || neighbor instanceof FusionReactorIOBlockEntity) {
                     continue;
                 }
-                if (neighbor instanceof FusionReactorIOBlockEntity) continue;
-
                 if (neighbor != null) {
                     pushToReceiver(controller, neighbor, direction);
                 }
@@ -78,15 +80,21 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
                                        BlockEntity receiver, Direction direction) {
         IEnergyStorage storage = receiver.getCapability(
                 ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
-        if (storage == null || !storage.canReceive()) return;
+        if (storage == null || !storage.canReceive()) {
+            return;
+        }
 
         int offer = Math.min(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE,
                 controller.getEnergy().getEnergyStored());
         int accepted = storage.receiveEnergy(offer, true);
-        if (accepted <= 0) return;
+        if (accepted <= 0) {
+            return;
+        }
 
         int extracted = controller.getEnergy().extractEnergy(accepted, false);
-        if (extracted <= 0) return;
+        if (extracted <= 0) {
+            return;
+        }
 
         int received = storage.receiveEnergy(extracted, false);
         if (received < extracted) {
@@ -95,14 +103,50 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         }
     }
 
-    @Nullable private FusionReactorControllerBlockEntity controller() {
-        if (level == null) return null;
-        BlockEntity blockEntity = level.getBlockEntity(worldPosition.below());
-        return blockEntity instanceof FusionReactorControllerBlockEntity controller && controller.isIoAt(worldPosition)
-                ? controller : null;
+    public void linkController(BlockPos controllerPos) {
+        BlockPos immutable = controllerPos.immutable();
+        if (!immutable.equals(controllerPosition)) {
+            controllerPosition = immutable;
+            setChanged();
+        }
     }
 
-    @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
+    public void unlinkController(BlockPos controllerPos) {
+        if (controllerPosition != null && controllerPosition.equals(controllerPos)) {
+            controllerPosition = null;
+            setChanged();
+        }
+    }
+
+    @Nullable
+    private FusionReactorControllerBlockEntity controller() {
+        if (level == null || controllerPosition == null) {
+            return null;
+        }
+        BlockEntity blockEntity = level.getBlockEntity(controllerPosition);
+        return blockEntity instanceof FusionReactorControllerBlockEntity controller
+                && controller.isIoAt(worldPosition) ? controller : null;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        if (controllerPosition != null) {
+            tag.putLong("ControllerPosition", controllerPosition.asLong());
+        }
+        tag.putLong("MatterOutputSequence", matterOutputSequence);
+    }
+
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        controllerPosition = tag.contains("ControllerPosition")
+                ? BlockPos.of(tag.getLong("ControllerPosition")) : null;
+        matterOutputSequence = tag.getLong("MatterOutputSequence");
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
         FusionReactorControllerBlockEntity controller = controller();
         if (controller == null) {
             return super.getCapability(capability, side);
@@ -115,6 +159,4 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         }
         return super.getCapability(capability, side);
     }
-
-    @Override public void invalidateCaps() { super.invalidateCaps(); energyCap.invalidate(); }
 }

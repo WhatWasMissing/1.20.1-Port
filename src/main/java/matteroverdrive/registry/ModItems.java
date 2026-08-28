@@ -7,6 +7,7 @@ import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.item.ReactorRemoteItem;
+import matteroverdrive.item.ReactorAssemblyGuideItem;
 import matteroverdrive.item.TransportFlashDriveItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -72,6 +73,7 @@ public final class ModItems {
         "quantum_fold_manipulator",
         "record_transformation",
         "reactor_remote",
+        "reactor_assembly_guide",
         "rogue_android_part_arms",
         "rogue_android_part_chest",
         "rogue_android_part_head",
@@ -167,6 +169,9 @@ public final class ModItems {
         if (id.equals("reactor_remote")) {
             return new ReactorRemoteItem(propertiesFor(id));
         }
+        if (id.equals("reactor_assembly_guide")) {
+            return new ReactorAssemblyGuideItem(propertiesFor(id));
+        }
         if (id.equals("pattern_drive") || id.equals("creative_pattern_drive")) {
             return new PatternDriveItem(propertiesFor(id), id.equals("creative_pattern_drive"));
         }
@@ -208,7 +213,8 @@ public final class ModItems {
                 || id.equals("data_pad")
                 || id.equals("spacetime_equalizer")
                 || id.equals("energy_pack")
-                || id.equals("reactor_remote");
+                || id.equals("reactor_remote")
+                || id.equals("reactor_assembly_guide");
     }
 
     public static RegistryObject<Item> get(String id) {
@@ -222,3 +228,4 @@ public final class ModItems {
         return item;
     }
 }
+

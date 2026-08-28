@@ -1,7 +1,11 @@
 {
   "variants": {
-    "": {
-      "model": "matteroverdrive:block/gravitational_stabilizer"
-    }
+    "facing=down": { "model": "matteroverdrive:block/gravitational_stabilizer" },
+    "facing=up": { "model": "matteroverdrive:block/gravitational_stabilizer" },
+    "facing=north": { "model": "matteroverdrive:block/gravitational_stabilizer" },
+    "facing=south": { "model": "matteroverdrive:block/gravitational_stabilizer" },
+    "facing=west": { "model": "matteroverdrive:block/gravitational_stabilizer" },
+    "facing=east": { "model": "matteroverdrive:block/gravitational_stabilizer" }
   }
 }
+

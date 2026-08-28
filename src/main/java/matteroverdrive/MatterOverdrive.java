@@ -41,7 +41,8 @@ public final class MatterOverdrive {
                 ModSounds.all().size()
         );
         LOGGER.info(
-                "M2 VERIFY: machine foundation initialized - blockEntities=13, menus=12, energyPipe=enabled, fusionReactor=enabled, transporter=enabled, inscriber=enabled, decomposer=enabled, recycler=enabled, analyzer=enabled, replicator=enabled, patternStorage=enabled, patternMonitor=enabled, solarPanel=enabled, tritaniumCrate=enabled, networkPipe=enabled, matterPipe=enabled, creativeBattery=enabled"
+                "M2 VERIFY: machine foundation initialized - blockEntities=15, menus=12, energyPipe=enabled, fusionReactor=enabled, transporter=enabled, inscriber=enabled, decomposer=enabled, recycler=enabled, analyzer=enabled, replicator=enabled, patternStorage=enabled, patternMonitor=enabled, solarPanel=enabled, tritaniumCrate=enabled, networkPipe=enabled, matterPipe=enabled, creativeBattery=enabled"
         );
     }
 }
+
