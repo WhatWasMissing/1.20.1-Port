@@ -11,6 +11,8 @@
 - Weapon Station shift-click bounds are limited to the slots actually exposed by the menu.
 - Weapons can reload from charged FE batteries in the player inventory or off-hand.
 - Energy packs remain automatic reload items.
+- Shift-right-click reloads non-Phaser weapons in Survival and Creative.
+- Other guns are no longer treated as reload batteries.
 
 ## Important testing note
 
