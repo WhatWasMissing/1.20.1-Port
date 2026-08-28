@@ -51,7 +51,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private static final double BASE_MATTER_DRAIN = 1.0D / 80.0D;
 
     private final MachineEnergyStorage energy = new MachineEnergyStorage(ENERGY_CAPACITY, 0, ENERGY_CAPACITY, this::setChanged);
-    private final MachineMatterStorage matter = new MachineMatterStorage(MATTER_CAPACITY, true, false, this::setChanged);
+    private final MachineMatterStorage matter = new MachineMatterStorage(MATTER_CAPACITY, true, true, this::setChanged);
     private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(4,
             upgrade -> upgrade == MachineUpgradeItem.Upgrade.SPEED
                     || upgrade == MachineUpgradeItem.Upgrade.RANGE
