@@ -25,3 +25,11 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build --stacktrace
+
+      - name: Upload test JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: matteroverdrive-test-build
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 14
