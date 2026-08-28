@@ -14,6 +14,7 @@
 - Shift-right-click reloads non-Phaser weapons in Survival and Creative.
 - Other guns are no longer treated as reload batteries.
 - Charged weapon batteries are consumed once per reload and no longer drained per shot.
+- Gun item models now load their existing OBJ meshes instead of flat generated icons.
 
 ## Important testing note
 
