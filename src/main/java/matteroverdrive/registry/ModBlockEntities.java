@@ -16,6 +16,7 @@ import matteroverdrive.blockentity.SolarPanelBlockEntity;
 import matteroverdrive.blockentity.TritaniumCrateBlockEntity;
 import matteroverdrive.blockentity.PatternStorageBlockEntity;
 import matteroverdrive.blockentity.PatternMonitorBlockEntity;
+import matteroverdrive.blockentity.WeaponStationBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -43,6 +44,6 @@ public final class ModBlockEntities {
             ModBlocks.get("tritanium_crate_lime").get(), ModBlocks.get("tritanium_crate_magenta").get(), ModBlocks.get("tritanium_crate_orange").get(), ModBlocks.get("tritanium_crate_pink").get(),
             ModBlocks.get("tritanium_crate_purple").get(), ModBlocks.get("tritanium_crate_red").get(), ModBlocks.get("tritanium_crate_silver").get(), ModBlocks.get("tritanium_crate_white").get(),
             ModBlocks.get("tritanium_crate_yellow").get()).build(null));
+    public static final RegistryObject<BlockEntityType<WeaponStationBlockEntity>> WEAPON_STATION = BLOCK_ENTITIES.register("weapon_station", () -> BlockEntityType.Builder.of(WeaponStationBlockEntity::new, ModBlocks.get("weapon_station").get()).build(null));
     private ModBlockEntities() {}
 }
-
