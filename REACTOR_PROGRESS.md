@@ -49,4 +49,10 @@
 - Reactor IO now actively pulls matter from connected matter sources through Matter Pipe and Heavy Matter Pipe routes, rather than relying only on decomposer push timing.
 - Input and output route cursors are separate and persisted, preventing a rebuilt route from leaving the controller short by one matter unit.
 - The pull path ignores other reactor IO blocks so multiple IOs cannot feed matter back into one another.
-- Next test: connect a powered Decomposer through a matter pipe to the reactor IO, drain the reactor to 2047 kM, break and replace a pipe, and confirm it returns to 2048 kM without replacing the IO.
+- Runtime test passed: a powered Decomposer connected through a matter pipe to the reactor IO refills the reactor after draining it to 2047 kM, including after breaking and replacing a pipe, without replacing the IO.
+- For an exact 2048 kM reading, pause generation or test while the reactor is not consuming matter on the same tick.
+
+
+## Next reactor milestone
+
+- Begin gameplay parity for the gravitational anomaly: expose controlled range/effect diagnostics first, then add entity effects while keeping block destruction disabled until it has a separate safety test.
