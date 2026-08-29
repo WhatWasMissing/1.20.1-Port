@@ -78,6 +78,10 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
         return suppression;
     }
 
+    public int getActiveSuppressorCount() {
+        return suppressors.size();
+    }
+
     public double getRealMass() {
         return getRealMassUnsuppressed() * getSuppression();
     }

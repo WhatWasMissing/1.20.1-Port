@@ -115,6 +115,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 13 -> scaledMass(anomaly == null ? 0.0D : anomaly.getRealMass());
                 case 14 -> ioPositions.size();
                 case 15 -> getForward().get2DDataValue();
+                case 16 -> anomaly == null ? 0 : anomaly.getActiveSuppressorCount();
                 default -> 0;
             };
         }
@@ -125,7 +126,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 16;
+            return 17;
         }
     };
 

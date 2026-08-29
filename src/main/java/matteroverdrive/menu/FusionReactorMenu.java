@@ -24,7 +24,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private static final int PLAYER_END = 31;
     private static final int HOTBAR_START = 31;
     private static final int HOTBAR_END = 40;
-    private static final int DATA_COUNT = 16;
+    private static final int DATA_COUNT = 17;
 
     private final FusionReactorControllerBlockEntity reactor;
     private final ContainerData data;
@@ -58,11 +58,11 @@ public class FusionReactorMenu extends AbstractContainerMenu {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(inventory, column + row * 9 + 9,
-                        8 + column * 18, 138 + row * 18));
+                        8 + column * 18, 156 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 196));
+            addSlot(new Slot(inventory, column, 8 + column * 18, 214));
         }
         addDataSlots(data);
     }
@@ -170,6 +170,10 @@ public class FusionReactorMenu extends AbstractContainerMenu {
 
     public Direction ringDirection() {
         return Direction.from2DDataValue(data.get(15));
+    }
+
+    public int stabilizerCount() {
+        return data.get(16);
     }
 
     private int value(int low, int high) {

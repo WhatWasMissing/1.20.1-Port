@@ -14,3 +14,12 @@
 2. Right-click the controller with the guide to toggle the persistent overlay. The action bar reports ON/OFF.
 3. Move, look away, or switch items; the complete outline remains visible while the controller is loaded and nearby.
 4. Use the color legend: blue hull, orange coil/IO, purple flexible side, cyan anomaly, green correct, red incorrect.
+
+
+## Latest implementation
+
+- Reactor component models are now visually distinct: coils use `base_coil`, the controller uses `screen`, and reactor IO uses `network_port`.
+- The controller GUI now reports the number of active stabilizers suppressing the linked anomaly.
+- The reactor menu was extended and its inventory slots moved down to keep the new stabilizer status line readable.
+- Next runtime test: power one and then four stabilizers with redstone, confirm the active-stabilizer count and reduced safe mass, while unsuppressed mass and energy output remain unchanged.
+- Build and in-game verification are still pending for this commit.

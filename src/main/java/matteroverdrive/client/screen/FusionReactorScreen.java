@@ -21,8 +21,8 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
     public FusionReactorScreen(FusionReactorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
-        imageHeight = 223;
-        inventoryLabelY = 126;
+        imageHeight = 241;
+        inventoryLabelY = 144;
     }
 
     @Override
@@ -62,6 +62,8 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
                 18, 101, 0x8a5a00, false);
         graphics.drawString(font, "Matter drain: " + format(menu.matterDrain())
                 + " kM/t | linked IO: " + menu.ioCount(), 18, 112, 0x8a5a00, false);
+        graphics.drawString(font, "Active stabilizers: " + menu.stabilizerCount(),
+                18, 123, 0x8a5a00, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
     }
 
