@@ -119,6 +119,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 17 -> anomaly == null ? 0 : anomaly.getAffectedEntityCount();
                 case 18 -> anomaly == null ? 0 : scaledDistance(
                         Math.min(32.0D, anomaly.getMaxRange()));
+                case 19 -> anomaly == null ? 0 : scaledDistance(anomaly.getBlockBreakRange());
                 default -> 0;
             };
         }
@@ -129,7 +130,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 19;
+            return 20;
         }
     };
 

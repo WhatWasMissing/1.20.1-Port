@@ -65,7 +65,8 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         graphics.drawString(font, "Active stabilizers: " + menu.stabilizerCount(),
                 18, 123, 0x8a5a00, false);
         graphics.drawString(font, "[DEBUG] Pull radius: " + format(menu.anomalyRange())
-                        + " blocks | affected entities: " + menu.affectedEntityCount(),
+                        + " | block radius: " + format(menu.blockHazardRange())
+                        + " | block hazard: DISABLED",
                 18, 134, 0x8a5a00, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
     }

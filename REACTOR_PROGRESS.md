@@ -74,3 +74,10 @@
 - The item uses the existing Space-Time Equalizer armor texture and tooltip.
 - Next test: spawn or position a player/mob inside the pull radius, compare movement without the Equalizer, then equip it in the chest slot and confirm the entity no longer accelerates toward the anomaly.
 - Build and in-game verification are pending for this commit.
+
+
+## Anomaly block hazard diagnostics
+
+- The reactor GUI now exposes the calculated block-effect radius separately from the living-entity pull radius.
+- Block hazard is explicitly shown as DISABLED; this diagnostic milestone makes no world-changing block edits.
+- Next test: compare pull radius and block radius with zero and four powered stabilizers, then confirm both values respond to suppression while the disabled state remains unchanged.
