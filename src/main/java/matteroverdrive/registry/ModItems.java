@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.CreativeBatteryItem;
+import matteroverdrive.item.DebugMatterContainerItem;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
@@ -51,6 +52,7 @@ public final class ModItems {
         "battery",
         "contract",
         "creative_battery",
+        "debug_matter_container",
         "creative_pattern_drive",
         "data_pad",
         "dilithium_crystal",
@@ -164,6 +166,9 @@ public final class ModItems {
     private static Item createStandaloneItem(String id) {
         if (id.equals("creative_battery")) {
             return new CreativeBatteryItem(propertiesFor(id));
+        }
+        if (id.equals("debug_matter_container")) {
+            return new DebugMatterContainerItem(propertiesFor(id));
         }
         if (id.equals("matter_container")) {
             return new MatterContainerItem(propertiesFor(id));

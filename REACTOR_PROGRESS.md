@@ -99,3 +99,11 @@
 - The event horizon is diagnostic-only in this milestone; entities are not consumed and block destruction remains disabled.
 - Next test: compare the horizon line at zero and four powered stabilisers, confirm it changes with suppression, and verify normal pull behavior remains unchanged.
 - Build and in-game verification are pending for this commit.
+
+
+## Debug matter tools
+
+- Added a creative/debug matter container with a 1,000,000 kM capacity for fast reactor and machine testing.
+- Added a client-side Shift tooltip for every item, including block items, showing its registered matter value per item; unknown items display 0 kM.
+- The normal matter container remains capped at 1,000 kM.
+- Next test: obtain the debug matter container, transfer matter into a reactor or machine, and hold Shift over several known and unknown items to verify values.
