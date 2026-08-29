@@ -137,6 +137,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ReplicatorBlockEntity replicator) {
+        replicator.energyStorage.beginUsageTick(level.getGameTime());
         replicator.chargeFromEnergyItem();
         replicator.manageReplicate();
         if (state.hasProperty(ReplicatorBlock.ACTIVE) && state.getValue(ReplicatorBlock.ACTIVE) != replicator.running) {
@@ -187,7 +188,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
         running = true;
-        energyStorage.extractEnergy(drain, false);
+        energyStorage.consumeEnergy(drain, level.getGameTime());
         replicateTime++;
         if (replicateTime >= getSpeed()) {
             replicateTime = 0;

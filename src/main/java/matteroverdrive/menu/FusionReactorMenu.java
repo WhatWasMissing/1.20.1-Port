@@ -188,7 +188,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
         return data.get(19) / 100.0D;
     }
 
-    public int connectedDemand() {
+    public int connectedUsage() {
         return data.get(21);
     }
 

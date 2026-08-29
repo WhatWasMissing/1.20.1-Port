@@ -156,3 +156,12 @@
 - Each unique connected machine is queried with a simulated maximum receive operation, so its configured input-rate limit and current fullness determine its displayed demand.
 - The GUI demand value now answers how much FE/t the connected network can accept now, rather than how many FE it would take to fill every buffer.
 - Next test: compare an idle/full machine, an empty machine, and multiple active machines; demand should rise and fall with their current acceptance.
+
+
+## Actual reactor network FE usage
+
+- Replaced simulated FE acceptance with measured internal machine work, so filling an empty machine buffer no longer appears as reactor demand.
+- Matter Overdrive machine energy storage now records FE explicitly consumed for processing during the current server tick; ordinary charging, cable relay, and battery transfer are excluded.
+- The reactor scans every unique connected Matter Overdrive machine and totals its current/recent processing usage. The previous-tick fallback prevents the display from flickering because of block-entity tick order.
+- The controller GUI label is now `usage: N FE/t`.
+- Next test: connect an idle empty Decomposer and confirm usage remains 0 while its buffer charges; start decomposition and confirm usage matches the Decomposer drain; add a second active machine and confirm both usages are summed.

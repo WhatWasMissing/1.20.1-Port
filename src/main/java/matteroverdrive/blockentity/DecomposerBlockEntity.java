@@ -134,6 +134,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, DecomposerBlockEntity decomposer) {
+        decomposer.energyStorage.beginUsageTick(level.getGameTime());
         decomposer.chargeFromEnergyItem();
         decomposer.outputMatterToNeighbors();
         decomposer.manageDecompose();
@@ -199,7 +200,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
         running = true;
-        energyStorage.extractEnergy(energyPerTick, false);
+        energyStorage.consumeEnergy(energyPerTick, level.getGameTime());
         decomposeTime++;
         if (decomposeTime >= getSpeed()) {
             decomposeTime = 0;

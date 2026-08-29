@@ -54,8 +54,8 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         graphics.drawString(font, "Structure: " + (menu.valid() ? "VALID" : faultText())
                         + " | ring: " + menu.ringDirection().getName().toUpperCase(Locale.ROOT),
                 18, 79, menu.valid() ? 0x227722 : 0xaa2222, false);
-        graphics.drawString(font, "Output: " + menu.output() + " FE/t | demand: "
-                + menu.connectedDemand() + " FE/t | efficiency: "
+        graphics.drawString(font, "Output: " + menu.output() + " FE/t | usage: "
+                + menu.connectedUsage() + " FE/t | efficiency: "
                 + Math.round(menu.efficiency() * 100) + "%", 18, 90, 0x8a5a00, false);
         graphics.drawString(font, "Anomaly offset: " + menu.anomalyDistance()
                 + " | mass: " + format(menu.unsuppressedMass())

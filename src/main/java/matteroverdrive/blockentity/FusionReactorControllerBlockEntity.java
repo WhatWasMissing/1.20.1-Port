@@ -92,7 +92,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private BlockPos anomalyPosition;
     private int anomalyDistance = -1;
     private int generatedLastTick;
-    private int connectedDemand;
+    private int connectedUsage;
     private int tickCounter;
     private double matterDrainRemainder;
     private String fault = "Checking structure";
@@ -124,7 +124,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                         Math.min(32.0D, anomaly.getMaxRange()));
                 case 19 -> anomaly == null ? 0 : scaledDistance(anomaly.getBlockBreakRange());
                 case 20 -> anomaly == null ? 0 : scaledDistance(anomaly.getEventHorizon());
-                case 21 -> connectedDemand;
+                case 21 -> connectedUsage;
                 default -> 0;
             };
         }
@@ -150,7 +150,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             reactor.validateStructure();
         }
         reactor.generate();
-        reactor.refreshConnectedDemand();
+        reactor.refreshConnectedUsage();
     }
 
     private void generate() {
@@ -341,13 +341,13 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         setChanged();
     }
 
-    private void refreshConnectedDemand() {
+    private void refreshConnectedUsage() {
         if (level == null || level.isClientSide || ioPositions.isEmpty()) {
-            connectedDemand = 0;
+            connectedUsage = 0;
             return;
         }
 
-        int demand = 0;
+        long usage = 0;
         Deque<BlockPos> pending = new ArrayDeque<>();
         Set<BlockPos> visitedPipes = new HashSet<>();
         Set<BlockPos> visitedReceivers = new HashSet<>();
@@ -358,7 +358,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                         && visitedPipes.add(adjacent.immutable())) {
                     pending.addLast(adjacent.immutable());
                 } else if (!adjacent.equals(worldPosition)) {
-                    demand += receiverDemand(adjacent, direction, visitedReceivers);
+                    usage += receiverUsage(adjacent, direction, visitedReceivers);
                 }
             }
         }
@@ -373,14 +373,14 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                     }
                 } else if (!adjacent.equals(worldPosition)
                         && !ioPositions.contains(adjacent)) {
-                    demand += receiverDemand(adjacent, direction, visitedReceivers);
+                    usage += receiverUsage(adjacent, direction, visitedReceivers);
                 }
             }
         }
-        connectedDemand = Math.min(Integer.MAX_VALUE, demand);
+        connectedUsage = (int) Math.min(Integer.MAX_VALUE, usage);
     }
 
-    private int receiverDemand(BlockPos position, Direction pipeSide,
+    private int receiverUsage(BlockPos position, Direction pipeSide,
                                Set<BlockPos> visitedReceivers) {
         if (!visitedReceivers.add(position.immutable())) {
             return 0;
@@ -391,10 +391,11 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         }
         IEnergyStorage storage = receiver.getCapability(
                 ForgeCapabilities.ENERGY, pipeSide.getOpposite()).orElse(null);
-        if (storage == null || !storage.canReceive()) {
+        if (!(storage instanceof MachineEnergyStorage machineStorage)
+                || !storage.canReceive()) {
             return 0;
         }
-        return Math.max(0, storage.receiveEnergy(Integer.MAX_VALUE, true));
+        return machineStorage.getRecentEnergyUsage(level.getGameTime());
     }
 
     public void outputTo(Direction side, int limit) {

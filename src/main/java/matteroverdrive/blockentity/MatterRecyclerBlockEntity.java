@@ -96,6 +96,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MatterRecyclerBlockEntity recycler) {
+        recycler.energyStorage.beginUsageTick(level.getGameTime());
         recycler.chargeFromEnergyItem();
         recycler.manageRecycle();
         if (state.hasProperty(MatterRecyclerBlock.ACTIVE) && state.getValue(MatterRecyclerBlock.ACTIVE) != recycler.running) {
@@ -133,7 +134,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
             return;
         }
         running = true;
-        energyStorage.extractEnergy(drain, false);
+        energyStorage.consumeEnergy(drain, level.getGameTime());
         recycleTime++;
         if (recycleTime >= getSpeed()) {
             recycleTime = 0;

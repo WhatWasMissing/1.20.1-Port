@@ -129,6 +129,7 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
 
     public static void serverTick(
             Level level, BlockPos pos, BlockState state, InscriberBlockEntity inscriber) {
+        inscriber.energyStorage.beginUsageTick(level.getGameTime());
         inscriber.chargeFromEnergyItem();
         inscriber.manageInscription();
     }
@@ -167,7 +168,7 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
         }
 
         running = true;
-        energyStorage.extractEnergy(drain, false);
+        energyStorage.consumeEnergy(drain, level.getGameTime());
         progress++;
         if (progress >= getCycleTime(recipe)) {
             inscribe(recipe);
