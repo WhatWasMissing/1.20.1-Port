@@ -24,7 +24,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private static final int PLAYER_END = 31;
     private static final int HOTBAR_START = 31;
     private static final int HOTBAR_END = 40;
-    private static final int DATA_COUNT = 20;
+    private static final int DATA_COUNT = 21;
 
     private final FusionReactorControllerBlockEntity reactor;
     private final ContainerData data;
@@ -186,6 +186,10 @@ public class FusionReactorMenu extends AbstractContainerMenu {
 
     public double blockHazardRange() {
         return data.get(19) / 100.0D;
+    }
+
+    public double eventHorizon() {
+        return data.get(20) / 100.0D;
     }
 
     private int value(int low, int high) {

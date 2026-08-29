@@ -90,3 +90,12 @@
 - Reactor structure remained valid, matter remained at 2048/2048 kM, output remained 177 FE/t, and block hazard remained DISABLED.
 - This confirms stabiliser suppression changes anomaly effect radius without reducing reactor output.
 - Next test: verify the Space-Time Equalizer prevents pull on a player or mob, then continue with controlled anomaly hazard design.
+
+
+## Original anomaly parity
+
+- Added the original Matter Overdrive event-horizon calculation: `max((2 * G * realMass) / c², 0.5)`.
+- The reactor debug line now reports the event-horizon radius separately from pull and block-effect radii.
+- The event horizon is diagnostic-only in this milestone; entities are not consumed and block destruction remains disabled.
+- Next test: compare the horizon line at zero and four powered stabilisers, confirm it changes with suppression, and verify normal pull behavior remains unchanged.
+- Build and in-game verification are pending for this commit.

@@ -66,6 +66,7 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
                 18, 123, 0x8a5a00, false);
         graphics.drawString(font, "[DEBUG] Pull radius: " + format(menu.anomalyRange())
                         + " | block radius: " + format(menu.blockHazardRange())
+                        + " | horizon: " + format(menu.eventHorizon())
                         + " | block hazard: DISABLED",
                 18, 134, 0x8a5a00, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);

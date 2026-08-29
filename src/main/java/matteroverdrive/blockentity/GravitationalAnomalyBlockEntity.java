@@ -22,6 +22,7 @@ import java.util.Map;
 public class GravitationalAnomalyBlockEntity extends BlockEntity {
     public static final double STRENGTH_MULTIPLIER = 0.00001D;
     public static final double GRAVITATIONAL_CONSTANT = 6.67384D;
+    private static final double SPEED_OF_LIGHT = 2.99792458D;
     private static final int ITEM_ATTRACTION_INTERVAL = 5;
     private static final double MAX_ITEM_ATTRACTION_RANGE = 32.0D;
     private static final double MAX_ENTITY_EFFECT_RANGE = 32.0D;
@@ -109,6 +110,12 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
 
     public double getBlockBreakRange() {
         return getMaxRange() / 2.0D;
+    }
+
+    /** Matches the original mod's event-horizon calculation. */
+    public double getEventHorizon() {
+        return Math.max((2.0D * GRAVITATIONAL_CONSTANT * getRealMass())
+                / (SPEED_OF_LIGHT * SPEED_OF_LIGHT), 0.5D);
     }
 
     public double getAcceleration(double distanceSquared) {
