@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import matteroverdrive.block.FusionReactorControllerBlock;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModItems;
+import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -35,12 +36,16 @@ public final class FusionReactorGuideOverlay {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (player == null || (!player.getMainHandItem().is(ModItems.get("reactor_assembly_guide").get())
-                && !player.getOffhandItem().is(ModItems.get("reactor_assembly_guide").get()))) return;
+        if (player == null) return;
         if (!(player.pick(8.0D, event.getPartialTick(), false) instanceof BlockHitResult hit)
                 || hit.getType() != HitResult.Type.BLOCK) return;
         BlockPos controller = hit.getBlockPos();
         if (!minecraft.level.getBlockState(controller).is(ModBlocks.get("fusion_reactor_controller").get())) return;
+        boolean guideHeld = player.getMainHandItem().is(ModItems.get("reactor_assembly_guide").get())
+                || player.getOffhandItem().is(ModItems.get("reactor_assembly_guide").get());
+        boolean persistent = minecraft.level.getBlockEntity(controller) instanceof FusionReactorControllerBlockEntity reactor
+                && reactor.isOverlayEnabled();
+        if (!guideHeld && !persistent) return;
         Direction forward = minecraft.level.getBlockState(controller).getValue(FusionReactorControllerBlock.FACING);
         Direction right = forward.getClockWise();
         PoseStack pose = event.getPoseStack();
@@ -64,7 +69,14 @@ public final class FusionReactorGuideOverlay {
     }
 
     private static float[] colour(Level level, BlockPos pos, BlockState state, int type) {
-        if (state.isAir()) return new float[]{1.0F, 0.85F, 0.15F};
+        if (state.isAir()) {
+            return switch (type) {
+                case 0 -> new float[]{0.2F, 0.55F, 1.0F};
+                case 1 -> new float[]{1.0F, 0.55F, 0.1F};
+                case 2 -> new float[]{0.75F, 0.25F, 1.0F};
+                default -> new float[]{0.25F, 0.9F, 1.0F};
+            };
+        }
         Block block = state.getBlock();
         boolean valid = type == 0 && block == ModBlocks.get("machine_hull").get()
                 || type == 1 && (block == ModBlocks.get("fusion_reactor_coil").get() || block == ModBlocks.get("fusion_reactor_io").get())

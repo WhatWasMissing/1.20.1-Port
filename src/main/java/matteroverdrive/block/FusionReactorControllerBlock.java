@@ -2,8 +2,10 @@ package matteroverdrive.block;
 
 import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
 import matteroverdrive.registry.ModBlockEntities;
+import matteroverdrive.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -69,6 +71,16 @@ public class FusionReactorControllerBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
+        if (player.getItemInHand(hand).is(ModItems.get("reactor_assembly_guide").get())
+                && level.getBlockEntity(pos) instanceof FusionReactorControllerBlockEntity reactor) {
+            if (!level.isClientSide) {
+                boolean enabled = reactor.toggleOverlay();
+                level.sendBlockUpdated(pos, state, state, 3);
+                player.displayClientMessage(Component.literal("Reactor placement overlay: "
+                        + (enabled ? "ON" : "OFF")), true);
+            }
+            return InteractionResult.sidedSuccess(level.isClientSide);
+        }
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof FusionReactorControllerBlockEntity reactor) {
             NetworkHooks.openScreen(serverPlayer, reactor, pos);

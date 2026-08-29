@@ -83,6 +83,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private LazyOptional<IMatterStorage> matterCap = LazyOptional.of(() -> matter);
 
     private boolean structureValid;
+    private boolean overlayEnabled;
     private BlockPos anomalyPosition;
     private int anomalyDistance = -1;
     private int generatedLastTick;
@@ -376,6 +377,16 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         return data;
     }
 
+    public boolean isOverlayEnabled() {
+        return overlayEnabled;
+    }
+
+    public boolean toggleOverlay() {
+        overlayEnabled = !overlayEnabled;
+        setChanged();
+        return overlayEnabled;
+    }
+
     public void dropUpgrades() {
         if (level == null || level.isClientSide) {
             return;
@@ -396,6 +407,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         tag.putInt("Matter", matter.getMatterStored());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putDouble("MatterRemainder", matterDrainRemainder);
+        tag.putBoolean("OverlayEnabled", overlayEnabled);
     }
 
     @Override
@@ -408,6 +420,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         energy.setEnergyStored(tag.getInt("Energy"));
         matter.setMatterStored(tag.getInt("Matter"));
         matterDrainRemainder = tag.getDouble("MatterRemainder");
+        overlayEnabled = tag.getBoolean("OverlayEnabled");
     }
 
     @Override
