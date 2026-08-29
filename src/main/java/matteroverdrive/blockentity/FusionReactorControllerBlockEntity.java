@@ -15,6 +15,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.network.Connection;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -424,6 +426,20 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         matter.setMatterStored(tag.getInt("Matter"));
         matterDrainRemainder = tag.getDouble("MatterRemainder");
         overlayEnabled = tag.getBoolean("OverlayEnabled");
+        updateClientOverlayCache();
+    }
+
+    private void updateClientOverlayCache() {
+        if (level != null && level.isClientSide && overlayEnabled) {
+            DistExecutor.unsafeRunWhenOn(net.minecraftforge.api.distmarker.Dist.CLIENT,
+                    () -> () -> matteroverdrive.client.FusionReactorGuideOverlay.rememberController(worldPosition));
+        }
+    }
+
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
+        super.onDataPacket(connection, packet);
+        updateClientOverlayCache();
     }
 
     @Override
