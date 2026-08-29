@@ -127,3 +127,10 @@
 - Its item form is registered at 1,000,000 kM in `MatterValueRegistry`, so an item entity consumed by the anomaly increases anomaly mass by 1,000,000 kM.
 - Use `/give @p matteroverdrive:debug_matter_block`, place it, break it, and let the dropped block enter the anomaly.
 - This is intentionally a debug/testing item and is not part of reactor structure requirements.
+
+
+## Reactor FE demand debug
+
+- Added the current connected FE demand to the Fusion Reactor Controller debug GUI.
+- The value is refreshed from connected FE receiver capacity when the reactor outputs, allowing comparison of reactor output against network demand.
+- Next test: connect one or more machines, observe demand while idle and processing, then compare it with reactor output.

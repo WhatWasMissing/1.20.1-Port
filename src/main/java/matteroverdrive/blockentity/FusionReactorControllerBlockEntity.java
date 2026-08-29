@@ -90,6 +90,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private BlockPos anomalyPosition;
     private int anomalyDistance = -1;
     private int generatedLastTick;
+    private int connectedDemand;
     private int tickCounter;
     private double matterDrainRemainder;
     private String fault = "Checking structure";
@@ -121,6 +122,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                         Math.min(32.0D, anomaly.getMaxRange()));
                 case 19 -> anomaly == null ? 0 : scaledDistance(anomaly.getBlockBreakRange());
                 case 20 -> anomaly == null ? 0 : scaledDistance(anomaly.getEventHorizon());
+                case 21 -> connectedDemand;
                 default -> 0;
             };
         }
@@ -131,7 +133,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 21;
+            return 22;
         }
     };
 
@@ -344,7 +346,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         if (receiver == null) {
             return;
         }
+        connectedDemand = 0;
         receiver.getCapability(ForgeCapabilities.ENERGY, side.getOpposite()).ifPresent(storage -> {
+            connectedDemand = Math.max(0, storage.getMaxEnergyStored() - storage.getEnergyStored());
             int offer = Math.min(limit, energy.extractEnergy(limit, true));
             if (offer > 0) {
                 int accepted = storage.receiveEnergy(offer, false);
