@@ -142,3 +142,9 @@
 - Unique receiver machines are counted once, and demand is calculated as free FE capacity (`max energy - stored energy`).
 - The controller GUI demand value now represents the combined connected network demand, including direct IO connections and chained pipes.
 - Next test: connect multiple machines through different IOs and cable branches, compare the combined demand, then fill one machine and confirm the total decreases.
+
+
+## FE demand scan correction
+
+- Corrected demand accumulation so direct IO receivers and receivers reached through cable branches contribute to the same total.
+- The full-network demand value is now ready for compilation and runtime verification.

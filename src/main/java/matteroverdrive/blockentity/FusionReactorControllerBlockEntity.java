@@ -347,6 +347,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             return;
         }
 
+        int demand = 0;
         Deque<BlockPos> pending = new ArrayDeque<>();
         Set<BlockPos> visitedPipes = new HashSet<>();
         Set<BlockPos> visitedReceivers = new HashSet<>();
@@ -357,12 +358,11 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                         && visitedPipes.add(adjacent.immutable())) {
                     pending.addLast(adjacent.immutable());
                 } else if (!adjacent.equals(worldPosition)) {
-                    addDemand(adjacent, direction, visitedReceivers);
+                    demand += receiverDemand(adjacent, direction, visitedReceivers);
                 }
             }
         }
 
-        int demand = 0;
         while (!pending.isEmpty()) {
             BlockPos pipePosition = pending.removeFirst();
             for (Direction direction : Direction.values()) {
@@ -378,11 +378,6 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             }
         }
         connectedDemand = Math.min(Integer.MAX_VALUE, demand);
-    }
-
-    private void addDemand(BlockPos position, Direction fromReceiver,
-                           Set<BlockPos> visitedReceivers) {
-        connectedDemand += receiverDemand(position, fromReceiver, visitedReceivers);
     }
 
     private int receiverDemand(BlockPos position, Direction pipeSide,
