@@ -21,6 +21,7 @@ import java.util.Set;
 
 public class FusionReactorIOBlockEntity extends BlockEntity {
     private BlockPos controllerPosition;
+    private long matterInputSequence;
     private long matterOutputSequence;
 
     public FusionReactorIOBlockEntity(BlockPos pos, BlockState state) {
@@ -32,6 +33,17 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         FusionReactorControllerBlockEntity controller = io.controller();
         if (controller == null) {
             return;
+        }
+
+        int matterRoom = controller.getMatter().getMatterCapacity()
+                - controller.getMatter().getMatterStored();
+        if (matterRoom > 0) {
+            int receivedMatter = MatterNetworkUtil.pullMatter(
+                    level, pos, controller.getMatter(), matterRoom, io.matterInputSequence);
+            if (receivedMatter > 0) {
+                io.matterInputSequence++;
+                io.setChanged();
+            }
         }
 
         if (controller.getMatter().getMatterStored() > 0) {
@@ -134,6 +146,7 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         if (controllerPosition != null) {
             tag.putLong("ControllerPosition", controllerPosition.asLong());
         }
+        tag.putLong("MatterInputSequence", matterInputSequence);
         tag.putLong("MatterOutputSequence", matterOutputSequence);
     }
 
@@ -142,6 +155,7 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         super.load(tag);
         controllerPosition = tag.contains("ControllerPosition")
                 ? BlockPos.of(tag.getLong("ControllerPosition")) : null;
+        matterInputSequence = tag.getLong("MatterInputSequence");
         matterOutputSequence = tag.getLong("MatterOutputSequence");
     }
 

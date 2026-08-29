@@ -42,3 +42,11 @@
 - Sneak-right-click rotates an existing stabilizer through the four horizontal directions and reports the new beam direction.
 - Blocked-beam messages now report the blocking distance and direction.
 - Next test: rotate a powered stabilizer away from the anomaly and confirm it stops suppressing; place a solid block in its beam and confirm the blocked distance is reported.
+
+
+## Reactor matter input recovery
+
+- Reactor IO now actively pulls matter from connected matter sources through Matter Pipe and Heavy Matter Pipe routes, rather than relying only on decomposer push timing.
+- Input and output route cursors are separate and persisted, preventing a rebuilt route from leaving the controller short by one matter unit.
+- The pull path ignores other reactor IO blocks so multiple IOs cannot feed matter back into one another.
+- Next test: connect a powered Decomposer through a matter pipe to the reactor IO, drain the reactor to 2047 kM, break and replace a pipe, and confirm it returns to 2048 kM without replacing the IO.
