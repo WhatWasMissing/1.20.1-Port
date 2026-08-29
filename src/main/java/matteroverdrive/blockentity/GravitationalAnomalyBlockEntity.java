@@ -2,8 +2,10 @@ package matteroverdrive.blockentity;
 
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.registry.ModBlockEntities;
+import matteroverdrive.registry.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
@@ -154,6 +156,11 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
         AABB bounds = new AABB(worldPosition).inflate(range);
         for (LivingEntity livingEntity : level.getEntitiesOfClass(
                 LivingEntity.class, bounds, LivingEntity::isAlive)) {
+            if (livingEntity.getItemBySlot(EquipmentSlot.CHEST)
+                    .is(ModItems.get("spacetime_equalizer").get())) {
+                continue;
+            }
+
             Vec3 pull = centre.subtract(livingEntity.position());
             double distanceSquared = pull.lengthSqr();
             double distance = Math.sqrt(distanceSquared);

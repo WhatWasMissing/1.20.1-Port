@@ -65,3 +65,12 @@
 - Block destruction is still disabled; this milestone is limited to observable, reversible entity movement.
 - Next test: place a player or mob at several distances from the anomaly, confirm inward movement while unsuppressed, then power stabilizers and confirm the pull range and force decrease.
 - Build and in-game verification are pending for this commit.
+
+
+## Space-Time Equalizer
+
+- The existing Space-Time Equalizer is now a real chest-slot wearable rather than a generic item.
+- Anomaly gravity ignores living entities wearing it, including players and mobs.
+- The item uses the existing Space-Time Equalizer armor texture and tooltip.
+- Next test: spawn or position a player/mob inside the pull radius, compare movement without the Equalizer, then equip it in the chest slot and confirm the entity no longer accelerates toward the anomaly.
+- Build and in-game verification are pending for this commit.

@@ -8,6 +8,7 @@ import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.item.ReactorRemoteItem;
 import matteroverdrive.item.ReactorAssemblyGuideItem;
+import matteroverdrive.item.SpacetimeEqualizerItem;
 import matteroverdrive.item.TransportFlashDriveItem;
 import matteroverdrive.item.TritaniumArmorItem;
 import matteroverdrive.item.TritaniumArmorMaterial;
@@ -181,6 +182,9 @@ public final class ModItems {
         }
         if (id.equals("reactor_assembly_guide")) {
             return new ReactorAssemblyGuideItem(propertiesFor(id));
+        }
+        if (id.equals("spacetime_equalizer")) {
+            return new SpacetimeEqualizerItem(propertiesFor(id));
         }
         if (id.equals("pattern_drive") || id.equals("creative_pattern_drive")) {
             return new PatternDriveItem(propertiesFor(id), id.equals("creative_pattern_drive"));
