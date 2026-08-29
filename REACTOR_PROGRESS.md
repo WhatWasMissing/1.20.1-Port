@@ -107,3 +107,9 @@
 - Added a client-side Shift tooltip for every item, including block items, showing its registered matter value per item; unknown items display 0 kM.
 - The normal matter container remains capped at 1,000 kM.
 - Next test: obtain the debug matter container, transfer matter into a reactor or machine, and hold Shift over several known and unknown items to verify values.
+
+
+## Debug matter capability correction
+
+- Corrected the debug container capability provider to receive its 1,000,000 kM capacity explicitly.
+- Build verification is pending on GitHub Actions.

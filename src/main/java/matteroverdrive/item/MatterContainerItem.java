@@ -179,11 +179,17 @@ public class MatterContainerItem extends Item {
 
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-        return new MatterContainerCapabilityProvider();
+        return new MatterContainerCapabilityProvider(capacity);
     }
 
     private static final class MatterContainerCapabilityProvider implements ICapabilitySerializable<CompoundTag> {
-        private final MachineMatterStorage storage = new MachineMatterStorage(capacity, true, true, null);
+        private final MachineMatterStorage storage;
+        private final LazyOptional<IMatterStorage> capability;
+
+        private MatterContainerCapabilityProvider(int capacity) {
+            storage = new MachineMatterStorage(capacity, true, true, null);
+            capability = LazyOptional.of(() -> storage);
+        }
         private final LazyOptional<IMatterStorage> capability = LazyOptional.of(() -> storage);
 
         @Override
