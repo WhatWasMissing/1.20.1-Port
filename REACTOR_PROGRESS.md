@@ -134,3 +134,11 @@
 - Added the current connected FE demand to the Fusion Reactor Controller debug GUI.
 - The value is refreshed from connected FE receiver capacity when the reactor outputs, allowing comparison of reactor output against network demand.
 - Next test: connect one or more machines, observe demand while idle and processing, then compare it with reactor output.
+
+
+## Full network FE demand scan
+
+- Replaced the first-endpoint demand estimate with a breadth-first scan from all reactor IO positions through connected energy pipes.
+- Unique receiver machines are counted once, and demand is calculated as free FE capacity (`max energy - stored energy`).
+- The controller GUI demand value now represents the combined connected network demand, including direct IO connections and chained pipes.
+- Next test: connect multiple machines through different IOs and cable branches, compare the combined demand, then fill one machine and confirm the total decreases.

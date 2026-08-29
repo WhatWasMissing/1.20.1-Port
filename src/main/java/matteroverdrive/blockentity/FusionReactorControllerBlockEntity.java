@@ -33,6 +33,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -148,6 +150,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             reactor.validateStructure();
         }
         reactor.generate();
+        reactor.refreshConnectedDemand();
     }
 
     private void generate() {
@@ -338,6 +341,67 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         setChanged();
     }
 
+    private void refreshConnectedDemand() {
+        if (level == null || level.isClientSide || ioPositions.isEmpty()) {
+            connectedDemand = 0;
+            return;
+        }
+
+        Deque<BlockPos> pending = new ArrayDeque<>();
+        Set<BlockPos> visitedPipes = new HashSet<>();
+        Set<BlockPos> visitedReceivers = new HashSet<>();
+        for (BlockPos ioPosition : ioPositions) {
+            for (Direction direction : Direction.values()) {
+                BlockPos adjacent = ioPosition.relative(direction);
+                if (level.getBlockEntity(adjacent) instanceof EnergyPipeBlockEntity
+                        && visitedPipes.add(adjacent.immutable())) {
+                    pending.addLast(adjacent.immutable());
+                } else if (!adjacent.equals(worldPosition)) {
+                    addDemand(adjacent, direction, visitedReceivers);
+                }
+            }
+        }
+
+        int demand = 0;
+        while (!pending.isEmpty()) {
+            BlockPos pipePosition = pending.removeFirst();
+            for (Direction direction : Direction.values()) {
+                BlockPos adjacent = pipePosition.relative(direction);
+                if (level.getBlockEntity(adjacent) instanceof EnergyPipeBlockEntity) {
+                    if (visitedPipes.add(adjacent.immutable())) {
+                        pending.addLast(adjacent.immutable());
+                    }
+                } else if (!adjacent.equals(worldPosition)
+                        && !ioPositions.contains(adjacent)) {
+                    demand += receiverDemand(adjacent, direction, visitedReceivers);
+                }
+            }
+        }
+        connectedDemand = Math.min(Integer.MAX_VALUE, demand);
+    }
+
+    private void addDemand(BlockPos position, Direction fromReceiver,
+                           Set<BlockPos> visitedReceivers) {
+        connectedDemand += receiverDemand(position, fromReceiver, visitedReceivers);
+    }
+
+    private int receiverDemand(BlockPos position, Direction pipeSide,
+                               Set<BlockPos> visitedReceivers) {
+        if (!visitedReceivers.add(position.immutable())) {
+            return 0;
+        }
+        BlockEntity receiver = level.getBlockEntity(position);
+        if (receiver == null) {
+            return 0;
+        }
+        IEnergyStorage storage = receiver.getCapability(
+                ForgeCapabilities.ENERGY, pipeSide.getOpposite()).orElse(null);
+        if (storage == null || !storage.canReceive()) {
+            return 0;
+        }
+        return Math.max(0, storage.getMaxEnergyStored() - storage.getEnergyStored());
+    }
+
     public void outputTo(Direction side, int limit) {
         if (level == null || limit <= 0) {
             return;
@@ -346,9 +410,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         if (receiver == null) {
             return;
         }
-        connectedDemand = 0;
         receiver.getCapability(ForgeCapabilities.ENERGY, side.getOpposite()).ifPresent(storage -> {
-            connectedDemand = Math.max(0, storage.getMaxEnergyStored() - storage.getEnergyStored());
             int offer = Math.min(limit, energy.extractEnergy(limit, true));
             if (offer > 0) {
                 int accepted = storage.receiveEnergy(offer, false);
