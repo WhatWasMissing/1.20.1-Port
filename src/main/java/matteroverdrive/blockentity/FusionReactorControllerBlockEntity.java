@@ -394,7 +394,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         if (storage == null || !storage.canReceive()) {
             return 0;
         }
-        return Math.max(0, storage.getMaxEnergyStored() - storage.getEnergyStored());
+        return Math.max(0, storage.receiveEnergy(Integer.MAX_VALUE, true));
     }
 
     public void outputTo(Direction side, int limit) {

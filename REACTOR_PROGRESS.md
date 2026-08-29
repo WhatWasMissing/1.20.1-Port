@@ -148,3 +148,11 @@
 
 - Corrected demand accumulation so direct IO receivers and receivers reached through cable branches contribute to the same total.
 - The full-network demand value is now ready for compilation and runtime verification.
+
+
+## Live FE/t demand correction
+
+- Changed reactor network demand from total empty storage capacity to simulated FE acceptance per tick.
+- Each unique connected machine is queried with a simulated maximum receive operation, so its configured input-rate limit and current fullness determine its displayed demand.
+- The GUI demand value now answers how much FE/t the connected network can accept now, rather than how many FE it would take to fill every buffer.
+- Next test: compare an idle/full machine, an empty machine, and multiple active machines; demand should rise and fall with their current acceptance.
