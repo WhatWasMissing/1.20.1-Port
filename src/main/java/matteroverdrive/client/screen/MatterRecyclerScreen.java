@@ -2,11 +2,20 @@ package matteroverdrive.client.screen;
 
 import matteroverdrive.menu.MatterRecyclerMenu;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class MatterRecyclerScreen extends AbstractContainerScreen<MatterRecyclerMenu>{
+    @Override
+    protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+        }).bounds(leftPos + imageWidth - 72, topPos + 4, 68, 20).build());
+    }
+
     public MatterRecyclerScreen(MatterRecyclerMenu menu,Inventory inv,Component title){super(menu,inv,title);imageWidth=176;imageHeight=184;inventoryLabelY=91;}
     @Override public void render(GuiGraphics g,int mx,int my,float pt){renderBackground(g);super.render(g,mx,my,pt);renderTooltip(g,mx,my);}
     @Override protected void renderBg(GuiGraphics g,float pt,int mx,int my){int x=leftPos,y=topPos;panel(g,x,y);slot(g,x+25,y+43);slot(g,x+79,y+43);slot(g,x+133,y+43);for(int slot=0;slot<4;slot++)slot(g,x+52+slot*18,y+65);bar(g,x+48,y+48,42,5,menu.getProgress(),menu.getMaxProgress(),0xFF51A86B);vbar(g,x+8,y+20,48,menu.getEnergy(),menu.getEnergyCapacity(),0xFFCC3333);}

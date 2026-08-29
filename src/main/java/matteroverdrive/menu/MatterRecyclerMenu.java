@@ -37,4 +37,13 @@ public class MatterRecyclerMenu extends AbstractContainerMenu {
         if(index<MACHINE_SLOTS)moved=moveItemStackTo(src,PLAYER_INV_START,HOTBAR_END,true);else{moved=false;if(src.getItem() instanceof MachineUpgradeItem)moved=moveItemStackTo(src,3,MACHINE_SLOTS,false);if(!moved&&src.getCapability(ForgeCapabilities.ENERGY).map(e->e.canExtract()).orElse(false))moved=moveItemStackTo(src,1,2,false);if(!moved&&src.getItem() instanceof MatterDustItem dust&&!dust.isRefined())moved=moveItemStackTo(src,0,1,false);if(!moved)moved=index<PLAYER_INV_END?moveItemStackTo(src,PLAYER_INV_END,HOTBAR_END,false):moveItemStackTo(src,PLAYER_INV_START,PLAYER_INV_END,false);}if(!moved)return ItemStack.EMPTY;if(src.isEmpty())slot.set(ItemStack.EMPTY);else slot.setChanged();slot.onTake(player,src);return copy;}
     @Override public boolean stillValid(Player p){return stillValid(ContainerLevelAccess.create(machine.getLevel(),machine.getBlockPos()),p,ModBlocks.get("matter_recycler").get());}
     public int getProgress(){return data.get(0);}public int getMaxProgress(){return data.get(1);}public int getEnergy(){return combine(data.get(2),data.get(3));}public int getEnergyCapacity(){return combine(data.get(4),data.get(5));}public int getMatter(){return data.get(6)&0xFFFF;}public int getEnergyPerTick(){return data.get(7)&0xFFFF;}private static int combine(int l,int h){return(l&0xFFFF)|((h&0xFFFF)<<16);}
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id != 1) return false;
+        boolean enabled = machine.getEnergyStorage().toggleInfiniteEnergy();
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
+        return true;
+    }
 }

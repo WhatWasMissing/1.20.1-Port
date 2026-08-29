@@ -211,6 +211,7 @@ public class SolarPanelBlockEntity extends BlockEntity implements MenuProvider {
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.put("Upgrades", upgrades.serializeNBT());
     }
 
@@ -222,6 +223,7 @@ public class SolarPanelBlockEntity extends BlockEntity implements MenuProvider {
         }
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
     }
 
     @Override

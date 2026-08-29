@@ -331,6 +331,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("Matter", matterStorage.getMatterStored());
         tag.putInt("DecomposeTime", decomposeTime);
         tag.putLong("LastMatterExtractTick", lastMatterExtractTick);
@@ -345,6 +346,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         matterStorage.setMatterStored(tag.getInt("Matter"));
         decomposeTime = Math.max(0, tag.getInt("DecomposeTime"));
         lastMatterExtractTick = tag.getLong("LastMatterExtractTick");

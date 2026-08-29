@@ -1,10 +1,19 @@
 package matteroverdrive.client.screen;
 import matteroverdrive.menu.ReplicatorMenu;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu>{
+    @Override
+    protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+        }).bounds(leftPos + imageWidth - 72, topPos + 4, 68, 20).build());
+    }
+
  public ReplicatorScreen(ReplicatorMenu m,Inventory i,Component t){super(m,i,t);imageWidth=176;imageHeight=218;inventoryLabelY=125;}
  @Override public void render(GuiGraphics g,int x,int y,float p){renderBackground(g);super.render(g,x,y,p);renderTooltip(g,x,y);}
  @Override protected void renderBg(GuiGraphics g,float p,int mx,int my){int x=leftPos,y=topPos;g.fill(x,y,x+176,y+218,0xFFC6C6C6);for(int[]s:new int[][]{{19,43},{61,43},{115,34},{139,52}}){g.fill(x+s[0],y+s[1],x+s[0]+20,y+s[1]+20,0xFF454545);g.fill(x+s[0]+1,y+s[1]+1,x+s[0]+19,y+s[1]+19,0xFF9A9A9A);}for(int slot=0;slot<4;slot++){int sx=52+slot*18;g.fill(x+sx,y+101,x+sx+20,y+121,0xFF454545);g.fill(x+sx+1,y+102,x+sx+19,y+120,0xFF9A9A9A);}g.fill(x+82,y+48,x+110,y+53,0xFF5B5B5B);g.fill(x+82,y+48,x+82+scale(menu.getProgress(),menu.getMaxProgress(),28),y+53,0xFF2D9DC5);g.fill(x+8,y+20,x+14,y+69,0xFF4A4A4A);int eh=scale(menu.getEnergy(),menu.getEnergyCapacity(),48);g.fill(x+9,y+68-eh,x+13,y+68,0xFFCC3333);g.fill(x+162,y+20,x+168,y+69,0xFF4A4A4A);int mh=scale(menu.getMatter(),menu.getMatterCapacity(),48);g.fill(x+163,y+68-mh,x+167,y+68,0xFF3388CC);}

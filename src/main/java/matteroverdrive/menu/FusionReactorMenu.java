@@ -175,4 +175,13 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private int value(int low, int high) {
         return (data.get(low) & 0xffff) | ((data.get(high) & 0xffff) << 16);
     }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id != 1) return false;
+        boolean enabled = reactor.getEnergy().toggleInfiniteEnergy();
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
+        return true;
+    }
 }

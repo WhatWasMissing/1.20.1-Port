@@ -418,6 +418,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("Matter", matterStorage.getMatterStored());
         tag.putInt("ReplicateTime", replicateTime);
         tag.putBoolean("Running", running);
@@ -445,6 +446,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         }
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         matterStorage.setMatterStored(tag.getInt("Matter"));
         replicateTime = Math.max(0, tag.getInt("ReplicateTime"));
         running = tag.getBoolean("Running");

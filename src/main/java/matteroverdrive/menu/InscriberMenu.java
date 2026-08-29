@@ -138,4 +138,13 @@ public class InscriberMenu extends AbstractContainerMenu {
     private static int combine(int low, int high) {
         return (low & 0xFFFF) | ((high & 0xFFFF) << 16);
     }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id != 1) return false;
+        boolean enabled = machine.getEnergyStorage().toggleInfiniteEnergy();
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
+        return true;
+    }
 }

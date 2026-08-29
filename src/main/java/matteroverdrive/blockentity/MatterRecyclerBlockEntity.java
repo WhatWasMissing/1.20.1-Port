@@ -226,6 +226,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("RecycleTime", recycleTime);
         tag.putBoolean("Running", running);
     }
@@ -235,6 +236,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         recycleTime = Math.max(0, tag.getInt("RecycleTime"));
         running = tag.getBoolean("Running");
     }

@@ -404,6 +404,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("Energy", energy.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energy.isInfiniteEnergy());
         tag.putInt("Matter", matter.getMatterStored());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putDouble("MatterRemainder", matterDrainRemainder);
@@ -418,6 +419,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         }
         upgradesChanged();
         energy.setEnergyStored(tag.getInt("Energy"));
+        energy.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         matter.setMatterStored(tag.getInt("Matter"));
         matterDrainRemainder = tag.getDouble("MatterRemainder");
         overlayEnabled = tag.getBoolean("OverlayEnabled");

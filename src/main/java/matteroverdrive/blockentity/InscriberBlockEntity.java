@@ -310,6 +310,7 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("Progress", progress);
         tag.putBoolean("Running", running);
     }
@@ -325,6 +326,7 @@ public class InscriberBlockEntity extends BlockEntity implements MenuProvider {
         }
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         progress = Math.max(0, tag.getInt("Progress"));
         running = tag.getBoolean("Running");
     }
