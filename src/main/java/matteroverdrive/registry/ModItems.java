@@ -9,6 +9,16 @@ import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.item.ReactorRemoteItem;
 import matteroverdrive.item.ReactorAssemblyGuideItem;
 import matteroverdrive.item.TransportFlashDriveItem;
+import matteroverdrive.item.TritaniumArmorItem;
+import matteroverdrive.item.TritaniumArmorMaterial;
+import matteroverdrive.item.TritaniumToolTier;
+import matteroverdrive.item.TritaniumWrenchItem;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -175,6 +185,16 @@ public final class ModItems {
         if (id.equals("pattern_drive") || id.equals("creative_pattern_drive")) {
             return new PatternDriveItem(propertiesFor(id), id.equals("creative_pattern_drive"));
         }
+        if (id.equals("tritanium_pickaxe")) return new PickaxeItem(TritaniumToolTier.TIER, 1, -2.8F, propertiesFor(id));
+        if (id.equals("tritanium_axe")) return new AxeItem(TritaniumToolTier.TIER, 5.0F, -3.1F, propertiesFor(id));
+        if (id.equals("tritanium_shovel")) return new ShovelItem(TritaniumToolTier.TIER, 1.5F, -3.0F, propertiesFor(id));
+        if (id.equals("tritanium_hoe")) return new HoeItem(TritaniumToolTier.TIER, -2, 0.0F, propertiesFor(id));
+        if (id.equals("tritanium_sword")) return new SwordItem(TritaniumToolTier.TIER, 3, -2.4F, propertiesFor(id));
+        if (id.equals("tritanium_wrench")) return new TritaniumWrenchItem(propertiesFor(id).durability(2500));
+        if (id.equals("tritanium_helmet")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.HELMET, propertiesFor(id));
+        if (id.equals("tritanium_chestplate")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.CHESTPLATE, propertiesFor(id));
+        if (id.equals("tritanium_leggings")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.LEGGINGS, propertiesFor(id));
+        if (id.equals("tritanium_boots")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.BOOTS, propertiesFor(id));
         MachineUpgradeItem.Upgrade upgrade = MachineUpgradeItem.Upgrade.fromItemId(id);
         if (upgrade != null) {
             return new MachineUpgradeItem(propertiesFor(id), upgrade);
