@@ -33,3 +33,12 @@
 - Blocked and unsuccessful scans now include the facing direction in their status message.
 - Next runtime test: place a stabilizer on the floor near the reactor, confirm its emitter face points at the anomaly, power it, and verify the controller’s active-stabilizer count increases.
 - Build and in-game verification are pending for this commit.
+
+
+## Stabilizer targeting correction
+
+- Stabilizer beam obstruction now uses the target block’s collision shape, so solid blocks that do not advertise vanilla occlusion cannot be scanned through.
+- Sneak-placement bypasses automatic anomaly targeting and uses the player’s horizontal facing, allowing deliberate placement away from an anomaly for negative tests.
+- Sneak-right-click rotates an existing stabilizer through the four horizontal directions and reports the new beam direction.
+- Blocked-beam messages now report the blocking distance and direction.
+- Next test: rotate a powered stabilizer away from the anomaly and confirm it stops suppressing; place a solid block in its beam and confirm the blocked distance is reported.

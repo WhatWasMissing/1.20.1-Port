@@ -38,9 +38,14 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction facing = findAlignedAnomaly(context);
-        if (facing == null) {
+        Direction facing;
+        if (context.getPlayer() != null && context.getPlayer().isShiftKeyDown()) {
             facing = context.getHorizontalDirection();
+        } else {
+            facing = findAlignedAnomaly(context);
+            if (facing == null) {
+                facing = context.getHorizontalDirection();
+            }
         }
         return defaultBlockState().setValue(FACING, facing);
     }
@@ -102,10 +107,28 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
                         tickerLevel, tickerPos, tickerState, (GravitationalStabilizerBlockEntity) entity);
     }
 
+    private static Direction nextHorizontal(Direction facing) {
+        return switch (facing) {
+            case NORTH -> Direction.EAST;
+            case EAST -> Direction.SOUTH;
+            case SOUTH -> Direction.WEST;
+            default -> Direction.NORTH;
+        };
+    }
+
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof GravitationalStabilizerBlockEntity stabilizer) {
+            if (player.isShiftKeyDown()) {
+                Direction next = nextHorizontal(state.getValue(FACING));
+                level.setBlock(pos, state.setValue(FACING, next), 3);
+                player.displayClientMessage(Component.literal(
+                        "Stabilizer rotated. Front points "
+                                + next.getName().toUpperCase(Locale.ROOT)
+                                + " | beam travels this way"), true);
+                return InteractionResult.CONSUME;
+            }
             Component status;
             if (!level.hasNeighborSignal(pos)) {
                 status = Component.literal("Stabilizer inactive: supply a redstone signal.");
@@ -113,8 +136,9 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
                 status = Component.literal("Stabilizer locked onto an anomaly "
                         + stabilizer.getAnomalyDistance() + " blocks away.");
             } else if (stabilizer.isBeamBlocked()) {
-                status = Component.literal("Stabilizer beam is blocked in the "
-                        + state.getValue(FACING).getName().toUpperCase(Locale.ROOT) + " direction.");
+                status = Component.literal("Stabilizer beam is blocked "
+                        + stabilizer.getBeamBlockedDistance() + " blocks away to the "
+                        + state.getValue(FACING).getName().toUpperCase(Locale.ROOT) + ".");
             } else {
                 status = Component.literal("No anomaly found within 63 blocks to the "
                         + state.getValue(FACING).getName().toUpperCase(Locale.ROOT) + ".");

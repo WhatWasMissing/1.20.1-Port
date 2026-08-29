@@ -14,6 +14,7 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity {
     private static final double SUPPRESSION_AMOUNT = 0.7D;
 
     private int anomalyDistance = -1;
+    private int beamBlockedDistance = -1;
     private boolean beamBlocked;
 
     public GravitationalStabilizerBlockEntity(BlockPos pos, BlockState state) {
@@ -23,6 +24,7 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state,
                                   GravitationalStabilizerBlockEntity stabilizer) {
         stabilizer.anomalyDistance = -1;
+        stabilizer.beamBlockedDistance = -1;
         stabilizer.beamBlocked = false;
         if (!level.hasNeighborSignal(pos)) {
             return;
@@ -41,8 +43,10 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity {
                 stabilizer.anomalyDistance = distance;
                 return;
             }
-            if (!targetState.isAir() && targetState.canOcclude()) {
+            if (!targetState.isAir()
+                    && !targetState.getCollisionShape(level, targetPos).isEmpty()) {
                 stabilizer.beamBlocked = true;
+                stabilizer.beamBlockedDistance = distance;
                 return;
             }
         }
@@ -54,5 +58,9 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity {
 
     public boolean isBeamBlocked() {
         return beamBlocked;
+    }
+
+    public int getBeamBlockedDistance() {
+        return beamBlockedDistance;
     }
 }
