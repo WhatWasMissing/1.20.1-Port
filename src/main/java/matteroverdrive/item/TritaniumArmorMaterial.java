@@ -10,10 +10,10 @@ import net.minecraft.world.item.Ingredient;
 /** Protection and durability values for the tritanium armour set. */
 public final class TritaniumArmorMaterial {
     public static final ArmorMaterial MATERIAL = new ArmorMaterial() {
-        private final int[] protection = {3, 8, 6, 3};
+        private final int[] protection = {3, 6, 8, 3};
 
         @Override public int getDurabilityForType(ArmorItem.Type type) {
-            return new int[] {13, 15, 16, 11}[type.getSlot().getIndex()] * 37;
+            return new int[] {11, 16, 15, 13}[type.getSlot().getIndex()] * 37;
         }
         @Override public int getDefenseForType(ArmorItem.Type type) {
             return protection[type.getSlot().getIndex()];
