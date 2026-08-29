@@ -190,7 +190,6 @@ public class MatterContainerItem extends Item {
             storage = new MachineMatterStorage(capacity, true, true, null);
             capability = LazyOptional.of(() -> storage);
         }
-        private final LazyOptional<IMatterStorage> capability = LazyOptional.of(() -> storage);
 
         @Override
         public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {

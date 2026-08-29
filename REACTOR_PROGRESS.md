@@ -113,3 +113,9 @@
 
 - Corrected the debug container capability provider to receive its 1,000,000 kM capacity explicitly.
 - Build verification is pending on GitHub Actions.
+
+
+## Debug matter build fix
+
+- Removed a duplicate matter capability field introduced while generalizing the container capacity.
+- The attached local verification log confirmed all M1/M2 gates and found this final compile error; the corrected commit is ready for rebuild.
