@@ -5,7 +5,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.Ingredient;
+import net.minecraft.world.item.crafting.Ingredient;
 
 /** Protection and durability values for the tritanium armour set. */
 public final class TritaniumArmorMaterial {

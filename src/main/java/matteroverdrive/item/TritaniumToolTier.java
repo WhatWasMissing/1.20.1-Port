@@ -1,9 +1,8 @@
 package matteroverdrive.item;
 
 import matteroverdrive.registry.ModItems;
-import net.minecraft.world.item.Ingredient;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.Tier;
-import net.minecraft.world.item.Tiers;
 
 /** Material properties for the durable, high-tier tritanium tools. */
 public final class TritaniumToolTier {
