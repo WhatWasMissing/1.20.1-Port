@@ -1,6 +1,8 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/orientable",
   "textures": {
-    "all": "matteroverdrive:block/anti_gravitational_anomaly_core"
+    "top": "matteroverdrive:block/base",
+    "front": "matteroverdrive:block/anti_gravitational_anomaly_core",
+    "side": "matteroverdrive:block/base_coil"
   }
 }

@@ -23,3 +23,13 @@
 - The reactor menu was extended and its inventory slots moved down to keep the new stabilizer status line readable.
 - Next runtime test: power one and then four stabilizers with redstone, confirm the active-stabilizer count and reduced safe mass, while unsuppressed mass and energy output remain unchanged.
 - Build and in-game verification are still pending for this commit.
+
+
+## Stabilizer placement rework
+
+- Stabilizer placement now prefers an aligned gravitational anomaly within 63 blocks and otherwise uses the player’s horizontal facing, preventing accidental downward-facing floor placement.
+- The stabilizer model now has a distinct blue emitter face and contrasting sides, making the beam direction visible in-world.
+- Placement reports the front direction and reminds the player that the beam travels forward and requires redstone power.
+- Blocked and unsuccessful scans now include the facing direction in their status message.
+- Next runtime test: place a stabilizer on the floor near the reactor, confirm its emitter face points at the anomaly, power it, and verify the controller’s active-stabilizer count increases.
+- Build and in-game verification are pending for this commit.
