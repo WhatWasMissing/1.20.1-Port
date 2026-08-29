@@ -831,5 +831,6 @@
   "screen.matteroverdrive.reactor_guide.operation.body": "Feed matter through a linked Reactor IO and extract FE from any linked IO. Stabilizers are separate from the ring: point each one directly at the anomaly, keep the beam clear, and power it with redstone. Throw items into the anomaly to increase its mass and reactor output.",
   "item.matteroverdrive.debug_matter_container": "Debug Matter Container",
   "tooltip.matteroverdrive.debug_matter_container": "Contains up to 1,000,000 kM of matter",
-  "tooltip.matteroverdrive.matter_value_shift": "Hold SHIFT for matter value"
+  "tooltip.matteroverdrive.matter_value_shift": "Hold SHIFT for matter value",
+  "block.matteroverdrive.debug_matter_block": "Debug Matter Block"
 }

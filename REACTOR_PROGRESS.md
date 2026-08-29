@@ -119,3 +119,11 @@
 
 - Removed a duplicate matter capability field introduced while generalizing the container capacity.
 - The attached local verification log confirmed all M1/M2 gates and found this final compile error; the corrected commit is ready for rebuild.
+
+
+## Million-matter debug block
+
+- Added a placeable `Debug Matter Block` block and block item for anomaly testing.
+- Its item form is registered at 1,000,000 kM in `MatterValueRegistry`, so an item entity consumed by the anomaly increases anomaly mass by 1,000,000 kM.
+- Use `/give @p matteroverdrive:debug_matter_block`, place it, break it, and let the dropped block enter the anomaly.
+- This is intentionally a debug/testing item and is not part of reactor structure requirements.

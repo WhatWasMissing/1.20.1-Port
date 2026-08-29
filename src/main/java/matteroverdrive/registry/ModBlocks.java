@@ -68,6 +68,7 @@ public final class ModBlocks {
         "decorative.vent.dark",
         "decorative.white_plate",
         "dilithium_ore",
+        "debug_matter_block",
         "fusion_reactor_coil",
         "fusion_reactor_controller",
         "fusion_reactor_io",
