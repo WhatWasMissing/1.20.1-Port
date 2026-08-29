@@ -85,6 +85,10 @@ public class ReactorAssemblyGuideScreen extends Screen {
 
         List<FormattedCharSequence> lines = font.split(Component.translatable(page.bodyKey()), PANEL_WIDTH - 28);
         int textY = imageY + IMAGE_HEIGHT + 8;
+        if (pageIndex == 1 || pageIndex == 2) {
+            graphics.drawString(font, "Overlay: blue=hull  orange=coil/IO  purple=side", left + 14, textY, 0x6a3d00, false);
+            textY += 10;
+        }
         for (FormattedCharSequence line : lines) {
             if (textY > top + PANEL_HEIGHT - 38) {
                 break;

@@ -13,4 +13,4 @@
 3. Break/reload the machine and confirm the setting remains enabled.
 4. Toggle OFF and confirm normal energy is required again.
 
-Next: functional tritanium tools and armour.
+Functional tritanium tools and armour are documented in `TOOLS_ARMOUR_PROGRESS.md`.
