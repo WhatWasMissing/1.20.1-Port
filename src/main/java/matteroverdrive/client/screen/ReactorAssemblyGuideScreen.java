@@ -13,8 +13,8 @@ import java.util.List;
 public class ReactorAssemblyGuideScreen extends Screen {
     private static final int PANEL_WIDTH = 360;
     private static final int PANEL_HEIGHT = 248;
-    private static final int IMAGE_WIDTH = 220;
-    private static final int IMAGE_HEIGHT = 110;
+    private static final int IMAGE_WIDTH = 200;
+    private static final int IMAGE_HEIGHT = 100;
     private static final int SOURCE_IMAGE_WIDTH = 512;
     private static final int SOURCE_IMAGE_HEIGHT = 256;
 
