@@ -81,3 +81,12 @@
 - The reactor GUI now exposes the calculated block-effect radius separately from the living-entity pull radius.
 - Block hazard is explicitly shown as DISABLED; this diagnostic milestone makes no world-changing block edits.
 - Next test: compare pull radius and block radius with zero and four powered stabilizers, then confirm both values respond to suppression while the disabled state remains unchanged.
+
+
+## Stabiliser radius test passed
+
+- With zero active stabilisers, the reactor GUI reported a pull radius of approximately 7.59 blocks and a block radius of approximately 3.79 blocks.
+- With four active stabilisers, the pull radius dropped to approximately 3.72 blocks and the block radius to approximately 1.86 blocks.
+- Reactor structure remained valid, matter remained at 2048/2048 kM, output remained 177 FE/t, and block hazard remained DISABLED.
+- This confirms stabiliser suppression changes anomaly effect radius without reducing reactor output.
+- Next test: verify the Space-Time Equalizer prevents pull on a player or mob, then continue with controlled anomaly hazard design.
