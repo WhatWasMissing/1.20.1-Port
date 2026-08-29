@@ -56,3 +56,12 @@
 ## Next reactor milestone
 
 - Begin gameplay parity for the gravitational anomaly: expose controlled range/effect diagnostics first, then add entity effects while keeping block destruction disabled until it has a separate safety test.
+
+## Gravitational anomaly entity effects
+
+- The anomaly now applies a capped inward force to nearby living entities, including players and mobs.
+- The effect range uses suppressed mass, so powered stabilizers reduce both anomaly danger and the active pull range.
+- The controller GUI now reports the number of affected living entities and the current capped effect range.
+- Block destruction is still disabled; this milestone is limited to observable, reversible entity movement.
+- Next test: place a player or mob at several distances from the anomaly, confirm inward movement while unsuppressed, then power stabilizers and confirm the pull range and force decrease.
+- Build and in-game verification are pending for this commit.

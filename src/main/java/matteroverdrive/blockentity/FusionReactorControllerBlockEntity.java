@@ -116,6 +116,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 14 -> ioPositions.size();
                 case 15 -> getForward().get2DDataValue();
                 case 16 -> anomaly == null ? 0 : anomaly.getActiveSuppressorCount();
+                case 17 -> anomaly == null ? 0 : anomaly.getAffectedEntityCount();
+                case 18 -> anomaly == null ? 0 : scaledDistance(
+                        Math.min(32.0D, anomaly.getMaxRange()));
                 default -> 0;
             };
         }
@@ -126,7 +129,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 17;
+            return 19;
         }
     };
 
@@ -507,6 +510,11 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
     private static int scaledMass(double mass) {
         return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, Math.round(mass * 1_000.0D)));
+    }
+
+    private static int scaledDistance(double distance) {
+        return (int) Math.min(Integer.MAX_VALUE,
+                Math.max(0L, Math.round(distance * 100.0D)));
     }
 
     private static int low(int value) {

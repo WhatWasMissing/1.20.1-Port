@@ -64,6 +64,9 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
                 + " kM/t | linked IO: " + menu.ioCount(), 18, 112, 0x8a5a00, false);
         graphics.drawString(font, "Active stabilizers: " + menu.stabilizerCount(),
                 18, 123, 0x8a5a00, false);
+        graphics.drawString(font, "Anomaly pull: " + menu.affectedEntityCount()
+                        + " entities | range: " + format(menu.anomalyRange()) + " blocks",
+                18, 134, 0x8a5a00, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
     }
 

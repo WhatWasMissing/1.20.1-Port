@@ -4,6 +4,7 @@ import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -21,11 +22,16 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
     public static final double GRAVITATIONAL_CONSTANT = 6.67384D;
     private static final int ITEM_ATTRACTION_INTERVAL = 5;
     private static final double MAX_ITEM_ATTRACTION_RANGE = 32.0D;
+    private static final double MAX_ENTITY_EFFECT_RANGE = 32.0D;
+    private static final double MAX_ENTITY_ACCELERATION = 0.10D;
+    private static final double MAX_ENTITY_SPEED = 0.35D;
 
     private final Map<BlockPos, Suppressor> suppressors = new HashMap<>();
     private long mass;
     private boolean massInitialized;
     private int tickCounter;
+    private int affectedEntityCount;
+    private double nearestEntityDistance = -1.0D;
 
     public GravitationalAnomalyBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.GRAVITATIONAL_ANOMALY.get(), pos, state);
@@ -50,6 +56,7 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
         anomaly.tickCounter++;
         if (anomaly.tickCounter % ITEM_ATTRACTION_INTERVAL == 0) {
             anomaly.attractAndConsumeItems(level);
+            anomaly.affectLivingEntities(level);
         }
     }
 
@@ -80,6 +87,14 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
 
     public int getActiveSuppressorCount() {
         return suppressors.size();
+    }
+
+    public int getAffectedEntityCount() {
+        return affectedEntityCount;
+    }
+
+    public double getNearestEntityDistance() {
+        return nearestEntityDistance;
     }
 
     public double getRealMass() {
@@ -123,6 +138,39 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
                     .add(pull.normalize().scale(acceleration));
             itemEntity.setDeltaMovement(motion);
             itemEntity.hurtMarked = true;
+        }
+    }
+
+    private void affectLivingEntities(Level level) {
+        affectedEntityCount = 0;
+        nearestEntityDistance = -1.0D;
+
+        double range = Math.min(MAX_ENTITY_EFFECT_RANGE, getMaxRange());
+        if (range < 0.5D) {
+            return;
+        }
+
+        Vec3 centre = Vec3.atCenterOf(worldPosition);
+        AABB bounds = new AABB(worldPosition).inflate(range);
+        for (LivingEntity livingEntity : level.getEntitiesOfClass(
+                LivingEntity.class, bounds, LivingEntity::isAlive)) {
+            Vec3 pull = centre.subtract(livingEntity.position());
+            double distanceSquared = pull.lengthSqr();
+            double distance = Math.sqrt(distanceSquared);
+            if (nearestEntityDistance < 0.0D || distance < nearestEntityDistance) {
+                nearestEntityDistance = distance;
+            }
+
+            double acceleration = Math.min(MAX_ENTITY_ACCELERATION,
+                    getAcceleration(distanceSquared));
+            Vec3 motion = livingEntity.getDeltaMovement().scale(0.96D)
+                    .add(pull.normalize().scale(acceleration));
+            if (motion.lengthSqr() > MAX_ENTITY_SPEED * MAX_ENTITY_SPEED) {
+                motion = motion.normalize().scale(MAX_ENTITY_SPEED);
+            }
+            livingEntity.setDeltaMovement(motion);
+            livingEntity.hurtMarked = true;
+            affectedEntityCount++;
         }
     }
 
