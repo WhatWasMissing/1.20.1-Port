@@ -134,6 +134,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, DecomposerBlockEntity decomposer) {
+        decomposer.energyStorage.beginUsageTick(level.getGameTime());
         decomposer.chargeFromEnergyItem();
         decomposer.outputMatterToNeighbors();
         decomposer.manageDecompose();
@@ -199,7 +200,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
         running = true;
-        energyStorage.extractEnergy(energyPerTick, false);
+        energyStorage.consumeEnergy(energyPerTick, level.getGameTime());
         decomposeTime++;
         if (decomposeTime >= getSpeed()) {
             decomposeTime = 0;
@@ -331,6 +332,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("Matter", matterStorage.getMatterStored());
         tag.putInt("DecomposeTime", decomposeTime);
         tag.putLong("LastMatterExtractTick", lastMatterExtractTick);
@@ -345,6 +347,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         matterStorage.setMatterStored(tag.getInt("Matter"));
         decomposeTime = Math.max(0, tag.getInt("DecomposeTime"));
         lastMatterExtractTick = tag.getLong("LastMatterExtractTick");

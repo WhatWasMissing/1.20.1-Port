@@ -96,6 +96,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     public MatterAnalyzerBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.MATTER_ANALYZER.get(), pos, state); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MatterAnalyzerBlockEntity analyzer) {
+        analyzer.energyStorage.beginUsageTick(level.getGameTime());
         analyzer.chargeFromEnergyItem();
         analyzer.manageAnalyze();
         if (state.hasProperty(MatterAnalyzerBlock.ACTIVE) && state.getValue(MatterAnalyzerBlock.ACTIVE) != analyzer.running) {
@@ -130,7 +131,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         int drain = getEnergyDrainPerTick();
         if (energyStorage.getEnergyStored() < drain) { running = false; return; }
         running = true;
-        energyStorage.extractEnergy(drain, false);
+        energyStorage.consumeEnergy(drain, level.getGameTime());
         analyzeTime++;
         if (analyzeTime >= getSpeed()) {
             analyzeTime = 0;
@@ -241,10 +242,12 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     @Override protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag); tag.put("Items", items.serializeNBT()); tag.put("Upgrades", upgrades.serializeNBT()); tag.putInt("Energy", energyStorage.getEnergyStored()); tag.putInt("AnalyzeTime", analyzeTime); tag.putBoolean("Running", running);
+        super.saveAdditional(tag); tag.put("Items", items.serializeNBT()); tag.put("Upgrades", upgrades.serializeNBT()); tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy()); tag.putInt("AnalyzeTime", analyzeTime); tag.putBoolean("Running", running);
     }
     @Override public void load(CompoundTag tag) {
-        super.load(tag); if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items")); if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades")); onUpgradesChanged(); energyStorage.setEnergyStored(tag.getInt("Energy")); analyzeTime=Math.max(0,tag.getInt("AnalyzeTime")); running=tag.getBoolean("Running");
+        super.load(tag); if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items")); if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades")); onUpgradesChanged(); energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy")); analyzeTime=Math.max(0,tag.getInt("AnalyzeTime")); running=tag.getBoolean("Running");
     }
     @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) return itemCapability.cast();

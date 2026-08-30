@@ -26,9 +26,19 @@ import java.util.List;
 public class MatterContainerItem extends Item {
     public static final int CAPACITY = 1000;
     private static final String SYNC_TAG = "MatterContainerSync";
+    private final int capacity;
 
     public MatterContainerItem(Properties properties) {
+        this(properties, CAPACITY);
+    }
+
+    protected MatterContainerItem(Properties properties, int capacity) {
         super(properties.stacksTo(8));
+        this.capacity = Math.max(1, capacity);
+    }
+
+    protected int getCapacity() {
+        return capacity;
     }
 
     @Override
@@ -164,17 +174,22 @@ public class MatterContainerItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.literal("Matter: " + getMatter(stack) + " / " + CAPACITY));
+        tooltip.add(Component.literal("Matter: " + getMatter(stack) + " / " + getCapacity()));
     }
 
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-        return new MatterContainerCapabilityProvider();
+        return new MatterContainerCapabilityProvider(capacity);
     }
 
     private static final class MatterContainerCapabilityProvider implements ICapabilitySerializable<CompoundTag> {
-        private final MachineMatterStorage storage = new MachineMatterStorage(CAPACITY, true, true, null);
-        private final LazyOptional<IMatterStorage> capability = LazyOptional.of(() -> storage);
+        private final MachineMatterStorage storage;
+        private final LazyOptional<IMatterStorage> capability;
+
+        private MatterContainerCapabilityProvider(int capacity) {
+            storage = new MachineMatterStorage(capacity, true, true, null);
+            capability = LazyOptional.of(() -> storage);
+        }
 
         @Override
         public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {

@@ -92,6 +92,7 @@ public final class MatterValueRegistry {
         register("minecraft:gold_ingot", 42);
 
         register("matteroverdrive:dilithium_crystal", 512);
+        register("matteroverdrive:debug_matter_block", 1_000_000);
         register("matteroverdrive:tritanium_ingot", 128);
         register("matteroverdrive:tritanium_dust", 128);
         register("matteroverdrive:emergency_ration", 3);

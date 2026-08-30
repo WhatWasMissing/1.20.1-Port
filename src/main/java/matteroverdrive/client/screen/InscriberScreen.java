@@ -2,6 +2,7 @@ package matteroverdrive.client.screen;
 
 import matteroverdrive.menu.InscriberMenu;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -9,6 +10,14 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.Locale;
 
 public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
+    @Override
+    protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+        }).bounds(leftPos + imageWidth - 72, topPos + 4, 68, 20).build());
+    }
+
     public InscriberScreen(InscriberMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;

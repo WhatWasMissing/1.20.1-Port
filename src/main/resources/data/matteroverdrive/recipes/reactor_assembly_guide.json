@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:book" },
+    { "item": "matteroverdrive:fusion_reactor_coil" },
+    { "item": "matteroverdrive:machine_hull" }
+  ],
+  "result": {
+    "item": "matteroverdrive:reactor_assembly_guide"
+  }
+}

@@ -172,4 +172,13 @@ public class DecomposerMenu extends AbstractContainerMenu {
     private static int combineWords(int low, int high) {
         return (low & 0xFFFF) | ((high & 0xFFFF) << 16);
     }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id != 1) return false;
+        boolean enabled = decomposer.getEnergyStorage().toggleInfiniteEnergy();
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
+        return true;
+    }
 }

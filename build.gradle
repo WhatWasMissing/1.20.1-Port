@@ -226,6 +226,11 @@ tasks.register('verifyM2Sources') {
     doLast {
         def required = [
                 'src/main/java/matteroverdrive/block/TransporterBlock.java',
+                'src/main/java/matteroverdrive/block/FusionReactorControllerBlock.java',
+                'src/main/java/matteroverdrive/block/EnergyPipeBlock.java',
+                'src/main/java/matteroverdrive/block/FusionReactorIOBlock.java',
+                'src/main/java/matteroverdrive/block/GravitationalAnomalyBlock.java',
+                'src/main/java/matteroverdrive/block/GravitationalStabilizerBlock.java',
                 'src/main/java/matteroverdrive/block/InscriberBlock.java',
                 'src/main/java/matteroverdrive/block/DecomposerBlock.java',
                 'src/main/java/matteroverdrive/block/MatterRecyclerBlock.java',
@@ -236,6 +241,11 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/block/SolarPanelBlock.java',
                 'src/main/java/matteroverdrive/block/TritaniumCrateBlock.java',
                 'src/main/java/matteroverdrive/blockentity/TransporterBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/FusionReactorControllerBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/EnergyPipeBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/FusionReactorIOBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/GravitationalAnomalyBlockEntity.java',
+                'src/main/java/matteroverdrive/blockentity/GravitationalStabilizerBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/InscriberBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java',
                 'src/main/java/matteroverdrive/blockentity/MatterRecyclerBlockEntity.java',
@@ -252,10 +262,13 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/item/CreativeBatteryItem.java',
                 'src/main/java/matteroverdrive/item/MatterDustItem.java',
                 'src/main/java/matteroverdrive/item/PatternDriveItem.java',
+                'src/main/java/matteroverdrive/item/ReactorAssemblyGuideItem.java',
                 'src/main/java/matteroverdrive/matter/MatterValueRegistry.java',
                 'src/main/java/matteroverdrive/network/PatternData.java',
                 'src/main/java/matteroverdrive/network/MatterNetworkUtil.java',
                 'src/main/java/matteroverdrive/menu/TransporterMenu.java',
+                'src/main/java/matteroverdrive/menu/FusionReactorMenu.java',
+                'src/main/java/matteroverdrive/menu/EnergyPipeMenu.java',
                 'src/main/java/matteroverdrive/menu/InscriberMenu.java',
                 'src/main/java/matteroverdrive/menu/DecomposerMenu.java',
                 'src/main/java/matteroverdrive/menu/MatterRecyclerMenu.java',
@@ -266,6 +279,10 @@ tasks.register('verifyM2Sources') {
                 'src/main/java/matteroverdrive/menu/SolarPanelMenu.java',
                 'src/main/java/matteroverdrive/menu/TritaniumCrateMenu.java',
                 'src/main/java/matteroverdrive/client/screen/TransporterScreen.java',
+                'src/main/java/matteroverdrive/client/screen/FusionReactorScreen.java',
+                'src/main/java/matteroverdrive/client/screen/ReactorAssemblyGuideScreen.java',
+                'src/main/java/matteroverdrive/client/ClientGuideHooks.java',
+                'src/main/java/matteroverdrive/client/screen/EnergyPipeScreen.java',
                 'src/main/java/matteroverdrive/client/screen/InscriberScreen.java',
                 'src/main/java/matteroverdrive/client/screen/DecomposerScreen.java',
                 'src/main/java/matteroverdrive/client/screen/MatterRecyclerScreen.java',
@@ -283,12 +300,12 @@ tasks.register('verifyM2Sources') {
         }
 
         def blocks = file('src/main/java/matteroverdrive/registry/ModBlocks.java').getText('UTF-8')
-        ['TransporterBlock', 'InscriberBlock', 'DecomposerBlock', 'MatterRecyclerBlock', 'MatterAnalyzerBlock', 'ReplicatorBlock', 'PatternStorageBlock', 'PatternMonitorBlock', 'SolarPanelBlock', 'TritaniumCrateBlock'].each { name ->
+        ['TransporterBlock', 'FusionReactorControllerBlock', 'EnergyPipeBlock', 'FusionReactorIOBlock', 'GravitationalAnomalyBlock', 'GravitationalStabilizerBlock', 'InscriberBlock', 'DecomposerBlock', 'MatterRecyclerBlock', 'MatterAnalyzerBlock', 'ReplicatorBlock', 'PatternStorageBlock', 'PatternMonitorBlock', 'SolarPanelBlock', 'TritaniumCrateBlock'].each { name ->
             if (!blocks.contains("new ${name}(propertiesFor(id))")) throw new GradleException("${name} is not wired into ModBlocks")
         }
 
         def items = file('src/main/java/matteroverdrive/registry/ModItems.java').getText('UTF-8')
-        ['CreativeBatteryItem', 'MatterDustItem', 'PatternDriveItem'].each { name ->
+        ['CreativeBatteryItem', 'MatterDustItem', 'PatternDriveItem', 'ReactorAssemblyGuideItem'].each { name ->
             if (!items.contains("new ${name}")) throw new GradleException("${name} is not wired into ModItems")
         }
 
@@ -304,10 +321,16 @@ tasks.register('verifyM2Sources') {
 
         def beRegistry = file('src/main/java/matteroverdrive/registry/ModBlockEntities.java').getText('UTF-8')
         def menuRegistry = file('src/main/java/matteroverdrive/registry/ModMenus.java').getText('UTF-8')
-        ['TRANSPORTER', 'INSCRIBER', 'DECOMPOSER', 'MATTER_RECYCLER', 'MATTER_ANALYZER', 'REPLICATOR', 'PATTERN_STORAGE', 'PATTERN_MONITOR', 'SOLAR_PANEL', 'TRITANIUM_CRATE'].each { key ->
+        ['ENERGY_PIPE', 'FUSION_REACTOR_CONTROLLER', 'TRANSPORTER', 'INSCRIBER', 'DECOMPOSER', 'MATTER_RECYCLER', 'MATTER_ANALYZER', 'REPLICATOR', 'PATTERN_STORAGE', 'PATTERN_MONITOR', 'SOLAR_PANEL', 'TRITANIUM_CRATE'].each { key ->
             if (!beRegistry.contains(key) || !menuRegistry.contains(key)) throw new GradleException("Missing M2 registry entry: ${key}")
         }
 
+        def energyPipe = file('src/main/java/matteroverdrive/blockentity/EnergyPipeBlockEntity.java').getText('UTF-8')
+        def reactor = file('src/main/java/matteroverdrive/blockentity/FusionReactorControllerBlockEntity.java').getText('UTF-8')
+        def reactorIo = file('src/main/java/matteroverdrive/blockentity/FusionReactorIOBlockEntity.java').getText('UTF-8')
+        def anomaly = file('src/main/java/matteroverdrive/blockentity/GravitationalAnomalyBlockEntity.java').getText('UTF-8')
+        def stabilizer = file('src/main/java/matteroverdrive/blockentity/GravitationalStabilizerBlockEntity.java').getText('UTF-8')
+        def reactorGuide = file('src/main/java/matteroverdrive/item/ReactorAssemblyGuideItem.java').getText('UTF-8')
         def transporter = file('src/main/java/matteroverdrive/blockentity/TransporterBlockEntity.java').getText('UTF-8')
         def inscriber = file('src/main/java/matteroverdrive/blockentity/InscriberBlockEntity.java').getText('UTF-8')
         def decomposer = file('src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java').getText('UTF-8')
@@ -319,6 +342,16 @@ tasks.register('verifyM2Sources') {
         def solar = file('src/main/java/matteroverdrive/blockentity/SolarPanelBlockEntity.java').getText('UTF-8')
         def crate = file('src/main/java/matteroverdrive/blockentity/TritaniumCrateBlockEntity.java').getText('UTF-8')
         def drive = file('src/main/java/matteroverdrive/item/PatternDriveItem.java').getText('UTF-8')
+        if (!energyPipe.contains('BUFFER_CAPACITY = 8_192') || !energyPipe.contains('TRANSFER_PER_SIDE = 1_024') || !energyPipe.contains('ForgeCapabilities.ENERGY')) throw new GradleException('Energy Pipe transfer or capability wiring is incomplete')
+        if (!reactor.contains('ENERGY_CAPACITY = 100_000_000') || !reactor.contains('MATTER_CAPACITY = 2_048') || !reactor.contains('BASE_OUTPUT = 2_048') || !reactor.contains('BASE_MATTER_DRAIN = 1.0D / 80.0D') || !reactor.contains('MAX_GRAVITATIONAL_ANOMALY_DISTANCE = 3')) throw new GradleException('Fusion Reactor legacy constants are incomplete')
+        if (!reactor.contains('LATERAL_OFFSETS') || !reactor.contains('FORWARD_OFFSETS') || !reactor.contains('SLOT_TYPES') || !reactor.contains('Incorrect coil position') || !reactor.contains('No anomaly at ring centre') || !reactor.contains('getRealMassUnsuppressed') || !reactor.contains('ioPositions') || !reactor.contains('ModCapabilities.MATTER')) throw new GradleException('Fusion Reactor ring validation, anomaly scaling, IO links, or matter capability wiring is incomplete')
+        if (!reactor.contains('collectInternalPowerPositions') || !reactor.contains('powerInternalRing') || !reactor.contains('fairOffer') || !reactor.contains('transferEnergyTo')) throw new GradleException('Fusion Reactor dynamic internal ring power bus is incomplete')
+        if (!reactor.contains('outputPotential') || !reactor.contains('generatedLastTick')) throw new GradleException('Fusion Reactor mass-scaled output telemetry is incomplete')
+        if (!reactorIo.contains('enqueueAdjacentCables') || !reactorIo.contains('isInternalPowerAt') || !reactorIo.contains('transferEnergyTo')) throw new GradleException('Reactor IO external cable boundary or uncapped transfer is incomplete')
+        if (!anomaly.contains('STRENGTH_MULTIPLIER = 0.00001D') || !anomaly.contains('getRealMassUnsuppressed') || !anomaly.contains('MatterValueRegistry.getMatter')) throw new GradleException('Gravitational Anomaly mass or item-consumption logic is incomplete')
+        if (!stabilizer.contains('MAX_DISTANCE = 63') || !stabilizer.contains('SUPPRESSION_AMOUNT = 0.7D') || !stabilizer.contains('anomaly.suppress')) throw new GradleException('Gravitational Stabilizer targeting or suppression logic is incomplete')
+        if (!beRegistry.contains('GRAVITATIONAL_ANOMALY') || !beRegistry.contains('GRAVITATIONAL_STABILIZER')) throw new GradleException('Gravitational block entities are not registered')
+        if (!reactorGuide.contains('openReactorGuide') || !file('src/main/resources/assets/matteroverdrive/models/item/reactor_assembly_guide.json').exists() || !file('src/main/resources/data/matteroverdrive/recipes/reactor_assembly_guide.json').exists()) throw new GradleException('Reactor assembly guide item, model, or recipe is incomplete')
         if (!transporter.contains('TRANSPORT_TIME = 70') || !transporter.contains('TRANSPORT_DELAY = 80') || !transporter.contains('ENERGY_CAPACITY = 1024000') || !transporter.contains('TRANSPORT_RANGE = 32') || !transporter.contains('TransportFlashDriveItem')) throw new GradleException('Legacy Transporter constants or flash-drive target wiring is incomplete')
         if (!inscriber.contains('MK2_TIME = 300') || !inscriber.contains('MK2_ENERGY = 64000') || !inscriber.contains('MK3_TIME = 600') || !inscriber.contains('MK3_ENERGY = 88000') || !inscriber.contains('MK4_TIME = 1200') || !inscriber.contains('MK4_ENERGY = 114000')) throw new GradleException('Legacy Inscriber recipe constants missing')
         if (!inscriber.contains('ENERGY_CAPACITY = 512000') || !inscriber.contains('ENERGY_TRANSFER = 256') || !inscriber.contains('ForgeCapabilities.ITEM_HANDLER') || !inscriber.contains('chargeFromEnergyItem') || !inscriber.contains('ENERGY_SLOT') || !inscriber.contains('deserializeItems')) throw new GradleException('Inscriber storage, transfer, or item capability wiring is incomplete')
@@ -338,8 +371,8 @@ tasks.register('verifyM2Sources') {
 
         println 'M2 SOURCE VERIFICATION PASSED'
         println '  functionalBlocks=transporter,inscriber,decomposer,matter_recycler,matter_analyzer,replicator,pattern_storage,pattern_monitor,tritanium_crate_variants'
-        println '  blockEntities=10'
-        println '  menus=10'
+        println '  blockEntities=15'
+        println '  menus=12'
         println '  patternDriveCapacity=2'
         println '  patternStorageDriveSlots=6 (12 normal patterns total)'
         println '  networkPipe=pattern/task transport'
@@ -350,6 +383,9 @@ tasks.register('verifyM2Sources') {
         println '  tritaniumCrates=17 variants, 54 slots each, portable item NBT'
         println '  inscriber=3 legacy circuit recipes, 512000 FE, 256 FE/t transfer'
         println '  transporter=bound flash drive targets, 32 block base range, 70 tick cycle'
+        println '  fusionReactor=controller+4 coils+IO+anomaly, 2048 FE/t legacy base output'
+        println '  ringPower=same-level shared reactor FE; external receivers require cable; no 512 FE/t cap'
+        println '  energyPipe=existing heavy pipe now relays FE, 8192 FE buffer, 1024 FE/t/side'
     }
 }
 

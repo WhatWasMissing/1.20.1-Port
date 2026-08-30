@@ -2,8 +2,10 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.client.screen.DecomposerScreen;
+import matteroverdrive.client.screen.EnergyPipeScreen;
 import matteroverdrive.client.screen.InscriberScreen;
 import matteroverdrive.client.screen.TransporterScreen;
+import matteroverdrive.client.screen.FusionReactorScreen;
 import matteroverdrive.client.screen.MatterAnalyzerScreen;
 import matteroverdrive.client.screen.MatterRecyclerScreen;
 import matteroverdrive.client.screen.ReplicatorScreen;
@@ -11,6 +13,7 @@ import matteroverdrive.client.screen.SolarPanelScreen;
 import matteroverdrive.client.screen.TritaniumCrateScreen;
 import matteroverdrive.client.screen.PatternStorageScreen;
 import matteroverdrive.client.screen.PatternMonitorScreen;
+import matteroverdrive.client.screen.WeaponStationScreen;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
@@ -29,6 +32,8 @@ public final class ClientModEvents {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            MenuScreens.register(ModMenus.ENERGY_PIPE.get(), EnergyPipeScreen::new);
+            MenuScreens.register(ModMenus.FUSION_REACTOR_CONTROLLER.get(), FusionReactorScreen::new);
             MenuScreens.register(ModMenus.TRANSPORTER.get(), TransporterScreen::new);
             MenuScreens.register(ModMenus.INSCRIBER.get(), InscriberScreen::new);
             MenuScreens.register(ModMenus.DECOMPOSER.get(), DecomposerScreen::new);
@@ -39,6 +44,7 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.PATTERN_MONITOR.get(), PatternMonitorScreen::new);
             MenuScreens.register(ModMenus.SOLAR_PANEL.get(), SolarPanelScreen::new);
             MenuScreens.register(ModMenus.TRITANIUM_CRATE.get(), TritaniumCrateScreen::new);
+            MenuScreens.register(ModMenus.WEAPON_STATION.get(), WeaponStationScreen::new);
 
             ItemProperties.register(
                     ModItems.get("matter_container").get(),

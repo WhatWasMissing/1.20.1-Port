@@ -2,11 +2,30 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.CreativeBatteryItem;
+import matteroverdrive.item.DebugMatterContainerItem;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.PatternDriveItem;
+import matteroverdrive.item.ReactorRemoteItem;
+import matteroverdrive.item.ReactorAssemblyGuideItem;
+import matteroverdrive.item.SpacetimeEqualizerItem;
 import matteroverdrive.item.TransportFlashDriveItem;
+import matteroverdrive.item.TritaniumArmorItem;
+import matteroverdrive.item.TritaniumArmorMaterial;
+import matteroverdrive.item.TritaniumToolTier;
+import matteroverdrive.item.TritaniumWrenchItem;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.ShovelItem;
+import net.minecraft.world.item.SwordItem;
+import matteroverdrive.item.weapon.EnergyPackItem;
+import matteroverdrive.item.weapon.EnergyWeaponItem;
+import matteroverdrive.item.weapon.WeaponBatteryItem;
+import matteroverdrive.item.weapon.WeaponModuleItem;
+
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -38,6 +57,7 @@ public final class ModItems {
         "battery",
         "contract",
         "creative_battery",
+        "debug_matter_container",
         "creative_pattern_drive",
         "data_pad",
         "dilithium_crystal",
@@ -70,6 +90,8 @@ public final class ModItems {
         "portable_decomposer",
         "quantum_fold_manipulator",
         "record_transformation",
+        "reactor_remote",
+        "reactor_assembly_guide",
         "rogue_android_part_arms",
         "rogue_android_part_chest",
         "rogue_android_part_head",
@@ -147,8 +169,23 @@ public final class ModItems {
     }
 
     private static Item createStandaloneItem(String id) {
+        if (id.equals("battery")) return new WeaponBatteryItem(propertiesFor(id), 524288, 400, 800);
+        if (id.equals("hc_battery")) return new WeaponBatteryItem(propertiesFor(id), 1048576, 4096, 4096);
+        if (id.equals("energy_pack")) return new EnergyPackItem(propertiesFor(id));
+        if (id.equals("phaser")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PHASER);
+        if (id.equals("phaser_rifle")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PHASER_RIFLE);
+        if (id.equals("ion_sniper")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.ION_SNIPER);
+        if (id.equals("plasma_shotgun")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PLASMA_SHOTGUN);
+        if (id.startsWith("weapon_module_barrel_")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.BARREL, WeaponModuleItem.Effect.valueOf(id.substring(21).toUpperCase()));
+        if (id.equals("weapon_module_holo_sights")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.SIGHTS, WeaponModuleItem.Effect.HOLO_SIGHTS);
+        if (id.equals("sniper_scope")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.SIGHTS, WeaponModuleItem.Effect.SNIPER_SCOPE);
+        if (id.equals("weapon_module_ricochet")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.OTHER, WeaponModuleItem.Effect.RICOCHET);
+        if (id.equals("weapon_module_color") || id.startsWith("weapon_module_color_")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.COLOR, WeaponModuleItem.Effect.COLOR, colorFor(id));
         if (id.equals("creative_battery")) {
             return new CreativeBatteryItem(propertiesFor(id));
+        }
+        if (id.equals("debug_matter_container")) {
+            return new DebugMatterContainerItem(propertiesFor(id));
         }
         if (id.equals("matter_container")) {
             return new MatterContainerItem(propertiesFor(id));
@@ -162,14 +199,41 @@ public final class ModItems {
         if (id.equals("transport_flash_drive")) {
             return new TransportFlashDriveItem(propertiesFor(id));
         }
+        if (id.equals("reactor_remote")) {
+            return new ReactorRemoteItem(propertiesFor(id));
+        }
+        if (id.equals("reactor_assembly_guide")) {
+            return new ReactorAssemblyGuideItem(propertiesFor(id));
+        }
+        if (id.equals("spacetime_equalizer")) {
+            return new SpacetimeEqualizerItem(propertiesFor(id));
+        }
         if (id.equals("pattern_drive") || id.equals("creative_pattern_drive")) {
             return new PatternDriveItem(propertiesFor(id), id.equals("creative_pattern_drive"));
         }
+        if (id.equals("tritanium_pickaxe")) return new PickaxeItem(TritaniumToolTier.TIER, 1, -2.8F, propertiesFor(id));
+        if (id.equals("tritanium_axe")) return new AxeItem(TritaniumToolTier.TIER, 5.0F, -3.1F, propertiesFor(id));
+        if (id.equals("tritanium_shovel")) return new ShovelItem(TritaniumToolTier.TIER, 1.5F, -3.0F, propertiesFor(id));
+        if (id.equals("tritanium_hoe")) return new HoeItem(TritaniumToolTier.TIER, -2, 0.0F, propertiesFor(id));
+        if (id.equals("tritanium_sword")) return new SwordItem(TritaniumToolTier.TIER, 3, -2.4F, propertiesFor(id));
+        if (id.equals("tritanium_wrench")) return new TritaniumWrenchItem(propertiesFor(id).durability(2500));
+        if (id.equals("tritanium_helmet")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.HELMET, propertiesFor(id));
+        if (id.equals("tritanium_chestplate")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.CHESTPLATE, propertiesFor(id));
+        if (id.equals("tritanium_leggings")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.LEGGINGS, propertiesFor(id));
+        if (id.equals("tritanium_boots")) return new TritaniumArmorItem(TritaniumArmorMaterial.MATERIAL, ArmorItem.Type.BOOTS, propertiesFor(id));
         MachineUpgradeItem.Upgrade upgrade = MachineUpgradeItem.Upgrade.fromItemId(id);
         if (upgrade != null) {
             return new MachineUpgradeItem(propertiesFor(id), upgrade);
         }
         return new Item(propertiesFor(id));
+    }
+
+    private static int colorFor(String id) {
+        return switch (id.substring("weapon_module_color".length()).replace("_", "")) {
+            case "red" -> 0xff3333; case "green" -> 0x33cc66; case "limegreen" -> 0x66ff33; case "blue" -> 0x3366ff;
+            case "skyblue" -> 0x33ccff; case "purple" -> 0xaa55ff; case "pink" -> 0xff66cc; case "gold" -> 0xffcc33;
+            case "brown" -> 0x996633; case "gray" -> 0x999999; case "black" -> 0x222222; default -> 0x33ccff;
+        };
     }
 
     private static Item.Properties propertiesFor(String id) {
@@ -202,7 +266,9 @@ public final class ModItems {
                 || id.contains("flash_drive")
                 || id.equals("data_pad")
                 || id.equals("spacetime_equalizer")
-                || id.equals("energy_pack");
+                || id.equals("energy_pack")
+                || id.equals("reactor_remote")
+                || id.equals("reactor_assembly_guide");
     }
 
     public static RegistryObject<Item> get(String id) {
@@ -216,3 +282,4 @@ public final class ModItems {
         return item;
     }
 }
+

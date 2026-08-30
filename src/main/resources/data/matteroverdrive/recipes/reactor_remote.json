@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":[" I ","RCR"," I "],"key":{"I":{"item":"minecraft:iron_ingot"},"R":{"item":"minecraft:redstone"},"C":{"item":"matteroverdrive:isolinear_circuit_mk1"}},"result":{"item":"matteroverdrive:reactor_remote"}}

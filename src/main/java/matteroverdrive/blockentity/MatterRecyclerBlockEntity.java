@@ -96,6 +96,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, MatterRecyclerBlockEntity recycler) {
+        recycler.energyStorage.beginUsageTick(level.getGameTime());
         recycler.chargeFromEnergyItem();
         recycler.manageRecycle();
         if (state.hasProperty(MatterRecyclerBlock.ACTIVE) && state.getValue(MatterRecyclerBlock.ACTIVE) != recycler.running) {
@@ -133,7 +134,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
             return;
         }
         running = true;
-        energyStorage.extractEnergy(drain, false);
+        energyStorage.consumeEnergy(drain, level.getGameTime());
         recycleTime++;
         if (recycleTime >= getSpeed()) {
             recycleTime = 0;
@@ -226,6 +227,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("RecycleTime", recycleTime);
         tag.putBoolean("Running", running);
     }
@@ -235,6 +237,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         recycleTime = Math.max(0, tag.getInt("RecycleTime"));
         running = tag.getBoolean("Running");
     }

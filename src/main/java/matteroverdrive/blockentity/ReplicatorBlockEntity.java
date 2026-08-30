@@ -137,6 +137,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ReplicatorBlockEntity replicator) {
+        replicator.energyStorage.beginUsageTick(level.getGameTime());
         replicator.chargeFromEnergyItem();
         replicator.manageReplicate();
         if (state.hasProperty(ReplicatorBlock.ACTIVE) && state.getValue(ReplicatorBlock.ACTIVE) != replicator.running) {
@@ -187,7 +188,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
         running = true;
-        energyStorage.extractEnergy(drain, false);
+        energyStorage.consumeEnergy(drain, level.getGameTime());
         replicateTime++;
         if (replicateTime >= getSpeed()) {
             replicateTime = 0;
@@ -361,13 +362,13 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     public double getFailChance() {
-        int progress = getCurrentPatternProgress();
-        double progressChance = 1.0D - (progress / 100.0D);
-        double multiplier = upgrades.getMultiplier(MachineUpgradeItem.Upgrade::failureChance);
+        /*
+         * Pattern progress controls whether a pattern may be used; it must not
+         * turn a valid normal-drive replication into an almost-guaranteed
+         * failure when the drive contains multiple analysed items.
+         */
         return Math.min(1.0D,
-                FAIL_CHANCE * multiplier
-                        + progressChance * 0.5D
-                        + progressChance * 0.5D * multiplier);
+                FAIL_CHANCE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::failureChance));
     }
 
     public ItemStackHandler getItemHandler() {
@@ -418,6 +419,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energyStorage.getEnergyStored());
+        tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("Matter", matterStorage.getMatterStored());
         tag.putInt("ReplicateTime", replicateTime);
         tag.putBoolean("Running", running);
@@ -445,6 +447,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         }
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
+        energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         matterStorage.setMatterStored(tag.getInt("Matter"));
         replicateTime = Math.max(0, tag.getInt("ReplicateTime"));
         running = tag.getBoolean("Running");

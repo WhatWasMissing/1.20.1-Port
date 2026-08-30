@@ -524,3 +524,78 @@ Branch `feature/transporter-network` starts from verified Inscriber production b
 - Runtime testing confirmed Flash Drive binding, target detection, Creative Battery charging, transport countdown, same-dimension teleporting, debug values, and the linked Transporter workflow all work.
 - Transporter Network is complete and ready to fast-forward into `main`.
 - Exact next step: merge the verified network, then begin the larger Fusion Reactor system bundle.
+
+
+## Current work: Fusion Reactor bundle
+
+Branch `feature/fusion-reactor` starts from verified Transporter Network commit `f90804d`.
+
+This is the next major multi-block system bundle:
+
+- restore the Controller, Coil, and IO block roles as one validated reactor structure;
+- restore legacy reactor values: 100000000 FE capacity, 2048 kM matter buffer, 2048 FE/t baseline output, and 1/80 kM/t baseline matter drain;
+- port the Gravitational Anomaly requirement and its distance-based efficiency; 
+- make IO parts expose the controller's Forge Energy/Matter storage and output power to adjacent receivers;
+- include structure-state, fuel/energy, efficiency, output, and fault-reason debug readouts;
+- port the linked build recipes and provide an explicit in-game build/test plan.
+
+Legacy design findings:
+
+- the controller checked its 28-part structure every 40 ticks;
+- it required a Gravitational Anomaly within three blocks, with closer placement increasing efficiency;
+- reactor coils and the controller's IO parts have distinct required positions;
+- it only generated while the structure was valid and matter remained; its IO parts sent up to 512 FE/t to adjacent receivers;
+- this system is independent of Android capability work, so it is appropriate for the next usable large feature.
+
+Exact next step: map the legacy structure positions into a clear 1.20.1 build validation model, then implement Controller, Coil, IO, anomaly interaction, capabilities, menus, debug data, and recipes as one branch.
+
+
+## Fusion Reactor implementation — awaiting build and runtime verification
+
+- Added functional Fusion Reactor Controller and Reactor IO block entities with the legacy baseline values: **100,000,000 FE** storage, **2,048 kM** matter storage, **2,048 FE/t** maximum base generation, and **0.0125 kM/t** base matter drain.
+- The first 1.20 structure is deliberately compact and visible: put a **Fusion Reactor Controller** in the centre, a **Fusion Reactor Coil** directly north, south, east, and west, a **Fusion Reactor IO** directly above it, and a **Gravitational Anomaly** within three blocks. The controller’s debug UI states the exact missing condition when invalid.
+- Controller accepts Matter Container transfers through the Matter capability. Reactor IO exposes and exports up to **512 FE/t per adjacent side** from the controller buffer.
+- Added Controller GUI with four upgrade slots and persistent debug readouts for structure, output, anomaly distance, efficiency, matter drain, stored energy and matter. Supported upgrades: Speed, Range, Power Storage, and Matter Storage.
+- Updated M2 source/runtime gates for 12 block entities, 11 menus, and the Fusion Reactor marker.
+- This commit is an implementation checkpoint only; run RUN_M2_CLIENT.bat plus the standard M2 checks before marking verified. The large legacy reactor exterior/rendering and Gravitational Stabilizer behavior remain future work.
+
+
+## Fusion Reactor compile correction — awaiting verification
+
+- Corrected the Fusion Reactor screen render call to pass Minecraft's required `partialTick` parameter to `AbstractContainerScreen`.
+- This fixes the compile failure reported by `RUN_M2_CLIENT.bat`; re-run the client and the standard M2 gates after pulling this commit.
+
+
+## Fusion Reactor menu shift-click correction — awaiting verification
+
+- Fixed Fusion Reactor controller inventory slot boundaries: the menu has four upgrade slots plus 36 player slots (indices 0–39), not 49 slots.
+- This resolves the client crash `Index 40 out of bounds for length 40` caused by shift-clicking an item in the controller UI.
+
+
+## Fusion Reactor range, speed, and IO corrections — awaiting verification
+
+- Capped the effective anomaly scan range at **16 blocks**. Range upgrades still extend the reactor's reach from the 3-block base, but cannot create the runaway cubic scan that locked the integrated server and prevented world interaction/closing.
+- Corrected Speed upgrade behaviour: its legacy `0.75x` speed multiplier now increases generation (by reducing the cycle factor) instead of reducing output.
+- Reworked Reactor IO transfer to use the proven Solar Panel simulation/extract/refund flow, including a receiver `canReceive` check. IO exports up to 512 FE/t to each adjacent receiving side, excluding the Controller below it.
+
+
+## Energy Cable implementation — awaiting build and runtime verification
+
+- Converted the existing **Heavy Matter Pipe** block into the functional **Heavy Energy Cable**. This preserves the port's legacy block/resource inventory while giving the player a dedicated FE conduit with no missing texture or registry expansion.
+- Each cable buffers **8,192 FE** and relays up to **1,024 FE/t per connected receiving side**. Reactor IO pushes FE into the first cable; chained cables then pass it onward to FE-accepting machines.
+- Added a cable GUI with persistent `[DEBUG]` readouts for stored FE, last output, and the six-sided relay behaviour.
+- Updated M2 source/runtime gates for 13 block entities, 12 menus, and the Energy Cable marker.
+- Test with `Reactor IO -> Heavy Energy Cable(s) -> powered machine`. Matter Pipe and Network Pipe remain matter/task-only.
+
+
+## Test build packaging — ready for local JAR creation
+
+- Added `CHANGELOG.md` covering the complete M2 functional-systems test build: machines, upgrades, solar, crates, inscriber, transporter, Fusion Reactor, and Heavy Energy Cable.
+- Added `PACKAGE_TEST_JAR.bat`, which runs the project’s Gradle `jar` task and prints the generated test JAR path under `build\\libs`.
+- The current feature branch is ready for final `VERIFY_M2_BUILD.bat` validation after packaging.
+
+
+## Working-feature reference — ready for test distribution
+
+- Added `WORKING_FEATURES.md`, an exhaustive current-branch reference for installing the test JAR, functional machines, items, networks, upgrades, Inscriber recipes, Fusion Reactor, Heavy Energy Cable, verified checks, and known non-functional legacy shells.
+- The document is deliberately explicit that only listed systems are gameplay-functional; remaining registered legacy content is not claimed as complete.

@@ -2,8 +2,13 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.DecomposerBlock;
+import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
+import matteroverdrive.block.FusionReactorControllerBlock;
+import matteroverdrive.block.FusionReactorIOBlock;
+import matteroverdrive.block.GravitationalAnomalyBlock;
+import matteroverdrive.block.GravitationalStabilizerBlock;
 import matteroverdrive.block.TransporterBlock;
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.block.ReplicatorBlock;
@@ -11,6 +16,7 @@ import matteroverdrive.block.SolarPanelBlock;
 import matteroverdrive.block.TritaniumCrateBlock;
 import matteroverdrive.block.PatternStorageBlock;
 import matteroverdrive.block.PatternMonitorBlock;
+import matteroverdrive.block.WeaponStationBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.registries.DeferredRegister;
@@ -63,6 +69,7 @@ public final class ModBlocks {
         "decorative.vent.dark",
         "decorative.white_plate",
         "dilithium_ore",
+        "debug_matter_block",
         "fusion_reactor_coil",
         "fusion_reactor_controller",
         "fusion_reactor_io",
@@ -120,7 +127,17 @@ public final class ModBlocks {
     }
 
     private static void registerPlaceholder(String id) {
-        if (id.equals("decomposer")) {
+        if (id.equals("heavy_matter_pipe")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
+        } else if (id.equals("fusion_reactor_controller")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
+        } else if (id.equals("fusion_reactor_io")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorIOBlock(propertiesFor(id))));
+        } else if (id.equals("gravitational_anomaly")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalAnomalyBlock(propertiesFor(id))));
+        } else if (id.equals("gravitational_stabilizer")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalStabilizerBlock(propertiesFor(id))));
+        } else if (id.equals("decomposer")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DecomposerBlock(propertiesFor(id))));
         } else if (id.equals("matter_recycler")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterRecyclerBlock(propertiesFor(id))));
@@ -138,6 +155,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternMonitorBlock(propertiesFor(id))));
         } else if (id.equals("solar_panel")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SolarPanelBlock(propertiesFor(id))));
+        } else if (id.equals("weapon_station")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new WeaponStationBlock(propertiesFor(id))));
         } else if (id.equals("tritanium_crate") || id.startsWith("tritanium_crate_")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TritaniumCrateBlock(propertiesFor(id))));
         } else {
@@ -199,3 +218,4 @@ public final class ModBlocks {
         return block;
     }
 }
+
