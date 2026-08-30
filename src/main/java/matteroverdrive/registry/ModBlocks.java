@@ -16,6 +16,7 @@ import matteroverdrive.block.SolarPanelBlock;
 import matteroverdrive.block.TritaniumCrateBlock;
 import matteroverdrive.block.PatternStorageBlock;
 import matteroverdrive.block.PatternMonitorBlock;
+import matteroverdrive.block.WeaponStationBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.registries.DeferredRegister;
@@ -154,6 +155,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternMonitorBlock(propertiesFor(id))));
         } else if (id.equals("solar_panel")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SolarPanelBlock(propertiesFor(id))));
+        } else if (id.equals("weapon_station")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new WeaponStationBlock(propertiesFor(id))));
         } else if (id.equals("tritanium_crate") || id.startsWith("tritanium_crate_")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TritaniumCrateBlock(propertiesFor(id))));
         } else {

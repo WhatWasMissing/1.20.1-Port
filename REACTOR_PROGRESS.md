@@ -198,3 +198,11 @@
 - The GUI now separates **Output capacity** (the mass-scaled `2048 x efficiency x unsuppressed mass` rate) from **generated** (FE actually accepted into reactor storage this tick).
 - This matches the original controller's separation between mass-scaled `energyPerTick` and high-rate extraction from reactor storage, while retaining the port's tested cable boundary.
 - Added Test 8 to `REACTOR_RING_POWER_TESTING.md` for anomaly-mass scaling above 512 FE/t.
+
+
+## Reactor and gun-system integration
+
+- Created `integration/reactor-weapons` from reactor head `be252a3` and integrated weapons head `f3cb3e6` from their shared base `2251538`.
+- Preserved both systems in the two overlapping registries: `ModBlocks.java` retains the reactor blocks and adds the Weapon Station; `ModItems.java` retains reactor/debug/tool/armour items and adds energy weapons, batteries, packs, and modules.
+- No other paths overlapped between the post-base reactor and weapons changes.
+- Combined Java/Forge build and runtime verification are pending on the integration branch; `main` must not be updated until the build passes.

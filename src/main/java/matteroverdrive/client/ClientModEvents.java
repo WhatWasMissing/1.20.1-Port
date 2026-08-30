@@ -13,6 +13,7 @@ import matteroverdrive.client.screen.SolarPanelScreen;
 import matteroverdrive.client.screen.TritaniumCrateScreen;
 import matteroverdrive.client.screen.PatternStorageScreen;
 import matteroverdrive.client.screen.PatternMonitorScreen;
+import matteroverdrive.client.screen.WeaponStationScreen;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
@@ -43,6 +44,7 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.PATTERN_MONITOR.get(), PatternMonitorScreen::new);
             MenuScreens.register(ModMenus.SOLAR_PANEL.get(), SolarPanelScreen::new);
             MenuScreens.register(ModMenus.TRITANIUM_CRATE.get(), TritaniumCrateScreen::new);
+            MenuScreens.register(ModMenus.WEAPON_STATION.get(), WeaponStationScreen::new);
 
             ItemProperties.register(
                     ModItems.get("matter_container").get(),

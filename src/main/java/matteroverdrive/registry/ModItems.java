@@ -21,6 +21,11 @@ import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
+import matteroverdrive.item.weapon.EnergyPackItem;
+import matteroverdrive.item.weapon.EnergyWeaponItem;
+import matteroverdrive.item.weapon.WeaponBatteryItem;
+import matteroverdrive.item.weapon.WeaponModuleItem;
+
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -164,6 +169,18 @@ public final class ModItems {
     }
 
     private static Item createStandaloneItem(String id) {
+        if (id.equals("battery")) return new WeaponBatteryItem(propertiesFor(id), 524288, 400, 800);
+        if (id.equals("hc_battery")) return new WeaponBatteryItem(propertiesFor(id), 1048576, 4096, 4096);
+        if (id.equals("energy_pack")) return new EnergyPackItem(propertiesFor(id));
+        if (id.equals("phaser")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PHASER);
+        if (id.equals("phaser_rifle")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PHASER_RIFLE);
+        if (id.equals("ion_sniper")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.ION_SNIPER);
+        if (id.equals("plasma_shotgun")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PLASMA_SHOTGUN);
+        if (id.startsWith("weapon_module_barrel_")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.BARREL, WeaponModuleItem.Effect.valueOf(id.substring(21).toUpperCase()));
+        if (id.equals("weapon_module_holo_sights")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.SIGHTS, WeaponModuleItem.Effect.HOLO_SIGHTS);
+        if (id.equals("sniper_scope")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.SIGHTS, WeaponModuleItem.Effect.SNIPER_SCOPE);
+        if (id.equals("weapon_module_ricochet")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.OTHER, WeaponModuleItem.Effect.RICOCHET);
+        if (id.equals("weapon_module_color") || id.startsWith("weapon_module_color_")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.COLOR, WeaponModuleItem.Effect.COLOR, colorFor(id));
         if (id.equals("creative_battery")) {
             return new CreativeBatteryItem(propertiesFor(id));
         }
@@ -209,6 +226,14 @@ public final class ModItems {
             return new MachineUpgradeItem(propertiesFor(id), upgrade);
         }
         return new Item(propertiesFor(id));
+    }
+
+    private static int colorFor(String id) {
+        return switch (id.substring("weapon_module_color".length()).replace("_", "")) {
+            case "red" -> 0xff3333; case "green" -> 0x33cc66; case "limegreen" -> 0x66ff33; case "blue" -> 0x3366ff;
+            case "skyblue" -> 0x33ccff; case "purple" -> 0xaa55ff; case "pink" -> 0xff66cc; case "gold" -> 0xffcc33;
+            case "brown" -> 0x996633; case "gray" -> 0x999999; case "black" -> 0x222222; default -> 0x33ccff;
+        };
     }
 
     private static Item.Properties propertiesFor(String id) {
