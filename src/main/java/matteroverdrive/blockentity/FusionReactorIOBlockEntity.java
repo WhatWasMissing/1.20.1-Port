@@ -61,6 +61,7 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         }
 
         Set<BlockPos> visited = new HashSet<>();
+        Set<BlockPos> visitedReceivers = new HashSet<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
         visited.add(pos);
         enqueueAdjacentCables(level, pos, pending, visited);
@@ -82,8 +83,9 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
                         || controller.isInternalPowerAt(neighborPos)) {
                     continue;
                 }
-                if (neighbor != null) {
-                    pushToReceiver(controller, neighbor, direction);
+                if (neighbor != null && !visitedReceivers.contains(neighborPos)
+                        && pushToReceiver(controller, neighbor, direction)) {
+                    visitedReceivers.add(neighborPos.immutable());
                 }
             }
         }
@@ -101,31 +103,16 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         }
     }
 
-    private static void pushToReceiver(FusionReactorControllerBlockEntity controller,
-                                       BlockEntity receiver, Direction direction) {
+    private static boolean pushToReceiver(FusionReactorControllerBlockEntity controller,
+                                          BlockEntity receiver, Direction direction) {
         IEnergyStorage storage = receiver.getCapability(
                 ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
         if (storage == null || !storage.canReceive()) {
-            return;
+            return false;
         }
 
-        int offer = Math.min(FusionReactorControllerBlockEntity.IO_OUTPUT_PER_SIDE,
-                controller.getEnergy().getEnergyStored());
-        int accepted = storage.receiveEnergy(offer, true);
-        if (accepted <= 0) {
-            return;
-        }
-
-        int extracted = controller.getEnergy().extractEnergy(accepted, false);
-        if (extracted <= 0) {
-            return;
-        }
-
-        int received = storage.receiveEnergy(extracted, false);
-        if (received < extracted) {
-            controller.getEnergy().setEnergyStored(
-                    controller.getEnergy().getEnergyStored() + extracted - received);
-        }
+        controller.transferEnergyTo(storage, controller.getEnergy().getEnergyStored());
+        return true;
     }
 
     public void linkController(BlockPos controllerPos) {

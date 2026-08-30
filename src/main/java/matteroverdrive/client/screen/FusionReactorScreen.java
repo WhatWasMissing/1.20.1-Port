@@ -22,8 +22,8 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
     public FusionReactorScreen(FusionReactorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 360;
-        imageHeight = 275;
-        inventoryLabelY = 178;
+        imageHeight = 286;
+        inventoryLabelY = 189;
     }
 
     @Override
@@ -55,31 +55,35 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         graphics.drawString(font, "Structure: " + (menu.valid() ? "VALID" : faultText())
                         + " | ring: " + menu.ringDirection().getName().toUpperCase(Locale.ROOT),
                 18, 79, menu.valid() ? 0x227722 : 0xaa2222, false);
-        graphics.drawString(font, "Output: " + menu.output() + " FE/t | usage: "
-                + menu.connectedUsage() + " FE/t | efficiency: "
-                + Math.round(menu.efficiency() * 100) + "%", 18, 90, 0x8a5a00, false);
+        graphics.drawString(font, "Output capacity: " + menu.output()
+                        + " FE/t | generated: " + menu.generatedLastTick() + " FE/t",
+                18, 90, 0x8a5a00, false);
+        graphics.drawString(font, "Usage: " + menu.connectedUsage()
+                        + " FE/t | efficiency: "
+                        + Math.round(menu.efficiency() * 100) + "%",
+                18, 101, 0x8a5a00, false);
         graphics.drawString(font, "Anomaly offset: " + menu.anomalyDistance()
                 + " | mass: " + format(menu.unsuppressedMass())
                 + " (safe " + format(menu.suppressedMass()) + ")",
-                18, 101, 0x8a5a00, false);
+                18, 112, 0x8a5a00, false);
         graphics.drawString(font, "Matter drain: " + format(menu.matterDrain())
-                + " kM/t | linked IO: " + menu.ioCount(), 18, 112, 0x8a5a00, false);
+                + " kM/t | linked IO: " + menu.ioCount(), 18, 123, 0x8a5a00, false);
         graphics.drawString(font, "Active stabilizers: " + menu.stabilizerCount(),
-                18, 123, 0x8a5a00, false);
+                18, 134, 0x8a5a00, false);
         graphics.drawString(font, "[DEBUG] Pull " + format(menu.anomalyRange())
                         + " (" + menu.affectedEntityCount() + " affected)"
                         + " | block " + format(menu.blockHazardRange()),
-                18, 134, 0x8a5a00, false);
+                18, 145, 0x8a5a00, false);
         graphics.drawString(font, "[DEBUG] Horizon " + format(menu.eventHorizon())
                         + " | inside " + menu.horizonEntityCount()
                         + " | last feed " + menu.lastConsumedMatter() + " kM / "
                         + menu.lastConsumedEntityCount(),
-                18, 145, 0x8a5a00, false);
+                18, 156, 0x8a5a00, false);
         graphics.drawString(font, "[DEBUG] Ring power: " + menu.internalMachineCount()
                         + " machines | sent " + menu.internalPowerLastTick() + " FE/t",
-                18, 156, 0x8a5a00, false);
-        graphics.drawString(font, "[DEBUG] Block hazard: DISABLED",
                 18, 167, 0x8a5a00, false);
+        graphics.drawString(font, "[DEBUG] Block hazard: DISABLED",
+                18, 178, 0x8a5a00, false);
         graphics.drawString(font, playerInventoryTitle,
                 SLOT_X_OFFSET + 8, inventoryLabelY, 0x404040, false);
     }

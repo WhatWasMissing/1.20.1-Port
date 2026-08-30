@@ -179,12 +179,22 @@
 
 ## Internal reactor ring power bus
 
-- Validated reactors now discover FE-capable machines inside the horizontal ring on the controller's Y level and power each one directly at up to 512 FE/t.
+- Validated reactors now discover FE-capable machines inside the horizontal ring on the controller's Y level and share available reactor FE directly without a fixed per-machine ceiling.
 - The enclosed footprint follows the rounded ring: local forward rows 1/9 use lateral -2..2, rows 2/8 use -3..3, and rows 3..7 use -4..4.
 - A Decomposer placed in either flexible controller-side ring slot at local (+1, 0) or (-1, 0) also joins the internal bus without a cable.
 - Internal receivers are served in a rotating deterministic order so a low-energy reactor does not permanently favor the same machine.
-- The controller debug GUI now reports discovered internal machines and FE actually sent to them during the latest tick.
+- The controller debug GUI now reports discovered internal machines and FE actually sent to them during the latest tick; this transfer may exceed 512 FE/t.
 - Internal machines are included in the existing actual-processing `usage: N FE/t` total and are deduplicated if a cable also reaches them.
 - Reactor IO now starts external FE transfer only through an adjacent Heavy Energy Cable. A machine directly beside IO but outside the ring is intentionally not powered.
 - Controller and IO sided FE capabilities no longer expose a cable-free external bypass; matter IO behavior is unchanged.
 - Runtime verification steps are in `REACTOR_RING_POWER_TESTING.md`.
+
+## Mass-scaled reactor output correction
+
+- Removed the artificial 512 FE/t ceiling from both internal ring delivery and Reactor IO cable-routed delivery.
+- Internal machines now share the reactor's available stored FE fairly, with the starting receiver rotated each tick.
+- Reactor IO still requires an adjacent Heavy Energy Cable before it can reach outside machines, and duplicate endpoints in a cable network are transferred to only once per IO tick.
+- Added one controller transfer helper so simulation, extraction, receiver acceptance, and refund behavior are identical for internal and external power.
+- The GUI now separates **Output capacity** (the mass-scaled `2048 x efficiency x unsuppressed mass` rate) from **generated** (FE actually accepted into reactor storage this tick).
+- This matches the original controller's separation between mass-scaled `energyPerTick` and high-rate extraction from reactor storage, while retaining the port's tested cable boundary.
+- Added Test 8 to `REACTOR_RING_POWER_TESTING.md` for anomaly-mass scaling above 512 FE/t.

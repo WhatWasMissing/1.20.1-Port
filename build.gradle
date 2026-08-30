@@ -345,8 +345,9 @@ tasks.register('verifyM2Sources') {
         if (!energyPipe.contains('BUFFER_CAPACITY = 8_192') || !energyPipe.contains('TRANSFER_PER_SIDE = 1_024') || !energyPipe.contains('ForgeCapabilities.ENERGY')) throw new GradleException('Energy Pipe transfer or capability wiring is incomplete')
         if (!reactor.contains('ENERGY_CAPACITY = 100_000_000') || !reactor.contains('MATTER_CAPACITY = 2_048') || !reactor.contains('BASE_OUTPUT = 2_048') || !reactor.contains('BASE_MATTER_DRAIN = 1.0D / 80.0D') || !reactor.contains('MAX_GRAVITATIONAL_ANOMALY_DISTANCE = 3')) throw new GradleException('Fusion Reactor legacy constants are incomplete')
         if (!reactor.contains('LATERAL_OFFSETS') || !reactor.contains('FORWARD_OFFSETS') || !reactor.contains('SLOT_TYPES') || !reactor.contains('Incorrect coil position') || !reactor.contains('No anomaly at ring centre') || !reactor.contains('getRealMassUnsuppressed') || !reactor.contains('ioPositions') || !reactor.contains('ModCapabilities.MATTER')) throw new GradleException('Fusion Reactor ring validation, anomaly scaling, IO links, or matter capability wiring is incomplete')
-        if (!reactor.contains('INTERNAL_RING_OUTPUT_PER_MACHINE = 512') || !reactor.contains('collectInternalPowerPositions') || !reactor.contains('powerInternalRing')) throw new GradleException('Fusion Reactor internal ring power bus is incomplete')
-        if (!reactorIo.contains('enqueueAdjacentCables') || !reactorIo.contains('isInternalPowerAt')) throw new GradleException('Reactor IO external cable boundary is incomplete')
+        if (!reactor.contains('collectInternalPowerPositions') || !reactor.contains('powerInternalRing') || !reactor.contains('fairOffer') || !reactor.contains('transferEnergyTo')) throw new GradleException('Fusion Reactor dynamic internal ring power bus is incomplete')
+        if (!reactor.contains('outputPotential') || !reactor.contains('generatedLastTick')) throw new GradleException('Fusion Reactor mass-scaled output telemetry is incomplete')
+        if (!reactorIo.contains('enqueueAdjacentCables') || !reactorIo.contains('isInternalPowerAt') || !reactorIo.contains('transferEnergyTo')) throw new GradleException('Reactor IO external cable boundary or uncapped transfer is incomplete')
         if (!anomaly.contains('STRENGTH_MULTIPLIER = 0.00001D') || !anomaly.contains('getRealMassUnsuppressed') || !anomaly.contains('MatterValueRegistry.getMatter')) throw new GradleException('Gravitational Anomaly mass or item-consumption logic is incomplete')
         if (!stabilizer.contains('MAX_DISTANCE = 63') || !stabilizer.contains('SUPPRESSION_AMOUNT = 0.7D') || !stabilizer.contains('anomaly.suppress')) throw new GradleException('Gravitational Stabilizer targeting or suppression logic is incomplete')
         if (!beRegistry.contains('GRAVITATIONAL_ANOMALY') || !beRegistry.contains('GRAVITATIONAL_STABILIZER')) throw new GradleException('Gravitational block entities are not registered')
@@ -383,7 +384,7 @@ tasks.register('verifyM2Sources') {
         println '  inscriber=3 legacy circuit recipes, 512000 FE, 256 FE/t transfer'
         println '  transporter=bound flash drive targets, 32 block base range, 70 tick cycle'
         println '  fusionReactor=controller+4 coils+IO+anomaly, 2048 FE/t legacy base output'
-        println '  ringPower=same-level interior 512 FE/t/machine; external receivers require cable'
+        println '  ringPower=same-level shared reactor FE; external receivers require cable; no 512 FE/t cap'
         println '  energyPipe=existing heavy pipe now relays FE, 8192 FE buffer, 1024 FE/t/side'
     }
 }

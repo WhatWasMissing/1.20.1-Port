@@ -17,7 +17,7 @@ Use a copy of the test world before event-horizon tests. Block destruction remai
 ## Intended behavior
 
 - The reactor must have a valid ring and stored/generated FE.
-- FE-capable machines inside the ring, at the same Y level as the controller, receive up to 512 FE/t each without cables.
+- FE-capable machines inside the ring, at the same Y level as the controller, share available reactor FE without a fixed 512 FE/t ceiling.
 - A Decomposer may also occupy either flexible slot immediately left or right of the controller and receive internal power.
 - Machines outside that footprint require at least one Heavy Energy Cable between Reactor IO and the machine.
 - Reactor IO matter input/output still uses Matter Pipe or Heavy Matter Pipe as before.
@@ -36,6 +36,7 @@ Use a copy of the test world before event-horizon tests. Block destruction remai
 /give @p matteroverdrive:decomposer 8
 /give @p matteroverdrive:heavy_matter_pipe 64
 /give @p matteroverdrive:creative_battery
+/give @p matteroverdrive:debug_matter_block 64
 ```
 
 `matteroverdrive:heavy_matter_pipe` is the registered item ID currently displayed as **Heavy Energy Cable**.
@@ -67,7 +68,7 @@ Pass conditions:
 
 - The Decomposer FE increases.
 - The controller reports one additional ring machine.
-- `sent` is greater than 0 while the Decomposer has room, up to 512 FE/t.
+- `sent` is greater than 0 while the Decomposer has room and can exceed 512 FE/t.
 - `sent` returns to 0 when its energy buffer is full.
 
 ## Test 2 — Flexible controller-side Decomposer
@@ -110,12 +111,12 @@ Pass conditions:
 
 1. Place at least three partly empty Decomposers inside the footprint.
 2. First test with **INF FE** on.
-3. Then turn it off and reduce available reactor FE below the combined 1,536 FE/t maximum.
+3. Then turn it off and reduce available reactor FE below the receivers' combined acceptance.
 
 Pass conditions:
 
-- With enough FE, each machine can receive up to 512 FE/t.
-- With limited FE, service rotates rather than permanently favoring one machine.
+- With enough FE, total ring transfer can exceed 512 FE/t and is limited by reactor storage and receiver acceptance.
+- With limited FE, the available amount is shared and service order rotates rather than permanently favoring one machine.
 - No machine is counted twice if a cable also touches it.
 
 ## Test 6 — Actual usage telemetry
@@ -144,6 +145,22 @@ Pass conditions:
 - The external network recovers after cable replacement without replacing Reactor IO.
 - Reactor matter, energy, structure, stabilizer state, and persistent overlay remain correct.
 
+## Test 8 — Anomaly-mass output scaling
+
+1. Turn **INF FE** off.
+2. Open the controller and note **Output capacity** and **generated**.
+3. Ensure the controller has storage room or connect an empty internal machine/external battery so generated FE has somewhere to go.
+4. Feed one or more Debug Matter Blocks into the anomaly and wait for the mass value to update.
+5. Compare the two power values before and after the mass increase.
+
+Pass conditions:
+
+- **Output capacity** increases with unsuppressed anomaly mass and is not pinned to 512 FE/t.
+- **Generated** can rise above 512 FE/t when the controller has storage room.
+- **Generated** may be below capacity when the controller is nearly full; this is demand/storage throttling, not a reactor-output cap.
+- Internal `sent` and cable-routed transfer can exceed 512 FE/t when receivers can accept it.
+- Stabilizers continue to affect safe mass and hazard radii without reducing the unsuppressed-mass output calculation.
+
 ## Matter regression check
 
 Connect a powered Decomposer to Reactor IO through a Matter Pipe, drain the reactor below 2048 kM, and confirm it refills. An active reactor may display 2047/2048 because it consumes matter in the same tick; pause generation or use a non-running reactor for an exact full reading.
@@ -162,8 +179,11 @@ Test 4 footprint/height boundary:
 Test 5 multi-machine fairness:
 Test 6 actual usage:
 Test 7 reload/rebuild:
+Test 8 anomaly-mass scaling:
 Matter regression:
 
+Observed output capacity FE/t:
+Observed generated FE/t:
 Observed ring machine count:
 Observed ring FE/t sent:
 Observed processing usage FE/t:

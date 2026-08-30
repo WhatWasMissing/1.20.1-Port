@@ -45,8 +45,6 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     public static final int ENERGY_CAPACITY = 100_000_000;
     public static final int MATTER_CAPACITY = 2_048;
     public static final int BASE_OUTPUT = 2_048;
-    public static final int IO_OUTPUT_PER_SIDE = 512;
-    public static final int INTERNAL_RING_OUTPUT_PER_MACHINE = 512;
     public static final int STRUCTURE_CHECK_DELAY = 40;
     public static final int MAX_GRAVITATIONAL_ANOMALY_DISTANCE = 3;
     private static final double BASE_MATTER_DRAIN = 1.0D / 80.0D;
@@ -96,6 +94,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private boolean overlayEnabled;
     private BlockPos anomalyPosition;
     private int anomalyDistance = -1;
+    private int outputPotential;
     private int generatedLastTick;
     private int connectedUsage;
     private int internalPowerLastTick;
@@ -117,7 +116,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 5 -> matter.getMatterCapacity();
                 case 6 -> structureValid ? 1 : 0;
                 case 7 -> anomalyDistance;
-                case 8 -> generatedLastTick;
+                case 8 -> outputPotential;
                 case 9 -> (int) Math.round(efficiency() * 1_000.0D);
                 case 10 -> (int) Math.round(matterDrain() * 10_000.0D);
                 case 11 -> faultCode();
@@ -137,6 +136,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 24 -> anomaly == null ? 0 : anomaly.getLastConsumedEntityCount();
                 case 25 -> internalPowerPositions.size();
                 case 26 -> internalPowerLastTick;
+                case 27 -> generatedLastTick;
                 default -> 0;
             };
         }
@@ -147,7 +147,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 27;
+            return 28;
         }
     };
 
@@ -167,8 +167,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     }
 
     private void generate() {
+        outputPotential = 0;
         generatedLastTick = 0;
-        if (!structureValid || energy.getEnergyStored() >= energy.getMaxEnergyStored()) {
+        if (!structureValid) {
             return;
         }
 
@@ -179,15 +180,22 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             invalidateStructureLinks();
             return;
         }
-        if (matter.getMatterStored() <= 0) {
-            fault = "No matter";
-            return;
-        }
 
         double unsuppressedMass = anomaly.getRealMassUnsuppressed();
         double rawOutput = BASE_OUTPUT * efficiency() * unsuppressedMass;
         int requested = (int) Math.min(Integer.MAX_VALUE,
                 Math.max(1L, Math.round(rawOutput)));
+        outputPotential = requested;
+
+        if (matter.getMatterStored() <= 0) {
+            fault = "No matter";
+            return;
+        }
+        if (energy.getEnergyStored() >= energy.getMaxEnergyStored()) {
+            fault = "Ready";
+            return;
+        }
+
         int accepted = Math.min(requested,
                 energy.getMaxEnergyStored() - energy.getEnergyStored());
         if (accepted <= 0) {
@@ -418,9 +426,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         List<BlockPos> receivers = new ArrayList<>(internalPowerPositions);
         receivers.sort(Comparator.comparingLong(BlockPos::asLong));
         int start = (int) Math.floorMod(internalPowerSequence, (long) receivers.size());
+        int available = energy.getEnergyStored();
 
-        for (int offset = 0; offset < receivers.size()
-                && energy.getEnergyStored() > 0; offset++) {
+        for (int offset = 0; offset < receivers.size() && available > 0; offset++) {
             BlockPos position = receivers.get((start + offset) % receivers.size());
             BlockEntity receiver = level.getBlockEntity(position);
             if (receiver == null) {
@@ -431,18 +439,11 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 continue;
             }
 
-            int offer = Math.min(INTERNAL_RING_OUTPUT_PER_MACHINE,
-                    energy.extractEnergy(INTERNAL_RING_OUTPUT_PER_MACHINE, true));
-            int accepted = storage.receiveEnergy(offer, true);
-            if (accepted <= 0) {
-                continue;
-            }
-
-            int extracted = energy.extractEnergy(accepted, false);
-            int received = storage.receiveEnergy(extracted, false);
-            if (received < extracted) {
-                energy.setEnergyStored(energy.getEnergyStored() + extracted - received);
-            }
+            int remainingReceivers = receivers.size() - offset;
+            int fairOffer = (int) Math.min(Integer.MAX_VALUE,
+                    ((long) available + remainingReceivers - 1L) / remainingReceivers);
+            int received = transferEnergyTo(storage, fairOffer);
+            available -= received;
             internalPowerLastTick += received;
         }
         internalPowerSequence++;
@@ -509,6 +510,29 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         return machineStorage.getRecentEnergyUsage(level.getGameTime());
     }
 
+    public int transferEnergyTo(IEnergyStorage storage, int limit) {
+        if (storage == null || !storage.canReceive() || limit <= 0) {
+            return 0;
+        }
+
+        int offer = Math.min(limit, energy.extractEnergy(limit, true));
+        int accepted = storage.receiveEnergy(offer, true);
+        if (accepted <= 0) {
+            return 0;
+        }
+
+        int extracted = energy.extractEnergy(accepted, false);
+        if (extracted <= 0) {
+            return 0;
+        }
+
+        int received = storage.receiveEnergy(extracted, false);
+        if (received < extracted) {
+            energy.setEnergyStored(energy.getEnergyStored() + extracted - received);
+        }
+        return received;
+    }
+
     public void outputTo(Direction side, int limit) {
         if (level == null || limit <= 0) {
             return;
@@ -517,15 +541,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         if (receiver == null) {
             return;
         }
-        receiver.getCapability(ForgeCapabilities.ENERGY, side.getOpposite()).ifPresent(storage -> {
-            int offer = Math.min(limit, energy.extractEnergy(limit, true));
-            if (offer > 0) {
-                int accepted = storage.receiveEnergy(offer, false);
-                if (accepted > 0) {
-                    energy.extractEnergy(accepted, false);
-                }
-            }
-        });
+        receiver.getCapability(ForgeCapabilities.ENERGY, side.getOpposite())
+                .ifPresent(storage -> transferEnergyTo(storage, limit));
     }
 
     public boolean isIoAt(BlockPos position) {
