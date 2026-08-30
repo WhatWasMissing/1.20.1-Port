@@ -165,3 +165,14 @@
 - The reactor scans every unique connected Matter Overdrive machine and totals its current/recent processing usage. The previous-tick fallback prevents the display from flickering because of block-entity tick order.
 - The controller GUI label is now `usage: N FE/t`.
 - Next test: connect an idle empty Decomposer and confirm usage remains 0 while its buffer charges; start decomposition and confirm usage matches the Decomposer drain; add a second active machine and confirm both usages are summed.
+
+
+## Functional anomaly event horizon
+
+- Compared the port with the original 1.12.2 Gravitational Anomaly logic and promoted the event horizon from a diagnostic value to the real entity-absorption boundary.
+- Item entities are now consumed when they enter the calculated, stabilizer-suppressed event horizon instead of a fixed one-block radius. Their registered matter value still increases anomaly mass.
+- Living entities inside the horizon take capped magic damage every five ticks; actual health removed is added to anomaly mass. Normal death handling remains intact rather than forcibly deleting players or mobs.
+- A worn Space-Time Equalizer now protects against both gravitational pull and event-horizon damage.
+- Added synchronized horizon occupancy and last-feed telemetry to the controller. The controller GUI is widened and its inventory repositioned so reactor diagnostics no longer spill far outside the panel.
+- Block destruction remains disabled and is reserved for a separate default-off safety milestone.
+- Next test: compare horizon distance with zero/four stabilizers, feed a normal item and the million-matter debug block, place a mob inside the horizon, then repeat while wearing the Space-Time Equalizer.

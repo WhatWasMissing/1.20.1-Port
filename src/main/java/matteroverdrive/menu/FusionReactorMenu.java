@@ -24,7 +24,8 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private static final int PLAYER_END = 31;
     private static final int HOTBAR_START = 31;
     private static final int HOTBAR_END = 40;
-    private static final int DATA_COUNT = 22;
+    private static final int DATA_COUNT = 25;
+    private static final int SLOT_X_OFFSET = 92;
 
     private final FusionReactorControllerBlockEntity reactor;
     private final ContainerData data;
@@ -53,16 +54,18 @@ public class FusionReactorMenu extends AbstractContainerMenu {
         this.data = data;
         this.remote = remote;
         for (int slot = 0; slot < UPGRADE_SLOTS; slot++) {
-            addSlot(new SlotItemHandler(reactor.getUpgrades(), slot, 52 + slot * 18, 52));
+            addSlot(new SlotItemHandler(reactor.getUpgrades(), slot,
+                    SLOT_X_OFFSET + 52 + slot * 18, 52));
         }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(inventory, column + row * 9 + 9,
-                        8 + column * 18, 156 + row * 18));
+                        SLOT_X_OFFSET + 8 + column * 18, 179 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 214));
+            addSlot(new Slot(inventory, column,
+                    SLOT_X_OFFSET + 8 + column * 18, 237));
         }
         addDataSlots(data);
     }
@@ -194,6 +197,18 @@ public class FusionReactorMenu extends AbstractContainerMenu {
 
     public double eventHorizon() {
         return data.get(20) / 100.0D;
+    }
+
+    public int horizonEntityCount() {
+        return data.get(22);
+    }
+
+    public int lastConsumedMatter() {
+        return data.get(23);
+    }
+
+    public int lastConsumedEntityCount() {
+        return data.get(24);
     }
 
     private int value(int low, int high) {

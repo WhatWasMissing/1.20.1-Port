@@ -125,6 +125,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 19 -> anomaly == null ? 0 : scaledDistance(anomaly.getBlockBreakRange());
                 case 20 -> anomaly == null ? 0 : scaledDistance(anomaly.getEventHorizon());
                 case 21 -> connectedUsage;
+                case 22 -> anomaly == null ? 0 : anomaly.getHorizonEntityCount();
+                case 23 -> anomaly == null ? 0 : anomaly.getLastConsumedMatter();
+                case 24 -> anomaly == null ? 0 : anomaly.getLastConsumedEntityCount();
                 default -> 0;
             };
         }
@@ -135,7 +138,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 22;
+            return 25;
         }
     };
 

@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.Locale;
 
 public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMenu> {
+    private static final int SLOT_X_OFFSET = 92;
     @Override
     protected void init() {
         super.init();
@@ -20,9 +21,9 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
 
     public FusionReactorScreen(FusionReactorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
-        imageHeight = 241;
-        inventoryLabelY = 144;
+        imageWidth = 360;
+        imageHeight = 264;
+        inventoryLabelY = 167;
     }
 
     @Override
@@ -36,7 +37,7 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xffc6c6c6);
         for (int slot = 0; slot < 4; slot++) {
-            int x = leftPos + 51 + slot * 18;
+            int x = leftPos + SLOT_X_OFFSET + 51 + slot * 18;
             int y = topPos + 51;
             graphics.fill(x, y, x + 20, y + 20, 0xff454545);
             graphics.fill(x + 1, y + 1, x + 19, y + 19, 0xff9a9a9a);
@@ -65,12 +66,19 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
                 + " kM/t | linked IO: " + menu.ioCount(), 18, 112, 0x8a5a00, false);
         graphics.drawString(font, "Active stabilizers: " + menu.stabilizerCount(),
                 18, 123, 0x8a5a00, false);
-        graphics.drawString(font, "[DEBUG] Pull radius: " + format(menu.anomalyRange())
-                        + " | block radius: " + format(menu.blockHazardRange())
-                        + " | horizon: " + format(menu.eventHorizon())
-                        + " | block hazard: DISABLED",
+        graphics.drawString(font, "[DEBUG] Pull " + format(menu.anomalyRange())
+                        + " (" + menu.affectedEntityCount() + " affected)"
+                        + " | block " + format(menu.blockHazardRange()),
                 18, 134, 0x8a5a00, false);
-        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
+        graphics.drawString(font, "[DEBUG] Horizon " + format(menu.eventHorizon())
+                        + " | inside " + menu.horizonEntityCount()
+                        + " | last feed " + menu.lastConsumedMatter() + " kM / "
+                        + menu.lastConsumedEntityCount(),
+                18, 145, 0x8a5a00, false);
+        graphics.drawString(font, "[DEBUG] Block hazard: DISABLED",
+                18, 156, 0x8a5a00, false);
+        graphics.drawString(font, playerInventoryTitle,
+                SLOT_X_OFFSET + 8, inventoryLabelY, 0x404040, false);
     }
 
     private String faultText() {
