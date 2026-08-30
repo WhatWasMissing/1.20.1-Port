@@ -828,7 +828,7 @@
   "screen.matteroverdrive.reactor_guide.hulls.title": "Step Two: Hull and Anomaly",
   "screen.matteroverdrive.reactor_guide.hulls.body": "Fill all sixteen remaining ring positions with Machine Hulls. The two controller-side positions may instead be coils, IO ports, hulls, or decomposers. Put the anomaly at the centre, up to three blocks above or below the ring.",
   "screen.matteroverdrive.reactor_guide.operation.title": "Matter, Power, and Stabilizers",
-  "screen.matteroverdrive.reactor_guide.operation.body": "Feed matter through a linked Reactor IO and extract FE from any linked IO. Stabilizers are separate from the ring: point each one directly at the anomaly, keep the beam clear, and power it with redstone. Throw items into the anomaly to increase its mass and reactor output.",
+  "screen.matteroverdrive.reactor_guide.operation.body": "Machines inside the ring on the controller level receive up to 512 FE/t each without cables; a Decomposer in either flexible controller-side slot does too. External machines require a Heavy Energy Cable connected to Reactor IO. Feed matter through linked IO. Point powered stabilizers at the anomaly with a clear beam, and throw items into the anomaly to increase its mass and output.",
   "item.matteroverdrive.debug_matter_container": "Debug Matter Container",
   "tooltip.matteroverdrive.debug_matter_container": "Contains up to 1,000,000 kM of matter",
   "tooltip.matteroverdrive.matter_value_shift": "Hold SHIFT for matter value",

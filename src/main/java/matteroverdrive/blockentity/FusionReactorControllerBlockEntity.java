@@ -34,8 +34,11 @@ import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FusionReactorControllerBlockEntity extends BlockEntity implements MenuProvider {
@@ -43,6 +46,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     public static final int MATTER_CAPACITY = 2_048;
     public static final int BASE_OUTPUT = 2_048;
     public static final int IO_OUTPUT_PER_SIDE = 512;
+    public static final int INTERNAL_RING_OUTPUT_PER_MACHINE = 512;
     public static final int STRUCTURE_CHECK_DELAY = 40;
     public static final int MAX_GRAVITATIONAL_ANOMALY_DISTANCE = 3;
     private static final double BASE_MATTER_DRAIN = 1.0D / 80.0D;
@@ -83,6 +87,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                     || upgrade == MachineUpgradeItem.Upgrade.MATTER_STORAGE,
             this::upgradesChanged);
     private final Set<BlockPos> ioPositions = new HashSet<>();
+    private final Set<BlockPos> internalPowerPositions = new HashSet<>();
 
     private LazyOptional<IEnergyStorage> energyCap = LazyOptional.of(() -> energy);
     private LazyOptional<IMatterStorage> matterCap = LazyOptional.of(() -> matter);
@@ -93,7 +98,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private int anomalyDistance = -1;
     private int generatedLastTick;
     private int connectedUsage;
+    private int internalPowerLastTick;
     private int tickCounter;
+    private long internalPowerSequence;
     private double matterDrainRemainder;
     private String fault = "Checking structure";
 
@@ -128,6 +135,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 22 -> anomaly == null ? 0 : anomaly.getHorizonEntityCount();
                 case 23 -> anomaly == null ? 0 : anomaly.getLastConsumedMatter();
                 case 24 -> anomaly == null ? 0 : anomaly.getLastConsumedEntityCount();
+                case 25 -> internalPowerPositions.size();
+                case 26 -> internalPowerLastTick;
                 default -> 0;
             };
         }
@@ -138,7 +147,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 25;
+            return 27;
         }
     };
 
@@ -153,6 +162,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             reactor.validateStructure();
         }
         reactor.generate();
+        reactor.powerInternalRing();
         reactor.refreshConnectedUsage();
     }
 
@@ -272,6 +282,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         anomalyDistance = closestDistance;
         structureValid = true;
         ioPositions.addAll(foundIoPositions);
+        collectInternalPowerPositions();
         for (BlockPos ioPosition : ioPositions) {
             if (level.getBlockEntity(ioPosition) instanceof FusionReactorIOBlockEntity ioBlockEntity) {
                 ioBlockEntity.linkController(worldPosition);
@@ -344,8 +355,102 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         setChanged();
     }
 
+    private void collectInternalPowerPositions() {
+        internalPowerPositions.clear();
+        if (level == null || !structureValid) {
+            return;
+        }
+
+        for (int forwardOffset = 1; forwardOffset <= 9; forwardOffset++) {
+            int halfWidth = forwardOffset == 1 || forwardOffset == 9 ? 2
+                    : forwardOffset == 2 || forwardOffset == 8 ? 3 : 4;
+            for (int lateralOffset = -halfWidth; lateralOffset <= halfWidth; lateralOffset++) {
+                addInternalPowerPosition(structurePosition(lateralOffset, forwardOffset));
+            }
+        }
+
+        // These are the two flexible ring slots beside the controller. A Decomposer
+        // is valid structure there and participates in the same internal power bus.
+        addInternalPowerPosition(structurePosition(1, 0));
+        addInternalPowerPosition(structurePosition(-1, 0));
+    }
+
+    private void addInternalPowerPosition(BlockPos position) {
+        if (level == null || !level.hasChunkAt(position)) {
+            return;
+        }
+        BlockEntity receiver = level.getBlockEntity(position);
+        if (receiver == null
+                || receiver instanceof FusionReactorControllerBlockEntity
+                || receiver instanceof FusionReactorIOBlockEntity
+                || receiver instanceof EnergyPipeBlockEntity) {
+            return;
+        }
+        IEnergyStorage storage = internalEnergyReceiver(receiver);
+        if (storage != null && storage.canReceive()) {
+            internalPowerPositions.add(position.immutable());
+        }
+    }
+
+    @Nullable
+    private IEnergyStorage internalEnergyReceiver(BlockEntity receiver) {
+        IEnergyStorage unsided = receiver.getCapability(ForgeCapabilities.ENERGY).orElse(null);
+        if (unsided != null && unsided.canReceive()) {
+            return unsided;
+        }
+        for (Direction direction : Direction.values()) {
+            IEnergyStorage sided = receiver.getCapability(
+                    ForgeCapabilities.ENERGY, direction).orElse(null);
+            if (sided != null && sided.canReceive()) {
+                return sided;
+            }
+        }
+        return null;
+    }
+
+    private void powerInternalRing() {
+        internalPowerLastTick = 0;
+        if (level == null || level.isClientSide || !structureValid
+                || internalPowerPositions.isEmpty() || energy.getEnergyStored() <= 0) {
+            return;
+        }
+
+        List<BlockPos> receivers = new ArrayList<>(internalPowerPositions);
+        receivers.sort(Comparator.comparingLong(BlockPos::asLong));
+        int start = (int) Math.floorMod(internalPowerSequence, (long) receivers.size());
+
+        for (int offset = 0; offset < receivers.size()
+                && energy.getEnergyStored() > 0; offset++) {
+            BlockPos position = receivers.get((start + offset) % receivers.size());
+            BlockEntity receiver = level.getBlockEntity(position);
+            if (receiver == null) {
+                continue;
+            }
+            IEnergyStorage storage = internalEnergyReceiver(receiver);
+            if (storage == null || !storage.canReceive()) {
+                continue;
+            }
+
+            int offer = Math.min(INTERNAL_RING_OUTPUT_PER_MACHINE,
+                    energy.extractEnergy(INTERNAL_RING_OUTPUT_PER_MACHINE, true));
+            int accepted = storage.receiveEnergy(offer, true);
+            if (accepted <= 0) {
+                continue;
+            }
+
+            int extracted = energy.extractEnergy(accepted, false);
+            int received = storage.receiveEnergy(extracted, false);
+            if (received < extracted) {
+                energy.setEnergyStored(energy.getEnergyStored() + extracted - received);
+            }
+            internalPowerLastTick += received;
+        }
+        internalPowerSequence++;
+    }
+
     private void refreshConnectedUsage() {
-        if (level == null || level.isClientSide || ioPositions.isEmpty()) {
+        if (level == null || level.isClientSide
+                || (ioPositions.isEmpty() && internalPowerPositions.isEmpty())) {
             connectedUsage = 0;
             return;
         }
@@ -354,14 +459,15 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         Deque<BlockPos> pending = new ArrayDeque<>();
         Set<BlockPos> visitedPipes = new HashSet<>();
         Set<BlockPos> visitedReceivers = new HashSet<>();
+        for (BlockPos internalPosition : internalPowerPositions) {
+            usage += receiverUsage(internalPosition, null, visitedReceivers);
+        }
         for (BlockPos ioPosition : ioPositions) {
             for (Direction direction : Direction.values()) {
                 BlockPos adjacent = ioPosition.relative(direction);
                 if (level.getBlockEntity(adjacent) instanceof EnergyPipeBlockEntity
                         && visitedPipes.add(adjacent.immutable())) {
                     pending.addLast(adjacent.immutable());
-                } else if (!adjacent.equals(worldPosition)) {
-                    usage += receiverUsage(adjacent, direction, visitedReceivers);
                 }
             }
         }
@@ -383,8 +489,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         connectedUsage = (int) Math.min(Integer.MAX_VALUE, usage);
     }
 
-    private int receiverUsage(BlockPos position, Direction pipeSide,
-                               Set<BlockPos> visitedReceivers) {
+    private int receiverUsage(BlockPos position, @Nullable Direction pipeSide,
+                              Set<BlockPos> visitedReceivers) {
         if (!visitedReceivers.add(position.immutable())) {
             return 0;
         }
@@ -392,8 +498,10 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         if (receiver == null) {
             return 0;
         }
-        IEnergyStorage storage = receiver.getCapability(
-                ForgeCapabilities.ENERGY, pipeSide.getOpposite()).orElse(null);
+        IEnergyStorage storage = pipeSide == null
+                ? internalEnergyReceiver(receiver)
+                : receiver.getCapability(
+                        ForgeCapabilities.ENERGY, pipeSide.getOpposite()).orElse(null);
         if (!(storage instanceof MachineEnergyStorage machineStorage)
                 || !storage.canReceive()) {
             return 0;
@@ -424,6 +532,10 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         return structureValid && ioPositions.contains(position);
     }
 
+    public boolean isInternalPowerAt(BlockPos position) {
+        return structureValid && internalPowerPositions.contains(position);
+    }
+
     public void invalidateStructureLinks() {
         if (level != null) {
             for (BlockPos ioPosition : ioPositions) {
@@ -433,6 +545,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             }
         }
         ioPositions.clear();
+        internalPowerPositions.clear();
+        internalPowerLastTick = 0;
     }
 
     public MachineEnergyStorage getEnergy() {
@@ -482,6 +596,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         tag.putInt("Matter", matter.getMatterStored());
         tag.put("Upgrades", upgrades.serializeNBT());
         tag.putDouble("MatterRemainder", matterDrainRemainder);
+        tag.putLong("InternalPowerSequence", internalPowerSequence);
         tag.putBoolean("OverlayEnabled", overlayEnabled);
     }
 
@@ -496,6 +611,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         energy.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         matter.setMatterStored(tag.getInt("Matter"));
         matterDrainRemainder = tag.getDouble("MatterRemainder");
+        internalPowerSequence = tag.getLong("InternalPowerSequence");
         overlayEnabled = tag.getBoolean("OverlayEnabled");
         updateClientOverlayCache();
     }
@@ -526,7 +642,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
-        if (capability == ForgeCapabilities.ENERGY) {
+        if (capability == ForgeCapabilities.ENERGY && side == null) {
             return energyCap.cast();
         }
         if (capability == ModCapabilities.MATTER) {

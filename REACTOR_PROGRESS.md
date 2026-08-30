@@ -176,3 +176,15 @@
 - Added synchronized horizon occupancy and last-feed telemetry to the controller. The controller GUI is widened and its inventory repositioned so reactor diagnostics no longer spill far outside the panel.
 - Block destruction remains disabled and is reserved for a separate default-off safety milestone.
 - Next test: compare horizon distance with zero/four stabilizers, feed a normal item and the million-matter debug block, place a mob inside the horizon, then repeat while wearing the Space-Time Equalizer.
+
+## Internal reactor ring power bus
+
+- Validated reactors now discover FE-capable machines inside the horizontal ring on the controller's Y level and power each one directly at up to 512 FE/t.
+- The enclosed footprint follows the rounded ring: local forward rows 1/9 use lateral -2..2, rows 2/8 use -3..3, and rows 3..7 use -4..4.
+- A Decomposer placed in either flexible controller-side ring slot at local (+1, 0) or (-1, 0) also joins the internal bus without a cable.
+- Internal receivers are served in a rotating deterministic order so a low-energy reactor does not permanently favor the same machine.
+- The controller debug GUI now reports discovered internal machines and FE actually sent to them during the latest tick.
+- Internal machines are included in the existing actual-processing `usage: N FE/t` total and are deduplicated if a cable also reaches them.
+- Reactor IO now starts external FE transfer only through an adjacent Heavy Energy Cable. A machine directly beside IO but outside the ring is intentionally not powered.
+- Controller and IO sided FE capabilities no longer expose a cable-free external bypass; matter IO behavior is unchanged.
+- Runtime verification steps are in `REACTOR_RING_POWER_TESTING.md`.

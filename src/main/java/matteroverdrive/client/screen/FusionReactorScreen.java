@@ -22,8 +22,8 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
     public FusionReactorScreen(FusionReactorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 360;
-        imageHeight = 264;
-        inventoryLabelY = 167;
+        imageHeight = 275;
+        inventoryLabelY = 178;
     }
 
     @Override
@@ -75,8 +75,11 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
                         + " | last feed " + menu.lastConsumedMatter() + " kM / "
                         + menu.lastConsumedEntityCount(),
                 18, 145, 0x8a5a00, false);
-        graphics.drawString(font, "[DEBUG] Block hazard: DISABLED",
+        graphics.drawString(font, "[DEBUG] Ring power: " + menu.internalMachineCount()
+                        + " machines | sent " + menu.internalPowerLastTick() + " FE/t",
                 18, 156, 0x8a5a00, false);
+        graphics.drawString(font, "[DEBUG] Block hazard: DISABLED",
+                18, 167, 0x8a5a00, false);
         graphics.drawString(font, playerInventoryTitle,
                 SLOT_X_OFFSET + 8, inventoryLabelY, 0x404040, false);
     }

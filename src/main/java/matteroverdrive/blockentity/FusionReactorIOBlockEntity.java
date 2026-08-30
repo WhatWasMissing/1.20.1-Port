@@ -62,8 +62,8 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
 
         Set<BlockPos> visited = new HashSet<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
-        pending.add(pos);
         visited.add(pos);
+        enqueueAdjacentCables(level, pos, pending, visited);
 
         while (!pending.isEmpty() && controller.getEnergy().getEnergyStored() > 0) {
             BlockPos current = pending.removeFirst();
@@ -72,18 +72,31 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
                 BlockEntity neighbor = level.getBlockEntity(neighborPos);
 
                 if (neighbor instanceof EnergyPipeBlockEntity) {
-                    if (visited.add(neighborPos)) {
-                        pending.addLast(neighborPos);
+                    if (visited.add(neighborPos.immutable())) {
+                        pending.addLast(neighborPos.immutable());
                     }
                     continue;
                 }
                 if (neighbor instanceof FusionReactorControllerBlockEntity
-                        || neighbor instanceof FusionReactorIOBlockEntity) {
+                        || neighbor instanceof FusionReactorIOBlockEntity
+                        || controller.isInternalPowerAt(neighborPos)) {
                     continue;
                 }
                 if (neighbor != null) {
                     pushToReceiver(controller, neighbor, direction);
                 }
+            }
+        }
+    }
+
+    private static void enqueueAdjacentCables(Level level, BlockPos ioPosition,
+                                              ArrayDeque<BlockPos> pending,
+                                              Set<BlockPos> visited) {
+        for (Direction direction : Direction.values()) {
+            BlockPos adjacent = ioPosition.relative(direction);
+            if (level.getBlockEntity(adjacent) instanceof EnergyPipeBlockEntity
+                    && visited.add(adjacent.immutable())) {
+                pending.addLast(adjacent.immutable());
             }
         }
     }
@@ -165,7 +178,10 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         if (controller == null) {
             return super.getCapability(capability, side);
         }
-        if (capability == ForgeCapabilities.ENERGY) {
+        if (capability == ForgeCapabilities.ENERGY && side != null
+                && level != null
+                && level.getBlockEntity(worldPosition.relative(side))
+                instanceof EnergyPipeBlockEntity) {
             return LazyOptional.of(controller::getEnergy).cast();
         }
         if (capability == ModCapabilities.MATTER) {
