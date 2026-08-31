@@ -24,6 +24,7 @@
 - Taking the weapon or closing the GUI packs the selected modules back into the weapon and clears the temporary station slots, preventing module duplication.
 - Removing a module while editing cleanly uninstalls it from the weapon when the weapon is packed again.
 - The station screen now exposes the weapon/module layout instead of presenting seven unlabeled generic slots.
+- Shift-clicking the weapon now packs its modules before the stack is copied into the player inventory, so the fast-transfer path preserves the same configuration as normal pickup.
 
 ## Important testing note
 

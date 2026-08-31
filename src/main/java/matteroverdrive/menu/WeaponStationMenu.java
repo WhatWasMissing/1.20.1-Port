@@ -78,6 +78,9 @@ public class WeaponStationMenu extends AbstractContainerMenu {
             return ItemStack.EMPTY;
         }
         ItemStack stack = slot.getItem();
+        if (index == WeaponStationBlockEntity.WEAPON_SLOT) {
+            station.packModulesInto(stack);
+        }
         ItemStack copy = stack.copy();
         if (index < STATION_SLOTS) {
             if (!moveItemStackTo(stack, PLAYER_START, PLAYER_END, true)) {
@@ -91,7 +94,7 @@ public class WeaponStationMenu extends AbstractContainerMenu {
         } else {
             slot.setChanged();
         }
-        slot.onTake(player, stack);
+        slot.onTake(player, copy);
         return copy;
     }
 
