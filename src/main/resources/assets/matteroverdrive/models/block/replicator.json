@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "all": "matteroverdrive:block/replicator"
+    "particle": "matteroverdrive:block/replicator",
+    "down": "matteroverdrive:block/replicator",
+    "up": "matteroverdrive:block/replicator",
+    "north": "matteroverdrive:block/replicator_front",
+    "south": "matteroverdrive:block/replicator",
+    "east": "matteroverdrive:block/replicator",
+    "west": "matteroverdrive:block/replicator"
   }
 }

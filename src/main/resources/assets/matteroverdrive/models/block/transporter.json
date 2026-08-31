@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "all": "matteroverdrive:block/transporter_side"
+    "particle": "matteroverdrive:block/transporter_side",
+    "down": "matteroverdrive:block/transporter_side",
+    "up": "matteroverdrive:block/transporter_top",
+    "north": "matteroverdrive:block/transporter_front",
+    "south": "matteroverdrive:block/transporter_side",
+    "east": "matteroverdrive:block/transporter_side",
+    "west": "matteroverdrive:block/transporter_side"
   }
 }

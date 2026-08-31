@@ -10,19 +10,21 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.Locale;
 
 public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
-    @Override
-    protected void init() {
-        super.init();
-        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-        }).bounds(leftPos + imageWidth - 72, topPos + 4, 68, 20).build());
-    }
-
     public InscriberScreen(InscriberMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
         imageHeight = 230;
         inventoryLabelY = 133;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+            }
+        }).bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
     }
 
     @Override
@@ -33,38 +35,42 @@ public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
     }
 
     @Override
-    protected void renderBg(
-            GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFFC6C6C6);
-        graphics.fill(leftPos + 8, topPos + 20, leftPos + 14, topPos + 69, 0xFF4A4A4A);
-        int energy = scale(menu.getEnergy(), menu.getEnergyCapacity(), 48);
-        graphics.fill(leftPos + 9, topPos + 68 - energy, leftPos + 13, topPos + 68, 0xFFCC3333);
-        slot(graphics, leftPos + 26, topPos + 43);
-        slot(graphics, leftPos + 78, topPos + 43);
-        slot(graphics, leftPos + 104, topPos + 43);
-        slot(graphics, leftPos + 132, topPos + 43);
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        int x = leftPos;
+        int y = topPos;
+        MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
+                MachineScreenStyle.GREEN);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 32, 142, 64);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 99, 142, 28);
+
+        MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 30, 7, 40,
+                menu.getEnergy(), menu.getEnergyCapacity(), MachineScreenStyle.RED);
+        MachineScreenStyle.drawSlot(graphics, x + 26, y + 43);
+        MachineScreenStyle.drawSlot(graphics, x + 78, y + 43);
+        MachineScreenStyle.drawSlot(graphics, x + 104, y + 43);
+        MachineScreenStyle.drawSlot(graphics, x + 132, y + 43);
         for (int slot = 0; slot < 4; slot++) {
-            slot(graphics, leftPos + 52 + slot * 18, topPos + 77);
+            MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 77);
         }
-        graphics.fill(leftPos + 48, topPos + 48, leftPos + 91, topPos + 53, 0xFF5B5B5B);
-        int progress = scale(menu.getProgress(), menu.getCycleTime(), 42);
-        graphics.fill(leftPos + 48, topPos + 48, leftPos + 48 + progress, topPos + 53, 0xFF51A86B);
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 48, y + 48, 43, 6,
+                menu.getProgress(), menu.getCycleTime(), MachineScreenStyle.GREEN);
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, 8, 6, 0x404040, false);
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
+                MachineScreenStyle.MUTED, false);
         graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE",
-                18, 20, 0x404040, false);
-        graphics.drawString(font, "[DEBUG] Recipe: " + recipeName(menu.getRecipeTier())
-                + " | " + (menu.isRunning() ? "running" : "idle"), 18, 100, 0x8A5A00, false);
-        graphics.drawString(font, String.format(Locale.ROOT,
-                "[DEBUG] Cycle: %d t / %.2f s | %d FE/t",
-                menu.getCycleTime(), menu.getCycleTime() / 20.0D, menu.getEnergyPerTick()),
-                18, 110, 0x8A5A00, false);
-        graphics.drawString(font, "[DEBUG] Total: " + menu.getTotalEnergy() + " FE",
-                18, 120, 0x8A5A00, false);
-        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
+                18, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, recipeName(menu.getRecipeTier()) + " | "
+                        + (menu.isRunning() ? "running" : "idle"),
+                20, 102, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, String.format(Locale.ROOT, "Cycle %d t / %.2f s | %d FE/t",
+                        menu.getCycleTime(), menu.getCycleTime() / 20.0D, menu.getEnergyPerTick()),
+                20, 112, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Total " + menu.getTotalEnergy() + " FE",
+                20, 122, MachineScreenStyle.DEBUG, false);
     }
 
     private static String recipeName(int tier) {
@@ -72,17 +78,7 @@ public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
             case 2 -> "Mk1 -> Mk2";
             case 3 -> "Mk2 -> Mk3";
             case 4 -> "Mk3 -> Mk4";
-            default -> "none";
+            default -> "No recipe";
         };
-    }
-
-    private static void slot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 20, y + 20, 0xFF454545);
-        graphics.fill(x + 1, y + 1, x + 19, y + 19, 0xFF9A9A9A);
-    }
-
-    private static int scale(int value, int max, int pixels) {
-        return max <= 0 || value <= 0 ? 0
-                : Math.min(pixels, Math.max(1, (int) Math.round((double) value * pixels / max)));
     }
 }
