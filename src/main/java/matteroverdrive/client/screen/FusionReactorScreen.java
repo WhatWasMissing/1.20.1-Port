@@ -11,19 +11,22 @@ import java.util.Locale;
 
 public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMenu> {
     private static final int SLOT_X_OFFSET = 92;
-    @Override
-    protected void init() {
-        super.init();
-        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-        }).bounds(leftPos + imageWidth - 72, topPos + 4, 68, 20).build());
-    }
 
     public FusionReactorScreen(FusionReactorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 360;
         imageHeight = 286;
         inventoryLabelY = 189;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+            }
+        }).bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
     }
 
     @Override
@@ -35,57 +38,67 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xffc6c6c6);
+        int x = leftPos;
+        int y = topPos;
+        MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
+                MachineScreenStyle.PURPLE);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 326, 44);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 77, 326, 60);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 141, 326, 43);
+
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 18, y + 43, 110, 5,
+                menu.energy(), menu.capacity(), MachineScreenStyle.RED);
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 232, y + 43, 110, 5,
+                menu.matter(), menu.matterCapacity(), MachineScreenStyle.BLUE);
         for (int slot = 0; slot < 4; slot++) {
-            int x = leftPos + SLOT_X_OFFSET + 51 + slot * 18;
-            int y = topPos + 51;
-            graphics.fill(x, y, x + 20, y + 20, 0xff454545);
-            graphics.fill(x + 1, y + 1, x + 19, y + 19, 0xff9a9a9a);
+            MachineScreenStyle.drawSlot(graphics,
+                    x + SLOT_X_OFFSET + 51 + slot * 18,
+                    y + 51);
         }
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, 8, 6, 0x404040, false);
-        graphics.drawString(font, menu.energy() + " / " + menu.capacity() + " FE",
-                18, 21, 0x404040, false);
-        graphics.drawString(font, "Matter: " + menu.matter() + " / "
-                + menu.matterCapacity() + " kM", 18, 32, 0x404040, false);
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Energy " + menu.energy() + " / " + menu.capacity() + " FE",
+                18, 31, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Matter " + menu.matter() + " / " + menu.matterCapacity() + " kM",
+                232, 31, MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "Structure: " + (menu.valid() ? "VALID" : faultText())
-                        + " | ring: " + menu.ringDirection().getName().toUpperCase(Locale.ROOT),
-                18, 79, menu.valid() ? 0x227722 : 0xaa2222, false);
-        graphics.drawString(font, "Output capacity: " + menu.output()
-                        + " FE/t | generated: " + menu.generatedLastTick() + " FE/t",
-                18, 90, 0x8a5a00, false);
-        graphics.drawString(font, "Usage: " + menu.connectedUsage()
-                        + " FE/t | efficiency: "
+        graphics.drawString(font, "Structure " + (menu.valid() ? "VALID" : faultText())
+                        + " | ring " + menu.ringDirection().getName().toUpperCase(Locale.ROOT),
+                20, 80, menu.valid() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "Output capacity " + menu.output()
+                        + " FE/t | generated " + menu.generatedLastTick() + " FE/t",
+                20, 91, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Usage " + menu.connectedUsage() + " FE/t | efficiency "
                         + Math.round(menu.efficiency() * 100) + "%",
-                18, 101, 0x8a5a00, false);
-        graphics.drawString(font, "Anomaly offset: " + menu.anomalyDistance()
-                + " | mass: " + format(menu.unsuppressedMass())
-                + " (safe " + format(menu.suppressedMass()) + ")",
-                18, 112, 0x8a5a00, false);
-        graphics.drawString(font, "Matter drain: " + format(menu.matterDrain())
-                + " kM/t | linked IO: " + menu.ioCount(), 18, 123, 0x8a5a00, false);
-        graphics.drawString(font, "Active stabilizers: " + menu.stabilizerCount(),
-                18, 134, 0x8a5a00, false);
-        graphics.drawString(font, "[DEBUG] Pull " + format(menu.anomalyRange())
-                        + " (" + menu.affectedEntityCount() + " affected)"
-                        + " | block " + format(menu.blockHazardRange()),
-                18, 145, 0x8a5a00, false);
-        graphics.drawString(font, "[DEBUG] Horizon " + format(menu.eventHorizon())
+                20, 102, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Anomaly offset " + menu.anomalyDistance()
+                        + " | mass " + format(menu.unsuppressedMass())
+                        + " (safe " + format(menu.suppressedMass()) + ")",
+                20, 113, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Matter drain " + format(menu.matterDrain())
+                        + " kM/t | linked IO " + menu.ioCount()
+                        + " | stabilizers " + menu.stabilizerCount(),
+                20, 124, MachineScreenStyle.MUTED, false);
+
+        graphics.drawString(font, "Pull " + format(menu.anomalyRange())
+                        + " (" + menu.affectedEntityCount() + " affected) | block "
+                        + format(menu.blockHazardRange()),
+                20, 144, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Horizon " + format(menu.eventHorizon())
                         + " | inside " + menu.horizonEntityCount()
                         + " | last feed " + menu.lastConsumedMatter() + " kM / "
                         + menu.lastConsumedEntityCount(),
-                18, 156, 0x8a5a00, false);
-        graphics.drawString(font, "[DEBUG] Ring power: " + menu.internalMachineCount()
+                20, 155, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Ring power " + menu.internalMachineCount()
                         + " machines | sent " + menu.internalPowerLastTick() + " FE/t",
-                18, 167, 0x8a5a00, false);
-        graphics.drawString(font, "[DEBUG] Block hazard: DISABLED",
-                18, 178, 0x8a5a00, false);
+                20, 166, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Block hazard: DISABLED",
+                20, 177, MachineScreenStyle.DANGER, false);
         graphics.drawString(font, playerInventoryTitle,
-                SLOT_X_OFFSET + 8, inventoryLabelY, 0x404040, false);
+                SLOT_X_OFFSET + 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
     }
 
     private String faultText() {

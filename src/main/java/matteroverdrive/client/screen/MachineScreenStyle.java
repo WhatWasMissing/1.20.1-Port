@@ -28,16 +28,20 @@ public final class MachineScreenStyle {
 
     public static void drawFrame(GuiGraphics graphics, int x, int y, int width, int height,
                                  int inventoryLabelY, int accent) {
+        drawStandaloneFrame(graphics, x, y, width, height, accent);
+        int inventoryTop = y + Math.max(28, inventoryLabelY - 3);
+        graphics.fill(x + 5, y + 28, x + width - 5, inventoryTop - 3, INNER);
+        graphics.fill(x + 5, inventoryTop, x + width - 5, y + height - 5, INVENTORY);
+        graphics.fill(x + 5, inventoryTop, x + width - 5, inventoryTop + 1, 0xFF2B3B45);
+    }
+
+    public static void drawStandaloneFrame(GuiGraphics graphics, int x, int y, int width, int height,
+                                           int accent) {
         graphics.fill(x, y, x + width, y + height, OUTER);
         graphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, PANEL);
         graphics.fill(x + 4, y + 4, x + width - 4, y + 23, HEADER);
         graphics.fill(x + 4, y + 23, x + width - 4, y + 25, 0xFF25343D);
         graphics.fill(x + 4, y + 23, x + 44, y + 25, 0xFF000000 | accent);
-
-        int inventoryTop = y + Math.max(28, inventoryLabelY - 3);
-        graphics.fill(x + 5, y + 28, x + width - 5, inventoryTop - 3, INNER);
-        graphics.fill(x + 5, inventoryTop, x + width - 5, y + height - 5, INVENTORY);
-        graphics.fill(x + 5, inventoryTop, x + width - 5, inventoryTop + 1, 0xFF2B3B45);
     }
 
     public static void drawSection(GuiGraphics graphics, int x, int y, int width, int height) {
@@ -46,10 +50,9 @@ public final class MachineScreenStyle {
     }
 
     public static void drawSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 20, y + 20, SLOT_EDGE);
-        graphics.fill(x + 1, y + 1, x + 19, y + 19, 0xFF1B252C);
-        graphics.fill(x + 2, y + 2, x + 18, y + 18, SLOT_INNER);
-        graphics.fill(x + 2, y + 2, x + 18, y + 3, 0xFF536A77);
+        graphics.fill(x, y, x + 18, y + 18, SLOT_EDGE);
+        graphics.fill(x + 1, y + 1, x + 17, y + 17, SLOT_INNER);
+        graphics.fill(x + 1, y + 1, x + 17, y + 2, 0xFF536A77);
     }
 
     public static void drawHorizontalBar(GuiGraphics graphics, int x, int y, int width, int height,

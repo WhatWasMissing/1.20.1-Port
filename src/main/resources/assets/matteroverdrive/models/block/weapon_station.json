@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "all": "matteroverdrive:block/weapon_station_side"
+    "particle": "matteroverdrive:block/weapon_station_side",
+    "down": "matteroverdrive:block/weapon_station_bottom",
+    "up": "matteroverdrive:block/weapon_station_top",
+    "north": "matteroverdrive:block/weapon_station_side",
+    "south": "matteroverdrive:block/weapon_station_side",
+    "east": "matteroverdrive:block/weapon_station_side",
+    "west": "matteroverdrive:block/weapon_station_side"
   }
 }

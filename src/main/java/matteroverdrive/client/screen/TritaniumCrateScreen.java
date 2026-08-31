@@ -23,28 +23,30 @@ public class TritaniumCrateScreen extends AbstractContainerScreen<TritaniumCrate
     }
 
     @Override
-    protected void renderBg(
-            GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xFFC6C6C6);
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        int x = leftPos;
+        int y = topPos;
+        MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
+                MachineScreenStyle.BLUE);
+        MachineScreenStyle.drawSection(graphics, x + 6, y + 15, 164, 112);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 130, 142, 11);
         for (int row = 0; row < 6; row++) {
             for (int column = 0; column < 9; column++) {
-                int slotX = leftPos + 7 + column * 18;
-                int slotY = topPos + 17 + row * 18;
-                graphics.fill(slotX, slotY, slotX + 20, slotY + 20, 0xFF454545);
-                graphics.fill(slotX + 1, slotY + 1, slotX + 19, slotY + 19, 0xFF9A9A9A);
+                MachineScreenStyle.drawSlot(graphics,
+                        x + 7 + column * 18,
+                        y + 17 + row * 18);
             }
         }
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, 8, 6, 0x404040, false);
-        graphics.drawString(
-                font,
-                "[DEBUG] Used: " + menu.getUsedSlots() + " / "
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Used " + menu.getUsedSlots() + " / "
                         + TritaniumCrateBlockEntity.SLOT_COUNT
-                        + " | Items: " + menu.getTotalItemCount(),
-                8, 132, 0x8A5A00, false);
-        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
+                        + " | Items " + menu.getTotalItemCount(),
+                20, 132, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
+                MachineScreenStyle.MUTED, false);
     }
 }
