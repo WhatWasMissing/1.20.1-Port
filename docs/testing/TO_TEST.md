@@ -6,6 +6,7 @@ Current implementation commits:
 
 - `a21b915` - Implement Weapon Station module editing
 - `11a85d0` - Fix Weapon Station shift-click module packing
+- `94f6d58` - Polish machine UIs and restore legacy textures
 
 ## Build gate
 
@@ -21,136 +22,88 @@ Current implementation commits:
 - [ ] Confirm the layout shows one Weapon slot and six module slots.
 - [ ] Confirm the player inventory and hotbar are aligned and usable.
 
-## Weapon slot validation
+## Module workflow
 
-Test with each currently implemented energy weapon.
+The module slots are ordered as Battery, Colour, Barrel, Sights, Utility, Utility.
 
-- [ ] Phaser can be inserted into the Weapon slot.
-- [ ] Phaser Rifle can be inserted into the Weapon slot.
-- [ ] Ion Sniper can be inserted into the Weapon slot.
-- [ ] Plasma Shotgun can be inserted into the Weapon slot.
-- [ ] Normal items cannot be inserted into the Weapon slot.
-- [ ] Weapon stacks remain limited to one item.
-
-## Module slot validation
-
-The module slots are ordered as:
-
-1. Battery
-2. Colour
-3. Barrel
-4. Sights
-5. Utility
-6. Utility
-
-- [ ] A Weapon Battery can enter the Battery slot.
-- [ ] Creative Battery can enter the Battery slot.
-- [ ] Batteries cannot enter non-battery module slots.
-- [ ] Colour modules only enter the Colour slot.
-- [ ] Barrel modules only enter the Barrel slot.
-- [ ] Sight modules only enter the Sights slot.
-- [ ] Utility modules only enter either Utility slot.
-- [ ] Random items cannot enter any module slot.
+- [ ] Phaser, Phaser Rifle, Ion Sniper, and Plasma Shotgun can enter the Weapon slot.
+- [ ] Normal items cannot enter the Weapon slot.
+- [ ] Weapon Battery and Creative Battery can enter the Battery slot only.
+- [ ] Colour, Barrel, Sights, and Utility modules only enter their matching slots.
+- [ ] Random items cannot enter module slots.
 - [ ] Modules unsupported by the inserted weapon are rejected.
-
-## Install modules
-
-For each weapon, install every compatible module type available.
-
-- [ ] Battery installs successfully.
-- [ ] Colour module installs successfully.
-- [ ] Barrel module installs successfully where supported.
-- [ ] Sight module installs successfully where supported.
-- [ ] Utility modules install successfully where supported.
-- [ ] Close the Weapon Station.
-- [ ] Reopen the Weapon Station with the same gun still inside.
-- [ ] Confirm every installed module reappears in the correct station slot.
-
-## Remove modules
-
-- [ ] Remove one installed module from its station slot.
-- [ ] Take the weapon from the station.
-- [ ] Reinsert the weapon.
-- [ ] Confirm the removed module stays removed.
-- [ ] Confirm all modules that were left installed return correctly.
-- [ ] Repeat with a battery module.
-- [ ] Repeat with one of the two Utility slots.
+- [ ] Install every compatible module type available on each weapon.
+- [ ] Close/reopen the station and confirm installed modules return to the correct slots.
+- [ ] Remove a module, take/reinsert the weapon, and confirm the removed module stays uninstalled.
+- [ ] Confirm modules left installed remain installed.
 
 ## Weapon behaviour after editing
 
 Use Survival mode for energy behaviour tests because Creative bypasses normal weapon energy consumption.
 
-- [ ] Installed battery affects weapon capacity/reload behaviour correctly.
-- [ ] Colour module changes the beam colour.
+- [ ] Installed battery affects capacity/reload behaviour correctly.
+- [ ] Colour module changes beam colour.
 - [ ] Damage module changes damage as expected.
 - [ ] Fire module ignites targets and applies its expected damage tradeoff.
 - [ ] Explosion module creates its expected impact behaviour.
 - [ ] Holo Sights changes weapon accuracy as expected.
 - [ ] Sniper Scope changes range/accuracy as expected.
 - [ ] Ricochet causes one valid rebound from a block.
-- [ ] Any other currently registered compatible module still performs its existing effect.
+- [ ] Phaser accepts supported Colour/Barrel modules and rejects unsupported Sights/Utility modules.
+- [ ] Phaser mode switching, heat, firing, and energy behaviour still work.
+- [ ] Plasma Shotgun rejects the Heal module and its charge/release firing still works.
 
-## Phaser-specific compatibility
+## Pickup, shift-click, and persistence
 
-The Phaser intentionally has more limited module compatibility than the larger guns.
+- [ ] Configure a weapon and pick it up normally with the mouse.
+- [ ] Confirm station module slots clear and no module duplicates/deletes.
+- [ ] Reinsert it and confirm all installed modules return.
+- [ ] Shift-click an unconfigured gun into the Weapon Station.
+- [ ] Configure it, then shift-click it back to player inventory.
+- [ ] Reinsert it and confirm all modules are still installed with no duplication/deletion.
+- [ ] Shift-click compatible modules into/out of the station and confirm correct routing.
+- [ ] Leave a configured weapon in the station, save/quit, reopen, and confirm weapon/module state persists.
+- [ ] Switch between different weapons and confirm modules never leak from one weapon to another.
 
-- [ ] Phaser accepts supported Colour modules.
-- [ ] Phaser accepts supported Barrel modules.
-- [ ] Phaser rejects unsupported Sights modules.
-- [ ] Phaser rejects unsupported Utility modules.
-- [ ] Phaser mode switching still works after module installation/removal.
-- [ ] Phaser firing, heat, and energy behaviour have not regressed.
+## UI polish - machine screens
 
-## Plasma Shotgun compatibility
+Open all seven polished screens:
 
-- [ ] Plasma Shotgun rejects the Heal module as intended.
-- [ ] Other supported modules can still be installed normally.
-- [ ] Charge/release shotgun firing still works after station editing.
+- [ ] Matter Decomposer.
+- [ ] Matter Recycler.
+- [ ] Matter Analyzer.
+- [ ] Matter Replicator.
+- [ ] Solar Panel.
+- [ ] Molecular Inscriber.
+- [ ] Transporter.
 
-## Normal pickup test
+For each screen:
 
-This specifically tests module packing when taking a weapon normally with the mouse.
+- [ ] The dark Matter Overdrive-style frame renders correctly with no vanilla-grey placeholder panel left behind.
+- [ ] Every visible slot frame lines up with the real clickable slot.
+- [ ] Player inventory/hotbar slots remain aligned and usable.
+- [ ] Title, energy/matter values, progress/status text, and debug information remain readable.
+- [ ] No text overlaps the `INF FE` button or another label.
+- [ ] Progress/energy/matter bars fill in the expected direction and remain inside their frames.
+- [ ] `INF FE` still toggles the machine debug energy state where supported.
+- [ ] Live values continue updating while the machine works.
+- [ ] Repeat at the normal GUI scale and at least one different GUI scale to check clipping/alignment.
 
-- [ ] Put a weapon in the station.
-- [ ] Install multiple modules.
-- [ ] Pick the weapon up normally with the mouse.
-- [ ] Confirm the station module slots clear.
-- [ ] Reinsert the weapon.
-- [ ] Confirm all installed modules return.
-- [ ] Confirm no module is duplicated.
-- [ ] Confirm no module is deleted.
+## Texture/model polish
 
-## Shift-click regression test
+Inspect these blocks from every side in-world and in inventory/JEI where applicable:
 
-This specifically verifies commit `11a85d0`.
+- [ ] Decomposer uses its dedicated top artwork and machine-base body faces.
+- [ ] Matter Analyzer shows analyzer front artwork on model north and analyzer top artwork on top instead of repeating the front on every face.
+- [ ] Matter Recycler uses recycler side artwork on side faces and machine-base artwork on top/bottom.
+- [ ] Replicator shows its dedicated front face instead of repeating its body texture everywhere.
+- [ ] Transporter shows separate front, side, and top artwork.
+- [ ] Solar Panel uses the solar artwork on top and machine-base artwork on body faces.
+- [ ] None of the changed blocks show purple/black missing textures.
+- [ ] No model-bake/resource errors for these blocks appear in the log.
+- [ ] Save/reload the world and confirm the visual changes do not affect machine inventories, energy, matter, upgrades, or operation.
 
-- [ ] Shift-click an unconfigured gun from player inventory into the Weapon Station.
-- [ ] Install multiple modules.
-- [ ] Shift-click the configured gun back into player inventory.
-- [ ] Confirm the station module slots clear.
-- [ ] Reinsert the gun.
-- [ ] Confirm all modules are still installed.
-- [ ] Confirm no module is duplicated.
-- [ ] Confirm no module is deleted.
-- [ ] Shift-click compatible modules from player inventory into the station and verify correct routing.
-- [ ] Shift-click modules back out and confirm they return to the player inventory normally.
-
-## Save/reload persistence
-
-- [ ] Leave a configured weapon inside the Weapon Station.
-- [ ] Save and quit the world.
-- [ ] Reopen the world.
-- [ ] Open the Weapon Station.
-- [ ] Confirm the weapon is still present.
-- [ ] Confirm all module state is preserved.
-- [ ] Take the weapon and reinsert it to verify the configuration still unpacks correctly.
-
-## Block break / unusual state checks
-
-- [ ] Verify normal Weapon Station usage does not duplicate modules after repeatedly opening and closing the GUI.
-- [ ] Verify switching between different weapons does not transfer modules from one gun to another unexpectedly.
-- [ ] Verify removing a gun before inserting another leaves no stale module state in the station.
-- [ ] Verify inserting a gun that already has modules correctly exposes those modules for editing.
+Known limitation for this pass: machines without a horizontal-facing blockstate have their restored front artwork fixed to model north. Rotation/state work is intentionally deferred rather than changing placed-world blockstate behaviour during a cosmetic pass.
 
 ## Regression checks
 
@@ -164,7 +117,8 @@ These were working before this branch and should remain working.
 - [ ] Overheat state still works.
 - [ ] Existing weapon sounds still play.
 - [ ] Existing weapon models/icons still render.
-- [ ] Other Matter Overdrive machines and the Fusion Reactor still load and function normally.
+- [ ] Decomposer, Recycler, Analyzer, Replicator, Solar Panel, Inscriber, and Transporter still perform their existing gameplay functions.
+- [ ] Fusion Reactor, Reactor IO, Heavy Energy Cable, anomaly, stabilizers, and reactor ring power behaviour still load and function normally.
 
 ## Pass criteria
 
@@ -172,23 +126,23 @@ This branch is ready to merge into `main` when:
 
 - [ ] The build/client gate passes.
 - [ ] Module slot validation passes.
-- [ ] Install and uninstall behaviour passes.
-- [ ] Normal pickup preserves module state.
-- [ ] Shift-click preserves module state.
-- [ ] No duplication or deletion is found.
-- [ ] Save/reload persistence passes.
-- [ ] Existing firing/reload behaviour has not regressed.
+- [ ] Install/uninstall, normal pickup, shift-click, and persistence pass without duplication/deletion.
+- [ ] All seven polished machine screens have correct slot alignment and readable live/debug data.
+- [ ] All six corrected block models load with their expected existing legacy textures and no model/resource errors.
+- [ ] Existing machine, weapon, and reactor functionality has not regressed.
 
 ## Failure notes
 
 Record any failure with:
 
-- weapon used;
-- modules installed;
+- machine or weapon used;
+- screen/block involved;
+- installed modules/upgrades if relevant;
 - Survival or Creative mode;
-- normal click or shift-click;
+- GUI scale if the problem is visual;
+- normal click or shift-click if inventory-related;
 - whether the failure happened before or after closing the GUI;
 - whether the world had been saved/reloaded;
-- what was expected;
-- what actually happened;
+- expected result;
+- actual result;
 - relevant log/crash output if present.
