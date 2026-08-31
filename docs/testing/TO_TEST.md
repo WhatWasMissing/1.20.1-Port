@@ -7,7 +7,8 @@ Current implementation commits include:
 - `a21b915` - Implement Weapon Station module editing
 - `11a85d0` - Fix Weapon Station shift-click module packing
 - `94f6d58` - Polish common machine UIs and restore legacy textures
-- latest branch commit - expand UI polish to every current screen and fix Weapon Station face mapping
+- `7b7810a` - Polish remaining UIs and Weapon Station model
+- current resource-repair commit - restore additional legacy face mappings and reactor-controller rotation
 
 ## Build gate
 
@@ -113,25 +114,22 @@ Inspect these blocks from every side in-world and in inventory/JEI where applica
 - [ ] Transporter shows separate front, side, and top artwork.
 - [ ] Solar Panel uses the solar artwork on top and machine-base artwork on body faces.
 - [ ] Weapon Station uses `weapon_station_top` on top, `weapon_station_bottom` underneath, and `weapon_station_side` on body faces.
+- [ ] Tritanium Lamp uses `tritanium_lamp_top`, `tritanium_lamp_bottom`, and `tritanium_lamp_sides` on the appropriate faces.
+- [ ] Pattern Monitor shows the holographic monitor art on one face, its rear art on the opposite face, and normal machine-base artwork on the other four faces.
+- [ ] Place Fusion Reactor Controllers facing north, east, south, and west; confirm the visible screen rotates to the controller-facing side instead of remaining fixed.
+- [ ] Fusion Reactor Controller uses the screen texture only on its display face and machine-base texture elsewhere.
 - [ ] None of the changed blocks show purple/black missing textures.
 - [ ] No model-bake/resource errors for these blocks appear in the log.
 - [ ] Save/reload the world and confirm the visual changes do not affect machine inventories, energy, matter, upgrades, or operation.
 
-Known limitation for this pass: machines without a horizontal-facing blockstate have their restored front artwork fixed to model north. Rotation/state work is intentionally deferred rather than changing placed-world blockstate behaviour during a cosmetic pass.
+Known limitation: machines that do not expose a horizontal-facing blockstate still have any restored front artwork fixed to model north. Rotation/state work is intentionally deferred rather than changing placed-world blockstate behaviour during a cosmetic pass.
 
 ## Regression checks
 
-These were working before this branch and should remain working.
-
-- [ ] Weapons still fire normally.
-- [ ] Reloading from charged weapon batteries still works.
-- [ ] Reloading from Energy Packs still works.
-- [ ] Creative Battery behaviour still works.
-- [ ] Heat generation/cooling still works.
-- [ ] Overheat state still works.
-- [ ] Existing weapon sounds still play.
-- [ ] Existing weapon models/icons still render.
-- [ ] Decomposer, Recycler, Analyzer, Replicator, Solar Panel, Inscriber, Transporter, Pattern Storage, Pattern Monitor, Energy Pipe, and Tritanium Crate still perform their existing gameplay functions.
+- [ ] Weapons still fire/reload and heat/cooling still works.
+- [ ] Existing weapon sounds/models/icons still render.
+- [ ] All previously working machines still perform their existing gameplay functions.
+- [ ] Pattern Monitor requests and Pattern Storage routing still work.
 - [ ] Fusion Reactor, Reactor IO, Heavy Energy Cable, anomaly, stabilizers, and reactor ring power behaviour still load and function normally.
 
 ## Pass criteria
@@ -139,24 +137,12 @@ These were working before this branch and should remain working.
 This branch is ready to merge into `main` when:
 
 - [ ] The build/client gate passes.
-- [ ] Module slot validation passes.
-- [ ] Install/uninstall, normal pickup, shift-click, and persistence pass without duplication/deletion.
+- [ ] Weapon module install/uninstall, normal pickup, shift-click, and persistence pass without duplication/deletion.
 - [ ] All current screens have correct slot alignment and readable live/debug data.
-- [ ] All seven corrected block models load with their expected existing legacy textures and no model/resource errors.
+- [ ] All corrected block models load with their expected existing legacy textures and no model/resource errors.
+- [ ] Fusion Reactor Controller display rotation matches all four horizontal facing states.
 - [ ] Existing machine, weapon, and reactor functionality has not regressed.
 
 ## Failure notes
 
-Record any failure with:
-
-- machine or weapon used;
-- screen/block involved;
-- installed modules/upgrades if relevant;
-- Survival or Creative mode;
-- GUI scale if the problem is visual;
-- normal click or shift-click if inventory-related;
-- whether the failure happened before or after closing the GUI;
-- whether the world had been saved/reloaded;
-- expected result;
-- actual result;
-- relevant log/crash output if present.
+Record the machine/weapon/block, GUI scale if visual, facing if directional, expected result, actual result, and relevant log/crash output.

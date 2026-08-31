@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "all": "matteroverdrive:block/holo_monitor"
+    "particle": "matteroverdrive:block/holo_monitor",
+    "down": "matteroverdrive:block/base",
+    "up": "matteroverdrive:block/base",
+    "north": "matteroverdrive:block/holo_monitor",
+    "south": "matteroverdrive:block/holo_monitor_back",
+    "east": "matteroverdrive:block/base",
+    "west": "matteroverdrive:block/base"
   }
 }

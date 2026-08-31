@@ -43,11 +43,14 @@ Implemented scope:
 - Replicator: restores the dedicated front face rather than using the body texture everywhere.
 - Transporter: restores separate front, side, and top textures.
 - Solar Panel: keeps the solar texture on the upper face and uses the machine base on the body faces.
-- Weapon Station: now uses its dedicated top and bottom textures instead of repeating `weapon_station_side` on every face.
+- Weapon Station: uses its dedicated top and bottom textures instead of repeating `weapon_station_side` on every face.
+- Tritanium Lamp: restores the dedicated side, top, and bottom artwork instead of repeating the old all-face lamp texture.
+- Pattern Monitor: uses the legacy holographic monitor face, matching rear face, and machine-base body faces instead of projecting the monitor texture onto the entire cube.
+- Fusion Reactor Controller: uses one screen face with machine-base body faces and now visually rotates that screen with the controller's existing horizontal-facing blockstate.
 
-## Known visual limitations
+## Deliberately deferred
 
-- Several machine blocks do not yet expose a horizontal-facing blockstate, so a restored front face is fixed to model north. Adding safe placement/orientation and save compatibility is a later polish pass.
+- Space-Time Accelerator, Charging Station, Android Station, Star Map, and other registered legacy shells are not being presented as implemented systems. Their visuals should be repaired alongside their eventual gameplay ports or clearly as placeholder-only work.
 - Animated active-state faces remain deferred until the relevant blockstate/state synchronization exists.
 - Complex legacy OBJ/custom-rendered models are not being re-enabled blindly; they need a dedicated 1.20.1 renderer pass.
 - Some legacy texture sheets, such as custom-rendered/OBJ-era assets, are not safe to map directly onto a modern cube model. Those should be handled individually after runtime screenshots identify which blocks still look wrong.
@@ -61,9 +64,11 @@ Implemented scope:
 - Confirm live energy, matter, progress, recipe, network, reactor, and debug/status values still update.
 - Verify Pattern Monitor requests still trigger when clicking a populated ghost slot.
 - Verify the Reactor Assembly Guide images, page navigation, overlay legend, and Done button still work.
-- Inspect Decomposer, Analyzer, Recycler, Replicator, Transporter, Solar Panel, and Weapon Station from every side in-world.
+- Inspect all corrected machine models from every side in-world.
+- Verify the Tritanium Lamp uses its dedicated top, bottom, and side art.
+- Verify the Pattern Monitor has one holographic front, a matching rear, and normal body faces.
+- Place Fusion Reactor Controllers facing north/east/south/west and verify the screen face follows the block's facing property.
 - Confirm no purple/black missing-texture faces appear.
-- Confirm the restored top/front/side artwork appears on the expected model faces.
 - Check the corresponding inventory item models for new model-bake or missing-texture errors.
 - Save/reload the test world and verify the visual changes do not affect machine state or functionality.
 - Run the normal M2 build/runtime gate and inspect the log for model/resource warnings.
