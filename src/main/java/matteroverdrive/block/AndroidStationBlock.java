@@ -54,7 +54,6 @@ public class AndroidStationBlock extends BaseEntityBlock {
         }
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof AndroidStationBlockEntity station
                 && player instanceof ServerPlayer serverPlayer) {
-            station.link(serverPlayer);
             NetworkHooks.openScreen(serverPlayer, station, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
