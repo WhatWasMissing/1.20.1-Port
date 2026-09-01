@@ -1,6 +1,6 @@
 # Matter Overdrive 1.20.1 — Feature Reference
 
-This is the current source-of-truth feature list for the 1.20.1 port. It distinguishes systems that are implemented from legacy 1.12.2 content whose registry ID or resource may exist but whose original gameplay has not yet been restored.
+This is the current source-of-truth feature list for the 1.20.1 port on `main`. It distinguishes systems that are implemented from legacy 1.12.2 content whose registry ID or resource may exist but whose original gameplay has not yet been restored.
 
 A registered item/block is not automatically considered feature-complete. Several legacy IDs intentionally remain compatibility/resource placeholders until their behaviour is ported.
 
