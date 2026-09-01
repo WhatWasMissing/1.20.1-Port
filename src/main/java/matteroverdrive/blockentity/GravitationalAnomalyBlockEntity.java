@@ -251,7 +251,11 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
         }
         float healthLost = Math.max(0.0F,
                 healthBefore - Math.max(0.0F, livingEntity.getHealth()));
-        recordConsumption(Math.max(1L, Math.round(healthLost)));
+        long absorbed = Math.max(1L, Math.round(healthLost));
+        if (!livingEntity.isAlive()) {
+            absorbed = Math.max(absorbed, Math.round(livingEntity.getMaxHealth()));
+        }
+        recordConsumption(Math.min(Long.MAX_VALUE / 64L, absorbed) * 64L);
     }
 
     private float getHorizonDamage(double distance) {
