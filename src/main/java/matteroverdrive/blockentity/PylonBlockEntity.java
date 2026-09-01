@@ -7,15 +7,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 public class PylonBlockEntity extends BlockEntity {
     private static final int MAX_LINK_DISTANCE = 64;
-    private static final Map<Level, Set<BlockPos>> LOADED = new HashMap<>();
+    private static final Map<Level, Set<BlockPos>> LOADED = new WeakHashMap<>();
     private int channel;
 
     public PylonBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.PYLON.get(), pos, state); }
@@ -28,7 +28,10 @@ public class PylonBlockEntity extends BlockEntity {
     @Override public void setRemoved() {
         if (level != null) {
             Set<BlockPos> pylons = LOADED.get(level);
-            if (pylons != null) pylons.remove(worldPosition);
+            if (pylons != null) {
+                pylons.remove(worldPosition);
+                if (pylons.isEmpty()) LOADED.remove(level);
+            }
         }
         super.setRemoved();
     }
