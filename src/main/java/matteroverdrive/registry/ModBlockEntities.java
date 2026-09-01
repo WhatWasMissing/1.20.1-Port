@@ -1,6 +1,7 @@
 package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.blockentity.BalancedGravitationalAnomalyBlockEntity;
 import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.blockentity.EnergyPipeBlockEntity;
 import matteroverdrive.blockentity.MatterAnalyzerBlockEntity;
@@ -27,7 +28,7 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<EnergyPipeBlockEntity>> ENERGY_PIPE = BLOCK_ENTITIES.register("heavy_matter_pipe", () -> BlockEntityType.Builder.of(EnergyPipeBlockEntity::new, ModBlocks.get("heavy_matter_pipe").get()).build(null));
     public static final RegistryObject<BlockEntityType<FusionReactorControllerBlockEntity>> FUSION_REACTOR_CONTROLLER = BLOCK_ENTITIES.register("fusion_reactor_controller", () -> BlockEntityType.Builder.of(FusionReactorControllerBlockEntity::new, ModBlocks.get("fusion_reactor_controller").get()).build(null));
     public static final RegistryObject<BlockEntityType<FusionReactorIOBlockEntity>> FUSION_REACTOR_IO = BLOCK_ENTITIES.register("fusion_reactor_io", () -> BlockEntityType.Builder.of(FusionReactorIOBlockEntity::new, ModBlocks.get("fusion_reactor_io").get()).build(null));
-    public static final RegistryObject<BlockEntityType<GravitationalAnomalyBlockEntity>> GRAVITATIONAL_ANOMALY = BLOCK_ENTITIES.register("gravitational_anomaly", () -> BlockEntityType.Builder.of(GravitationalAnomalyBlockEntity::new, ModBlocks.get("gravitational_anomaly").get()).build(null));
+    public static final RegistryObject<BlockEntityType<GravitationalAnomalyBlockEntity>> GRAVITATIONAL_ANOMALY = BLOCK_ENTITIES.register("gravitational_anomaly", () -> BlockEntityType.Builder.<GravitationalAnomalyBlockEntity>of(BalancedGravitationalAnomalyBlockEntity::new, ModBlocks.get("gravitational_anomaly").get()).build(null));
     public static final RegistryObject<BlockEntityType<GravitationalStabilizerBlockEntity>> GRAVITATIONAL_STABILIZER = BLOCK_ENTITIES.register("gravitational_stabilizer", () -> BlockEntityType.Builder.of(GravitationalStabilizerBlockEntity::new, ModBlocks.get("gravitational_stabilizer").get()).build(null));
     public static final RegistryObject<BlockEntityType<TransporterBlockEntity>> TRANSPORTER = BLOCK_ENTITIES.register("transporter", () -> BlockEntityType.Builder.of(TransporterBlockEntity::new, ModBlocks.get("transporter").get()).build(null));
     public static final RegistryObject<BlockEntityType<InscriberBlockEntity>> INSCRIBER = BLOCK_ENTITIES.register("inscriber", () -> BlockEntityType.Builder.of(InscriberBlockEntity::new, ModBlocks.get("inscriber").get()).build(null));
