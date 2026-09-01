@@ -2,6 +2,9 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.CreativeBatteryItem;
+import matteroverdrive.item.AndroidPillItem;
+import matteroverdrive.item.AndroidPartItem;
+import matteroverdrive.android.AndroidData;
 import matteroverdrive.item.DebugMatterContainerItem;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.MatterDustItem;
@@ -169,6 +172,13 @@ public final class ModItems {
     }
 
     private static Item createStandaloneItem(String id) {
+        if (id.equals("android_pill_blue")) return new AndroidPillItem(propertiesFor(id), AndroidPillItem.Type.BLUE);
+        if (id.equals("android_pill_red")) return new AndroidPillItem(propertiesFor(id), AndroidPillItem.Type.RED);
+        if (id.equals("android_pill_yellow")) return new AndroidPillItem(propertiesFor(id), AndroidPillItem.Type.YELLOW);
+        if (id.equals("rogue_android_part_head")) return new AndroidPartItem(propertiesFor(id), AndroidData.Part.HEAD);
+        if (id.equals("rogue_android_part_chest")) return new AndroidPartItem(propertiesFor(id), AndroidData.Part.CHEST);
+        if (id.equals("rogue_android_part_arms")) return new AndroidPartItem(propertiesFor(id), AndroidData.Part.ARMS);
+        if (id.equals("rogue_android_part_legs")) return new AndroidPartItem(propertiesFor(id), AndroidData.Part.LEGS);
         if (id.equals("battery")) return new WeaponBatteryItem(propertiesFor(id), 524288, 400, 800);
         if (id.equals("hc_battery")) return new WeaponBatteryItem(propertiesFor(id), 1048576, 4096, 4096);
         if (id.equals("energy_pack")) return new EnergyPackItem(propertiesFor(id));
