@@ -27,8 +27,19 @@ public class NetworkRouterBlock extends BaseEntityBlock {
         return (tickLevel, tickPos, tickState, entity) -> NetworkRouterBlockEntity.serverTick(tickLevel, tickPos, tickState, (NetworkRouterBlockEntity) entity);
     }
     @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof NetworkRouterBlockEntity router)
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer
+                && level.getBlockEntity(pos) instanceof NetworkRouterBlockEntity router) {
             NetworkHooks.openScreen(serverPlayer, router, pos);
+        }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    public void onRemove(BlockState oldState, Level level, BlockPos pos, BlockState newState, boolean moving) {
+        if (!oldState.is(newState.getBlock())) {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (entity instanceof NetworkRouterBlockEntity router) router.dropFilter();
+        }
+        super.onRemove(oldState, level, pos, newState, moving);
     }
 }
