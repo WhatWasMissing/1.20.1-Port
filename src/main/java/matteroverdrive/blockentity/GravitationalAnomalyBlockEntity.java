@@ -248,16 +248,12 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
     }
 
     private void consumeLivingEntity(Level level, LivingEntity livingEntity, double distance) {
-        float healthBefore = livingEntity.getHealth();
-        if (!livingEntity.hurt(level.damageSources().magic(), getHorizonDamage(distance))) {
+        if (!livingEntity.hurt(level.damageSources().magic(), getHorizonDamage(distance))
+                || livingEntity.isAlive()) {
             return;
         }
-        float healthLost = Math.max(0.0F,
-                healthBefore - Math.max(0.0F, livingEntity.getHealth()));
-        long absorbed = Math.max(1L, Math.round(healthLost));
-        if (!livingEntity.isAlive()) {
-            absorbed = Math.max(absorbed, Math.round(livingEntity.getMaxHealth()));
-        }
+
+        long absorbed = Math.max(1L, Math.round(livingEntity.getMaxHealth()));
         recordConsumption(Math.min(Long.MAX_VALUE / 64L, absorbed) * 64L);
     }
 
