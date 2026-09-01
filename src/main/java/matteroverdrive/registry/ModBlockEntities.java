@@ -4,6 +4,9 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.blockentity.BalancedGravitationalAnomalyBlockEntity;
 import matteroverdrive.blockentity.AndroidStationBlockEntity;
 import matteroverdrive.blockentity.AndroidSpawnerBlockEntity;
+import matteroverdrive.blockentity.NetworkRouterBlockEntity;
+import matteroverdrive.blockentity.NetworkSwitchBlockEntity;
+import matteroverdrive.blockentity.PylonBlockEntity;
 import matteroverdrive.blockentity.ChargingStationBlockEntity;
 import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.blockentity.EnergyPipeBlockEntity;
@@ -28,6 +31,9 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MatterOverdrive.MOD_ID);
+    public static final RegistryObject<BlockEntityType<NetworkRouterBlockEntity>> NETWORK_ROUTER = BLOCK_ENTITIES.register("network_router", () -> BlockEntityType.Builder.of(NetworkRouterBlockEntity::new, ModBlocks.get("network_router").get()).build(null));
+    public static final RegistryObject<BlockEntityType<NetworkSwitchBlockEntity>> NETWORK_SWITCH = BLOCK_ENTITIES.register("network_switch", () -> BlockEntityType.Builder.of(NetworkSwitchBlockEntity::new, ModBlocks.get("network_switch").get()).build(null));
+    public static final RegistryObject<BlockEntityType<PylonBlockEntity>> PYLON = BLOCK_ENTITIES.register("pylon", () -> BlockEntityType.Builder.of(PylonBlockEntity::new, ModBlocks.get("pylon").get()).build(null));
     public static final RegistryObject<BlockEntityType<AndroidStationBlockEntity>> ANDROID_STATION = BLOCK_ENTITIES.register("android_station", () -> BlockEntityType.Builder.of(AndroidStationBlockEntity::new, ModBlocks.get("android_station").get()).build(null));
     public static final RegistryObject<BlockEntityType<AndroidSpawnerBlockEntity>> ANDROID_SPAWNER = BLOCK_ENTITIES.register("android_spawner", () -> BlockEntityType.Builder.of(AndroidSpawnerBlockEntity::new, ModBlocks.get("android_spawner").get()).build(null));
     public static final RegistryObject<BlockEntityType<EnergyPipeBlockEntity>> ENERGY_PIPE = BLOCK_ENTITIES.register("heavy_matter_pipe", () -> BlockEntityType.Builder.of(EnergyPipeBlockEntity::new, ModBlocks.get("heavy_matter_pipe").get()).build(null));
