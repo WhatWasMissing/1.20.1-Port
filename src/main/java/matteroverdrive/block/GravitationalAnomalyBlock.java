@@ -1,5 +1,6 @@
 package matteroverdrive.block;
 
+import matteroverdrive.blockentity.BalancedGravitationalAnomalyBlockEntity;
 import matteroverdrive.blockentity.GravitationalAnomalyBlockEntity;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -26,7 +27,7 @@ public class GravitationalAnomalyBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new GravitationalAnomalyBlockEntity(pos, state);
+        return new BalancedGravitationalAnomalyBlockEntity(pos, state);
     }
 
     @Nullable
@@ -36,8 +37,12 @@ public class GravitationalAnomalyBlock extends BaseEntityBlock {
         if (level.isClientSide || type != ModBlockEntities.GRAVITATIONAL_ANOMALY.get()) {
             return null;
         }
-        return (tickerLevel, tickerPos, tickerState, entity) ->
-                GravitationalAnomalyBlockEntity.serverTick(
-                        tickerLevel, tickerPos, tickerState, (GravitationalAnomalyBlockEntity) entity);
+        return (tickerLevel, tickerPos, tickerState, entity) -> {
+            GravitationalAnomalyBlockEntity anomaly = (GravitationalAnomalyBlockEntity) entity;
+            GravitationalAnomalyBlockEntity.serverTick(tickerLevel, tickerPos, tickerState, anomaly);
+            if (anomaly instanceof BalancedGravitationalAnomalyBlockEntity balanced) {
+                balanced.applyPostTickBalance();
+            }
+        };
     }
 }

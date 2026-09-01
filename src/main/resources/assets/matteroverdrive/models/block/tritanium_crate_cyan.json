@@ -1,6 +1,9 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "loader": "forge:obj",
+  "flip_v": true,
+  "model": "matteroverdrive:models/block/tritanium_crate.obj",
   "textures": {
-    "all": "matteroverdrive:block/tritanium_crate_base_cyan"
+    "texture0": "matteroverdrive:block/tritanium_crate_base_cyan",
+    "particle": "matteroverdrive:block/tritanium_crate_base_cyan"
   }
 }
