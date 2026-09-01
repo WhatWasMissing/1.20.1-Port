@@ -1,6 +1,7 @@
 package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.block.ChargingStationBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
@@ -129,6 +130,8 @@ public final class ModBlocks {
     private static void registerPlaceholder(String id) {
         if (id.equals("heavy_matter_pipe")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
+        } else if (id.equals("charging_station")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ChargingStationBlock(propertiesFor(id))));
         } else if (id.equals("fusion_reactor_controller")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
         } else if (id.equals("fusion_reactor_io")) {
@@ -218,4 +221,3 @@ public final class ModBlocks {
         return block;
     }
 }
-
