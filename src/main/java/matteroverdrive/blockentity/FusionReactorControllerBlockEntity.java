@@ -47,6 +47,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     public static final int BASE_OUTPUT = 2_048;
     public static final int STRUCTURE_CHECK_DELAY = 40;
     public static final int MAX_GRAVITATIONAL_ANOMALY_DISTANCE = 3;
+    private static final int MAX_UPGRADED_ANOMALY_DISTANCE = 16;
     private static final double BASE_MATTER_DRAIN = 1.0D / 80.0D;
 
     private static final int ANOMALY_SLOT = 255;
@@ -182,7 +183,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         }
 
         double unsuppressedMass = anomaly.getRealMassUnsuppressed();
-        double rawOutput = BASE_OUTPUT * efficiency() * unsuppressedMass;
+        double rateMultiplier = generationRateMultiplier();
+        double rawOutput = BASE_OUTPUT * efficiency() * unsuppressedMass * rateMultiplier;
         int requested = (int) Math.min(Integer.MAX_VALUE,
                 Math.max(1L, Math.round(rawOutput)));
         outputPotential = requested;
@@ -202,7 +204,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             return;
         }
 
-        double proportionalDrain = BASE_MATTER_DRAIN * unsuppressedMass
+        double proportionalDrain = BASE_MATTER_DRAIN * unsuppressedMass * rateMultiplier
                 * (accepted / (double) requested);
         double pendingDrain = matterDrainRemainder + proportionalDrain;
         int wholeMatter = (int) Math.floor(pendingDrain);
@@ -272,8 +274,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         BlockPos anomalyCentre = structurePosition(0, 5);
         int closestDistance = Integer.MAX_VALUE;
         BlockPos closestAnomaly = null;
-        for (int verticalOffset = -MAX_GRAVITATIONAL_ANOMALY_DISTANCE;
-             verticalOffset <= MAX_GRAVITATIONAL_ANOMALY_DISTANCE; verticalOffset++) {
+        int searchRange = anomalySearchRange();
+        for (int verticalOffset = -searchRange; verticalOffset <= searchRange; verticalOffset++) {
             BlockPos candidate = anomalyCentre.above(verticalOffset);
             if (anomalyAt(candidate) != null
                     && Math.abs(verticalOffset) < closestDistance) {
@@ -346,13 +348,28 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         if (anomalyDistance < 0) {
             return 0.0D;
         }
+        int effectiveRange = anomalySearchRange();
         return Math.max(0.0D, Math.min(1.0D,
-                1.0D - anomalyDistance / (double) (MAX_GRAVITATIONAL_ANOMALY_DISTANCE + 1)));
+                1.0D - anomalyDistance / (double) (effectiveRange + 1)));
     }
 
     private double matterDrain() {
         GravitationalAnomalyBlockEntity anomaly = getAnomaly();
-        return anomaly == null ? 0.0D : BASE_MATTER_DRAIN * anomaly.getRealMassUnsuppressed();
+        return anomaly == null ? 0.0D
+                : BASE_MATTER_DRAIN * anomaly.getRealMassUnsuppressed() * generationRateMultiplier();
+    }
+
+    private double generationRateMultiplier() {
+        double speedMultiplier = upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed);
+        if (speedMultiplier <= 0.0D) return 1.0D;
+        return Math.min(8.0D, 1.0D / speedMultiplier);
+    }
+
+    private int anomalySearchRange() {
+        double rangeMultiplier = upgrades.getMultiplier(MachineUpgradeItem.Upgrade::range);
+        return Math.max(MAX_GRAVITATIONAL_ANOMALY_DISTANCE,
+                Math.min(MAX_UPGRADED_ANOMALY_DISTANCE,
+                        (int) Math.round(MAX_GRAVITATIONAL_ANOMALY_DISTANCE * rangeMultiplier)));
     }
 
     private void upgradesChanged() {
@@ -360,6 +377,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerStorage))));
         matter.setCapacity((int) Math.min(Integer.MAX_VALUE, Math.round(MATTER_CAPACITY
                 * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::matterStorage))));
+        tickCounter = 0;
         setChanged();
     }
 
