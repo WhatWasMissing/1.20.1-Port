@@ -24,9 +24,9 @@ import java.util.Set;
 public final class ItemNetworkUtil {
     private static final int MAX_NODES = 1024;
     private static final Comparator<BlockPos> POSITION_ORDER = Comparator
-            .comparingInt(BlockPos::getX)
-            .thenComparingInt(BlockPos::getY)
-            .thenComparingInt(BlockPos::getZ);
+            .comparingInt((BlockPos pos) -> pos.getX())
+            .thenComparingInt(pos -> pos.getY())
+            .thenComparingInt(pos -> pos.getZ());
 
     private ItemNetworkUtil() {}
 
