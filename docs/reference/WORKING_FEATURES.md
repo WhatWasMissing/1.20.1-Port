@@ -1,98 +1,129 @@
-# Matter Overdrive 1.20.1 — Working Features Reference
+# Matter Overdrive 1.20.1 — Current Testing Reference
 
-This is the current functional-feature inventory for the `feature/fusion-reactor` test build. It distinguishes usable gameplay systems from registry/resource shells that are present only to preserve the legacy mod's IDs and assets.
+This reference describes the gameplay systems currently present on `testing/main`. A system being listed here means its implementation is wired into the current test build; items marked for runtime verification still need to be exercised in Minecraft before merging to `main`.
 
-## Installing the test JAR
+## Core machines and storage
 
-1. Close Minecraft completely.
-2. Run `PACKAGE_TEST_JAR.bat` from the port project.
-3. Copy `build\\libs\\matteroverdrive-0.8.0.0-alpha.4.1.jar` into the **mods** folder of a Forge 1.20.1 instance:
-   - Official launcher: `%AppData%\\.minecraft\\mods`
-   - CurseForge/Prism/other launcher: that instance's own `mods` folder.
-4. Remove any older Matter Overdrive 1.20.1 test JAR from that same mods folder, so only one copy is loaded.
-5. Start the Forge profile and test in a new world or a backed-up test world.
-
-The JAR is for a normal modded Minecraft installation. Keep the source project separately for continued development.
-
-## Functional machines and storage
-
-| Feature | Working behaviour |
+| Feature | Current behaviour |
 |---|---|
-| Matter Decomposer | Converts supported items into matter, consumes FE, supports upgrades, and exposes debug information including failure chance. |
-| Matter Recycler | Recycles supported items into matter with energy usage, inventory handling, upgrades, and debug values. |
-| Matter Analyzer | Analyses supported items/patterns, uses FE, works with Pattern Storage/Monitor network links, and has debug information. |
-| Matter Replicator | Replicates queued patterns using matter and FE; reports cycle/failure data in its debug UI. |
-| Pattern Storage | Stores Pattern Drives, accepts supported upgrades, provides pattern capacity/energy debug values, and participates in the pattern network. |
-| Pattern Monitor | Discovers Pattern Storage, queues replication work, reports linked storage/pattern counts, and sends work to a Replicator. |
-| Molecular Inscriber | Produces Mk2, Mk3, and Mk4 Isolinear Circuits; has an energy-item battery slot, upgrades, persistence, and recipe/cycle debug values. |
-| Solar Panel | Produces FE in suitable daylight, has 64,000 FE base storage, exports up to 512 FE/t per side, supports Power Storage upgrades, and reports daylight/generation/debug state. |
-| Tritanium Crates | All 17 variants work as portable 54-slot inventories, retain contents in their dropped item NBT, and have a crate GUI. |
-| Transporter | Uses a bound Transport Flash Drive and power to move entities above it to a target in the same dimension. It supports Speed, Range, Power, and Power Storage upgrades plus cycle/cost/range debug data. |
+| Matter Decomposer | Converts supported items into matter, consumes FE, supports upgrades, failure chance and debug values. |
+| Matter Recycler | Recycles supported items into matter with energy usage, inventory handling, upgrades and debug values. |
+| Matter Analyzer | Analyses supported items/patterns, uses FE and participates in the pattern network. |
+| Matter Replicator | Replicates queued patterns using matter and FE and reports cycle/failure data. |
+| Pattern Storage | Stores Pattern Drives and supplies patterns to the network. |
+| Pattern Monitor | Discovers networked Pattern Storage and Replicators and queues replication work. |
+| Molecular Inscriber | Produces the Mk2-Mk4 Isolinear Circuit chain, accepts energy items/upgrades and persists its inventory. |
+| Solar Panel | Produces FE in suitable daylight, stores/exports FE and supports Power Storage upgrades. |
+| Tritanium Crates | All colour variants provide portable 54-slot storage and retain contents in dropped-item NBT. |
+| Transporter | Uses a bound Transport Flash Drive and FE to move entities to a same-dimension target; Speed, Range, Power and Power Storage upgrades are active. |
+| Charging Station | Buffers FE and charges compatible batteries/energy items. |
+| Weapon Station | Installs/removes weapon modules, persists its contents and safely returns its weapon/modules when broken. |
 
-## Matter, energy, patterns, and upgrades
+## Matter, FE and network transport
 
-| Feature | Working behaviour |
+| Feature | Current behaviour |
 |---|---|
-| Matter Container | Stores up to 1,000 kM, transfers matter to/from compatible machines, updates immediately, and reports transfer debug messages. |
-| Matter network | Matter Pipes expose matter transport for compatible machines; Heavy Matter Pipe is now reserved for FE transport as the Heavy Energy Cable. |
-| Pattern network | Network Pipes, Routers, and Switches provide the current pattern/task transport and routing behaviour for Pattern Storage, Monitor, and Replicator workflows. |
-| Creative Battery | Provides infinite FE for machine testing. |
-| Pattern Drive | Holds two normal patterns; Creative Pattern Drive operates as the creative variant. |
-| Upgrades | Working machines expose their supported slots and show temporary debug output for effective values. Common effects include speed, power cost, failure chance, range, power storage, matter storage, and matter usage. |
+| Matter Container | Stores and transfers matter to compatible machines. |
+| Matter Pipe | Carries matter between compatible matter endpoints. |
+| Heavy Energy Cable | Uses the legacy `heavy_matter_pipe` ID but is FE-only in the current port. It buffers and relays Forge Energy and is not a matter-network path. |
+| Network Pipe | Carries pattern-network discovery and general item-logistics connectivity. |
+| Network Switch | Can enable/disable both general item logistics and pattern-network traversal. State persists. |
+| Network Router | Powered item logistics router with filter support, endpoint/node diagnostics and anti-bounce routing state. Connected routers elect one active routing executor rather than double-moving the same network. |
+| Dimensional Pylon | Bridges matching-channel item networks wirelessly within its supported range. Channel persists. |
+| Pattern network | Analyzer, Pattern Storage, Pattern Monitor and Replicator discovery continues through enabled Network Pipe/Router/Switch paths. |
 
-## Inscriber recipe chain
+The general item network intentionally remembers inventories that have received routed items as sinks until those inventories become empty. This prevents undirected two-chest networks from endlessly moving the same items A -> B -> A while consuming FE.
 
-| Input | Additional material | Output |
-|---|---|---|
-| Isolinear Circuit Mk1 | Gold ingot | Isolinear Circuit Mk2 |
-| Isolinear Circuit Mk2 | Diamond | Isolinear Circuit Mk3 |
-| Isolinear Circuit Mk3 | Emerald | Isolinear Circuit Mk4 |
+## Fusion Reactor
 
-## Fusion Reactor and power distribution
+The current reactor uses the larger ring structure represented by the Reactor Assembly Guide/overlay rather than the obsolete early compact cross layout.
 
-### Compact Fusion Reactor structure
+Current controller behaviour includes:
 
-Build the following:
+- 100,000,000 FE base storage.
+- 2,048 kM base matter storage.
+- Matter-driven FE generation scaled by gravitational-anomaly mass and reactor efficiency.
+- Reactor IO blocks linked from valid structure positions.
+- Internal ring power distribution to compatible machines placed in supported ring positions.
+- Connected machine FE-usage diagnostics.
+- Persistent structure overlay toggle and Reactor Remote support.
+- Power Storage and Matter Storage upgrades changing the corresponding capacities.
+- Speed upgrades increasing generation rate and matter consumption proportionally.
+- Range upgrades extending the vertical anomaly search/efficiency window from the base three-block distance, with a hard 16-block search cap.
 
-- Fusion Reactor Controller in the centre.
-- Fusion Reactor Coil directly north, south, east, and west.
-- Fusion Reactor IO directly above the Controller.
-- Gravitational Anomaly within three blocks of the Controller.
+Structure changes and upgrade changes trigger revalidation; the controller reports explicit fault/debug state in its GUI.
 
-The Controller accepts Matter Container transfers when used directly. Its debug UI reports structure validity, exact fault reason, FE/matter, anomaly distance, efficiency, output, and matter drain.
+## Gravitational Anomaly and Stabilizers
 
-| Reactor value | Current behaviour |
-|---|---|
-| FE buffer | 100,000,000 FE base capacity |
-| Matter buffer | 2,048 kM base capacity |
-| Maximum base generation | 2,048 FE/t with a close anomaly |
-| Base matter drain | 0.0125 kM/t |
-| Reactor upgrades | Speed, Range, Power Storage, Matter Storage |
-| Range safety | Anomaly scanning is capped at 16 blocks, preventing prior server-freezing scans |
-| Reactor IO | Exports up to 512 FE/t to each adjacent receiving side, except the Controller beneath it |
+The gravitational system is active in the current testing build:
 
-### Heavy Energy Cable
+- Anomalies initialize with persistent mass.
+- Nearby items/living entities are pulled according to the current effective mass.
+- Dropped items entering the event horizon are consumed once and add their matter value to anomaly mass.
+- Living entities take event-horizon damage; their mass contribution is recorded once when the horizon kills them, not on each preceding damage tick.
+- The Space-Time Equalizer protects a wearer from anomaly pull/event-horizon effects.
+- Gravitational Stabilizers require FE, must face the anomaly, stop on a solid beam obstruction and suppress anomaly strength while powered.
+- Stabilizer Power upgrades strengthen suppression and Power Storage upgrades expand its FE capacity.
+- Multiple stabilizers can suppress the same anomaly.
 
-The existing **Heavy Matter Pipe** item/block is now named **Heavy Energy Cable** for the test build.
+## Weapons and charging
 
-- It buffers 8,192 FE.
-- It relays up to 1,024 FE/t to each receiving side.
-- Multiple cables can be chained.
-- Right-click a cable for debug information: stored FE, latest output, and relay behaviour.
-- Use it as: `Reactor IO → Heavy Energy Cable(s) → powered machine`.
-- Matter Pipe and Network Pipe do **not** carry Forge Energy.
+The current energy-weapon set includes Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun plus supported weapon modules.
 
-## Verified runtime checks
+- Firing is server-checked against the weapon's actual shot cost.
+- Heat/overheat state is tracked and shown in the weapon HUD.
+- Energy Packs contribute their defined 32,000 FE and are consumed when used.
+- Normal and HC weapon batteries contribute only the FE they actually contain; partial batteries cannot fill a weapon for free.
+- Batteries are drained rather than destroyed and can be recharged in the Charging Station.
+- Weapon Station module state persists and is packed back into the weapon before the station drops its contents.
 
-The test scripts validate:
+Held-model alignment and other visual transforms still require in-client verification.
 
-- Registry/resource counts and active JSON resources.
-- Functional M2 source wiring and legacy baseline constants.
-- No Matter Overdrive missing-texture warnings.
-- No Matter Overdrive runtime-failure marker.
-- No Matter Overdrive data-pack tag failures.
-- Current runtime marker: 13 block entities and 12 menus, including Fusion Reactor and Heavy Energy Cable.
+## Android system
 
-## Present but not yet functional
+The current Android test implementation includes:
 
-Many legacy blocks, items, sounds, and resources are registered so worlds/assets remain complete. They are not automatically gameplay-complete just because they appear in the creative tab. In particular, the large legacy Fusion Reactor exterior/rendering and Gravitational Stabilizer behaviour are still future work.
+- Blue Pill conversion with persistent Android FE/state.
+- Red Pill deactivation that returns installed bionic parts.
+- Yellow Pill Android-FE recharge.
+- Head, Chest, Arms and Legs bionic parts installed through the Android Station.
+- Android HUD synchronisation.
+- Android Station FE charging within four blocks. Its 2,000 FE/t hand-off is shared between nearby converted players and GUI data is viewer-specific.
+- Rogue Android Spawner that consumes FE to create tagged Rogue Android Husks and supplies random bionic-part drops.
+
+The Chest part uses the vanilla Resistance effect while powered; it does not apply a second hidden damage multiplier.
+
+## Contracts and Star Map
+
+- Contract Market supplies collect/hunt Contract items with persistent objective, progress and reward data.
+- One pickup/kill advances one matching contract rather than every duplicate copy in the inventory.
+- Collect progress is capped to the amount the player's inventory can actually accept from the pickup.
+- Completed contracts can be redeemed at the Contract Market.
+- After the final offer is taken, the market waits 1,200 ticks before generating the next set; reopening it early does not bypass the delay.
+- Star Map reports active/completed contracts for the player viewing it. Multiple players can use the same Star Map without overwriting one another's displayed state.
+
+## Armour, tools and client rendering
+
+- Tritanium tools/armour are registered and functional.
+- Full Tritanium armour applies its configured defensive set bonus.
+- Equipped Tritanium armour is wired to `tritanium_layer_1.png` / `tritanium_layer_2.png`.
+- Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium are assigned translucent render layers client-side.
+
+Actual transparency appearance, crate/Inscriber UV alignment and weapon held transforms are runtime visual checks and cannot be certified by the Java build alone.
+
+## Persistence / break-safety expectations
+
+Current machine state that should persist includes inventories, upgrades, FE/matter buffers, contracts, router filter/routing state, switch state, pylon channel and Android player state where applicable.
+
+Blocks with internal user items that have dedicated inventories should return those contents when broken. The audit regression checklist specifically covers Charging Station batteries, Stabilizer upgrades, Router filters and Weapon Station weapons/modules.
+
+## Runtime verification
+
+Use the checklists under `docs/testing/`, especially:
+
+- `AUDIT_FIXES_TESTING.md`
+- `ANDROID_SYSTEM_TESTING.md`
+- `MATTER_NETWORK_LOGISTICS_TESTING.md`
+- `CONTRACTS_STAR_MAP_TESTING.md`
+
+A successful GitHub Actions build proves the Forge project compiles/packages; it does not replace the in-world runtime and visual checks above.
