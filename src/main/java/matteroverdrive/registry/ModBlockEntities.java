@@ -2,6 +2,8 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.blockentity.BalancedGravitationalAnomalyBlockEntity;
+import matteroverdrive.blockentity.AndroidStationBlockEntity;
+import matteroverdrive.blockentity.AndroidSpawnerBlockEntity;
 import matteroverdrive.blockentity.ChargingStationBlockEntity;
 import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.blockentity.EnergyPipeBlockEntity;
@@ -26,6 +28,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MatterOverdrive.MOD_ID);
+    public static final RegistryObject<BlockEntityType<AndroidStationBlockEntity>> ANDROID_STATION = BLOCK_ENTITIES.register("android_station", () -> BlockEntityType.Builder.of(AndroidStationBlockEntity::new, ModBlocks.get("android_station").get()).build(null));
+    public static final RegistryObject<BlockEntityType<AndroidSpawnerBlockEntity>> ANDROID_SPAWNER = BLOCK_ENTITIES.register("android_spawner", () -> BlockEntityType.Builder.of(AndroidSpawnerBlockEntity::new, ModBlocks.get("android_spawner").get()).build(null));
     public static final RegistryObject<BlockEntityType<EnergyPipeBlockEntity>> ENERGY_PIPE = BLOCK_ENTITIES.register("heavy_matter_pipe", () -> BlockEntityType.Builder.of(EnergyPipeBlockEntity::new, ModBlocks.get("heavy_matter_pipe").get()).build(null));
     public static final RegistryObject<BlockEntityType<ChargingStationBlockEntity>> CHARGING_STATION = BLOCK_ENTITIES.register("charging_station", () -> BlockEntityType.Builder.of(ChargingStationBlockEntity::new, ModBlocks.get("charging_station").get()).build(null));
     public static final RegistryObject<BlockEntityType<FusionReactorControllerBlockEntity>> FUSION_REACTOR_CONTROLLER = BLOCK_ENTITIES.register("fusion_reactor_controller", () -> BlockEntityType.Builder.of(FusionReactorControllerBlockEntity::new, ModBlocks.get("fusion_reactor_controller").get()).build(null));
