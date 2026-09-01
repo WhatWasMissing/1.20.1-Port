@@ -15,11 +15,17 @@ Expected:
 ## Collect contracts
 
 1. Take the iron-ingot contract.
-2. Pick up Iron Ingots until its listed goal is met.
+2. Keep the Contract item anywhere in the normal player inventory or hotbar.
+3. Pick up a single Iron Ingot from the ground.
+4. Re-check the tooltip immediately without moving the Contract item.
+5. Pick up a stack of Iron Ingots.
+6. Repeat once with an almost-full inventory so only part of a ground stack can be collected.
 
 Expected:
 
-- Progress increases only for the amount that can actually enter the player's inventory.
+- Progress updates immediately on the client after each successful pickup; moving the Contract item or reopening the inventory must not be required to refresh it.
+- Progress increases by the exact amount actually picked up.
+- A failed/cancelled pickup or items left on the ground because the inventory is full do not count.
 - If multiple identical collect contracts exist, a pickup advances only one matching contract rather than multiplying progress/rewards across every copy.
 - It gains an enchanted glint when complete.
 - Right-click the Contract Market while holding the completed contract.
@@ -28,12 +34,16 @@ Expected:
 ## Hunt contracts
 
 1. Take the Zombie contract.
-2. Kill Zombies with the Contract in the player inventory.
+2. Kill one Zombie with the Contract in the player inventory.
+3. Re-check the tooltip immediately without moving the Contract item.
+4. Continue until the contract completes.
 
 Expected:
 
 - Each player kill advances one matching contract by one.
+- Progress updates immediately on the client after the kill.
 - Carrying duplicate matching hunt contracts must not make one kill progress every copy.
+- Killing a non-target entity does not change progress.
 - On completion, return it to the Contract Market for its reward.
 
 ## Market refresh timing
@@ -56,6 +66,7 @@ Expected:
 
 - It reports the total active contracts in the player inventory.
 - It reports how many are ready to redeem.
+- After completing a contract, the ready-to-redeem count updates correctly.
 - After redeeming a completed contract, both values update when reopening the Star Map.
 - Have two players open the same Star Map simultaneously with different contract counts. Each GUI must continue displaying its own player's values.
 
