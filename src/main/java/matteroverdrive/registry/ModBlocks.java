@@ -2,6 +2,8 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.ChargingStationBlock;
+import matteroverdrive.block.AndroidStationBlock;
+import matteroverdrive.block.AndroidSpawnerBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
@@ -128,7 +130,11 @@ public final class ModBlocks {
     }
 
     private static void registerPlaceholder(String id) {
-        if (id.equals("heavy_matter_pipe")) {
+        if (id.equals("android_station")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidStationBlock(propertiesFor(id))));
+        } else if (id.equals("android_spawner")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidSpawnerBlock(propertiesFor(id))));
+        } else if (id.equals("heavy_matter_pipe")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
         } else if (id.equals("charging_station")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ChargingStationBlock(propertiesFor(id))));
