@@ -21,7 +21,7 @@ public class ChargingStationMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public ChargingStationMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(7));
+        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(9));
     }
 
     public ChargingStationMenu(int id, Inventory inventory, ChargingStationBlockEntity station) {
@@ -73,9 +73,9 @@ public class ChargingStationMenu extends AbstractContainerMenu {
 
     public int batteryEnergy() { return combine(data.get(0), data.get(1)); }
     public int batteryCapacity() { return combine(data.get(2), data.get(3)); }
-    public int stationEnergy() { return data.get(4); }
-    public int stationCapacity() { return data.get(5); }
-    public int lastTransferred() { return data.get(6); }
+    public int stationEnergy() { return combine(data.get(4), data.get(5)); }
+    public int stationCapacity() { return combine(data.get(6), data.get(7)); }
+    public int lastTransferred() { return data.get(8); }
 
     private static int combine(int low, int high) {
         return (low & 0xFFFF) | ((high & 0xFFFF) << 16);
