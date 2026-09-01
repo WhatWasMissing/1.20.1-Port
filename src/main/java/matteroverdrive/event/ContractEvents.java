@@ -4,10 +4,9 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.ContractItem;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -15,16 +14,21 @@ import net.minecraftforge.fml.common.Mod;
 public final class ContractEvents {
     private ContractEvents() {}
 
+    /**
+     * Track collect objectives after Forge has completed the pickup. PlayerEvent.ItemPickupEvent#getStack()
+     * is the exact amount that actually entered the player's inventory, so partial pickups cannot
+     * over-count and cancelled/failed pickups cannot advance a contract.
+     */
     @SubscribeEvent
-    public static void pickup(EntityItemPickupEvent event) {
+    public static void pickup(PlayerEvent.ItemPickupEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        ItemStack picked = event.getItem().getItem();
-        int amount = amountThatFits(player.getInventory(), picked);
-        if (amount <= 0) return;
+        ItemStack picked = event.getStack();
+        if (picked.isEmpty() || picked.getCount() <= 0) return;
 
-        for (ItemStack stack : player.getInventory().items) {
-            if (stack.getItem() instanceof ContractItem && ContractItem.advancesWithPickup(stack, picked)) {
-                ContractItem.advance(stack, amount);
+        for (ItemStack contract : player.getInventory().items) {
+            if (contract.getItem() instanceof ContractItem && ContractItem.advancesWithPickup(contract, picked)) {
+                ContractItem.advance(contract, picked.getCount());
+                syncProgress(player);
                 break;
             }
         }
@@ -36,31 +40,20 @@ public final class ContractEvents {
         ResourceLocation type = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(event.getEntity().getType());
         if (type == null) return;
 
-        for (ItemStack stack : player.getInventory().items) {
-            if (stack.getItem() instanceof ContractItem && ContractItem.advancesWithKill(stack, type)) {
-                ContractItem.advance(stack, 1);
+        for (ItemStack contract : player.getInventory().items) {
+            if (contract.getItem() instanceof ContractItem && ContractItem.advancesWithKill(contract, type)) {
+                ContractItem.advance(contract, 1);
+                syncProgress(player);
                 break;
             }
         }
     }
 
-    private static int amountThatFits(Inventory inventory, ItemStack picked) {
-        int remaining = picked.getCount();
-        int accepted = 0;
-        for (ItemStack slot : inventory.items) {
-            if (remaining <= 0) break;
-            int room;
-            if (slot.isEmpty()) {
-                room = Math.min(picked.getMaxStackSize(), inventory.getMaxStackSize());
-            } else if (ItemStack.isSameItemSameTags(slot, picked)) {
-                room = Math.max(0, Math.min(slot.getMaxStackSize(), inventory.getMaxStackSize()) - slot.getCount());
-            } else {
-                continue;
-            }
-            int moved = Math.min(remaining, room);
-            accepted += moved;
-            remaining -= moved;
+    private static void syncProgress(ServerPlayer player) {
+        player.getInventory().setChanged();
+        player.inventoryMenu.broadcastChanges();
+        if (player.containerMenu != player.inventoryMenu) {
+            player.containerMenu.broadcastChanges();
         }
-        return accepted;
     }
 }
