@@ -11,6 +11,9 @@
 - Quantum Fold Manipulator, Reactor Remote and Reactor Assembly Guide have distinct item icons.
 - Tritanium Spine uses the correctly spelled texture path while retaining the legacy file for compatibility.
 - Gun OBJ meshes are centred, scaled and rotated into Minecraft item space, with explicit transforms for GUI, ground, frames and both hands.
+- Tritanium Crates now use the original legacy 3D crate mesh for all colour variants instead of mapping the atlas across a full cube.
+- Inscriber now uses the original legacy 3D mesh and its atlas, with blockstate rotations matched to the legacy model orientation.
+- Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium declare their render types in model JSON so modern Forge routes them through the intended transparent render layers.
 
 ## Test checklist
 
@@ -22,7 +25,11 @@
 6. Check the Quantum Fold Manipulator, Reactor Remote, Reactor Assembly Guide and Tritanium Spine in inventory and in-hand.
 7. Check every gun in inventory, dropped on the ground, in an item frame, first person and third person in both hands.
 8. Fire and charge every gun to confirm use animations do not reverse or hide the corrected model.
+9. Place the base Tritanium Crate plus several coloured variants and verify the 3D frame/lid geometry and atlas mapping are correct in-world and as items.
+10. Place the Inscriber facing north/east/south/west and verify its 3D shape, atlas alignment and front orientation.
+11. Place Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium and verify intended transparent/cutout pixels render correctly from multiple viewing angles.
 
 ## Known follow-up
 
 - Gun module geometry is not yet attached to the corrected base OBJ meshes; module effects remain functional and visible in tooltips.
+- Restored OBJ models and model-level render types still require runtime visual verification in the development client.

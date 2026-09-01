@@ -1,8 +1,8 @@
 {
   "variants": {
-    "facing=north": { "model": "matteroverdrive:block/inscriber" },
+    "facing=north": { "model": "matteroverdrive:block/inscriber", "y": 180 },
     "facing=east": { "model": "matteroverdrive:block/inscriber", "y": 90 },
-    "facing=south": { "model": "matteroverdrive:block/inscriber", "y": 180 },
+    "facing=south": { "model": "matteroverdrive:block/inscriber" },
     "facing=west": { "model": "matteroverdrive:block/inscriber", "y": 270 }
   }
 }
