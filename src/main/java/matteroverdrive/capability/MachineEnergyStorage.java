@@ -43,10 +43,24 @@ public class MachineEnergyStorage extends EnergyStorage {
         }
     }
 
-    /** Removes FE for internal machine work and records the amount as current usage. */
+    /**
+     * Removes FE for internal machine work and records the amount as current usage.
+     * Internal work deliberately bypasses the externally advertised extraction limit:
+     * receive-only machines must still be able to spend energy from their own buffer.
+     */
     public int consumeEnergy(int amount, long gameTime) {
         beginUsageTick(gameTime);
-        int consumed = extractEnergy(amount, false);
+        int requested = Math.max(0, amount);
+        int consumed;
+        if (infiniteEnergy) {
+            consumed = Math.min(requested, capacity);
+        } else {
+            consumed = Math.min(requested, energy);
+            if (consumed > 0) {
+                energy -= consumed;
+                changed();
+            }
+        }
         if (consumed > 0) {
             energyUsedThisTick = (int) Math.min(Integer.MAX_VALUE,
                     (long) energyUsedThisTick + consumed);
