@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "matteroverdrive:item/unknown"
+    "layer0": "matteroverdrive:item/quantum_fold_manipulator"
   }
 }

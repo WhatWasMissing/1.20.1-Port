@@ -1,6 +1,8 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/orientable",
   "textures": {
-    "all": "matteroverdrive:block/replicator"
+    "front": "matteroverdrive:block/replicator_front",
+    "side": "matteroverdrive:block/replicator_side",
+    "top": "matteroverdrive:block/replicator_top"
   }
 }

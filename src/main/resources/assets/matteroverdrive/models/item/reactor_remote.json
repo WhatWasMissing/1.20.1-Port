@@ -1,3 +1,6 @@
 {
-  "parent": "matteroverdrive:item/data_pad"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "matteroverdrive:item/reactor_remote"
+  }
 }

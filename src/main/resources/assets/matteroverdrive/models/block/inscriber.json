@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "all": "matteroverdrive:block/inscriber"
+    "particle": "matteroverdrive:block/inscriber_side",
+    "down": "matteroverdrive:block/inscriber_bottom",
+    "up": "matteroverdrive:block/inscriber_top",
+    "north": "matteroverdrive:block/inscriber_front",
+    "south": "matteroverdrive:block/inscriber_back",
+    "west": "matteroverdrive:block/inscriber_side",
+    "east": "matteroverdrive:block/inscriber_side"
   }
 }

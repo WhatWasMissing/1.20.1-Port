@@ -1,5 +1,6 @@
 package matteroverdrive.item;
 
+import matteroverdrive.MatterOverdrive;
 import matteroverdrive.registry.ModItems;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -15,6 +16,12 @@ import net.minecraft.world.level.Level;
 public class TritaniumArmorItem extends ArmorItem {
     public TritaniumArmorItem(ArmorMaterial material, Type type, Properties properties) {
         super(material, type, properties);
+    }
+
+    @Override
+    public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        String layer = slot == EquipmentSlot.LEGS ? "tritanium_layer_2.png" : "tritanium_layer_1.png";
+        return MatterOverdrive.MOD_ID + ":textures/armor/" + layer;
     }
 
     @Override

@@ -1,6 +1,8 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "all": "matteroverdrive:block/base"
+    "side": "matteroverdrive:block/base",
+    "top": "matteroverdrive:block/decomposer_top",
+    "bottom": "matteroverdrive:block/base"
   }
 }

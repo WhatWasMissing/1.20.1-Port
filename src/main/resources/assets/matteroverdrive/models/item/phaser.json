@@ -1,6 +1,14 @@
 {
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "matteroverdrive:item/phaser2"
+  "loader": "forge:obj",
+  "flip_v": true,
+  "model": "matteroverdrive:models/item/phaser2_item.obj",
+  "display": {
+    "gui": { "rotation": [20, -25, 0], "translation": [0, 0, 0], "scale": [0.9, 0.9, 0.9] },
+    "ground": { "rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5] },
+    "fixed": { "rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.8, 0.8, 0.8] },
+    "thirdperson_righthand": { "rotation": [0, 0, -12], "translation": [0, 1, 0], "scale": [0.8, 0.8, 0.8] },
+    "thirdperson_lefthand": { "rotation": [0, 180, 12], "translation": [0, 1, 0], "scale": [0.8, 0.8, 0.8] },
+    "firstperson_righthand": { "rotation": [0, -12, -8], "translation": [1, 2, 0], "scale": [0.9, 0.9, 0.9] },
+    "firstperson_lefthand": { "rotation": [0, 192, 8], "translation": [-1, 2, 0], "scale": [0.9, 0.9, 0.9] }
   }
 }
