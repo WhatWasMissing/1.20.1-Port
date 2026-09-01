@@ -7,6 +7,8 @@ import matteroverdrive.blockentity.AndroidSpawnerBlockEntity;
 import matteroverdrive.blockentity.NetworkRouterBlockEntity;
 import matteroverdrive.blockentity.NetworkSwitchBlockEntity;
 import matteroverdrive.blockentity.PylonBlockEntity;
+import matteroverdrive.blockentity.ContractMarketBlockEntity;
+import matteroverdrive.blockentity.StarMapBlockEntity;
 import matteroverdrive.blockentity.ChargingStationBlockEntity;
 import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.blockentity.EnergyPipeBlockEntity;
@@ -31,6 +33,8 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MatterOverdrive.MOD_ID);
+    public static final RegistryObject<BlockEntityType<ContractMarketBlockEntity>> CONTRACT_MARKET = BLOCK_ENTITIES.register("contract_market", () -> BlockEntityType.Builder.of(ContractMarketBlockEntity::new, ModBlocks.get("contract_market").get()).build(null));
+    public static final RegistryObject<BlockEntityType<StarMapBlockEntity>> STAR_MAP = BLOCK_ENTITIES.register("star_map", () -> BlockEntityType.Builder.of(StarMapBlockEntity::new, ModBlocks.get("star_map").get()).build(null));
     public static final RegistryObject<BlockEntityType<NetworkRouterBlockEntity>> NETWORK_ROUTER = BLOCK_ENTITIES.register("network_router", () -> BlockEntityType.Builder.of(NetworkRouterBlockEntity::new, ModBlocks.get("network_router").get()).build(null));
     public static final RegistryObject<BlockEntityType<NetworkSwitchBlockEntity>> NETWORK_SWITCH = BLOCK_ENTITIES.register("network_switch", () -> BlockEntityType.Builder.of(NetworkSwitchBlockEntity::new, ModBlocks.get("network_switch").get()).build(null));
     public static final RegistryObject<BlockEntityType<PylonBlockEntity>> PYLON = BLOCK_ENTITIES.register("pylon", () -> BlockEntityType.Builder.of(PylonBlockEntity::new, ModBlocks.get("pylon").get()).build(null));
