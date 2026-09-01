@@ -1,2 +1,42 @@
-package matteroverdrive.blockentity;import matteroverdrive.item.ContractItem;import matteroverdrive.menu.StarMapMenu;import matteroverdrive.registry.ModBlockEntities;import net.minecraft.core.BlockPos;import net.minecraft.network.chat.Component;import net.minecraft.server.level.ServerPlayer;import net.minecraft.world.*;import net.minecraft.world.entity.player.*;import net.minecraft.world.inventory.*;import net.minecraft.world.level.block.entity.BlockEntity;import net.minecraft.world.level.block.state.BlockState;import javax.annotation.Nullable;import java.util.UUID;
-public class StarMapBlockEntity extends BlockEntity implements MenuProvider{private UUID viewer;private final ContainerData data=new ContainerData(){public int get(int i){ServerPlayer p=player();if(p==null)return 0;int active=0,done=0;for(var s:p.getInventory().items)if(s.getItem()instanceof ContractItem){active++;if(ContractItem.complete(s))done++;}return i==0?active:i==1?done:0;}public void set(int i,int v){}public int getCount(){return 2;}};public StarMapBlockEntity(BlockPos p,BlockState s){super(ModBlockEntities.STAR_MAP.get(),p,s);}public void link(ServerPlayer p){viewer=p.getUUID();}private ServerPlayer player(){return level==null||level.getServer()==null||viewer==null?null:level.getServer().getPlayerList().getPlayer(viewer);}@Override public Component getDisplayName(){return Component.translatable("block.matteroverdrive.star_map");}@Nullable @Override public AbstractContainerMenu createMenu(int id,Inventory inv,Player p){return new StarMapMenu(id,inv,this); }public ContainerData data(){return data;}}
+package matteroverdrive.blockentity;
+
+import matteroverdrive.item.ContractItem;
+import matteroverdrive.menu.StarMapMenu;
+import matteroverdrive.registry.ModBlockEntities;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import javax.annotation.Nullable;
+
+public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
+    public StarMapBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.STAR_MAP.get(), pos, state); }
+
+    public ContainerData dataFor(Player viewer) {
+        return new ContainerData() {
+            @Override public int get(int index) {
+                int active = 0;
+                int done = 0;
+                for (var stack : viewer.getInventory().items) {
+                    if (stack.getItem() instanceof ContractItem) {
+                        active++;
+                        if (ContractItem.complete(stack)) done++;
+                    }
+                }
+                return index == 0 ? active : index == 1 ? done : 0;
+            }
+            @Override public void set(int index, int value) {}
+            @Override public int getCount() { return 2; }
+        };
+    }
+
+    @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.star_map"); }
+    @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new StarMapMenu(id, inventory, this);
+    }
+}
