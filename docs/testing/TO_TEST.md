@@ -146,3 +146,15 @@ This branch is ready to merge into `main` when:
 ## Failure notes
 
 Record the machine/weapon/block, GUI scale if visual, facing if directional, expected result, actual result, and relevant log/crash output.
+
+
+## New regression pass
+
+- [ ] Feed a living entity into the event horizon and confirm that killing it increases anomaly mass immediately and only once.
+- [ ] Confirm the anomaly mass shown in the reactor/debug readout changes after the entity dies.
+- [ ] Check Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun in first-person and third-person; confirm they are upright, point forwards and are not mirrored.
+- [ ] Open the Charging Station GUI, insert a rechargeable battery, and confirm the battery charge rises gradually.
+- [ ] Confirm the Charging Station GUI shows battery charge, station status and transfer rate; save/reload and retrieve the battery.
+- [ ] Connect a stabiliser to reactor power through the reactor IO/cable network. Confirm it remains inactive with no reactor power and suppresses the anomaly while powered.
+- [ ] Insert one or more upgrade_power items into a stabiliser. Confirm the upgrade is accepted, saved, dropped when the block is broken, and changes the stabiliser's suppression/power requirement.
+- [ ] Confirm stabiliser power is drained from reactor FE, and that redstone blocks/signals no longer activate it.
