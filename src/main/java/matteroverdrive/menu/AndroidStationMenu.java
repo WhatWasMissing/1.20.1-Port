@@ -23,7 +23,7 @@ public class AndroidStationMenu extends AbstractContainerMenu {
         this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(9));
     }
     public AndroidStationMenu(int id, Inventory inventory, AndroidStationBlockEntity station) {
-        this(id, inventory, station, station.getContainerData());
+        this(id, inventory, station, station.getContainerData(inventory.player));
     }
     private AndroidStationMenu(int id, Inventory inventory, AndroidStationBlockEntity station, ContainerData data) {
         super(ModMenus.ANDROID_STATION.get(), id);
