@@ -1,34 +1,49 @@
 # Current Features and Roadmap
 
-Status: `main`, updated 2026-09-01.
+Status: `testing/main`, updated 2026-09-01 before merge to `main`.
 
-This is the current playable snapshot of the 1.20.1 port. “Implemented” means it is present in the current code/build; it does not replace the focused in-game checks in [TO_TEST.md](../testing/TO_TEST.md).
+The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../reference/WORKING_FEATURES.md). This file is the shorter implementation roadmap.
 
-## Implemented systems
+## Current playable systems
 
 - Matter machines: Decomposer, Recycler, Analyzer, Replicator, Molecular Inscriber, Pattern Storage and Pattern Monitor.
-- Matter and energy transport: Matter Pipe, Heavy Matter Pipe, Energy Pipe, Heavy Energy Cable, and Fusion Reactor IO.
-- Fusion Reactor: structure guide and overlay, reactor controller/IO, anomaly interaction, matter input routes, power output, and powered Gravitational Stabilizers.
-- Gravitational anomaly: item consumption and visible living-entity mass contribution; anomaly size is capped.
-- Gravitational Stabilizer: targeting/beam checks, reactor-FE requirement, four Power Upgrade slots, GUI telemetry, and no redstone activation.
-- Charging Station: GUI, one rechargeable-item slot, buffered FE input, gradual charging, persistence, and recovery of stored items when broken.
-- Weapons: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun, Weapon Station module editing, energy checks, battery reloads, and compatible module validation.
-- Storage and utility: Tritanium Crate, Transporter, Solar Panel, Reactor Assembly Guide, and the existing diagnostic/UI tooling.
-- Resources and presentation: repaired transparent-block rendering, restored crate/Inscriber models, several corrected item textures, and recipes for all 72 placeable blocks. Technical no-item blocks remain intentionally uncraftable: Bounding Box, Matter Plasma, and Molten Tritanium.
+- Matter and FE transport: Matter Pipe, Heavy Energy Cable, Reactor IO and Charging Station.
+- Matter Network logistics: Network Pipe, Router, Switch and Pylon, including filtered powered item routing and pattern-network traversal.
+- Fusion Reactor: ring multiblock, controller/IO, matter input, FE generation/output, structure diagnostics, Reactor Remote/guide and active Speed/Range/Power Storage/Matter Storage upgrades.
+- Gravitational systems: anomaly pull/consumption/mass, Space-Time Equalizer and powered Gravitational Stabilizers.
+- Weapons: Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun, rechargeable batteries/Energy Packs, heat/energy checks and Weapon Station modules.
+- Android foundation: conversion/deactivation/recharge pills, persistent Android FE, Android Station, four bionic body parts, HUD and simplified Rogue Android Spawner.
+- Progression foundation: Contract Market, collect/hunt contracts, redemption/refresh flow and per-viewer Star Map contract summary.
+- Storage/utility: Tritanium Crates, Transporter, Solar Panel, Tritanium tools/armour and the current debug/testing utilities.
 
-## Current verification targets
+## Major original-mod parity gaps
 
-- The four energy-weapon hand transforms still need visual tuning in first- and third-person; treat them as an open runtime issue.
-- Confirm anomaly feeding in a fresh test world: an item or entity entering the horizon must visibly increase mass.
-- Confirm Charging Station and Stabilizer FE routes using a live Fusion Reactor, Reactor IO, and cable connection.
-- Run the normal client/build gate after pulling main, then use the focused checklist in [TO_TEST.md](../testing/TO_TEST.md).
+1. **Android RPG abilities/biotic stats** — teleport, shield/force-field, cloak, night vision, shockwave/flash-cooling style abilities, unlock/cooldown progression and richer minimap/team UI.
+2. **Full Star Map simulation** — galaxy/star/planet data, planet stats, buildings, ships and travel/attack events. The current Star Map is only a contract summary.
+3. **Full quest/dialog framework** — generated/multi quests, mining/crafting and other quest logic, XP/rewards, quest HUD/Data Pad pages and Mad Scientist progression. Current contracts are a deliberately smaller slice.
+4. **Data Pad/guide** — guide pages/history, scanning and quest integration are not implemented.
+5. **Matter Scanner** — registered but gameplay is not implemented.
+6. **Portable Decomposer** — registered but gameplay is not implemented.
+7. **Omni Tool** — registered but original tool/weapon behaviour is not implemented.
+8. **Microwave** — registered placeholder block; no machine implementation.
+9. **Space-Time Accelerator** — registered placeholder block; no machine-acceleration implementation.
+10. **Holo Sign/security/ownership** — programmable sign and security protocol/ownership behaviour are missing.
+11. **Legacy drive configuration** — generic/network flash-drive behaviour beyond Pattern/Transport drives is incomplete.
+12. **Dedicated mobs/entities** — proper Rogue Androids, ranged/levelled variants, drones, failed animals and scientist NPC/mob content are not restored; the current spawner uses a tagged Husk.
+13. **World generation** — themed structures and the legacy world-spawn layer are not ported.
+14. **Remaining weapon depth** — original enchantment/random-weapon ecosystem and final recoil/model/beam parity remain.
+15. **Legacy optional integrations** — old ComputerCraft/Tinkers/etc. compatibility has not been recreated for modern equivalents.
 
-## Original-mod implementation order
+## Recommended implementation order
 
-1. **Android core** — Android Station GUI and workflow, Android upgrades/abilities, power/charging integration, then Android Spawner.
-2. **Matter Network** — make Network Pipe, Router, Switch, and Pylon form usable networks with discoverable endpoints and a clear GUI.
-3. **Progression content** — Contract Market, contracts, Star Map, and their rewards/requirements.
-4. **Advanced technology** — Microwave and Spacetime Accelerator, using the finished energy/matter network as their foundation.
-5. **Refinement pass** — resolve weapon transforms, complete texture/model review, balance reactor/anomaly values, and broaden survival-playthrough testing.
+1. Microwave and Space-Time Accelerator.
+2. Matter Scanner, Portable Decomposer and Data Pad/guide.
+3. Android ability tree/biotic stats and dedicated Rogue Android entities.
+4. Holo Sign, security/ownership and remaining network-drive behaviour.
+5. World generation and legacy mobs/NPCs.
+6. Full quest framework followed by full Star Map galaxy gameplay.
+7. Remaining weapon parity and selected modern mod integrations.
 
-The recommended next slice is **Android Station + Android power/charging**, because it restores one of Matter Overdrive’s defining gameplay loops and reuses the newly completed charging and energy systems.
+## Current verification note
+
+The latest integration build includes the contract tracking correction that uses actual post-pickup amounts and forces player inventory/menu synchronization after progress changes. Build success does not replace the in-world regression check for collect/hunt progress, visual rendering or gameplay balance.
