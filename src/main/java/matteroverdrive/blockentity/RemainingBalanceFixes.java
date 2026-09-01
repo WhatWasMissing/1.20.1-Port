@@ -4,7 +4,7 @@ import matteroverdrive.capability.MachineEnergyStorage;
 
 import java.lang.reflect.Field;
 
-final class RemainingBalanceFixes {
+public final class RemainingBalanceFixes {
     private static final int REACTOR_OUTPUT_MULTIPLIER = 8;
     private static final long LIVING_MASS_MULTIPLIER = 64L;
 
@@ -38,7 +38,7 @@ final class RemainingBalanceFixes {
         }
     }
 
-    static void boostFusionOutput(FusionReactorControllerBlockEntity reactor) {
+    public static void boostFusionOutput(FusionReactorControllerBlockEntity reactor) {
         try {
             MachineEnergyStorage energy = (MachineEnergyStorage) REACTOR_ENERGY.get(reactor);
             int generated = REACTOR_GENERATED_LAST_TICK.getInt(reactor);
