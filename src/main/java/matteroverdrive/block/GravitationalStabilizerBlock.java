@@ -5,7 +5,7 @@ import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import matteroverdrive.item.MachineUpgradeItem;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,9 +23,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
-
 import java.util.Locale;
 
 public class GravitationalStabilizerBlock extends BaseEntityBlock {
@@ -76,7 +76,7 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
         if (!level.isClientSide && placer instanceof Player player) {
             player.displayClientMessage(Component.literal(
                     "Stabilizer front points " + state.getValue(FACING).getName().toUpperCase(Locale.ROOT)
-                            + " | beam travels this way | insert power upgrades and connect it to the reactor"), true);
+                            + " | beam travels this way | connect it to reactor power"), true);
         }
     }
 
@@ -120,38 +120,35 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof GravitationalStabilizerBlockEntity stabilizer) {
-            ItemStack held = player.getItemInHand(hand);
-            if (held.getItem() instanceof MachineUpgradeItem && stabilizer.insertUpgrade(held)) {
-                held.shrink(1);
-                player.displayClientMessage(Component.literal("Inserted stabiliser power upgrade"), true);
-                return InteractionResult.CONSUME;
-            }
-            if (player.isShiftKeyDown()) {
-                Direction next = nextHorizontal(state.getValue(FACING));
-                level.setBlock(pos, state.setValue(FACING, next), 3);
-                player.displayClientMessage(Component.literal(
-                        "Stabilizer rotated. Front points "
-                                + next.getName().toUpperCase(Locale.ROOT)
-                                + " | beam travels this way"), true);
-                return InteractionResult.CONSUME;
-            }
-            Component status;
-            if (!stabilizer.isPowered()) {
-                status = Component.literal("Stabilizer inactive: waiting for reactor power (" + stabilizer.requiredPowerForDisplay() + " FE/t).");
-            } else if (stabilizer.getAnomalyDistance() >= 0) {
-                status = Component.literal("Stabilizer locked onto an anomaly "
-                        + stabilizer.getAnomalyDistance() + " blocks away.");
-            } else if (stabilizer.isBeamBlocked()) {
-                status = Component.literal("Stabilizer beam is blocked "
-                        + stabilizer.getBeamBlockedDistance() + " blocks away to the "
-                        + state.getValue(FACING).getName().toUpperCase(Locale.ROOT) + ".");
-            } else {
-                status = Component.literal("Stabilizer powered, but no anomaly found within 63 blocks to the "
-                        + state.getValue(FACING).getName().toUpperCase(Locale.ROOT) + ".");
-            }
-            player.displayClientMessage(status, true);
+        if (level.isClientSide) return InteractionResult.SUCCESS;
+        if (!(level.getBlockEntity(pos) instanceof GravitationalStabilizerBlockEntity stabilizer)) {
+            return InteractionResult.PASS;
         }
-        return InteractionResult.sidedSuccess(level.isClientSide);
+
+        if (player.isShiftKeyDown()) {
+            Direction next = nextHorizontal(state.getValue(FACING));
+            level.setBlock(pos, state.setValue(FACING, next), 3);
+            player.displayClientMessage(Component.literal(
+                    "Stabilizer rotated. Front points "
+                            + next.getName().toUpperCase(Locale.ROOT) + " | beam travels this way"), true);
+            return InteractionResult.CONSUME;
+        }
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            NetworkHooks.openScreen(serverPlayer, stabilizer, pos);
+        }
+        return InteractionResult.CONSUME;
+    }
+
+    @Override
+    public void onRemove(BlockState oldState, Level level, BlockPos pos,
+                         BlockState newState, boolean moving) {
+        if (!oldState.is(newState.getBlock())) {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (entity instanceof GravitationalStabilizerBlockEntity stabilizer) {
+                stabilizer.dropContents();
+            }
+        }
+        super.onRemove(oldState, level, pos, newState, moving);
     }
 }
