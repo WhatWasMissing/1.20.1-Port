@@ -5,6 +5,7 @@ import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import matteroverdrive.item.MachineUpgradeItem;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -75,7 +76,7 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
         if (!level.isClientSide && placer instanceof Player player) {
             player.displayClientMessage(Component.literal(
                     "Stabilizer front points " + state.getValue(FACING).getName().toUpperCase(Locale.ROOT)
-                            + " | beam travels this way | power with redstone"), true);
+                            + " | beam travels this way | insert power upgrades and connect it to the reactor"), true);
         }
     }
 
@@ -120,6 +121,12 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
                                  InteractionHand hand, BlockHitResult hit) {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof GravitationalStabilizerBlockEntity stabilizer) {
+            ItemStack held = player.getItemInHand(hand);
+            if (held.getItem() instanceof MachineUpgradeItem && stabilizer.insertUpgrade(held)) {
+                held.shrink(1);
+                player.displayClientMessage(Component.literal("Inserted stabiliser power upgrade"), true);
+                return InteractionResult.CONSUME;
+            }
             if (player.isShiftKeyDown()) {
                 Direction next = nextHorizontal(state.getValue(FACING));
                 level.setBlock(pos, state.setValue(FACING, next), 3);
@@ -130,8 +137,8 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
                 return InteractionResult.CONSUME;
             }
             Component status;
-            if (!level.hasNeighborSignal(pos)) {
-                status = Component.literal("Stabilizer inactive: supply a redstone signal.");
+            if (!stabilizer.isPowered()) {
+                status = Component.literal("Stabilizer inactive: waiting for reactor power (" + stabilizer.requiredPowerForDisplay() + " FE/t).");
             } else if (stabilizer.getAnomalyDistance() >= 0) {
                 status = Component.literal("Stabilizer locked onto an anomaly "
                         + stabilizer.getAnomalyDistance() + " blocks away.");
@@ -140,7 +147,7 @@ public class GravitationalStabilizerBlock extends BaseEntityBlock {
                         + stabilizer.getBeamBlockedDistance() + " blocks away to the "
                         + state.getValue(FACING).getName().toUpperCase(Locale.ROOT) + ".");
             } else {
-                status = Component.literal("No anomaly found within 63 blocks to the "
+                status = Component.literal("Stabilizer powered, but no anomaly found within 63 blocks to the "
                         + state.getValue(FACING).getName().toUpperCase(Locale.ROOT) + ".");
             }
             player.displayClientMessage(status, true);
