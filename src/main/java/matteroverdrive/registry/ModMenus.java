@@ -3,6 +3,7 @@ package matteroverdrive.registry;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.menu.DecomposerMenu;
 import matteroverdrive.menu.AndroidStationMenu;
+import matteroverdrive.menu.NetworkRouterMenu;
 import matteroverdrive.menu.ChargingStationMenu;
 import matteroverdrive.menu.EnergyPipeMenu;
 import matteroverdrive.menu.InscriberMenu;
@@ -25,6 +26,7 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModMenus {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MatterOverdrive.MOD_ID);
+    public static final RegistryObject<MenuType<NetworkRouterMenu>> NETWORK_ROUTER = MENUS.register("network_router", () -> IForgeMenuType.create(NetworkRouterMenu::new));
     public static final RegistryObject<MenuType<AndroidStationMenu>> ANDROID_STATION = MENUS.register("android_station", () -> IForgeMenuType.create(AndroidStationMenu::new));
     public static final RegistryObject<MenuType<ChargingStationMenu>> CHARGING_STATION = MENUS.register("charging_station", () -> IForgeMenuType.create(ChargingStationMenu::new));
     public static final RegistryObject<MenuType<EnergyPipeMenu>> ENERGY_PIPE = MENUS.register("heavy_matter_pipe", () -> IForgeMenuType.create(EnergyPipeMenu::new));
