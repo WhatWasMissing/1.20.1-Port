@@ -1,3 +1,13 @@
+# Current status — 2026-09-01
+
+The current implementation supersedes older Creative-mode references below:
+
+- Weapons must have energy in Survival and Creative; only the explicit Creative Battery module provides infinite energy.
+- The Weapon Station module workflow and battery reload path remain implemented.
+- First- and third-person transforms for Phaser, Phaser Rifle, Ion Sniper, and Plasma Shotgun remain an open visual runtime check; do not treat the older model note as a final rendering solution.
+
+The remaining historical entries are retained as implementation context.
+
 # Gun System Progress
 
 ## Current branch
