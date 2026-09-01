@@ -1,6 +1,6 @@
 # Current Features and Roadmap
 
-Status: `testing/main`, updated 2026-09-01 before merge to `main`.
+Status: `main`, updated 2026-09-01.
 
 The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../reference/WORKING_FEATURES.md). This file is the shorter implementation roadmap.
 
@@ -46,4 +46,4 @@ The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../referenc
 
 ## Current verification note
 
-The latest integration build includes the contract tracking correction that uses actual post-pickup amounts and forces player inventory/menu synchronization after progress changes. Build success does not replace the in-world regression check for collect/hunt progress, visual rendering or gameplay balance.
+The integrated main build includes the contract tracking correction that uses actual post-pickup amounts and forces player inventory/menu synchronization after progress changes. Build success does not replace the in-world regression check for collect/hunt progress, visual rendering or gameplay balance.
