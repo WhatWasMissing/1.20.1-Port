@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.CreativeBatteryItem;
+import matteroverdrive.item.ContractItem;
 import matteroverdrive.item.AndroidPillItem;
 import matteroverdrive.item.AndroidPartItem;
 import matteroverdrive.android.AndroidData;
@@ -172,6 +173,7 @@ public final class ModItems {
     }
 
     private static Item createStandaloneItem(String id) {
+        if (id.equals("contract")) return new ContractItem(propertiesFor(id));
         if (id.equals("android_pill_blue")) return new AndroidPillItem(propertiesFor(id), AndroidPillItem.Type.BLUE);
         if (id.equals("android_pill_red")) return new AndroidPillItem(propertiesFor(id), AndroidPillItem.Type.RED);
         if (id.equals("android_pill_yellow")) return new AndroidPillItem(propertiesFor(id), AndroidPillItem.Type.YELLOW);
