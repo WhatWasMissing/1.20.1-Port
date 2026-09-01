@@ -7,6 +7,8 @@ import matteroverdrive.block.AndroidSpawnerBlock;
 import matteroverdrive.block.NetworkRouterBlock;
 import matteroverdrive.block.NetworkSwitchBlock;
 import matteroverdrive.block.PylonBlock;
+import matteroverdrive.block.ContractMarketBlock;
+import matteroverdrive.block.StarMapBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
@@ -133,7 +135,11 @@ public final class ModBlocks {
     }
 
     private static void registerPlaceholder(String id) {
-        if (id.equals("network_router")) {
+        if (id.equals("contract_market")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ContractMarketBlock(propertiesFor(id))));
+        } else if (id.equals("star_map")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new StarMapBlock(propertiesFor(id))));
+        } else if (id.equals("network_router")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkRouterBlock(propertiesFor(id))));
         } else if (id.equals("network_switch")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkSwitchBlock(propertiesFor(id))));
