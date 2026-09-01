@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -23,6 +24,9 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.ItemStackHandler;
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvider {
     public static final int CAPACITY = 10_000, TRANSFER = 1_000, ENERGY_PER_ITEM = 10;
@@ -32,6 +36,7 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         @Override public int getSlotLimit(int slot) { return 1; }
         @Override protected void onContentsChanged(int slot) { setChanged(); }
     };
+    private final Set<BlockPos> routeSinks = new HashSet<>();
     private int endpoints, nodes, pylons, lastMoved;
     private long routeCursor;
     private final ContainerData data = new ContainerData() {
@@ -56,6 +61,7 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         router.pullEnergy();
         router.route();
     }
+
     private void pullEnergy() {
         if (level == null) return;
         int remaining = Math.min(TRANSFER, energy.getMaxEnergyStored() - energy.getEnergyStored());
@@ -69,20 +75,97 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
             if (accepted > 0) remaining -= energy.receiveEnergy(source.extractEnergy(accepted, false), false);
         }
     }
+
     private void route() {
         if (level == null) return;
         ItemNetworkUtil.Scan scan = ItemNetworkUtil.scan(level, worldPosition);
-        endpoints = scan.endpoints().size(); nodes = scan.nodes(); pylons = scan.pylons();
+        endpoints = scan.endpoints().size();
+        nodes = scan.nodes();
+        pylons = scan.pylons();
+        lastMoved = 0;
+
+        NetworkRouterBlockEntity stateOwner = routingStateOwner(scan);
+        stateOwner.pruneRouteSinks(scan);
+        if (!isRoutingExecutor(scan)) return;
+
         int max = Math.min(64, energy.getEnergyStored() / ENERGY_PER_ITEM);
-        lastMoved = ItemNetworkUtil.moveOneStack(level, scan.endpoints(), filter.getStackInSlot(0), max, routeCursor++);
-        if (lastMoved > 0) energy.consumeEnergy(lastMoved * ENERGY_PER_ITEM, level.getGameTime());
+        ItemNetworkUtil.MoveResult result = ItemNetworkUtil.moveOneStack(
+                level, scan.endpoints(), filter.getStackInSlot(0), max,
+                stateOwner.routeCursor++, stateOwner.routeSinks);
+        if (result.count() <= 0) {
+            stateOwner.setChanged();
+            return;
+        }
+
+        lastMoved = result.count();
+        stateOwner.lastMoved = result.count();
+        stateOwner.routeSinks.add(result.destination().immutable());
+        stateOwner.setChanged();
+        energy.consumeEnergy(result.count() * ENERGY_PER_ITEM, level.getGameTime());
     }
+
+    private NetworkRouterBlockEntity routingStateOwner(ItemNetworkUtil.Scan scan) {
+        for (BlockPos routerPos : scan.routers()) {
+            if (level.getBlockEntity(routerPos) instanceof NetworkRouterBlockEntity router) return router;
+        }
+        return this;
+    }
+
+    private boolean isRoutingExecutor(ItemNetworkUtil.Scan scan) {
+        for (BlockPos routerPos : scan.routers()) {
+            if (level.getBlockEntity(routerPos) instanceof NetworkRouterBlockEntity router
+                    && router.energy.getEnergyStored() >= ENERGY_PER_ITEM) {
+                return routerPos.equals(worldPosition);
+            }
+        }
+        return energy.getEnergyStored() >= ENERGY_PER_ITEM;
+    }
+
+    private void pruneRouteSinks(ItemNetworkUtil.Scan scan) {
+        Iterator<BlockPos> iterator = routeSinks.iterator();
+        while (iterator.hasNext()) {
+            BlockPos sink = iterator.next();
+            ItemNetworkUtil.Endpoint endpoint = null;
+            for (ItemNetworkUtil.Endpoint candidate : scan.endpoints()) {
+                if (candidate.pos().equals(sink)) {
+                    endpoint = candidate;
+                    break;
+                }
+            }
+            if (endpoint == null || !ItemNetworkUtil.endpointHasItems(level, endpoint)) iterator.remove();
+        }
+    }
+
     public ItemStackHandler getFilter() { return filter; }
     public ContainerData getData() { return data; }
+
+    public void dropFilter() {
+        if (level == null || level.isClientSide) return;
+        ItemStack stack = filter.getStackInSlot(0);
+        if (!stack.isEmpty()) {
+            Containers.dropItemStack(level, worldPosition.getX() + 0.5D,
+                    worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, stack.copy());
+            filter.setStackInSlot(0, ItemStack.EMPTY);
+        }
+    }
+
     @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.network_router"); }
     @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new NetworkRouterMenu(id, inventory, this); }
-    @Override protected void saveAdditional(CompoundTag tag) { super.saveAdditional(tag); tag.put("Filter", filter.serializeNBT()); tag.putInt("Energy", energy.getEnergyStored()); tag.putLong("Cursor", routeCursor); }
-    @Override public void load(CompoundTag tag) { super.load(tag); filter.deserializeNBT(tag.getCompound("Filter")); energy.setEnergyStored(tag.getInt("Energy")); routeCursor = tag.getLong("Cursor"); }
+    @Override protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.put("Filter", filter.serializeNBT());
+        tag.putInt("Energy", energy.getEnergyStored());
+        tag.putLong("Cursor", routeCursor);
+        tag.putLongArray("RouteSinks", routeSinks.stream().mapToLong(BlockPos::asLong).toArray());
+    }
+    @Override public void load(CompoundTag tag) {
+        super.load(tag);
+        filter.deserializeNBT(tag.getCompound("Filter"));
+        energy.setEnergyStored(tag.getInt("Energy"));
+        routeCursor = tag.getLong("Cursor");
+        routeSinks.clear();
+        for (long packed : tag.getLongArray("RouteSinks")) routeSinks.add(BlockPos.of(packed));
+    }
     @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) { return cap == ForgeCapabilities.ENERGY ? energyCap.cast() : super.getCapability(cap, side); }
     @Override public void invalidateCaps() { super.invalidateCaps(); energyCap.invalidate(); }
     @Override public void reviveCaps() { super.reviveCaps(); energyCap = LazyOptional.of(() -> energy); }
