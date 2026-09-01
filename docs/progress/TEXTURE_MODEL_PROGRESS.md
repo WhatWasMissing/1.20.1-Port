@@ -16,6 +16,7 @@
 - Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium declare their render types in model JSON so modern Forge routes them through the intended transparent render layers.
 - Energy weapons now enforce their internal FE requirement in Creative as well as Survival; Creative mode no longer makes a zero-energy gun fire indefinitely, while the installed Creative Battery module remains the explicit infinite-energy option.
 - Anomaly consumption balancing now applies its mass bonus only when the anomaly's mass actually changes, preventing the previous consumed-entity sample from being multiplied again every later tick or once more after a world reload.
+- Charging Station now stores one rechargeable FE item and charges it continuously from adjacent FE sources instead of applying a one-click energy burst. The station can transfer up to 4,096 FE/t, while each battery's own receive limit still applies; the standard battery therefore charges at 400 FE/t and the HC battery at 4,096 FE/t.
 
 ## Test checklist
 
@@ -32,6 +33,7 @@
 11. Place Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium and verify intended transparent/cutout pixels render correctly from multiple viewing angles.
 12. In both Survival and Creative, drain each normal weapon to zero FE and confirm it cannot fire again until reloaded; then verify an installed Creative Battery still provides infinite firing as intended.
 13. Feed one living entity into an anomaly, note the mass increase, then wait at least 10 seconds with nothing else entering it and confirm the mass stays stable; reload the world and confirm it still does not gain that old bonus again, then feed a second entity and verify exactly one new mass jump occurs.
+14. Connect the Charging Station to an adjacent FE source, insert an empty standard battery, verify its charge rises gradually at 400 FE/t rather than instantly, leave it charging through a save/reload, then retrieve it with an empty hand. Repeat with an HC battery and verify it charges at up to 4,096 FE/t. Break a station containing a battery and verify the battery drops instead of being deleted.
 
 ## Known follow-up
 
