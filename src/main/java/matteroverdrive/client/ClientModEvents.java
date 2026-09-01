@@ -15,9 +15,12 @@ import matteroverdrive.client.screen.PatternStorageScreen;
 import matteroverdrive.client.screen.PatternMonitorScreen;
 import matteroverdrive.client.screen.WeaponStationScreen;
 import matteroverdrive.item.MatterContainerItem;
+import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -45,6 +48,11 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.SOLAR_PANEL.get(), SolarPanelScreen::new);
             MenuScreens.register(ModMenus.TRITANIUM_CRATE.get(), TritaniumCrateScreen::new);
             MenuScreens.register(ModMenus.WEAPON_STATION.get(), WeaponStationScreen::new);
+
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("industrial_glass").get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("bounding_box").get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("matter_plasma").get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("molten_tritanium").get(), RenderType.translucent());
 
             ItemProperties.register(
                     ModItems.get("matter_container").get(),
