@@ -2,10 +2,15 @@
 
 The repository root is intentionally kept focused on files needed to build, run, verify, and package the mod locally.
 
+## Current snapshot
+
+Start with [Current Features and Roadmap](progress/CURRENT_FEATURES_AND_ROADMAP.md) for the current `main` feature set, known runtime checks, and the recommended order for restoring more of the original mod.
+
 ## Progress
 
 Feature-specific implementation notes live in [`progress/`](progress/):
 
+- `CURRENT_FEATURES_AND_ROADMAP.md` — current implemented systems, open checks, and next original-mod milestones.
 - `GUN_SYSTEM_PROGRESS.md` — weapons and Weapon Station work.
 - `REACTOR_PROGRESS.md` — Fusion Reactor, anomaly, stabilizer, and power work.
 - `MACHINE_DEBUG_PROGRESS.md` — machine debug instrumentation.
@@ -15,9 +20,7 @@ Feature-specific implementation notes live in [`progress/`](progress/):
 
 Manual test plans and verification notes live in [`testing/`](testing/).
 
-For the current `feature/easy-parity-systems` branch, start with:
-
-- [`testing/TO_TEST.md`](testing/TO_TEST.md)
+For the current `main` build, start with [`testing/TO_TEST.md`](testing/TO_TEST.md).
 
 ## Porting
 
