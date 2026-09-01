@@ -1,6 +1,7 @@
 package matteroverdrive.block;
 
 import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
+import matteroverdrive.blockentity.RemainingBalanceFixes;
 import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -63,9 +64,11 @@ public class FusionReactorControllerBlock extends BaseEntityBlock {
         if (level.isClientSide || type != ModBlockEntities.FUSION_REACTOR_CONTROLLER.get()) {
             return null;
         }
-        return (tickerLevel, tickerPos, tickerState, entity) ->
-                FusionReactorControllerBlockEntity.serverTick(
-                        tickerLevel, tickerPos, tickerState, (FusionReactorControllerBlockEntity) entity);
+        return (tickerLevel, tickerPos, tickerState, entity) -> {
+            FusionReactorControllerBlockEntity reactor = (FusionReactorControllerBlockEntity) entity;
+            FusionReactorControllerBlockEntity.serverTick(tickerLevel, tickerPos, tickerState, reactor);
+            RemainingBalanceFixes.boostFusionOutput(reactor);
+        };
     }
 
     @Override
