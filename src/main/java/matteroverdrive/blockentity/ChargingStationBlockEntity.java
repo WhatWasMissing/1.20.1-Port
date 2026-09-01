@@ -30,7 +30,7 @@ public class ChargingStationBlockEntity extends BlockEntity implements MenuProvi
     public static final int ENERGY_CAPACITY = 100_000;
 
     private final MachineEnergyStorage internalEnergy =
-            new MachineEnergyStorage(ENERGY_CAPACITY, 0, MAX_TRANSFER_PER_TICK, this::setChanged);
+            new MachineEnergyStorage(ENERGY_CAPACITY, MAX_TRANSFER_PER_TICK, 0, this::setChanged);
     private final ItemStackHandler battery = new ItemStackHandler(1) {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
@@ -60,15 +60,17 @@ public class ChargingStationBlockEntity extends BlockEntity implements MenuProvi
                 case 1 -> target == null ? 0 : high(target.getEnergyStored());
                 case 2 -> target == null ? 0 : low(target.getMaxEnergyStored());
                 case 3 -> target == null ? 0 : high(target.getMaxEnergyStored());
-                case 4 -> internalEnergy.getEnergyStored();
-                case 5 -> internalEnergy.getMaxEnergyStored();
-                case 6 -> lastTransferred;
+                case 4 -> low(internalEnergy.getEnergyStored());
+                case 5 -> high(internalEnergy.getEnergyStored());
+                case 6 -> low(internalEnergy.getMaxEnergyStored());
+                case 7 -> high(internalEnergy.getMaxEnergyStored());
+                case 8 -> lastTransferred;
                 default -> 0;
             };
         }
 
         @Override public void set(int index, int value) {}
-        @Override public int getCount() { return 7; }
+        @Override public int getCount() { return 9; }
     };
 
     private int lastTransferred;
@@ -79,18 +81,18 @@ public class ChargingStationBlockEntity extends BlockEntity implements MenuProvi
 
     public static void serverTick(Level level, BlockPos pos, BlockState state,
                                   ChargingStationBlockEntity station) {
+        station.pullAdjacentEnergy();
         station.lastTransferred = station.chargeBattery();
     }
 
-    private int chargeBattery() {
-        if (level == null || level.isClientSide) return 0;
-        ItemStack stack = battery.getStackInSlot(0);
-        IEnergyStorage target = stack.getCapability(ForgeCapabilities.ENERGY).orElse(null);
-        if (target == null || !target.canReceive()) return 0;
-
+    /**
+     * Keeps compatibility with adjacent pull-only FE sources. Reactor IO and Heavy
+     * Energy Cables can also push directly into the same receive-only buffer.
+     */
+    private void pullAdjacentEnergy() {
+        if (level == null || level.isClientSide) return;
         int remaining = Math.min(MAX_TRANSFER_PER_TICK,
-                Math.max(0, target.getMaxEnergyStored() - target.getEnergyStored()));
-        int transferred = 0;
+                internalEnergy.getMaxEnergyStored() - internalEnergy.getEnergyStored());
         for (Direction direction : Direction.values()) {
             if (remaining <= 0) break;
             BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
@@ -100,14 +102,32 @@ public class ChargingStationBlockEntity extends BlockEntity implements MenuProvi
             if (source == null || !source.canExtract()) continue;
 
             int available = source.extractEnergy(remaining, true);
-            int accepted = target.receiveEnergy(available, true);
+            int accepted = internalEnergy.receiveEnergy(available, true);
             if (accepted <= 0) continue;
             int extracted = source.extractEnergy(accepted, false);
-            int received = target.receiveEnergy(extracted, false);
-            transferred += received;
+            int received = internalEnergy.receiveEnergy(extracted, false);
+            if (received < extracted && source.canReceive()) {
+                source.receiveEnergy(extracted - received, false);
+            }
             remaining -= received;
         }
-        return transferred;
+    }
+
+    private int chargeBattery() {
+        if (level == null || level.isClientSide) return 0;
+        ItemStack stack = battery.getStackInSlot(0);
+        IEnergyStorage target = stack.getCapability(ForgeCapabilities.ENERGY).orElse(null);
+        if (target == null || !target.canReceive()) return 0;
+
+        int offered = Math.min(MAX_TRANSFER_PER_TICK, internalEnergy.getEnergyStored());
+        if (offered <= 0) return 0;
+
+        int accepted = target.receiveEnergy(offered, false);
+        if (accepted <= 0) return 0;
+
+        // accepted cannot exceed the buffered amount offered, so the internal
+        // consumption is exact and is reported to the reactor usage readout.
+        return internalEnergy.consumeEnergy(accepted, level.getGameTime());
     }
 
     public ItemStack getBattery() { return battery.getStackInSlot(0); }
