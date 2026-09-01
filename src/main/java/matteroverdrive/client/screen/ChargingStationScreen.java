@@ -11,7 +11,7 @@ public class ChargingStationScreen extends AbstractContainerScreen<ChargingStati
         super(menu, inventory, title);
         imageWidth = 176;
         imageHeight = 197;
-        inventoryLabelY = 83;
+        inventoryLabelY = 84;
     }
 
     @Override
@@ -26,8 +26,8 @@ public class ChargingStationScreen extends AbstractContainerScreen<ChargingStati
         int x = leftPos, y = topPos;
         MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight,
                 inventoryLabelY, MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 142, 42);
-        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 74, 142, 18);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 142, 40);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 71, 142, 13);
         MachineScreenStyle.drawSlot(graphics, x + 79, y + 41);
         MachineScreenStyle.drawHorizontalBar(graphics, x + 25, y + 57, 126, 5,
                 menu.batteryEnergy(), menu.batteryCapacity(), MachineScreenStyle.CYAN);
@@ -40,8 +40,10 @@ public class ChargingStationScreen extends AbstractContainerScreen<ChargingStati
                 MachineScreenStyle.MUTED, false);
         graphics.drawString(font, menu.batteryEnergy() + " / " + menu.batteryCapacity() + " FE",
                 26, 47, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Charging " + menu.lastTransferred() + " FE/t",
-                20, 76, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Input " + menu.stationEnergy() + " FE",
+                20, 73, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, menu.lastTransferred() + " FE/t",
+                113, 73, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
     }
