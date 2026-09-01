@@ -54,7 +54,7 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity {
 
         int required = stabilizer.requiredPower();
         if (stabilizer.energy.getEnergyStored() < required
-                || stabilizer.energy.extractEnergy(required, false) < required) {
+                || stabilizer.energy.consumeEnergy(required, level.getGameTime()) < required) {
             return;
         }
         stabilizer.powerUsed = required;
