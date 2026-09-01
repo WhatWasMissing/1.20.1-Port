@@ -7,6 +7,7 @@ import matteroverdrive.menu.EnergyPipeMenu;
 import matteroverdrive.menu.InscriberMenu;
 import matteroverdrive.menu.TransporterMenu;
 import matteroverdrive.menu.FusionReactorMenu;
+import matteroverdrive.menu.GravitationalStabilizerMenu;
 import matteroverdrive.menu.MatterAnalyzerMenu;
 import matteroverdrive.menu.MatterRecyclerMenu;
 import matteroverdrive.menu.ReplicatorMenu;
@@ -26,6 +27,7 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ChargingStationMenu>> CHARGING_STATION = MENUS.register("charging_station", () -> IForgeMenuType.create(ChargingStationMenu::new));
     public static final RegistryObject<MenuType<EnergyPipeMenu>> ENERGY_PIPE = MENUS.register("heavy_matter_pipe", () -> IForgeMenuType.create(EnergyPipeMenu::new));
     public static final RegistryObject<MenuType<FusionReactorMenu>> FUSION_REACTOR_CONTROLLER = MENUS.register("fusion_reactor_controller", () -> IForgeMenuType.create(FusionReactorMenu::new));
+    public static final RegistryObject<MenuType<GravitationalStabilizerMenu>> GRAVITATIONAL_STABILIZER = MENUS.register("gravitational_stabilizer", () -> IForgeMenuType.create(GravitationalStabilizerMenu::new));
     public static final RegistryObject<MenuType<TransporterMenu>> TRANSPORTER = MENUS.register("transporter", () -> IForgeMenuType.create(TransporterMenu::new));
     public static final RegistryObject<MenuType<InscriberMenu>> INSCRIBER = MENUS.register("inscriber", () -> IForgeMenuType.create(InscriberMenu::new));
     public static final RegistryObject<MenuType<DecomposerMenu>> DECOMPOSER = MENUS.register("decomposer", () -> IForgeMenuType.create(DecomposerMenu::new));
