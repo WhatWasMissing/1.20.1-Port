@@ -12,7 +12,7 @@ public class PatternMonitorScreen extends AbstractContainerScreen<PatternMonitor
         super(menu, inventory, title);
         imageWidth = 176;
         imageHeight = 178;
-        inventoryLabelY = 85;
+        inventoryLabelY = 86;
     }
 
     @Override
@@ -26,22 +26,25 @@ public class PatternMonitorScreen extends AbstractContainerScreen<PatternMonitor
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        graphics.fill(x, y, x + imageWidth, y + imageHeight, 0xFFC6C6C6);
+        MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
+                MachineScreenStyle.PURPLE);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 26, 142, 48);
         for (int i = 0; i < 12; i++) {
             Slot slot = menu.slots.get(i);
-            int sx = x + slot.x - 1;
-            int sy = y + slot.y - 1;
-            graphics.fill(sx, sy, sx + 18, sy + 18, 0xFF454545);
-            graphics.fill(sx + 1, sy + 1, sx + 17, sy + 17, 0xFF9A9A9A);
+            MachineScreenStyle.drawSlot(graphics, x + slot.x - 1, y + slot.y - 1);
         }
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, 8, 6, 0x404040, false);
-        graphics.drawString(font, "Patterns: " + menu.getPatternCount() + "  Queue: " + menu.getQueueSize() + "/8", 8, 16, 0x404040, false);
-        graphics.drawString(font, "Click a pattern to request x1", 8, 78, 0x404040, false);
-        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, 0x404040, false);
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Patterns " + menu.getPatternCount() + " | Queue "
+                        + menu.getQueueSize() + "/8",
+                8, 18, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, "Click a pattern to request x1",
+                8, 75, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
+                MachineScreenStyle.MUTED, false);
     }
 
     @Override
@@ -51,7 +54,8 @@ public class PatternMonitorScreen extends AbstractContainerScreen<PatternMonitor
                 Slot slot = menu.slots.get(i);
                 double x = leftPos + slot.x;
                 double y = topPos + slot.y;
-                if (slot.hasItem() && mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16) {
+                if (slot.hasItem() && mouseX >= x && mouseX < x + 16
+                        && mouseY >= y && mouseY < y + 16) {
                     minecraft.gameMode.handleInventoryButtonClick(menu.containerId, i);
                     return true;
                 }
