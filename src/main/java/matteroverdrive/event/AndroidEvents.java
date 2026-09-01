@@ -3,6 +3,7 @@ package matteroverdrive.event;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.registry.ModItems;
+import matteroverdrive.network.ModNetwork;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -29,7 +30,11 @@ public final class AndroidEvents {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide || event.player.tickCount % 20 != 0) return;
+        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
+        if (event.player instanceof ServerPlayer player && player.tickCount % 2 == 0) {
+            ModNetwork.syncAndroidState(player);
+        }
+        if (event.player.tickCount % 20 != 0) return;
         if (!AndroidData.isAndroid(event.player) || AndroidData.getEnergy(event.player) <= 0) return;
 
         int activeParts = Integer.bitCount(AndroidData.getParts(event.player));
