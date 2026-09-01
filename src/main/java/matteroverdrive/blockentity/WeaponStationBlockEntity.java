@@ -7,6 +7,7 @@ import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -103,6 +104,19 @@ public class WeaponStationBlockEntity extends BlockEntity implements MenuProvide
             syncingModules = false;
         }
         setChanged();
+    }
+
+    public void dropContents() {
+        if (level == null || level.isClientSide) return;
+        packModulesIntoCurrentWeapon();
+        for (int slot = 0; slot < inventory.getSlots(); slot++) {
+            ItemStack stack = inventory.getStackInSlot(slot);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5D,
+                        worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, stack.copy());
+                inventory.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+        }
     }
 
     @Override
