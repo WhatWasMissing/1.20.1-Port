@@ -1,7 +1,8 @@
 {
   "variants": {
-    "": {
-      "model": "matteroverdrive:block/transporter"
-    }
+    "facing=north": { "model": "matteroverdrive:block/transporter" },
+    "facing=east": { "model": "matteroverdrive:block/transporter", "y": 90 },
+    "facing=south": { "model": "matteroverdrive:block/transporter", "y": 180 },
+    "facing=west": { "model": "matteroverdrive:block/transporter", "y": 270 }
   }
 }

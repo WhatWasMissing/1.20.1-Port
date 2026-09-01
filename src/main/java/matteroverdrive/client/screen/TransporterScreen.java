@@ -1,12 +1,67 @@
 package matteroverdrive.client.screen;
-import matteroverdrive.menu.TransporterMenu;import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;import net.minecraft.network.chat.Component;import net.minecraft.world.entity.player.Inventory;
-public class TransporterScreen extends AbstractContainerScreen<TransporterMenu>{
+
+import matteroverdrive.menu.TransporterMenu;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+
+public class TransporterScreen extends AbstractContainerScreen<TransporterMenu> {
+    public TransporterScreen(TransporterMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title);
+        imageWidth = 176;
+        imageHeight = 230;
+        inventoryLabelY = 133;
+    }
+
     @Override
     protected void init() {
         super.init();
         addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-        }).bounds(leftPos + imageWidth - 72, topPos + 4, 68, 20).build());
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+            }
+        }).bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
     }
-public TransporterScreen(TransporterMenu m,Inventory i,Component t){super(m,i,t);imageWidth=176;imageHeight=230;inventoryLabelY=133;}@Override public void render(GuiGraphics g,int x,int y,float p){renderBackground(g);super.render(g,x,y,p);renderTooltip(g,x,y);}@Override protected void renderBg(GuiGraphics g,float p,int x,int y){g.fill(leftPos,topPos,leftPos+176,topPos+230,0xffc6c6c6);for(int a=0;a<7;a++){int sx=a<2?(a==0?43:111):42+(a-2)*18;int sy=a<2?43:77;g.fill(leftPos+sx,topPos+sy,leftPos+sx+20,topPos+sy+20,0xff454545);g.fill(leftPos+sx+1,topPos+sy+1,leftPos+sx+19,topPos+sy+19,0xff9a9a9a);}}@Override protected void renderLabels(GuiGraphics g,int x,int y){g.drawString(font,title,8,6,0x404040,false);g.drawString(font,menu.e()+" / "+menu.cap()+" FE",18,20,0x404040,false);g.drawString(font,"[DEBUG] Target: "+(menu.target()?"valid":"bind a Flash Drive"),18,100,0x8a5a00,false);g.drawString(font,"[DEBUG] Distance: "+menu.dist()+" / "+menu.range()+" | cost: "+menu.cost()+" FE",18,110,0x8a5a00,false);g.drawString(font,"[DEBUG] Cycle: "+menu.cycle()+" t | "+(menu.running()?"running":"idle")+" | delay: "+menu.cooldown(),18,120,0x8a5a00,false);g.drawString(font,playerInventoryTitle,8,inventoryLabelY,0x404040,false);}}
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        int x = leftPos;
+        int y = topPos;
+        MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
+                MachineScreenStyle.BLUE);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 32, 142, 63);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 98, 142, 29);
+
+        MachineScreenStyle.drawSlot(graphics, x + 43, y + 43);
+        MachineScreenStyle.drawSlot(graphics, x + 111, y + 43);
+        for (int slot = 0; slot < 5; slot++) {
+            MachineScreenStyle.drawSlot(graphics, x + 42 + slot * 18, y + 77);
+        }
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
+                MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, menu.e() + " / " + menu.cap() + " FE",
+                18, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, menu.target() ? "Destination linked" : "Bind a Transport Flash Drive",
+                20, 101, menu.target() ? MachineScreenStyle.BLUE : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "Distance " + menu.dist() + " / " + menu.range()
+                        + " | cost " + menu.cost() + " FE",
+                20, 111, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Cycle " + menu.cycle() + " t | "
+                        + (menu.running() ? "running" : "idle") + " | delay " + menu.cooldown(),
+                20, 121, MachineScreenStyle.DEBUG, false);
+    }
+}

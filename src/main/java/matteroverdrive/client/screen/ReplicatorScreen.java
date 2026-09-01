@@ -1,22 +1,90 @@
 package matteroverdrive.client.screen;
+
 import matteroverdrive.menu.ReplicatorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu>{
+
+public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
+    public ReplicatorScreen(ReplicatorMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title);
+        imageWidth = 176;
+        imageHeight = 218;
+        inventoryLabelY = 125;
+    }
+
     @Override
     protected void init() {
         super.init();
         addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-        }).bounds(leftPos + imageWidth - 72, topPos + 4, 68, 20).build());
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+            }
+        }).bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
     }
 
- public ReplicatorScreen(ReplicatorMenu m,Inventory i,Component t){super(m,i,t);imageWidth=176;imageHeight=218;inventoryLabelY=125;}
- @Override public void render(GuiGraphics g,int x,int y,float p){renderBackground(g);super.render(g,x,y,p);renderTooltip(g,x,y);}
- @Override protected void renderBg(GuiGraphics g,float p,int mx,int my){int x=leftPos,y=topPos;g.fill(x,y,x+176,y+218,0xFFC6C6C6);for(int[]s:new int[][]{{19,43},{61,43},{115,34},{139,52}}){g.fill(x+s[0],y+s[1],x+s[0]+20,y+s[1]+20,0xFF454545);g.fill(x+s[0]+1,y+s[1]+1,x+s[0]+19,y+s[1]+19,0xFF9A9A9A);}for(int slot=0;slot<4;slot++){int sx=52+slot*18;g.fill(x+sx,y+101,x+sx+20,y+121,0xFF454545);g.fill(x+sx+1,y+102,x+sx+19,y+120,0xFF9A9A9A);}g.fill(x+82,y+48,x+110,y+53,0xFF5B5B5B);g.fill(x+82,y+48,x+82+scale(menu.getProgress(),menu.getMaxProgress(),28),y+53,0xFF2D9DC5);g.fill(x+8,y+20,x+14,y+69,0xFF4A4A4A);int eh=scale(menu.getEnergy(),menu.getEnergyCapacity(),48);g.fill(x+9,y+68-eh,x+13,y+68,0xFFCC3333);g.fill(x+162,y+20,x+168,y+69,0xFF4A4A4A);int mh=scale(menu.getMatter(),menu.getMatterCapacity(),48);g.fill(x+163,y+68-mh,x+167,y+68,0xFF3388CC);}
- @Override protected void renderLabels(GuiGraphics g,int mx,int my){g.drawString(font,title,8,6,0x404040,false);if(menu.getNetworkTaskAmount()>0)g.drawString(font,"Network x"+menu.getNetworkTaskAmount(),112,6,0x404040,false);g.drawString(font,playerInventoryTitle,8,inventoryLabelY,0x404040,false);g.drawString(font,menu.getEnergy()+" / "+menu.getEnergyCapacity()+" FE",18,20,0x404040,false);g.drawString(font,menu.getMatter()+" / "+menu.getMatterCapacity()+" kM",18,30,0x404040,false);if(menu.getPatternMatter()>0){g.drawString(font,"Pattern "+menu.getPatternProgress()+"%: "+menu.getPatternMatter()+" kM",18,58,0x404040,false);g.drawString(font,menu.getEnergyPerTick()+" FE/t",18,67,0x404040,false);}String cycle=menu.getMaxProgress()>0?String.format(java.util.Locale.ROOT,"[DEBUG] Cycle: %dt | %.2fs",menu.getMaxProgress(),menu.getMaxProgress()/20.0D):"[DEBUG] Cycle: inactive";String fail=menu.getPatternMatter()>0?String.format(java.util.Locale.ROOT,"[DEBUG] Failure: %.4f%%",menu.getFailChance()*100.0D):"[DEBUG] Failure: inactive";g.drawString(font,cycle,18,78,0x235B78,false);g.drawString(font,fail,18,88,0x7A1F1F,false);}
- private static int scale(int v,int max,int p){return max<=0||v<=0?0:Math.min(p,Math.max(1,(int)Math.round((double)v*p/max)));}
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        int x = leftPos;
+        int y = topPos;
+        MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
+                MachineScreenStyle.CYAN);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 142, 67);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 75, 142, 23);
+
+        int[][] slots = {{19, 43}, {61, 43}, {115, 34}, {139, 52}};
+        for (int[] slot : slots) {
+            MachineScreenStyle.drawSlot(graphics, x + slot[0], y + slot[1]);
+        }
+        for (int slot = 0; slot < 4; slot++) {
+            MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 101);
+        }
+
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 82, y + 48, 29, 6,
+                menu.getProgress(), menu.getMaxProgress(), MachineScreenStyle.CYAN);
+        MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 30, 7, 40,
+                menu.getEnergy(), menu.getEnergyCapacity(), MachineScreenStyle.RED);
+        MachineScreenStyle.drawVerticalBar(graphics, x + 161, y + 30, 7, 40,
+                menu.getMatter(), menu.getMatterCapacity(), MachineScreenStyle.BLUE);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
+        if (menu.getNetworkTaskAmount() > 0) {
+            graphics.drawString(font, "Network x" + menu.getNetworkTaskAmount(),
+                    93, 9, MachineScreenStyle.CYAN, false);
+        }
+        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
+                MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE",
+                18, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, menu.getMatter() + " / " + menu.getMatterCapacity() + " kM",
+                18, 39, MachineScreenStyle.MUTED, false);
+        if (menu.getPatternMatter() > 0) {
+            graphics.drawString(font, "Pattern " + menu.getPatternProgress() + "% | "
+                            + menu.getPatternMatter() + " kM",
+                    18, 58, MachineScreenStyle.TEXT, false);
+            graphics.drawString(font, menu.getEnergyPerTick() + " FE/t",
+                    18, 67, MachineScreenStyle.CYAN, false);
+        }
+        String cycle = menu.getMaxProgress() > 0
+                ? String.format(java.util.Locale.ROOT, "Cycle %d t | %.2f s",
+                        menu.getMaxProgress(), menu.getMaxProgress() / 20.0D)
+                : "Cycle inactive";
+        String failure = menu.getPatternMatter() > 0
+                ? String.format(java.util.Locale.ROOT, "Failure %.4f%%", menu.getFailChance() * 100.0D)
+                : "Failure inactive";
+        graphics.drawString(font, cycle, 20, 79, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, failure, 20, 89, MachineScreenStyle.DANGER, false);
+    }
 }

@@ -1,47 +1,40 @@
-# Documentation Index
+# Project Documentation
 
-This directory keeps development notes out of the project root while preserving the root build/run scripts for quick local use.
+The repository root is intentionally kept focused on files needed to build, run, verify, and package the mod locally.
 
 ## Progress
 
-`progress/` contains the current system-specific implementation notes:
+Feature-specific implementation notes live in [`progress/`](progress/):
 
-- `GUN_SYSTEM_PROGRESS.md`
-- `REACTOR_PROGRESS.md`
-- `MACHINE_DEBUG_PROGRESS.md`
-- `TOOLS_ARMOUR_PROGRESS.md`
+- `GUN_SYSTEM_PROGRESS.md` — weapons and Weapon Station work.
+- `REACTOR_PROGRESS.md` — Fusion Reactor, anomaly, stabilizer, and power work.
+- `MACHINE_DEBUG_PROGRESS.md` — machine debug instrumentation.
+- `TOOLS_ARMOUR_PROGRESS.md` — Tritanium tools and armour.
 
 ## Testing
 
-`testing/` contains runtime verification paths and focused checklists:
+Manual test plans and verification notes live in [`testing/`](testing/).
 
-- `FUSION_REACTOR_TEST_CHECKLIST.txt`
-- `REACTOR_RING_POWER_TESTING.md`
-- `M1_VERIFICATION_PATH.md`
-- `M1_RUNTIME_LOG_ANALYSIS.md`
-- `M2_VERIFICATION_PATH.md`
-- `M2_MACHINES_VERIFICATION_PATH.md`
-- `M2_NETWORK_VERIFICATION_PATH.md`
+For the current `feature/easy-parity-systems` branch, start with:
+
+- [`testing/TO_TEST.md`](testing/TO_TEST.md)
 
 ## Porting
 
-`porting/` contains the broad source-port tracking material:
-
-- `PORTING_PROGRESS.md`
-- `PORT_STATUS.md`
-- `PORT_INVENTORY.json`
-- `M2_SOURCE_REFERENCES.md`
+Port-wide status, inventory, source references, and the chronological implementation record live in [`porting/`](porting/).
 
 ## Reference
 
-`reference/WORKING_FEATURES.md` is the practical reference for currently functional gameplay systems.
+Player/tester-facing feature references live in [`reference/`](reference/).
 
 ## History
 
-`history/` contains older milestone-specific notes that are still useful for archaeology but no longer need to occupy the root directory:
+Older milestone-specific notes and changelogs live in [`history/`](history/).
 
-- `ALPHA4_1_NETWORK_FIX.md`
-- `M1_CHANGELOG.md`
-- `M2_CHANGELOG.md`
+## Root files intentionally left at repository root
 
-The project root intentionally retains `README.md`, `BUILDING.md`, `CHANGELOG.md`, Gradle files, and the Windows build/run/check scripts.
+- `README.md`, `BUILDING.md`, `CHANGELOG.md`, `LICENSE`
+- Gradle wrapper/build files
+- `RUN_*.bat`, `CHECK_*.bat`, `VERIFY_*.bat`, and `PACKAGE_TEST_JAR.bat`
+
+This keeps the commands normally used after a local pull immediately visible while moving development notes out of the way.

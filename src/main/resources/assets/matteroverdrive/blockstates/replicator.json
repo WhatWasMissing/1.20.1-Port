@@ -1,5 +1,20 @@
 {
   "multipart": [
-    { "apply": { "model": "matteroverdrive:block/replicator" } }
+    {
+      "when": { "facing": "north" },
+      "apply": { "model": "matteroverdrive:block/replicator" }
+    },
+    {
+      "when": { "facing": "east" },
+      "apply": { "model": "matteroverdrive:block/replicator", "y": 90 }
+    },
+    {
+      "when": { "facing": "south" },
+      "apply": { "model": "matteroverdrive:block/replicator", "y": 180 }
+    },
+    {
+      "when": { "facing": "west" },
+      "apply": { "model": "matteroverdrive:block/replicator", "y": 270 }
+    }
   ]
 }

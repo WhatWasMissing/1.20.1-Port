@@ -68,32 +68,37 @@ public class ReactorAssemblyGuideScreen extends Screen {
         renderBackground(graphics);
         int left = (width - PANEL_WIDTH) / 2;
         int top = (height - PANEL_HEIGHT) / 2;
-        graphics.fill(left, top, left + PANEL_WIDTH, top + PANEL_HEIGHT, 0xffd1d1d1);
-        graphics.fill(left + 3, top + 3, left + PANEL_WIDTH - 3, top + PANEL_HEIGHT - 3, 0xff20242c);
-        graphics.fill(left + 5, top + 5, left + PANEL_WIDTH - 5, top + PANEL_HEIGHT - 5, 0xffd9dde2);
+        MachineScreenStyle.drawStandaloneFrame(graphics, left, top, PANEL_WIDTH, PANEL_HEIGHT,
+                MachineScreenStyle.CYAN);
 
         Page page = PAGES.get(pageIndex);
         graphics.drawCenteredString(font, Component.translatable(page.titleKey()),
-                width / 2, top + 12, 0x202020);
+                width / 2, top + 9, MachineScreenStyle.TEXT);
         graphics.drawString(font, (pageIndex + 1) + " / " + PAGES.size(),
-                left + PANEL_WIDTH - 35, top + 12, 0x555555, false);
+                left + PANEL_WIDTH - 35, top + 9, MachineScreenStyle.MUTED, false);
 
         int imageX = width / 2 - IMAGE_WIDTH / 2;
-        int imageY = top + 30;
+        int imageY = top + 31;
+        MachineScreenStyle.drawSection(graphics, imageX - 3, imageY - 3,
+                IMAGE_WIDTH + 6, IMAGE_HEIGHT + 6);
         graphics.blit(page.texture(), imageX, imageY, 0, 0,
                 IMAGE_WIDTH, IMAGE_HEIGHT, SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT);
 
-        List<FormattedCharSequence> lines = font.split(Component.translatable(page.bodyKey()), PANEL_WIDTH - 28);
-        int textY = imageY + IMAGE_HEIGHT + 8;
+        int textY = imageY + IMAGE_HEIGHT + 10;
+        MachineScreenStyle.drawSection(graphics, left + 10, textY - 5,
+                PANEL_WIDTH - 20, PANEL_HEIGHT - (textY - top) - 34);
         if (pageIndex == 1 || pageIndex == 2) {
-            graphics.drawString(font, "Overlay: blue=hull  orange=coil/IO  purple=side", left + 14, textY, 0x6a3d00, false);
+            graphics.drawString(font, "Overlay: blue=hull  orange=coil/IO  purple=side",
+                    left + 14, textY, MachineScreenStyle.AMBER, false);
             textY += 10;
         }
+        List<FormattedCharSequence> lines = font.split(
+                Component.translatable(page.bodyKey()), PANEL_WIDTH - 28);
         for (FormattedCharSequence line : lines) {
             if (textY > top + PANEL_HEIGHT - 38) {
                 break;
             }
-            graphics.drawString(font, line, left + 14, textY, 0x303030, false);
+            graphics.drawString(font, line, left + 14, textY, MachineScreenStyle.TEXT, false);
             textY += 10;
         }
 
