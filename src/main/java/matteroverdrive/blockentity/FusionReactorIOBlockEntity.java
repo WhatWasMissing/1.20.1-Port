@@ -66,6 +66,23 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         visited.add(pos);
         enqueueAdjacentCables(level, pos, pending, visited);
 
+        // A machine touching a valid Reactor IO is a legitimate zero-cable output.
+        // Internal-ring receivers are handled by the controller's fair internal bus.
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = pos.relative(direction);
+            BlockEntity neighbor = level.getBlockEntity(neighborPos);
+            if (neighbor == null
+                    || neighbor instanceof EnergyPipeBlockEntity
+                    || neighbor instanceof FusionReactorControllerBlockEntity
+                    || neighbor instanceof FusionReactorIOBlockEntity
+                    || controller.isInternalPowerAt(neighborPos)) {
+                continue;
+            }
+            if (pushToReceiver(controller, neighbor, direction)) {
+                visitedReceivers.add(neighborPos.immutable());
+            }
+        }
+
         while (!pending.isEmpty() && controller.getEnergy().getEnergyStored() > 0) {
             BlockPos current = pending.removeFirst();
             for (Direction direction : Direction.values()) {
