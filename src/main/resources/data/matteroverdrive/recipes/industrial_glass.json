@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GPG",
+    "PGP",
+    "GPG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "P": {
+      "item": "matteroverdrive:tritanium_plate"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:industrial_glass",
+    "count": 4
+  }
+}

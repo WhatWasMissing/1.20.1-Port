@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SDS",
+    "DSD",
+    "SDS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stone"
+    },
+    "D": {
+      "item": "matteroverdrive:dilithium_crystal"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:dilithium_ore"
+  }
+}

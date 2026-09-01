@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "STS",
+    "TST",
+    "STS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:stone"
+    },
+    "T": {
+      "item": "matteroverdrive:tritanium_dust"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:tritanium_ore"
+  }
+}

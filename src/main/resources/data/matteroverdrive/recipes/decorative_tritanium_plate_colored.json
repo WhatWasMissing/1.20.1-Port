@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    {
+      "item": "minecraft:cyan_dye"
+    }
+  ],
+  "result": {
+    "item": "matteroverdrive:decorative.tritanium_plate_colored",
+    "count": 4
+  }
+}

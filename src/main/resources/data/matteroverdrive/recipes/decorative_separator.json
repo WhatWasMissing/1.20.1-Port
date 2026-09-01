@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_bars"
+    },
+    {
+      "item": "matteroverdrive:tritanium_plate"
+    }
+  ],
+  "result": {
+    "item": "matteroverdrive:decorative.separator",
+    "count": 4
+  }
+}

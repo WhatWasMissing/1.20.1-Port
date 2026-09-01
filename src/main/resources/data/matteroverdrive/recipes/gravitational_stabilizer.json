@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "THT",
+    "RCR",
+    "THT"
+  ],
+  "key": {
+    "T": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "H": {
+      "item": "matteroverdrive:h_compensator"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "item": "matteroverdrive:machine_casing"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:gravitational_stabilizer"
+  }
+}

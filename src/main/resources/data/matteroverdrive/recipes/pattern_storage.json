@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "DHD",
+    "ICI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "D": {
+      "item": "matteroverdrive:pattern_drive"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:pattern_storage"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " T ",
+    "TCT",
+    "THT"
+  ],
+  "key": {
+    "T": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:pylon"
+  }
+}

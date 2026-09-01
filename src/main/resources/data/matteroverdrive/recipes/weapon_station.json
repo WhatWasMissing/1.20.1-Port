@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "WHW",
+    "CRC"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "W": {
+      "item": "matteroverdrive:weapon_handle"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:weapon_station"
+  }
+}

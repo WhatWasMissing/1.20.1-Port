@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "PEP",
+    "CHC",
+    "PRP"
+  ],
+  "key": {
+    "P": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "E": {
+      "item": "matteroverdrive:spacetime_equalizer"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:spacetime_accelerator"
+  }
+}

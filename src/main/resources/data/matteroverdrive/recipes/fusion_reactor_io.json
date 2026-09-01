@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RCR",
+    "PHP",
+    "RCR"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "P": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:fusion_reactor_io"
+  }
+}

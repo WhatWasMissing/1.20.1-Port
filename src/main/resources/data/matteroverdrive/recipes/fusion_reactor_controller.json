@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ICI",
+    "CHC",
+    "ICI"
+  ],
+  "key": {
+    "I": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "C": {
+      "item": "matteroverdrive:fusion_reactor_coil"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:fusion_reactor_controller"
+  }
+}

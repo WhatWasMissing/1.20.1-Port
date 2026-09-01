@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SCS",
+    "MHM",
+    "IRI"
+  ],
+  "key": {
+    "S": {
+      "item": "matteroverdrive:matter_scanner"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "M": {
+      "item": "matteroverdrive:matter_container"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:matter_analyzer"
+  }
+}

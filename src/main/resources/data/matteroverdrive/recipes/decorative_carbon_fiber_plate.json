@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    {
+      "item": "minecraft:coal"
+    }
+  ],
+  "result": {
+    "item": "matteroverdrive:decorative.carbon_fiber_plate",
+    "count": 4
+  }
+}

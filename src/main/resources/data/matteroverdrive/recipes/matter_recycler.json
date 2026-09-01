@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IPI",
+    "MHM",
+    "CRC"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "M": {
+      "item": "matteroverdrive:matter_container"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:matter_recycler"
+  }
+}

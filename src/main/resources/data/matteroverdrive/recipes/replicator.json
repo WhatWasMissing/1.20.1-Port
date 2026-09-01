@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DCD",
+    "MHM",
+    "TRT"
+  ],
+  "key": {
+    "D": {
+      "item": "matteroverdrive:dilithium_crystal"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "M": {
+      "item": "matteroverdrive:matter_container"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    },
+    "T": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:replicator"
+  }
+}

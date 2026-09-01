@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IDI",
+    "DCD",
+    "IDI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "D": {
+      "item": "matteroverdrive:matter_dust_refined"
+    },
+    "C": {
+      "item": "matteroverdrive:debug_matter_container"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:debug_matter_block"
+  }
+}

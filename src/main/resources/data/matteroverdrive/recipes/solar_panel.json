@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "QCQ",
+    "PHP"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "Q": {
+      "item": "minecraft:quartz"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk1"
+    },
+    "P": {
+      "item": "matteroverdrive:tritanium_plate"
+    },
+    "H": {
+      "item": "matteroverdrive:machine_hull"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:solar_panel"
+  }
+}
