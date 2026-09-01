@@ -1,123 +1,199 @@
-# Matter Overdrive 1.20.1 — Current Testing Reference
+# Matter Overdrive 1.20.1 — Feature Reference
 
-This reference describes the gameplay systems currently present on `testing/main`. A system being listed here means its implementation is wired into the current test build; items marked for runtime verification still need to be exercised in Minecraft before merging to `main`.
+This is the current source-of-truth feature list for the 1.20.1 port. It distinguishes systems that are implemented from legacy 1.12.2 content whose registry ID or resource may exist but whose original gameplay has not yet been restored.
 
-## Core machines and storage
+A registered item/block is not automatically considered feature-complete. Several legacy IDs intentionally remain compatibility/resource placeholders until their behaviour is ported.
 
-| Feature | Current behaviour |
-|---|---|
-| Matter Decomposer | Converts supported items into matter, consumes FE, supports upgrades, failure chance and debug values. |
-| Matter Recycler | Recycles supported items into matter with energy usage, inventory handling, upgrades and debug values. |
-| Matter Analyzer | Analyses supported items/patterns, uses FE and participates in the pattern network. |
-| Matter Replicator | Replicates queued patterns using matter and FE and reports cycle/failure data. |
-| Pattern Storage | Stores Pattern Drives and supplies patterns to the network. |
-| Pattern Monitor | Discovers networked Pattern Storage and Replicators and queues replication work. |
-| Molecular Inscriber | Produces the Mk2-Mk4 Isolinear Circuit chain, accepts energy items/upgrades and persists its inventory. |
-| Solar Panel | Produces FE in suitable daylight, stores/exports FE and supports Power Storage upgrades. |
-| Tritanium Crates | All colour variants provide portable 54-slot storage and retain contents in dropped-item NBT. |
-| Transporter | Uses a bound Transport Flash Drive and FE to move entities to a same-dimension target; Speed, Range, Power and Power Storage upgrades are active. |
-| Charging Station | Buffers FE and charges compatible batteries/energy items. |
-| Weapon Station | Installs/removes weapon modules, persists its contents and safely returns its weapon/modules when broken. |
+## Implemented core systems
 
-## Matter, FE and network transport
+### Matter machines and replication
 
-| Feature | Current behaviour |
-|---|---|
-| Matter Container | Stores and transfers matter to compatible machines. |
-| Matter Pipe | Carries matter between compatible matter endpoints. |
-| Heavy Energy Cable | Uses the legacy `heavy_matter_pipe` ID but is FE-only in the current port. It buffers and relays Forge Energy and is not a matter-network path. |
-| Network Pipe | Carries pattern-network discovery and general item-logistics connectivity. |
-| Network Switch | Can enable/disable both general item logistics and pattern-network traversal. State persists. |
-| Network Router | Powered item logistics router with filter support, endpoint/node diagnostics and anti-bounce routing state. Connected routers elect one active routing executor rather than double-moving the same network. |
-| Dimensional Pylon | Bridges matching-channel item networks wirelessly within its supported range. Channel persists. |
-| Pattern network | Analyzer, Pattern Storage, Pattern Monitor and Replicator discovery continues through enabled Network Pipe/Router/Switch paths. |
+- Matter Decomposer: FE-powered decomposition into matter, upgrades, failure chance and debug telemetry.
+- Matter Recycler: FE-powered recycling into matter, upgrades and persistence.
+- Matter Analyzer: analysis/pattern workflow and pattern-network participation.
+- Matter Replicator: queued pattern replication using matter and FE, including cycle/failure state.
+- Pattern Storage: Pattern Drive storage and network pattern supply.
+- Pattern Monitor: discovers network storage/replicators and submits replication work.
+- Molecular Inscriber: Mk2-Mk4 Isolinear Circuit production, FE, upgrades and persistence.
+- Matter Container: portable matter storage/transfer.
+- Matter Pipe: matter transport between compatible endpoints.
 
-The general item network intentionally remembers inventories that have received routed items as sinks until those inventories become empty. This prevents undirected two-chest networks from endlessly moving the same items A -> B -> A while consuming FE.
+### Power and machines
 
-## Fusion Reactor
+- Solar Panel: daylight FE generation, storage/export and Power Storage upgrades.
+- Charging Station: FE buffer and charging for compatible batteries/energy items.
+- Transporter: Transport Flash Drive binding and same-dimension entity transport with active Speed, Range, Power and Power Storage upgrades.
+- Tritanium Crates: 54-slot portable storage across all colour variants with dropped-item NBT retention.
+- Weapon Station: weapon/module editing, persistence and safe content return on break.
 
-The current reactor uses the larger ring structure represented by the Reactor Assembly Guide/overlay rather than the obsolete early compact cross layout.
+### Matter/network logistics
 
-Current controller behaviour includes:
+- Heavy Energy Cable: FE-only cable using the legacy `heavy_matter_pipe` registry ID.
+- Network Pipe: item/pattern-network connectivity.
+- Network Switch: enables/disables item logistics and pattern traversal.
+- Network Router: powered filtered logistics with endpoint diagnostics, anti-bounce sink tracking and one active router executor per connected graph.
+- Dimensional Pylon: matching-channel wireless item-network bridge.
+- Pattern-network discovery across enabled Pipe/Router/Switch paths.
 
-- 100,000,000 FE base storage.
-- 2,048 kM base matter storage.
-- Matter-driven FE generation scaled by gravitational-anomaly mass and reactor efficiency.
-- Reactor IO blocks linked from valid structure positions.
-- Internal ring power distribution to compatible machines placed in supported ring positions.
-- Connected machine FE-usage diagnostics.
-- Persistent structure overlay toggle and Reactor Remote support.
-- Power Storage and Matter Storage upgrades changing the corresponding capacities.
-- Speed upgrades increasing generation rate and matter consumption proportionally.
-- Range upgrades extending the vertical anomaly search/efficiency window from the base three-block distance, with a hard 16-block search cap.
+The current item router remembers inventories that have received routed items as sinks until they empty. This prevents an undirected two-inventory network from repeatedly moving the same stack A -> B -> A while consuming FE.
 
-Structure changes and upgrade changes trigger revalidation; the controller reports explicit fault/debug state in its GUI.
+## Fusion Reactor and gravitational systems
 
-## Gravitational Anomaly and Stabilizers
+- Large ring Fusion Reactor structure with Reactor Assembly Guide/overlay.
+- Reactor Controller and Reactor IO blocks.
+- 100,000,000 FE base controller storage and 2,048 kM base matter storage.
+- Matter-driven FE generation scaled by anomaly mass and reactor efficiency.
+- Internal ring power distribution and connected-machine FE usage diagnostics.
+- Reactor Remote support.
+- Power Storage and Matter Storage upgrades.
+- Speed upgrades increase generation rate and matter consumption proportionally.
+- Range upgrades extend vertical anomaly search from the base three-block distance, capped at 16 blocks.
+- Gravitational Anomaly persistent mass, entity/item pull and event-horizon consumption.
+- Living-entity mass is added once when the event horizon kills the entity.
+- Space-Time Equalizer immunity to anomaly pull/event-horizon effects.
+- Gravitational Stabilizers with FE use, facing/beam checks, suppression and upgrades.
 
-The gravitational system is active in the current testing build:
+## Weapons
 
-- Anomalies initialize with persistent mass.
-- Nearby items/living entities are pulled according to the current effective mass.
-- Dropped items entering the event horizon are consumed once and add their matter value to anomaly mass.
-- Living entities take event-horizon damage; their mass contribution is recorded once when the horizon kills them, not on each preceding damage tick.
-- The Space-Time Equalizer protects a wearer from anomaly pull/event-horizon effects.
-- Gravitational Stabilizers require FE, must face the anomaly, stop on a solid beam obstruction and suppress anomaly strength while powered.
-- Stabilizer Power upgrades strengthen suppression and Power Storage upgrades expand its FE capacity.
-- Multiple stabilizers can suppress the same anomaly.
+Implemented energy weapons:
 
-## Weapons and charging
+- Phaser
+- Phaser Rifle
+- Ion Sniper
+- Plasma Shotgun
 
-The current energy-weapon set includes Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun plus supported weapon modules.
+Implemented weapon support includes server-authoritative shot energy checks, heat/overheat state, battery/Energy Pack reloads, Weapon Station installation and the current barrel/sight/ricochet/colour module system.
 
-- Firing is server-checked against the weapon's actual shot cost.
-- Heat/overheat state is tracked and shown in the weapon HUD.
-- Energy Packs contribute their defined 32,000 FE and are consumed when used.
-- Normal and HC weapon batteries contribute only the FE they actually contain; partial batteries cannot fill a weapon for free.
-- Batteries are drained rather than destroyed and can be recharged in the Charging Station.
-- Weapon Station module state persists and is packed back into the weapon before the station drops its contents.
+Normal and HC batteries transfer only the FE they actually contain and remain as drained rechargeable items. Energy Packs contribute their defined 32,000 FE and are consumed.
 
-Held-model alignment and other visual transforms still require in-client verification.
+Weapon held transforms and some original visual/recoil presentation are still below legacy parity and remain a client-side refinement target.
 
 ## Android system
 
-The current Android test implementation includes:
+Implemented:
 
-- Blue Pill conversion with persistent Android FE/state.
-- Red Pill deactivation that returns installed bionic parts.
+- Blue Pill conversion to Android state.
+- Persistent Android FE/state.
+- Red Pill deactivation and installed-part return.
 - Yellow Pill Android-FE recharge.
-- Head, Chest, Arms and Legs bionic parts installed through the Android Station.
-- Android HUD synchronisation.
-- Android Station FE charging within four blocks. Its 2,000 FE/t hand-off is shared between nearby converted players and GUI data is viewer-specific.
-- Rogue Android Spawner that consumes FE to create tagged Rogue Android Husks and supplies random bionic-part drops.
+- Head, Chest, Arms and Legs bionic-part installation through the Android Station.
+- Android HUD energy/state synchronisation.
+- Android Station charging within four blocks, shared fairly across nearby converted players.
+- Simplified Rogue Android Spawner using a tagged hostile Husk and bionic-part drops.
 
-The Chest part uses the vanilla Resistance effect while powered; it does not apply a second hidden damage multiplier.
+The Chest part uses vanilla Resistance while powered and does not stack a hidden second damage multiplier.
 
 ## Contracts and Star Map
 
-- Contract Market supplies collect/hunt Contract items with persistent objective, progress and reward data.
-- One pickup/kill advances one matching contract rather than every duplicate copy in the inventory.
-- Collect progress is capped to the amount the player's inventory can actually accept from the pickup.
-- Completed contracts can be redeemed at the Contract Market.
-- After the final offer is taken, the market waits 1,200 ticks before generating the next set; reopening it early does not bypass the delay.
-- Star Map reports active/completed contracts for the player viewing it. Multiple players can use the same Star Map without overwriting one another's displayed state.
+Implemented current progression slice:
 
-## Armour, tools and client rendering
+- Contract Market with collect/hunt Contract items.
+- Persistent target, goal, progress and reward data.
+- Exact post-pickup collect tracking and player-kill hunt tracking.
+- One action advances one matching contract rather than every duplicate contract.
+- Completed-contract redemption at the Contract Market.
+- 1,200-tick market refresh delay after the final offer is taken.
+- Star Map screen reports the viewing player's active/completed contracts with viewer-specific data.
 
-- Tritanium tools/armour are registered and functional.
-- Full Tritanium armour applies its configured defensive set bonus.
-- Equipped Tritanium armour is wired to `tritanium_layer_1.png` / `tritanium_layer_2.png`.
-- Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium are assigned translucent render layers client-side.
+This is a simplified replacement for part of the original quest/Star Map ecosystem and is not full legacy parity.
 
-Actual transparency appearance, crate/Inscriber UV alignment and weapon held transforms are runtime visual checks and cannot be certified by the Java build alone.
+## Armour, tools and presentation
 
-## Persistence / break-safety expectations
+- Tritanium tool set and armour set are functional.
+- Full Tritanium armour applies the configured defensive set bonus.
+- Equipped armour uses the restored Tritanium armour textures.
+- Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium are assigned translucent client render layers.
+- Legacy decorative blocks, resources and recipes are substantially registered/restored.
 
-Current machine state that should persist includes inventories, upgrades, FE/matter buffers, contracts, router filter/routing state, switch state, pylon channel and Android player state where applicable.
+Visual runtime checks are still required for transparency, crate/Inscriber UV alignment, equipped armour and held weapon transforms.
 
-Blocks with internal user items that have dedicated inventories should return those contents when broken. The audit regression checklist specifically covers Charging Station batteries, Stabilizer upgrades, Router filters and Weapon Station weapons/modules.
+# Missing or incomplete compared with the original 1.12.2 mod
 
-## Runtime verification
+The following are the major remaining parity gaps. This list tracks gameplay behaviour, not merely registry presence.
+
+## 1. Android RPG / biotic ability system — missing
+
+The original Android system contained an unlockable RPG-style ability/stat layer. The current port has conversion, FE and four installed body parts, but does not yet restore the full ability tree.
+
+Still missing includes the legacy-style abilities/stat progression such as teleportation, force-field/shield abilities, cloak, night vision, shockwave/flash-cooling style powers, ability cooldown/unlock progression and the richer Android minimap/team presentation.
+
+## 2. Full Star Map galaxy simulation — missing
+
+The current Star Map is a contract-status interface. The original system modelled galaxies, stars and planets and developed gameplay around planet statistics, buildings, ships and travel/attack events.
+
+Still missing:
+
+- generated/persistent galaxy, star and planet data;
+- galaxy/system/planet navigation UI;
+- planet population, happiness, energy and matter-production statistics;
+- residential/power/matter-extractor/ship-hangar building gameplay;
+- ships, ownership and travel/attack events.
+
+## 3. Full quest/dialog progression system — partial
+
+The current Contract Market implements simple collect/hunt contracts. The original contained a broader quest framework with multiple quest logic types, quest XP/rewards, quest HUD/pages, generated progression and NPC/dialog-driven quests.
+
+Still missing includes the original-style quest stack/multi-quest system, mining/crafting and other quest types, quest XP progression, Mad Scientist dialog/progression and Data Pad quest pages.
+
+## 4. Data Pad and guide system — missing
+
+`data_pad` is currently a registered generic item. The original guide/history interface, guide categories/pages, block scanning and quest integration have not been restored.
+
+## 5. Matter Scanner — missing
+
+`matter_scanner` currently exists as a registered item but the original handheld scanning/pattern acquisition workflow is not implemented.
+
+## 6. Portable Decomposer — missing
+
+`portable_decomposer` is registered but does not yet provide the original portable decomposition gameplay.
+
+## 7. Omni Tool — missing
+
+`omni_tool` is registered but does not yet restore the original hybrid tool/energy-weapon behaviour, firing/beam behaviour and associated presentation.
+
+## 8. Microwave — missing
+
+The Microwave registry block currently exists as a normal placeholder block. Its original machine/block-entity gameplay has not been ported.
+
+## 9. Space-Time Accelerator — missing
+
+The Space-Time Accelerator registry block currently exists as a normal placeholder block. The original nearby-machine acceleration mechanic is not implemented.
+
+## 10. Holo Sign and security/ownership gameplay — missing
+
+The Holo Sign is presently a basic registered block rather than the original programmable/security-aware holographic sign. The broader legacy ownership/security layer and security protocol item behaviour are also not restored.
+
+## 11. Additional drive/network configuration items — incomplete
+
+Pattern Drives and Transport Flash Drives are functional, but legacy generic/network flash-drive configuration behaviour is not fully restored. `flash_drive`, `network_flash_drive` and the security protocol items are currently generic items.
+
+## 12. Original mobs and Rogue Android depth — mostly missing
+
+The current Android Spawner deliberately uses a tagged vanilla Husk as a simplified Rogue Android. The original dedicated entity ecosystem is not yet ported, including richer Rogue Android AI/levels/equipment/teams/ranged variants and other legacy entities such as drones, failed animals and scientist NPC/mob content.
+
+## 13. Legacy world generation — missing
+
+The original mod generated themed structures/content such as crashed/cargo ships, underwater bases and other image-based structures, alongside its world-spawn gameplay. The current port has no equivalent Matter Overdrive worldgen implementation yet. Natural legacy ore/structure/anomaly generation therefore still needs a dedicated 1.20.1 worldgen pass rather than relying on registered blocks alone.
+
+## 14. Remaining weapon parity — partial
+
+The core four weapons and module effects are implemented, but legacy extras remain incomplete, including the old weapon enchantment/random-weapon ecosystem, richer Rogue Android weapon generation/drops and final recoil/model/beam presentation parity.
+
+## 15. Legacy integrations — not ported
+
+Old optional integration layers such as ComputerCraft/Tinkers/other 1.12-era compatibility code have not been recreated. These should be reconsidered individually against modern 1.20.1 equivalents rather than copied directly.
+
+# Recommended parity order
+
+1. Microwave + Space-Time Accelerator, because both are visible registered placeholder machines and can reuse the current FE/upgrade foundation.
+2. Matter Scanner + Portable Decomposer + Data Pad/guide, completing the remaining core handheld matter loop.
+3. Android ability tree/biotic stats and a real Rogue Android entity.
+4. Security/Holo Sign/network-drive functionality.
+5. World generation and legacy mobs/NPCs.
+6. Full quest framework and then full Star Map galaxy simulation.
+7. Weapon visual/enchantment/random-generation parity and optional mod integrations.
+
+## Verification
 
 Use the checklists under `docs/testing/`, especially:
 
@@ -126,4 +202,4 @@ Use the checklists under `docs/testing/`, especially:
 - `MATTER_NETWORK_LOGISTICS_TESTING.md`
 - `CONTRACTS_STAR_MAP_TESTING.md`
 
-A successful GitHub Actions build proves the Forge project compiles/packages; it does not replace the in-world runtime and visual checks above.
+A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify in-world behaviour or rendering.
