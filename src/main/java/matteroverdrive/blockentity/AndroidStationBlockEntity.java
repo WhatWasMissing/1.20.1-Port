@@ -26,8 +26,10 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 public class AndroidStationBlockEntity extends BlockEntity implements MenuProvider {
-    public static final int ENERGY_CAPACITY = 100_000;
+    // A one-tick hand-off buffer prevents a disconnected station from behaving
+    // like a hidden 100k FE battery after it has been powered once.
     public static final int TRANSFER_PER_TICK = 2_000;
+    public static final int ENERGY_CAPACITY = TRANSFER_PER_TICK;
     private final MachineEnergyStorage energy = new MachineEnergyStorage(ENERGY_CAPACITY, TRANSFER_PER_TICK, 0, this::setChanged);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energy);
     private UUID linkedPlayer;
