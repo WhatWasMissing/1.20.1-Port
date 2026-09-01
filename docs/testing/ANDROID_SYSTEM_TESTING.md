@@ -7,6 +7,8 @@ Branch: `feature/android-system-weapon-hud`
 - [ ] Use a Blue Android Pill in Survival. Confirm conversion activates at 25,000 / 100,000 Android FE.
 - [ ] Open an Android Station. Confirm it reports Android status, energy, installed parts, station FE, and transfer rate.
 - [ ] Power the Android Station from Fusion Reactor IO/cables. While standing within four blocks, confirm Android FE increases gradually.
+- [ ] Disconnect its cable/source while charging. Confirm its 2,000 FE hand-off buffer empties within a tick and Android FE stops rising.
+- [ ] Confirm the lower-left Android Core HUD appears after conversion and tracks Android FE live.
 - [ ] Use a Yellow Android Pill while converted. Confirm it adds up to 25,000 FE without exceeding capacity.
 - [ ] Use a Red Android Pill. Confirm conversion ends and all installed bionic parts return to the inventory/drop safely.
 - [ ] Relog and die/respawn. Confirm active conversion, energy, and parts persist.
