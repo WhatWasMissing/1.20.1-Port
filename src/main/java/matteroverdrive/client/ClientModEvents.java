@@ -4,6 +4,8 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.client.screen.DecomposerScreen;
 import matteroverdrive.client.screen.AndroidStationScreen;
 import matteroverdrive.client.screen.NetworkRouterScreen;
+import matteroverdrive.client.screen.ContractMarketScreen;
+import matteroverdrive.client.screen.StarMapScreen;
 import matteroverdrive.client.screen.ChargingStationScreen;
 import matteroverdrive.client.screen.EnergyPipeScreen;
 import matteroverdrive.client.screen.InscriberScreen;
@@ -41,6 +43,8 @@ public final class ClientModEvents {
         event.enqueueWork(() -> {
             MenuScreens.register(ModMenus.ANDROID_STATION.get(), AndroidStationScreen::new);
             MenuScreens.register(ModMenus.NETWORK_ROUTER.get(), NetworkRouterScreen::new);
+            MenuScreens.register(ModMenus.CONTRACT_MARKET.get(), ContractMarketScreen::new);
+            MenuScreens.register(ModMenus.STAR_MAP.get(), StarMapScreen::new);
             MenuScreens.register(ModMenus.ENERGY_PIPE.get(), EnergyPipeScreen::new);
             MenuScreens.register(ModMenus.CHARGING_STATION.get(), ChargingStationScreen::new);
             MenuScreens.register(ModMenus.FUSION_REACTOR_CONTROLLER.get(), FusionReactorScreen::new);
