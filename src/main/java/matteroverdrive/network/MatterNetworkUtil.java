@@ -2,6 +2,7 @@ package matteroverdrive.network;
 
 import matteroverdrive.blockentity.FusionReactorIOBlockEntity;
 import matteroverdrive.blockentity.MatterAnalyzerBlockEntity;
+import matteroverdrive.blockentity.NetworkSwitchBlockEntity;
 import matteroverdrive.blockentity.PatternMonitorBlockEntity;
 import matteroverdrive.blockentity.PatternStorageBlockEntity;
 import matteroverdrive.blockentity.ReplicatorBlockEntity;
@@ -51,7 +52,7 @@ public final class MatterNetworkUtil {
 
                 BlockState state = level.getBlockState(next);
                 BlockEntity blockEntity = level.getBlockEntity(next);
-                boolean traversable = isNetworkTransport(state) || isNetworkClient(blockEntity);
+                boolean traversable = isNetworkTransport(state, blockEntity) || isNetworkClient(blockEntity);
                 if (!traversable) {
                     continue;
                 }
@@ -68,7 +69,6 @@ public final class MatterNetworkUtil {
 
         return new ArrayList<>(found.values());
     }
-
 
     public static int pullMatter(Level level, BlockPos origin, IMatterStorage destination,
                                  int maxAmount, long routeIndex) {
@@ -135,7 +135,6 @@ public final class MatterNetworkUtil {
         }
         return found;
     }
-
 
     private static List<MatterEndpoint> findMatterSources(Level level, BlockPos origin) {
         ArrayDeque<BlockPos> queue = new ArrayDeque<>();
@@ -331,10 +330,13 @@ public final class MatterNetworkUtil {
                 .orElse(0);
     }
 
-    private static boolean isNetworkTransport(BlockState state) {
-        return state.is(ModBlocks.get("network_pipe").get())
-                || state.is(ModBlocks.get("network_router").get())
-                || state.is(ModBlocks.get("network_switch").get());
+    private static boolean isNetworkTransport(BlockState state, BlockEntity blockEntity) {
+        if (state.is(ModBlocks.get("network_pipe").get()) || state.is(ModBlocks.get("network_router").get())) {
+            return true;
+        }
+        return state.is(ModBlocks.get("network_switch").get())
+                && blockEntity instanceof NetworkSwitchBlockEntity networkSwitch
+                && networkSwitch.isEnabled();
     }
 
     private static boolean isNetworkClient(BlockEntity blockEntity) {
@@ -345,8 +347,7 @@ public final class MatterNetworkUtil {
     }
 
     private static boolean isMatterPipe(BlockState state) {
-        return state.is(ModBlocks.get("matter_pipe").get())
-                || state.is(ModBlocks.get("heavy_matter_pipe").get());
+        return state.is(ModBlocks.get("matter_pipe").get());
     }
 
     private record MatterEndpoint(BlockPos pos, Direction side) {
