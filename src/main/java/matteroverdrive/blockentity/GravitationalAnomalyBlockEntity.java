@@ -25,6 +25,7 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
     private static final double SPEED_OF_LIGHT = 2.99792458D;
     private static final int ITEM_ATTRACTION_INTERVAL = 5;
     private static final double MAX_ITEM_ATTRACTION_RANGE = 32.0D;
+    private static final double MIN_ITEM_CONSUMPTION_RADIUS = 1.0D;
     private static final double MAX_ENTITY_EFFECT_RANGE = 32.0D;
     private static final double MAX_ENTITY_ACCELERATION = 0.10D;
     private static final double MAX_ENTITY_SPEED = 0.35D;
@@ -149,7 +150,9 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
         }
 
         Vec3 centre = Vec3.atCenterOf(worldPosition);
-        double eventHorizonSquared = getEventHorizon() * getEventHorizon();
+        double itemConsumptionRadius = Math.max(
+                MIN_ITEM_CONSUMPTION_RADIUS, getEventHorizon());
+        double eventHorizonSquared = itemConsumptionRadius * itemConsumptionRadius;
         AABB bounds = new AABB(worldPosition).inflate(range);
         for (ItemEntity itemEntity : level.getEntitiesOfClass(ItemEntity.class, bounds, ItemEntity::isAlive)) {
             Vec3 pull = centre.subtract(itemEntity.position());
