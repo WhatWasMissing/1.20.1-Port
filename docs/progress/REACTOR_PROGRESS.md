@@ -1,3 +1,15 @@
+# Current status — 2026-09-01
+
+The current implementation supersedes older redstone references below:
+
+- Stabilizers require FE supplied from the reactor/energy network; redstone does not activate them.
+- The Stabilizer GUI exposes four Power Upgrade slots and live targeting/power status.
+- Power Upgrades reduce the anomaly pull/suppression impact; they do not increase it.
+- The Charging Station receives buffered FE from the same network and charges inserted energy items gradually.
+- The anomaly accepts item matter and records a living entity's mass contribution at death. Fresh-world runtime verification remains required.
+
+The remaining historical entries are retained as implementation context.
+
 # Reactor Progress
 
 ## Current work
