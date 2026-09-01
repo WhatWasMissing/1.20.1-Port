@@ -178,8 +178,15 @@ public final class ModBlocks {
         if (id.equals("industrial_glass")
                 || id.equals("bounding_box")
                 || id.equals("matter_plasma")
-                || id.equals("molten_tritanium")) {
+                || id.equals("molten_tritanium")
+                || id.equals("gravitational_anomaly")) {
             properties = properties.noOcclusion();
+        }
+
+        // Items and entities must be able to cross the block boundary to reach
+        // the anomaly's event horizon and be consumed.
+        if (id.equals("gravitational_anomaly")) {
+            properties = properties.noCollission();
         }
 
         if (id.equals("decorative.tritanium_lamp")
