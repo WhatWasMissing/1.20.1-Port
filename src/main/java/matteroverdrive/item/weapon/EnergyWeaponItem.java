@@ -446,11 +446,11 @@ public class EnergyWeaponItem extends Item {
     }
 
     private boolean hasEnoughEnergy(ItemStack weapon, Player player, int amount) {
-        return player.getAbilities().instabuild || hasCreativeBattery(weapon) || getEnergyStored(weapon) >= amount;
+        return hasCreativeBattery(weapon) || getEnergyStored(weapon) >= amount;
     }
 
     private void drainEnergy(ItemStack weapon, Player player, int amount) {
-        if (!player.getAbilities().instabuild && !hasCreativeBattery(weapon)) {
+        if (!hasCreativeBattery(weapon)) {
             setEnergyStored(weapon, getEnergyStored(weapon) - amount);
         }
     }
@@ -462,7 +462,9 @@ public class EnergyWeaponItem extends Item {
         for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
             ItemStack candidate = player.getInventory().getItem(slot);
             if (candidate.is(ModItems.get("energy_pack").get())) {
-                candidate.shrink(1);
+                if (!player.getAbilities().instabuild) {
+                    candidate.shrink(1);
+                }
                 setEnergyStored(weapon, getEnergyStored(weapon) + EnergyPackItem.ENERGY_AMOUNT);
                 playSound(player.level(), player, "weapons.reload", 0.8F, 1.0F);
                 return getEnergyStored(weapon) >= required;

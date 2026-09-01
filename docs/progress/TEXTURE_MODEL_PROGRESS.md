@@ -14,6 +14,7 @@
 - Tritanium Crates now use the original legacy 3D crate mesh for all colour variants instead of mapping the atlas across a full cube.
 - Inscriber now uses the original legacy 3D mesh and its atlas, with blockstate rotations matched to the legacy model orientation.
 - Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium declare their render types in model JSON so modern Forge routes them through the intended transparent render layers.
+- Energy weapons now enforce their internal FE requirement in Creative as well as Survival; Creative mode no longer makes a zero-energy gun fire indefinitely, while the installed Creative Battery module remains the explicit infinite-energy option.
 
 ## Test checklist
 
@@ -28,6 +29,7 @@
 9. Place the base Tritanium Crate plus several coloured variants and verify the 3D frame/lid geometry and atlas mapping are correct in-world and as items.
 10. Place the Inscriber facing north/east/south/west and verify its 3D shape, atlas alignment and front orientation.
 11. Place Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium and verify intended transparent/cutout pixels render correctly from multiple viewing angles.
+12. In both Survival and Creative, drain each normal weapon to zero FE and confirm it cannot fire again until reloaded; then verify an installed Creative Battery still provides infinite firing as intended.
 
 ## Known follow-up
 
