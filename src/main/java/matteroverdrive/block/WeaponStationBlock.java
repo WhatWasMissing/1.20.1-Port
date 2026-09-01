@@ -20,7 +20,19 @@ public class WeaponStationBlock extends BaseEntityBlock {
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new WeaponStationBlockEntity(pos, state); }
     @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide && player instanceof ServerPlayer server && level.getBlockEntity(pos) instanceof WeaponStationBlockEntity station) NetworkHooks.openScreen(server, station, pos);
+        if (!level.isClientSide && player instanceof ServerPlayer server
+                && level.getBlockEntity(pos) instanceof WeaponStationBlockEntity station) {
+            NetworkHooks.openScreen(server, station, pos);
+        }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    public void onRemove(BlockState oldState, Level level, BlockPos pos, BlockState newState, boolean moving) {
+        if (!oldState.is(newState.getBlock())) {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (entity instanceof WeaponStationBlockEntity station) station.dropContents();
+        }
+        super.onRemove(oldState, level, pos, newState, moving);
     }
 }
