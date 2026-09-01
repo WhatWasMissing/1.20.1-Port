@@ -122,7 +122,9 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
                 powerUpgrades++;
             }
         }
-        return Math.min(0.95D, BASE_SUPPRESSION + powerUpgrades * 0.05D);
+        // This value is the remaining anomaly-strength multiplier. Lower is
+        // stronger suppression, so Power upgrades must reduce it rather than raise it.
+        return Math.max(0.05D, BASE_SUPPRESSION - powerUpgrades * 0.05D);
     }
 
     private void upgradesChanged() {
