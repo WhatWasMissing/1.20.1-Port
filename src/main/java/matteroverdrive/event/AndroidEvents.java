@@ -59,11 +59,6 @@ public final class AndroidEvents {
                 && AndroidData.consumeEnergy(attacker, 80) == 80) {
             event.setAmount(event.getAmount() + 3.0F);
         }
-        if (event.getEntity() instanceof ServerPlayer target
-                && AndroidData.hasPart(target, AndroidData.Part.CHEST)
-                && AndroidData.consumeEnergy(target, 50) == 50) {
-            event.setAmount(event.getAmount() * 0.75F);
-        }
     }
 
     @SubscribeEvent
