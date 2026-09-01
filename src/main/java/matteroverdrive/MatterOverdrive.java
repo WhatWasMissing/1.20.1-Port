@@ -7,6 +7,7 @@ import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModCreativeTabs;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
+import matteroverdrive.network.ModNetwork;
 import matteroverdrive.registry.ModSounds;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -33,6 +34,7 @@ public final class MatterOverdrive {
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(ModNetwork::register);
         LOGGER.info(
                 "M1 VERIFY: Matter Overdrive registry shell initialized - blocks={}, blockItems={}, standaloneItems={}, sounds={}",
                 ModBlocks.all().size(),
