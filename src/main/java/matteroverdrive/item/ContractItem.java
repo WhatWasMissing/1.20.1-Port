@@ -22,7 +22,7 @@ public class ContractItem extends Item {
         tag.putString(TYPE,type);tag.putString(TARGET,target);tag.putInt(GOAL,goal);tag.putInt(PROGRESS,0);tag.putString(REWARD,reward);tag.putInt(REWARD_COUNT,rewardCount);return contract;
     }
     public static boolean advancesWithPickup(ItemStack contract, ItemStack picked) {
-        return "collect".equals(contract.getOrCreateTag().getString(TYPE)) && picked.is(new ResourceLocation(contract.getOrCreateTag().getString(TARGET)));
+        return "collect".equals(contract.getOrCreateTag().getString(TYPE)) && picked.is(net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new ResourceLocation(contract.getOrCreateTag().getString(TARGET))));
     }
     public static boolean advancesWithKill(ItemStack contract, ResourceLocation entity) {
         return "hunt".equals(contract.getOrCreateTag().getString(TYPE)) && entity.toString().equals(contract.getOrCreateTag().getString(TARGET));
