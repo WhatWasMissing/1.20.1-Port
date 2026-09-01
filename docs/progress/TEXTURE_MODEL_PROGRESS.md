@@ -15,6 +15,7 @@
 - Inscriber now uses the original legacy 3D mesh and its atlas, with blockstate rotations matched to the legacy model orientation.
 - Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium declare their render types in model JSON so modern Forge routes them through the intended transparent render layers.
 - Energy weapons now enforce their internal FE requirement in Creative as well as Survival; Creative mode no longer makes a zero-energy gun fire indefinitely, while the installed Creative Battery module remains the explicit infinite-energy option.
+- Anomaly consumption balancing now applies its mass bonus only when the anomaly's mass actually changes, preventing the previous consumed-entity sample from being multiplied again every later tick or once more after a world reload.
 
 ## Test checklist
 
@@ -30,6 +31,7 @@
 10. Place the Inscriber facing north/east/south/west and verify its 3D shape, atlas alignment and front orientation.
 11. Place Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium and verify intended transparent/cutout pixels render correctly from multiple viewing angles.
 12. In both Survival and Creative, drain each normal weapon to zero FE and confirm it cannot fire again until reloaded; then verify an installed Creative Battery still provides infinite firing as intended.
+13. Feed one living entity into an anomaly, note the mass increase, then wait at least 10 seconds with nothing else entering it and confirm the mass stays stable; reload the world and confirm it still does not gain that old bonus again, then feed a second entity and verify exactly one new mass jump occurs.
 
 ## Known follow-up
 
