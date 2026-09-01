@@ -20,8 +20,8 @@ public final class AndroidData {
         ARMS(4, "rogue_android_part_arms"),
         LEGS(8, "rogue_android_part_legs");
 
-        final int bit;
-        final String itemId;
+        public final int bit;
+        public final String itemId;
         Part(int bit, String itemId) { this.bit = bit; this.itemId = itemId; }
     }
 
