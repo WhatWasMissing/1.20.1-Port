@@ -18,16 +18,9 @@ public class BalancedGravitationalAnomalyBlockEntity extends GravitationalAnomal
     }
 
     public void applyPostTickBalance() {
-        long currentMass = getMass();
-        if (currentMass == lastBalancedMass) {
-            return;
-        }
-        if (getLastConsumedEntityCount() <= 0 || getLastConsumedMatter() <= 0) {
-            lastBalancedMass = currentMass;
-            return;
-        }
-
-        RemainingBalanceFixes.boostConsumedEntityMass(this);
+        // Living-entity mass is recorded by the anomaly at the moment damage is dealt.
+        // Keep this hook for compatibility with the block ticker, but do not apply a
+        // second reflection-based bonus or repeat the previous entity's contribution.
         lastBalancedMass = getMass();
     }
 
