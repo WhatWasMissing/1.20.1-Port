@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -33,7 +34,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
         if (level.getGameTime() - spawner.lastSpawn < 200 || spawner.energy.getEnergyStored() < SPAWN_COST) return;
         AABB area = new AABB(pos).inflate(12.0D);
         if (!level.getEntitiesOfClass(Husk.class, area, e -> e.getPersistentData().getBoolean(AndroidEvents.ROGUE_ANDROID_TAG)).isEmpty()) return;
-        Husk android = new Husk(level);
+        Husk android = new Husk(EntityType.HUSK, level);
         android.moveTo(pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0);
         android.finalizeSpawn((ServerLevel) level, level.getCurrentDifficultyAt(pos), MobSpawnType.SPAWNER, null, null);
         android.setCustomName(Component.literal("Rogue Android"));
