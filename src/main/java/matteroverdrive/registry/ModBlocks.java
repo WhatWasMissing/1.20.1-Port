@@ -4,6 +4,9 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.ChargingStationBlock;
 import matteroverdrive.block.AndroidStationBlock;
 import matteroverdrive.block.AndroidSpawnerBlock;
+import matteroverdrive.block.NetworkRouterBlock;
+import matteroverdrive.block.NetworkSwitchBlock;
+import matteroverdrive.block.PylonBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
@@ -130,7 +133,13 @@ public final class ModBlocks {
     }
 
     private static void registerPlaceholder(String id) {
-        if (id.equals("android_station")) {
+        if (id.equals("network_router")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkRouterBlock(propertiesFor(id))));
+        } else if (id.equals("network_switch")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkSwitchBlock(propertiesFor(id))));
+        } else if (id.equals("pylon")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PylonBlock(propertiesFor(id))));
+        } else if (id.equals("android_station")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidStationBlock(propertiesFor(id))));
         } else if (id.equals("android_spawner")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidSpawnerBlock(propertiesFor(id))));
