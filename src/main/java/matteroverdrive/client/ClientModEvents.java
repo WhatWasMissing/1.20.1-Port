@@ -7,6 +7,7 @@ import matteroverdrive.client.screen.EnergyPipeScreen;
 import matteroverdrive.client.screen.InscriberScreen;
 import matteroverdrive.client.screen.TransporterScreen;
 import matteroverdrive.client.screen.FusionReactorScreen;
+import matteroverdrive.client.screen.GravitationalStabilizerScreen;
 import matteroverdrive.client.screen.MatterAnalyzerScreen;
 import matteroverdrive.client.screen.MatterRecyclerScreen;
 import matteroverdrive.client.screen.ReplicatorScreen;
@@ -39,6 +40,7 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.ENERGY_PIPE.get(), EnergyPipeScreen::new);
             MenuScreens.register(ModMenus.CHARGING_STATION.get(), ChargingStationScreen::new);
             MenuScreens.register(ModMenus.FUSION_REACTOR_CONTROLLER.get(), FusionReactorScreen::new);
+            MenuScreens.register(ModMenus.GRAVITATIONAL_STABILIZER.get(), GravitationalStabilizerScreen::new);
             MenuScreens.register(ModMenus.TRANSPORTER.get(), TransporterScreen::new);
             MenuScreens.register(ModMenus.INSCRIBER.get(), InscriberScreen::new);
             MenuScreens.register(ModMenus.DECOMPOSER.get(), DecomposerScreen::new);
