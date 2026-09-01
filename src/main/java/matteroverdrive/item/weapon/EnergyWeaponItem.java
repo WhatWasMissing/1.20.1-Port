@@ -459,37 +459,56 @@ public class EnergyWeaponItem extends Item {
         if (hasCreativeBattery(weapon)) {
             return true;
         }
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+        if (getEnergyStored(weapon) >= required) {
+            return true;
+        }
+
+        boolean transferred = false;
+        for (int slot = 0; slot < player.getInventory().getContainerSize() && getEnergyStored(weapon) < required; slot++) {
             ItemStack candidate = player.getInventory().getItem(slot);
             if (candidate.is(ModItems.get("energy_pack").get())) {
                 if (!player.getAbilities().instabuild) {
                     candidate.shrink(1);
                 }
                 setEnergyStored(weapon, getEnergyStored(weapon) + EnergyPackItem.ENERGY_AMOUNT);
-                playSound(player.level(), player, "weapons.reload", 0.8F, 1.0F);
-                return getEnergyStored(weapon) >= required;
+                transferred = true;
             }
         }
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-            if (consumeBattery(weapon, player, player.getInventory().getItem(slot))) {
-                playSound(player.level(), player, "weapons.reload", 0.8F, 1.0F);
-                return getEnergyStored(weapon) >= required;
-            }
+
+        for (int slot = 0; slot < player.getInventory().getContainerSize() && getEnergyStored(weapon) < required; slot++) {
+            transferred |= transferBatteryEnergy(weapon, player, player.getInventory().getItem(slot)) > 0;
         }
-        if (consumeBattery(weapon, player, player.getOffhandItem())) {
+        if (getEnergyStored(weapon) < required) {
+            transferred |= transferBatteryEnergy(weapon, player, player.getOffhandItem()) > 0;
+        }
+
+        if (transferred) {
             playSound(player.level(), player, "weapons.reload", 0.8F, 1.0F);
-            return getEnergyStored(weapon) >= required;
         }
-        return false;
+        return getEnergyStored(weapon) >= required;
     }
 
-    private boolean consumeBattery(ItemStack weapon, Player player, ItemStack candidate) {
-        if (candidate.isEmpty() || candidate == weapon || !(candidate.getItem() instanceof WeaponBatteryItem)) return false;
+    private int transferBatteryEnergy(ItemStack weapon, Player player, ItemStack candidate) {
+        if (candidate.isEmpty() || candidate == weapon || !(candidate.getItem() instanceof WeaponBatteryItem)) return 0;
         IEnergyStorage storage = candidate.getCapability(ForgeCapabilities.ENERGY).orElse(null);
-        if (storage == null || storage.getEnergyStored() <= 0) return false;
-        setEnergyStored(weapon, getCapacity(weapon));
-        if (!player.getAbilities().instabuild) candidate.shrink(1);
-        return true;
+        if (storage == null || storage.getEnergyStored() <= 0) return 0;
+
+        int needed = Math.max(0, getCapacity(weapon) - getEnergyStored(weapon));
+        if (needed <= 0) return 0;
+        if (player.getAbilities().instabuild) {
+            setEnergyStored(weapon, getCapacity(weapon));
+            return needed;
+        }
+
+        int moved = 0;
+        while (needed > 0 && storage.getEnergyStored() > 0) {
+            int extracted = storage.extractEnergy(needed, false);
+            if (extracted <= 0) break;
+            setEnergyStored(weapon, getEnergyStored(weapon) + extracted);
+            moved += extracted;
+            needed -= extracted;
+        }
+        return moved;
     }
 
     public int getEnergyStored(ItemStack weapon) {
