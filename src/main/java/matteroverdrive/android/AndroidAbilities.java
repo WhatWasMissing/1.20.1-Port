@@ -4,7 +4,11 @@ import matteroverdrive.network.ModNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,7 +16,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 
 import java.util.List;
 
@@ -96,7 +100,7 @@ public final class AndroidAbilities {
         }
     }
 
-    public static void applyShield(LivingHurtEvent event, ServerPlayer player) {
+    public static void applyShield(LivingDamageEvent event, ServerPlayer player) {
         if (!AndroidData.isAndroid(player)
                 || !AndroidData.isShieldEnabled(player)
                 || !AndroidData.isAbilityUnlocked(player, AndroidData.Ability.FORCE_FIELD)
@@ -118,6 +122,7 @@ public final class AndroidAbilities {
             return;
         }
         event.setAmount(Math.max(0.0F, event.getAmount() - absorbed));
+        showShieldPulse(player);
         if (AndroidData.getEnergy(player) < SHIELD_ENERGY_PER_DAMAGE) {
             AndroidData.setShieldEnabled(player, false);
             status(player, "Force Field collapsed: Android FE depleted.", ChatFormatting.RED);
@@ -142,6 +147,9 @@ public final class AndroidAbilities {
             return;
         }
         AndroidData.setShieldEnabled(player, enabled);
+        if (enabled) {
+            showShieldPulse(player);
+        }
         status(player, "Force Field " + (enabled ? "enabled." : "disabled."),
                 enabled ? ChatFormatting.GREEN : ChatFormatting.YELLOW);
     }
@@ -199,43 +207,76 @@ public final class AndroidAbilities {
             return;
         }
 
+        ServerLevel level = player.serverLevel();
+        Vec3 origin = player.position();
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getLookAngle().normalize();
         Vec3 rayEnd = eye.add(look.scale(TELEPORT_RANGE));
-        HitResult hit = player.level().clip(new ClipContext(
+        HitResult hit = level.clip(new ClipContext(
                 eye, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         double clearDistance = hit.getType() == HitResult.Type.MISS
                 ? TELEPORT_RANGE
-                : Math.max(1.0D, hit.getLocation().distanceTo(eye) - 0.75D);
+                : Math.max(0.0D, hit.getLocation().distanceTo(eye) - 0.75D);
 
-        Vec3 origin = player.position();
+        // Trace from the eyes, then convert each point back to a feet position.
+        // The previous implementation measured clearance from the eyes but moved
+        // the feet along that vector, which rejected otherwise valid aimed blinks.
+        double eyeOffset = eye.y - origin.y;
         Vec3 destination = null;
-        for (double distance = clearDistance; distance >= 1.0D; distance -= 0.5D) {
-            Vec3 candidate = origin.add(look.scale(distance));
-            BlockPos candidatePos = BlockPos.containing(candidate);
-            AABB moved = player.getBoundingBox().move(
-                    candidate.x - player.getX(),
-                    candidate.y - player.getY(),
-                    candidate.z - player.getZ());
-            if (candidate.y >= player.level().getMinBuildHeight()
-                    && candidate.y + player.getBbHeight() < player.level().getMaxBuildHeight()
-                    && player.level().getWorldBorder().isWithinBounds(candidatePos)
-                    && player.level().noCollision(player, moved)) {
+        for (double distance = clearDistance; distance >= 0.75D; distance -= 0.25D) {
+            Vec3 sightPoint = eye.add(look.scale(distance));
+            Vec3 candidate = new Vec3(sightPoint.x, sightPoint.y - eyeOffset, sightPoint.z);
+            if (isSafeTeleportDestination(player, level, candidate)) {
                 destination = candidate;
                 break;
             }
         }
 
         if (destination == null) {
-            status(player, "No safe Ender Teleport destination.", ChatFormatting.RED);
+            status(player, "No safe Ender Teleport destination on the view ray.", ChatFormatting.RED);
             return;
         }
 
+        level.sendParticles(ParticleTypes.PORTAL,
+                origin.x, origin.y + player.getBbHeight() * 0.5D, origin.z,
+                32, 0.35D, 0.65D, 0.35D, 0.15D);
+        level.playSound(null, origin.x, origin.y, origin.z,
+                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1.15F);
+
         player.teleportTo(destination.x, destination.y, destination.z);
         player.fallDistance = 0.0F;
+
+        level.sendParticles(ParticleTypes.PORTAL,
+                destination.x, destination.y + player.getBbHeight() * 0.5D, destination.z,
+                32, 0.35D, 0.65D, 0.35D, 0.15D);
+        level.playSound(null, destination.x, destination.y, destination.z,
+                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1.15F);
+
         AndroidData.tryConsumeEnergy(player, TELEPORT_ENERGY);
         AndroidData.setCooldownUntil(player, AndroidData.Ability.TELEPORT, gameTime + TELEPORT_COOLDOWN);
-        status(player, "Ender Teleport complete.", ChatFormatting.AQUA);
+        status(player, String.format("Ender Teleport complete: %.1f blocks.", origin.distanceTo(destination)),
+                ChatFormatting.AQUA);
+    }
+
+    private static boolean isSafeTeleportDestination(ServerPlayer player, ServerLevel level, Vec3 candidate) {
+        BlockPos candidatePos = BlockPos.containing(candidate);
+        AABB moved = player.getBoundingBox().move(
+                candidate.x - player.getX(),
+                candidate.y - player.getY(),
+                candidate.z - player.getZ());
+        return candidate.y >= level.getMinBuildHeight()
+                && candidate.y + player.getBbHeight() < level.getMaxBuildHeight()
+                && level.getWorldBorder().isWithinBounds(candidatePos)
+                && level.noCollision(player, moved);
+    }
+
+    private static void showShieldPulse(ServerPlayer player) {
+        ServerLevel level = player.serverLevel();
+        level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                player.getX(), player.getY() + player.getBbHeight() * 0.5D, player.getZ(),
+                18, 0.45D, 0.75D, 0.45D, 0.05D);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 0.6F, 1.35F);
     }
 
     private static String formatSeconds(int ticks) {

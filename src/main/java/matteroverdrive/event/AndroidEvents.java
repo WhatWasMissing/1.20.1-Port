@@ -19,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -133,16 +134,19 @@ public final class AndroidEvents {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onLivingHurt(LivingHurtEvent event) {
-        if (event.getEntity() instanceof ServerPlayer defender) {
-            AndroidAbilities.applyShield(event, defender);
-        }
-
         if (event.getSource().getEntity() instanceof ServerPlayer attacker
                 && event.getSource().getDirectEntity() == attacker
                 && !attacker.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG)
                 && AndroidData.hasPart(attacker, AndroidData.Part.ARMS)
                 && AndroidData.tryConsumeEnergy(attacker, 80)) {
             event.setAmount(event.getAmount() + 3.0F);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onLivingDamage(LivingDamageEvent event) {
+        if (event.getEntity() instanceof ServerPlayer defender) {
+            AndroidAbilities.applyShield(event, defender);
         }
     }
 

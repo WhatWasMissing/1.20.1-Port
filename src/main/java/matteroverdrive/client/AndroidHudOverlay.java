@@ -50,6 +50,15 @@ public final class AndroidHudOverlay {
         if (energy <= 0) {
             state = "CORE OFFLINE: SPEED LIMITED";
             color = 0xFFFF6060;
+        } else if (AndroidClientState.isCloakEnabled() && AndroidClientState.isForceFieldEnabled()) {
+            state = "CLOAK + FIELD ON";
+            color = 0xFF65FF9A;
+        } else if (AndroidClientState.isForceFieldEnabled()) {
+            state = "FORCE FIELD ON";
+            color = 0xFF65FF9A;
+        } else if (AndroidClientState.isCloakEnabled()) {
+            state = "CLOAK ON";
+            color = 0xFF65FF9A;
         } else if (AndroidClientState.isSelectedAbilityActive()) {
             state = "ACTIVE";
             color = 0xFF65FF9A;

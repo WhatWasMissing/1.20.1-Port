@@ -562,9 +562,9 @@ Status: PLAYABLE foundation and active-ability layer. PARTIAL original Android R
 - Arms adds three direct-melee damage for 80 FE and unlocks Sonic Shockwave.
 - Legs provide movement speed and unlock Ender Teleport.
 - Cloak costs 128 FE/t while enabled.
-- Force Field costs 32 FE/t idle and absorbs up to half of incoming damage at 64 FE per absorbed damage point.
+- Force Field costs 32 FE/t idle and absorbs up to half of final post-armour/effect damage at 64 FE per absorbed damage point. Activation and impacts produce visible/audio feedback, and the HUD keeps showing FORCE FIELD ON after another ability is selected.
 - Sonic Shockwave costs exactly 4,096 FE, deals six damage, knocks back non-allied targets within five blocks and has a five-second cooldown.
-- Ender Teleport costs 4,096 FE, moves up to eight safe blocks along the view direction and has a three-second cooldown.
+- Ender Teleport costs 4,096 FE, moves the player's full bounding box up to eight safe blocks along the eye-level view ray, provides portal feedback and has a three-second cooldown. Blocked attempts report why and spend no FE or cooldown.
 - FE spending is atomic: an action that cannot afford its complete cost leaves the remaining partial FE untouched.
 - At zero FE the HUD shows CORE OFFLINE and movement is reduced by 50% until recharge or deactivation.
 - The Android Station shares up to 2,000 FE/t fairly among converted players within four blocks.

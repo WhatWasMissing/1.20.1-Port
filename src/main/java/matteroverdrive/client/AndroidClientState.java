@@ -48,8 +48,16 @@ public final class AndroidClientState {
         return cooldownTicks;
     }
 
+    public static boolean isCloakEnabled() {
+        return (activeAbilityFlags & 1) != 0;
+    }
+
+    public static boolean isForceFieldEnabled() {
+        return (activeAbilityFlags & 2) != 0;
+    }
+
     public static boolean isSelectedAbilityActive() {
-        return (selectedAbility == AndroidData.Ability.CLOAK.ordinal() && (activeAbilityFlags & 1) != 0)
-                || (selectedAbility == AndroidData.Ability.FORCE_FIELD.ordinal() && (activeAbilityFlags & 2) != 0);
+        return (selectedAbility == AndroidData.Ability.CLOAK.ordinal() && isCloakEnabled())
+                || (selectedAbility == AndroidData.Ability.FORCE_FIELD.ordinal() && isForceFieldEnabled());
     }
 }

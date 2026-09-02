@@ -34,12 +34,12 @@ Branch: `testing/main`
 
 - [ ] Confirm the controls menu lists `Cycle Android Ability` (default `V`) and `Activate Android Ability` (default `B`) and that both can be rebound.
 - [ ] Install only one body part at a time. Confirm cycling skips abilities whose required part is not installed.
-- [ ] Confirm the HUD shows the selected ability, active toggle state or remaining cooldown.
+- [ ] Confirm the HUD shows the selected ability and remaining cooldown. After enabling Cloak or Force Field, cycle away and confirm the HUD still reports the sustained effect as on.
 - [ ] Head / Cloak: toggle it on and confirm invisibility consumes exactly 128 FE/t, then disables when FE is insufficient. Toggle it off and confirm the effect expires without removing unrelated potion state.
-- [ ] Chest / Force Field: toggle it on and confirm 32 FE/t idle use. Take controlled damage and confirm it absorbs up to 50% at 64 FE per absorbed damage point without granting free absorption.
+- [ ] Chest / Force Field: toggle it on and confirm the actionbar, electric pulse and HUD all report activation, then confirm 32 FE/t idle use. Take controlled damage and verify the field reduces final post-armour/effect damage by up to 50% at 64 FE per absorbed damage point, produces an impact pulse and grants no free absorption.
 - [ ] Arms / Sonic Shockwave: confirm it costs exactly 4,096 FE regardless of target count, deals its own six damage, knocks back non-allied living targets in a five-block radius and enforces a five-second cooldown.
-- [ ] Legs / Ender Teleport: confirm it costs 4,096 FE, moves up to eight blocks along the clear view ray and enforces a three-second cooldown.
-- [ ] Aim Teleport into a wall, outside the world border and where the player bounding box cannot fit. Confirm it chooses a safe nearer destination or refuses without consuming FE/cooldown.
+- [ ] Legs / Ender Teleport: in open space, test level, upward and downward aim. Confirm it costs 4,096 FE, moves the player's feet along the matching eye-level view ray by up to eight blocks, emits portal feedback and enforces a three-second cooldown.
+- [ ] Aim Teleport into a wall, outside the world border and where the player bounding box cannot fit. Confirm it chooses a safe nearer destination on that same view ray or refuses with an actionbar reason without consuming FE/cooldown.
 - [ ] Spam activation packets/keys during cooldown and with insufficient FE. Confirm the server refuses them and values never go negative.
 - [ ] Relog and die/respawn with Cloak/Force Field active and one-shot abilities cooling down. Confirm state remains coherent and no duplicate effect or free reset occurs.
 - [ ] Use a Red Pill while active. Confirm toggles, selection/cooldowns and installed parts are cleared/returned safely.
