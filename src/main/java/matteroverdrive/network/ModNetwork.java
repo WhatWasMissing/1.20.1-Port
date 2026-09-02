@@ -30,10 +30,16 @@ public final class ModNetwork {
                 AndroidAbilityPacket::decode, AndroidAbilityPacket::handle);
         CHANNEL.registerMessage(nextId++, DataPadOpenPacket.class, DataPadOpenPacket::encode,
                 DataPadOpenPacket::decode, DataPadOpenPacket::handle);
+        CHANNEL.registerMessage(nextId++, DocumentationOpenPacket.class, DocumentationOpenPacket::encode,
+                DocumentationOpenPacket::decode, DocumentationOpenPacket::handle);
     }
 
     public static void openDataPad(ServerPlayer player, List<String> history) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DataPadOpenPacket(history));
+    }
+
+    public static void openDocumentation(ServerPlayer player, int documentId) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DocumentationOpenPacket(documentId));
     }
 
     public static void syncAndroidState(ServerPlayer player) {
