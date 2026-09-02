@@ -168,8 +168,9 @@ public class SpacetimeAcceleratorBlockEntity extends BlockEntity implements Menu
                     accelerated++;
                 }
 
+                BlockState tickerState = serverLevel.getBlockState(targetPos);
                 BlockEntity target = serverLevel.getBlockEntity(targetPos);
-                if (target != null && tickBlockEntitySafely(serverLevel, targetPos, targetState, target)) {
+                if (target != null && tickBlockEntitySafely(serverLevel, targetPos, tickerState, target)) {
                     accelerated++;
                 }
             }
