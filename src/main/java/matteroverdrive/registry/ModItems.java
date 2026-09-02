@@ -70,6 +70,7 @@ public final class ModItems {
         "data_pad",
         "m2_testing_checklist",
         "current_features_reference",
+        "system_guide",
         "dilithium_crystal",
         "earl_gray_tea",
         "emergency_ration",
@@ -223,6 +224,9 @@ public final class ModItems {
         if (id.equals("current_features_reference")) {
             return new DocumentationItem(propertiesFor(id), DocumentationItem.Document.FEATURE_REFERENCE);
         }
+        if (id.equals("system_guide")) {
+            return new DocumentationItem(propertiesFor(id), DocumentationItem.Document.SYSTEM_GUIDE);
+        }
         if (id.equals("matter_dust")) {
             return new MatterDustItem(propertiesFor(id), false);
         }
@@ -300,6 +304,7 @@ public final class ModItems {
                 || id.equals("data_pad")
                 || id.equals("m2_testing_checklist")
                 || id.equals("current_features_reference")
+                || id.equals("system_guide")
                 || id.equals("spacetime_equalizer")
                 || id.equals("energy_pack")
                 || id.equals("reactor_remote")
