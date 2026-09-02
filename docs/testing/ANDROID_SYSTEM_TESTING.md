@@ -12,6 +12,9 @@ Branch: `testing/main`
 - [ ] Put two converted players within four blocks of the same powered station. Confirm its 2,000 FE/t budget is shared between them rather than the most recent GUI viewer becoming the only charge target.
 - [ ] Have both players open the station at the same time. Confirm each GUI continues to show that player's own Android energy and installed parts.
 - [ ] Confirm the lower-left Android Core HUD appears after conversion and tracks Android FE live.
+- [ ] Hold a charged normal or HC Battery in either hand and sneak. Confirm it transfers at most 1,024 FE/t into the Android core, drains only real stored battery FE and leaves the battery item in place.
+- [ ] Repeat with an empty battery and while not sneaking. Confirm no Android FE is created.
+- [ ] Drain Android FE to zero. Confirm the HUD reports `CORE OFFLINE`, movement speed is reduced by 50%, and normal speed returns immediately after receiving FE or using a Red Pill.
 - [ ] Use a Yellow Android Pill while converted. Confirm it adds up to 25,000 FE without exceeding capacity.
 - [ ] Use a Red Android Pill. Confirm conversion ends and all installed bionic parts return to the inventory/drop safely.
 - [ ] Relog and die/respawn. Confirm active conversion, energy, and parts persist.
@@ -22,8 +25,9 @@ Branch: `testing/main`
 - [ ] Confirm a second copy of the same part is rejected without consuming it.
 - [ ] Head: night vision while Android FE is available.
 - [ ] Chest: Resistance lowers incoming damage while Android FE is available. Confirm damage is not reduced a second time by an additional hidden 25% multiplier.
-- [ ] Arms: increased melee damage while Android FE is available.
+- [ ] Arms: direct melee attacks gain 3 damage for exactly 80 Android FE. Confirm arrows, other projectiles and Sonic Shockwave do not receive the melee bonus or its extra FE cost.
 - [ ] Legs: increased movement speed while Android FE is available.
+- [ ] Leave less FE than a passive or active action requires. Confirm the failed action does not consume the remaining partial FE.
 - [ ] Drain Android FE to zero and confirm abilities stop rather than becoming free.
 
 ## Active Android abilities
@@ -33,7 +37,7 @@ Branch: `testing/main`
 - [ ] Confirm the HUD shows the selected ability, active toggle state or remaining cooldown.
 - [ ] Head / Cloak: toggle it on and confirm invisibility consumes exactly 128 FE/t, then disables when FE is insufficient. Toggle it off and confirm the effect expires without removing unrelated potion state.
 - [ ] Chest / Force Field: toggle it on and confirm 32 FE/t idle use. Take controlled damage and confirm it absorbs up to 50% at 64 FE per absorbed damage point without granting free absorption.
-- [ ] Arms / Sonic Shockwave: confirm it costs 4,096 FE, damages/knocks back non-allied living targets in a five-block radius and enforces a five-second cooldown.
+- [ ] Arms / Sonic Shockwave: confirm it costs exactly 4,096 FE regardless of target count, deals its own six damage, knocks back non-allied living targets in a five-block radius and enforces a five-second cooldown.
 - [ ] Legs / Ender Teleport: confirm it costs 4,096 FE, moves up to eight blocks along the clear view ray and enforces a three-second cooldown.
 - [ ] Aim Teleport into a wall, outside the world border and where the player bounding box cannot fit. Confirm it chooses a safe nearer destination or refuses without consuming FE/cooldown.
 - [ ] Spam activation packets/keys during cooldown and with insufficient FE. Confirm the server refuses them and values never go negative.
@@ -47,6 +51,8 @@ Branch: `testing/main`
 - [ ] After it stores 20,000 FE, confirm it creates a named Rogue Android (Husk) when no previous Rogue Android is nearby.
 - [ ] Kill the Rogue Android and confirm it drops one random bionic part.
 - [ ] Confirm the spawner does not repeatedly spawn while a tagged Rogue Android is within its local range.
+- [ ] Obstruct the block above the spawner but leave one of its nearby fallback positions clear. Confirm it chooses a collision-free position.
+- [ ] Obstruct all candidate positions. Confirm spawn failure consumes no FE, creates no entity inside blocks and retries later without rapid per-tick spawning.
 
 ## Weapon HUD
 
