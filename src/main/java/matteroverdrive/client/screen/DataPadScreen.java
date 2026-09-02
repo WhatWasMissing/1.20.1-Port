@@ -44,7 +44,7 @@ public class DataPadScreen extends Screen {
             ),
             List.of(
                     "Blue Pills convert players, Red Pills deactivate Android state and Yellow Pills restore Android FE.",
-                    "The Android Station installs Head, Chest, Arms and Legs parts. Installed parts consume Android FE for their active effects."
+                    "The Android Station installs Head, Chest, Arms and Legs parts. They unlock Cloak, Force Field, Sonic Shockwave and Ender Teleport; use V to cycle and B to activate by default."
             ),
             List.of(
                     "Tritanium generates from Y -32 to 64. Dilithium generates from Y -64 to 16 in fresh Overworld chunks.",
