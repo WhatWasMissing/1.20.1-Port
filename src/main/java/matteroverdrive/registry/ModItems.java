@@ -7,6 +7,9 @@ import matteroverdrive.item.AndroidPillItem;
 import matteroverdrive.item.AndroidPartItem;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.item.DebugMatterContainerItem;
+import matteroverdrive.item.DataPadItem;
+import matteroverdrive.item.MatterScannerItem;
+import matteroverdrive.item.PortableDecomposerItem;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
@@ -201,6 +204,15 @@ public final class ModItems {
         }
         if (id.equals("matter_container")) {
             return new MatterContainerItem(propertiesFor(id));
+        }
+        if (id.equals("matter_scanner")) {
+            return new MatterScannerItem(propertiesFor(id));
+        }
+        if (id.equals("portable_decomposer")) {
+            return new PortableDecomposerItem(propertiesFor(id));
+        }
+        if (id.equals("data_pad")) {
+            return new DataPadItem(propertiesFor(id));
         }
         if (id.equals("matter_dust")) {
             return new MatterDustItem(propertiesFor(id), false);
