@@ -13,7 +13,7 @@ The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../referenc
 - Fusion Reactor: ring multiblock, controller/IO, matter input, FE generation/output, structure diagnostics, Reactor Remote/guide and active Speed/Range/Power Storage/Matter Storage upgrades.
 - Gravitational systems: anomaly pull/consumption/mass, Space-Time Equalizer and powered Gravitational Stabilizers.
 - Weapons: Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun, rechargeable batteries/Energy Packs, heat/energy checks and Weapon Station modules.
-- Android system: conversion/deactivation/recharge pills, persistent Android FE, Android Station, four bionic body parts/passives, part-gated Cloak/Force Field/Sonic Shockwave/Ender Teleport abilities, HUD and simplified Rogue Android Spawner.
+- Android system: conversion/deactivation/recharge pills, persistent Android FE, Android Station, four bionic body parts/passives, part-gated Cloak/Force Field/Sonic Shockwave/Ender Teleport abilities, atomic FE costs, sneak-held Battery charging, zero-power slowdown/HUD state and a collision-safe simplified Rogue Android Spawner.
 - Progression foundation: Contract Market, collect/hunt contracts, redemption/refresh flow and per-viewer Star Map contract summary.
 - Survival resource foundation: natural Tritanium and Dilithium ore generation, furnace/blast-furnace processing and temporary craftable Android-pill progression.
 - Handheld matter loop: linked Matter Scanner pattern acquisition, filtered FE-powered Portable Decomposer pickup conversion and Data Pad guide/scan history.
@@ -41,5 +41,7 @@ The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../referenc
 5. Remaining weapon parity and selected modern mod integrations.
 
 ## Current verification note
+
+The latest Android audit restricts the Arms bonus to direct melee, prevents Sonic Shockwave from inheriting that bonus, makes failed FE spends atomic, restores held-battery charging and the legacy zero-power slowdown, and prevents the simplified spawner charging FE for a rejected spawn. These changes require focused client and dedicated-server verification before being marked runtime-verified.
 
 The Microwave and Space-Time Accelerator are now real machines rather than registry placeholders. The Accelerator consumes FE and matter to pulse extra ticks into nearby random-tick blocks and block entities, supports redstone disable and the current machine-upgrade framework, and isolates failing target tickers. Runtime verification is tracked in `docs/testing/ANDROID_SYSTEM_TESTING.md`, `docs/testing/MICROWAVE_TESTING.md`, `docs/testing/SPACETIME_ACCELERATOR_TESTING.md`, `docs/testing/HANDHELD_MATTER_TOOLS_TESTING.md` and `docs/testing/SURVIVAL_PROGRESSION_TESTING.md`. Build success does not replace in-world regression checks for machine behaviour, world generation, recipes, visual rendering, compatibility or gameplay balance.
