@@ -8,6 +8,7 @@ import matteroverdrive.item.AndroidPartItem;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.item.DebugMatterContainerItem;
 import matteroverdrive.item.DataPadItem;
+import matteroverdrive.item.DocumentationItem;
 import matteroverdrive.item.MatterScannerItem;
 import matteroverdrive.item.PortableDecomposerItem;
 import matteroverdrive.item.MatterContainerItem;
@@ -67,6 +68,8 @@ public final class ModItems {
         "debug_matter_container",
         "creative_pattern_drive",
         "data_pad",
+        "m2_testing_checklist",
+        "current_features_reference",
         "dilithium_crystal",
         "earl_gray_tea",
         "emergency_ration",
@@ -214,6 +217,12 @@ public final class ModItems {
         if (id.equals("data_pad")) {
             return new DataPadItem(propertiesFor(id));
         }
+        if (id.equals("m2_testing_checklist")) {
+            return new DocumentationItem(propertiesFor(id), DocumentationItem.Document.TESTING_CHECKLIST);
+        }
+        if (id.equals("current_features_reference")) {
+            return new DocumentationItem(propertiesFor(id), DocumentationItem.Document.FEATURE_REFERENCE);
+        }
         if (id.equals("matter_dust")) {
             return new MatterDustItem(propertiesFor(id), false);
         }
@@ -289,6 +298,8 @@ public final class ModItems {
                 || id.contains("pattern_drive")
                 || id.contains("flash_drive")
                 || id.equals("data_pad")
+                || id.equals("m2_testing_checklist")
+                || id.equals("current_features_reference")
                 || id.equals("spacetime_equalizer")
                 || id.equals("energy_pack")
                 || id.equals("reactor_remote")
