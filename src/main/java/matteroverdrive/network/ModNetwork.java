@@ -8,6 +8,8 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
+import java.util.List;
+
 public final class ModNetwork {
     private static final String PROTOCOL = "1";
     private static int nextId;
@@ -22,7 +24,14 @@ public final class ModNetwork {
     public static void register() {
         CHANNEL.registerMessage(nextId++, AndroidStatePacket.class, AndroidStatePacket::encode,
                 AndroidStatePacket::decode, AndroidStatePacket::handle);
+        CHANNEL.registerMessage(nextId++, DataPadOpenPacket.class, DataPadOpenPacket::encode,
+                DataPadOpenPacket::decode, DataPadOpenPacket::handle);
     }
+
+    public static void openDataPad(ServerPlayer player, List<String> history) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DataPadOpenPacket(history));
+    }
+
     public static void syncAndroidState(ServerPlayer player) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new AndroidStatePacket(
                 AndroidData.isAndroid(player), AndroidData.getEnergy(player), AndroidData.getParts(player)));
