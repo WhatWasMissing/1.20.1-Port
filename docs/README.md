@@ -30,6 +30,9 @@ Port-wide status, inventory, source references, and the chronological implementa
 
 Player/tester-facing feature references live in [`reference/`](reference/).
 
+- [`WORKING_FEATURES.md`](reference/WORKING_FEATURES.md) is the implemented-versus-missing parity matrix.
+- [`SYSTEM_GUIDE.md`](reference/SYSTEM_GUIDE.md) gives simplified and detailed instructions for every currently working system and labels partial systems explicitly.
+
 ## History
 
 Older milestone-specific notes and changelogs live in [`history/`](history/).
