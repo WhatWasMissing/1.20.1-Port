@@ -7,6 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -174,7 +175,7 @@ public class PortableDecomposerItem extends Item {
     }
 
     private static boolean toggleFilter(ItemStack decomposer, ItemStack candidate) {
-        ListTag filters = decomposer.getOrCreateTag().getList(FILTERS_TAG, CompoundTag.TAG_COMPOUND);
+        ListTag filters = decomposer.getOrCreateTag().getList(FILTERS_TAG, Tag.TAG_COMPOUND);
         for (int i = 0; i < filters.size(); i++) {
             ItemStack stored = ItemStack.of(filters.getCompound(i));
             if (ItemStack.isSameItemSameTags(stored, candidate)) {
@@ -208,7 +209,7 @@ public class PortableDecomposerItem extends Item {
         if (root == null) {
             return result;
         }
-        ListTag filters = root.getList(FILTERS_TAG, CompoundTag.TAG_COMPOUND);
+        ListTag filters = root.getList(FILTERS_TAG, Tag.TAG_COMPOUND);
         for (int i = 0; i < filters.size(); i++) {
             ItemStack stored = ItemStack.of(filters.getCompound(i));
             if (!stored.isEmpty()) {
