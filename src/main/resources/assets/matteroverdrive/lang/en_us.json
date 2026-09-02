@@ -835,5 +835,9 @@
   "block.matteroverdrive.debug_matter_block": "Debug Matter Block",
   "key.categories.matteroverdrive": "Matter Overdrive",
   "key.matteroverdrive.android_cycle_ability": "Cycle Android Ability",
-  "key.matteroverdrive.android_activate_ability": "Activate Android Ability"
+  "key.matteroverdrive.android_activate_ability": "Activate Android Ability",
+  "item.matteroverdrive.m2_testing_checklist": "M2 Testing Checklist",
+  "item.matteroverdrive.current_features_reference": "Current Feature Reference",
+  "item.matteroverdrive.m2_testing_checklist.name": "M2 Testing Checklist",
+  "item.matteroverdrive.current_features_reference.name": "Current Feature Reference"
 }
