@@ -17,19 +17,27 @@ import java.util.List;
 
 public class DocumentationItem extends Item {
     public enum Document {
-        TESTING_CHECKLIST(0, "M2 Testing Checklist"),
-        FEATURE_REFERENCE(1, "Current Feature Reference");
+        TESTING_CHECKLIST(0, "M2 Testing Checklist", "docs/to_test.txt"),
+        FEATURE_REFERENCE(1, "Current Feature Reference", "docs/current_features.txt"),
+        SYSTEM_GUIDE(2, "Matter Overdrive System Guide", "docs/system_guide.txt");
 
         public final int id;
         public final String title;
+        public final String resourcePath;
 
-        Document(int id, String title) {
+        Document(int id, String title, String resourcePath) {
             this.id = id;
             this.title = title;
+            this.resourcePath = resourcePath;
         }
 
         public static Document fromId(int id) {
-            return id == FEATURE_REFERENCE.id ? FEATURE_REFERENCE : TESTING_CHECKLIST;
+            for (Document document : values()) {
+                if (document.id == id) {
+                    return document;
+                }
+            }
+            return TESTING_CHECKLIST;
         }
     }
 
