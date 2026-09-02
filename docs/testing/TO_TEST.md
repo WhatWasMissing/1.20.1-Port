@@ -8,9 +8,18 @@ Use this after a fresh pull and normal M2 client launch. Record the expected res
 
 - [ ] Reach the main menu without registry, datapack, model or menu errors.
 - [ ] Create/load a test world successfully.
-- [ ] Confirm the runtime marker reports `blocks=75`, `blockItems=72`, `standaloneItems=100`, `sounds=57`, `blockEntities=18` and `menus=15`.
-- [ ] Confirm the marker includes `microwave=enabled`, `spacetimeAccelerator=enabled`, `handheldMatterTools=enabled` and `androidAbilities=enabled`.
+- [ ] Confirm the runtime marker reports `blocks=75`, `blockItems=72`, `standaloneItems=102`, `sounds=57`, `blockEntities=18` and `menus=15`.
+- [ ] Confirm the marker includes `microwave=enabled`, `spacetimeAccelerator=enabled`, `handheldMatterTools=enabled`, `androidAbilities=enabled` and `documentationItems=enabled`.
 - [ ] Confirm new handheld recipes appear in the recipe book/JEI and can be crafted in Survival.
+
+## In-game documentation and version identity
+
+- [ ] Obtain the M2 Testing Checklist and Current Feature Reference items from the Matter Overdrive creative tab or craft them in Survival.
+- [ ] Right-click each item and confirm it opens the correct full document in a scrollable screen.
+- [ ] Verify mouse wheel, Page Up/Down, Home/End, scrollbar, Done/Escape and multiple GUI scales.
+- [ ] Compare several headings and checklist entries with `docs/testing/TO_TEST.md` and `docs/reference/WORKING_FEATURES.md`.
+- [ ] Join a single-player world and dedicated server. Confirm chat reports `Matter Overdrive Alpha 0.2 • Made by MVQ1303` once per login.
+- [ ] Confirm the documentation packet cannot open an invalid third document and causes no dedicated-server client-class loading error.
 
 ## Survival resources and Android pills
 
