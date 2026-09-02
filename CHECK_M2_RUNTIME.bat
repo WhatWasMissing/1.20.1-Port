@@ -38,6 +38,8 @@ findstr /c:"microwave=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"spacetimeAccelerator=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
+findstr /c:"handheldMatterTools=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
 findstr /c:"analyzer=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"replicator=enabled" "%LOG%" >nul
