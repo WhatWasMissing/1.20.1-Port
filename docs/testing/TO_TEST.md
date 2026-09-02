@@ -1,41 +1,75 @@
-# Main Runtime Regression Checklist
+# Consolidated Runtime Testing Checklist
 
-Branch: `main`
+Branch: `feature/handheld-matter-tools`
 
-Use this list after a fresh pull and client launch. Record the expected result, actual result, block/item orientation, and relevant log lines for any failure.
+Use this after a fresh pull and normal M2 client launch. Record the expected result, actual result, coordinates/orientation and relevant log lines for every failure.
 
-## Build and world gate
+## Build and runtime gate
 
-- [ ] Run the normal development build/client launch.
-- [ ] Reach the main menu without registry, data-pack, model, or menu errors.
-- [ ] Create or load a test world successfully.
-- [ ] Confirm the new block recipes appear in the recipe book/JEI where applicable.
+- [ ] Reach the main menu without registry, datapack, model or menu errors.
+- [ ] Create/load a test world successfully.
+- [ ] Confirm the runtime marker reports `blocks=75`, `blockItems=72`, `standaloneItems=100`, `sounds=57`, `blockEntities=18` and `menus=15`.
+- [ ] Confirm the marker includes `microwave=enabled`, `spacetimeAccelerator=enabled` and `handheldMatterTools=enabled`.
+- [ ] Confirm new handheld recipes appear in the recipe book/JEI and can be crafted in Survival.
 
-## Reactor, anomaly, and stabilizers
+## Survival resources and Android pills
 
-- [ ] Assemble a valid Fusion Reactor and confirm its controller/guide UI reports structure, matter, FE, and anomaly state.
-- [ ] Feed an item into the event horizon and confirm it is consumed and anomaly mass visibly increases.
-- [ ] Feed a living entity into the horizon and confirm its death increases mass once, not repeatedly after ticks or a world reload.
-- [ ] Connect Reactor IO to a Charging Station with a valid cable route. Confirm the station receives FE while the reactor is producing.
-- [ ] Open the Charging Station GUI; insert a rechargeable battery and confirm its charge rises gradually, persists through reload, and can be retrieved.
-- [ ] Connect a Gravitational Stabilizer to reactor FE. Confirm it is inactive with no power and suppresses the aligned anomaly when powered.
-- [ ] Open the Stabilizer GUI and install Power Upgrades. Confirm upgrades persist/drop correctly and reduce anomaly pull rather than increasing it.
-- [ ] Confirm redstone blocks/signals no longer activate stabilizers.
+- [ ] In fresh Overworld chunks, confirm Tritanium generates from Y -32 through 64 and Dilithium from Y -64 through 16.
+- [ ] Smelt/blast both ores into their intended resources.
+- [ ] Craft and verify Blue, Red and Yellow Android Pills.
+- [ ] Save/reload and confirm Android state/FE remains correct.
 
-## Weapons
+## Microwave
 
-- [ ] In Survival, an empty energy weapon must not fire. The explicit Creative Battery remains the only intended infinite-energy module.
-- [ ] Test Phaser, Phaser Rifle, Ion Sniper, and Plasma Shotgun through the Weapon Station: compatible modules install, persist, and do not duplicate through normal or shift-click removal.
-- [ ] Check first- and third-person holding for all four weapons. The current transforms still need visual confirmation/tuning; report a screenshot with the weapon name and camera mode if misaligned.
-- [ ] Confirm reload, heat/cooling, projectile/beam effects, and energy use still behave after weapon editing.
+- [ ] Accept valid food-smelting inputs and reject non-food items.
+- [ ] Cook from cable FE and from a charged battery without free processing.
+- [ ] Confirm base timing/cost, output blocking, upgrades, persistence, automation and break-safe drops.
+- [ ] See `MICROWAVE_TESTING.md` for the focused checklist.
 
-## Machines, storage, and visuals
+## Space-Time Accelerator
 
-- [ ] Open each implemented machine GUI at normal and a second GUI scale; confirm slots, text, progress bars, and player inventory align.
-- [ ] Check Industrial Glass and other transparent blocks in-world for correct transparency.
-- [ ] Check Tritanium Crates and the Inscriber in-world and inventory for correct 3D models/textures.
-- [ ] Confirm Tritanium Crate storage, Transporter targeting, Pattern Storage/Monitor, Matter machines, Solar Panel, and Energy Pipe retain their existing behaviour.
+- [ ] Require both FE and matter; verify base usage and 40-tick pulse timing.
+- [ ] Accelerate crops/random ticks and several block entities on the same Y level.
+- [ ] Verify equal +X/-X/+Z/-Z boundary coverage.
+- [ ] Verify redstone disable, every supported upgrade, persistence, break-safe drops and acceptable tick-time impact.
+- [ ] See `SPACETIME_ACCELERATOR_TESTING.md` for the focused checklist.
+
+## Matter Scanner
+
+- [ ] Sneak-use the Scanner on a powered Pattern Storage containing a Pattern Drive and confirm the link is stored.
+- [ ] Hold-use the linked Scanner on a block with a matter value for the full scan time.
+- [ ] Confirm the block is destroyed only after a successful scan and the linked drive gains 10% pattern progress.
+- [ ] Confirm ten valid blocks complete a normal pattern and a completed/full/unpowered/offline storage refuses further scans without destroying the target.
+- [ ] Move dimensions, unload/break the linked storage and confirm scanning fails safely.
+- [ ] Save/reload the Scanner and confirm its link and last-scan status persist.
+
+## Portable Decomposer
+
+- [ ] Charge it in the Charging Station and confirm its 128,000 FE capacity persists.
+- [ ] Sneak-use with an offhand matter-valued item to add/remove that item from its pickup filter.
+- [ ] Pick up matching stacks and confirm they are automatically consumed at the intended 10% matter yield while FE is available.
+- [ ] Confirm unmatched, zero-matter, insufficient-FE and full-storage pickups enter the inventory normally.
+- [ ] Confirm fractional yield is retained rather than granting free matter or silently losing every low-value item.
+- [ ] Transfer stored matter into a compatible machine/container and verify exact values before/after.
+- [ ] Save/reload with FE, matter, filter entries and fractional remainder present.
+
+## Data Pad and guide
+
+- [ ] Right-click in air and confirm the guide screen opens.
+- [ ] Navigate every guide page and verify text/buttons at multiple GUI scales.
+- [ ] Use the Data Pad on supported blocks and confirm scan-history entries record the block/item and matter value.
+- [ ] Confirm history is capped, ordered newest-first and persists through save/reload.
+- [ ] Confirm unknown/zero-matter blocks are identified without crashing.
+
+## Core regression checks
+
+- [ ] Reactor structure, anomaly mass, IO/cable FE transfer and stabilizers remain correct.
+- [ ] Empty weapons cannot fire; real batteries transfer only their stored FE; Energy Packs remain consumable.
+- [ ] Contract pickup/kill progress advances only one matching contract.
+- [ ] Pattern Analyzer/Storage/Monitor/Replicator still work after Scanner-created patterns.
+- [ ] Transparent blocks, crate/Inscriber models, equipped armour and held weapon transforms remain visually correct.
+- [ ] Machine inventories/upgrades survive reload and return safely on block break.
 
 ## Pass criteria
 
-The build is ready for the next original-mod feature slice when the build/world gate passes and there are no new crashes, data-pack errors, item loss/duplication, reactor power regressions, or anomaly/stabilizer contradictions.
+The branch is ready to consolidate when the runtime gate passes and there are no new crashes, datapack errors, item loss/duplication, free-energy/free-matter exploits, asymmetric Accelerator range, broken pattern progression or handheld-state persistence failures.
