@@ -11,10 +11,10 @@ echo.
 
 if not exist "%LOG%" goto :fail30
 
-findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=75, blockItems=72, standaloneItems=102, sounds=57" "%LOG%" >nul
+findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=75, blockItems=72, standaloneItems=103, sounds=57" "%LOG%" >nul
 if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
-echo        blocks=75, blockItems=72, standaloneItems=102, sounds=57
+echo        blocks=75, blockItems=72, standaloneItems=103, sounds=57
 
 findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=18, menus=15" "%LOG%" >nul
 if errorlevel 1 goto :fail32
@@ -43,6 +43,8 @@ if errorlevel 1 goto :fail32
 findstr /c:"androidAbilities=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"documentationItems=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"systemGuide=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"analyzer=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
