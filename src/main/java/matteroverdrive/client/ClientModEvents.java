@@ -15,6 +15,7 @@ import matteroverdrive.client.screen.GravitationalStabilizerScreen;
 import matteroverdrive.client.screen.MatterAnalyzerScreen;
 import matteroverdrive.client.screen.MatterRecyclerScreen;
 import matteroverdrive.client.screen.MicrowaveScreen;
+import matteroverdrive.client.screen.SpacetimeAcceleratorScreen;
 import matteroverdrive.client.screen.ReplicatorScreen;
 import matteroverdrive.client.screen.SolarPanelScreen;
 import matteroverdrive.client.screen.TritaniumCrateScreen;
@@ -55,6 +56,7 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.DECOMPOSER.get(), DecomposerScreen::new);
             MenuScreens.register(ModMenus.MATTER_RECYCLER.get(), MatterRecyclerScreen::new);
             MenuScreens.register(ModMenus.MICROWAVE.get(), MicrowaveScreen::new);
+            MenuScreens.register(ModMenus.SPACETIME_ACCELERATOR.get(), SpacetimeAcceleratorScreen::new);
             MenuScreens.register(ModMenus.MATTER_ANALYZER.get(), MatterAnalyzerScreen::new);
             MenuScreens.register(ModMenus.REPLICATOR.get(), ReplicatorScreen::new);
             MenuScreens.register(ModMenus.PATTERN_STORAGE.get(), PatternStorageScreen::new);

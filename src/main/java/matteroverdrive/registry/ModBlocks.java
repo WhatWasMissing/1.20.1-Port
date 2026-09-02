@@ -20,6 +20,7 @@ import matteroverdrive.block.GravitationalStabilizerBlock;
 import matteroverdrive.block.TransporterBlock;
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.block.MicrowaveBlock;
+import matteroverdrive.block.SpacetimeAcceleratorBlock;
 import matteroverdrive.block.ReplicatorBlock;
 import matteroverdrive.block.SolarPanelBlock;
 import matteroverdrive.block.TritaniumCrateBlock;
@@ -168,6 +169,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterRecyclerBlock(propertiesFor(id))));
         } else if (id.equals("microwave")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MicrowaveBlock(propertiesFor(id))));
+        } else if (id.equals("spacetime_accelerator")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SpacetimeAcceleratorBlock(propertiesFor(id))));
         } else if (id.equals("transporter")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TransporterBlock(propertiesFor(id))));
         } else if (id.equals("inscriber")) {
@@ -207,8 +210,6 @@ public final class ModBlocks {
             properties = properties.noOcclusion();
         }
 
-        // Items and entities must be able to cross the block boundary to reach
-        // the anomaly's event horizon and be consumed.
         if (id.equals("gravitational_anomaly")) {
             properties = properties.noCollission();
         }
