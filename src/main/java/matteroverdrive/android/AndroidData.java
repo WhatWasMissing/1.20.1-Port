@@ -105,6 +105,22 @@ public final class AndroidData {
         return used;
     }
 
+    /**
+     * Atomically spends Android FE. Failed actions never drain a partial remainder.
+     */
+    public static boolean tryConsumeEnergy(Player player, int amount) {
+        int requested = Math.max(0, amount);
+        if (requested == 0) {
+            return true;
+        }
+        int stored = getEnergy(player);
+        if (stored < requested) {
+            return false;
+        }
+        setEnergy(player, stored - requested);
+        return true;
+    }
+
     public static void setEnergy(Player player, int amount) {
         CompoundTag data = data(player);
         data.putInt(ENERGY, Mth.clamp(amount, 0, ENERGY_CAPACITY));
