@@ -28,12 +28,16 @@ Use this after a fresh pull and normal M2 client launch. Record the expected res
 - [ ] Craft and verify Blue, Red and Yellow Android Pills.
 - [ ] Save/reload and confirm Android state/FE remains correct.
 
-## Android active abilities
+## Android system and active abilities
 
 - [ ] Install Head, Chest, Arms and Legs parts and confirm they unlock Cloak, Force Field, Sonic Shockwave and Ender Teleport respectively.
 - [ ] Use/rebind the default `V` cycle and `B` activate controls; verify selected ability, active state and cooldown on the Android HUD.
-- [ ] Verify exact FE use, no activation at insufficient FE and automatic shutdown of sustained abilities.
-- [ ] Verify server-authoritative shield damage reduction, shockwave target filtering/knockback and collision-safe teleport.
+- [ ] Sneak with a charged normal/HC Battery in either hand. Verify at most 1,024 FE/t transfers, only real battery FE is drained and the battery remains rechargeable.
+- [ ] Drain Android FE to zero. Verify the HUD reports core offline, movement is reduced by 50%, and normal speed returns after recharge or deactivation.
+- [ ] Verify exact/atomic FE use: insufficient actions leave partial FE untouched and sustained abilities shut down safely.
+- [ ] Verify Arms adds 3 damage for 80 FE only to direct melee attacks; projectiles and Sonic Shockwave must not trigger that bonus.
+- [ ] Verify server-authoritative shield damage reduction, Shockwave's fixed 4,096 FE cost/target filtering/knockback and collision-safe teleport.
+- [ ] Verify the Rogue Android Spawner uses a collision-free candidate and consumes no 20,000 FE charge when spawning fails.
 - [ ] Verify ability selection, toggles and cooldowns across relog/death, and Red Pill cleanup.
 - [ ] See `ANDROID_SYSTEM_TESTING.md` for the focused checklist.
 
