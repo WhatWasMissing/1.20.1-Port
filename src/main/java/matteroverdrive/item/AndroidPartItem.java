@@ -25,10 +25,10 @@ public class AndroidPartItem extends Item {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("Install at an Android Station.").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal(switch (part) {
-            case HEAD -> "Head: night vision";
-            case CHEST -> "Chest: damage resistance";
-            case ARMS -> "Arms: increased melee damage";
-            case LEGS -> "Legs: increased movement speed";
+            case HEAD -> "Head: night vision + Cloak";
+            case CHEST -> "Chest: damage resistance + Force Field";
+            case ARMS -> "Arms: melee damage + Sonic Shockwave";
+            case LEGS -> "Legs: movement speed + Ender Teleport";
         }).withStyle(ChatFormatting.GRAY));
     }
 }
