@@ -97,12 +97,16 @@ Implemented:
 - Persistent Android FE/state.
 - Red Pill deactivation and installed-part return.
 - Yellow Pill Android-FE recharge.
+- Sneak-held normal/HC Battery charging from either hand at up to 1,024 FE/t, transferring only energy actually stored in the battery.
+- Legacy-style zero-power state: the Android HUD reports the offline core and movement speed is reduced by 50% until the core is recharged or conversion is removed.
 - Head, Chest, Arms and Legs bionic-part installation through the Android Station.
 - Android HUD energy/state synchronisation.
 - Part-gated active abilities with server-authoritative input: Head/Cloak, Chest/Force Field, Arms/Sonic Shockwave and Legs/Ender Teleport.
+- Atomic Android FE spending: actions that cannot afford their full cost fail without silently draining a partial remainder.
+- Arms damage is restricted to direct melee attacks; projectiles and Sonic Shockwave cannot inherit the melee bonus or its additional FE cost.
 - Persistent ability selection, toggle state and cooldowns, with FE costs and an expanded Android HUD.
 - Android Station charging within four blocks, shared fairly across nearby converted players.
-- Simplified Rogue Android Spawner using a tagged hostile Husk and bionic-part drops.
+- Simplified Rogue Android Spawner using a tagged hostile Husk and bionic-part drops. It searches collision-free spawn candidates and charges 20,000 FE only after the entity is accepted by the world.
 
 The Chest part uses vanilla Resistance while powered and does not stack a hidden second damage multiplier.
 
