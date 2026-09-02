@@ -39,7 +39,11 @@ if errorlevel 1 goto :fail32
 findstr /c:"spacetimeAccelerator=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"handheldMatterTools=enabled" "%LOG%" >nul
-if errorlevel 1 goto :fail32\nfindstr /c:"androidAbilities=enabled" "%LOG%" >nul\nif errorlevel 1 goto :fail32
+if errorlevel 1 goto :fail32
+findstr /c:"androidAbilities=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"documentationItems=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
 findstr /c:"analyzer=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"replicator=enabled" "%LOG%" >nul
