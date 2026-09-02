@@ -62,7 +62,40 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 }
 
+def bundledDocumentationPairs = [
+        ['docs/testing/TO_TEST.md', 'src/main/resources/assets/matteroverdrive/docs/to_test.txt'],
+        ['docs/reference/WORKING_FEATURES.md', 'src/main/resources/assets/matteroverdrive/docs/current_features.txt'],
+        ['docs/reference/SYSTEM_GUIDE.md', 'src/main/resources/assets/matteroverdrive/docs/system_guide.txt']
+]
+
+tasks.register('verifyBundledDocumentation') {
+    group = 'verification'
+    description = 'Checks that player-facing repository documents exactly match their in-game resources.'
+    inputs.files(bundledDocumentationPairs.collectMany { pair -> [file(pair[0]), file(pair[1])] })
+
+    doLast {
+        bundledDocumentationPairs.each { pair ->
+            File source = file(pair[0])
+            File bundled = file(pair[1])
+            if (!source.isFile() || !bundled.isFile()) {
+                throw new GradleException("Missing documentation source or bundled resource: ${pair}")
+            }
+            if (source.getText('UTF-8') != bundled.getText('UTF-8')) {
+                throw new GradleException("Bundled documentation is stale: ${pair[0]} != ${pair[1]}")
+            }
+        }
+
+        String guide = file('docs/reference/SYSTEM_GUIDE.md').getText('UTF-8')
+        ['## Simplified', '## Detailed', 'Status: PARTIAL', '# 28. Troubleshooting routes'].each { required ->
+            if (!guide.contains(required)) {
+                throw new GradleException("System Guide is missing required structure: ${required}")
+            }
+        }
+    }
+}
+
 tasks.named('processResources', ProcessResources).configure {
+    dependsOn tasks.named('verifyBundledDocumentation')
     def replaceProperties = [
             minecraft_version: minecraft_version,
             forge_version: forge_version,
