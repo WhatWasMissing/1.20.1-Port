@@ -14,10 +14,10 @@ This file is the durable hand-off record for continuing the port in a new ChatGP
 ## Current repository state
 
 - Authoritative integration branch: `testing/main`.
-- Android audit branch: `testing/android-system-audit-alpha02`.
-- Audit base commit: `9760c334898eee6a041f452fc60ca67c94d25cb2`.
+- Active documentation branch: `testing/in-game-system-guide-alpha02`.
+- Branch base commit: `3899d0228afba5fe4c0e59a46dde7884e8792b23`.
 - This pass must merge back into `testing/main` only after GitHub Actions compilation succeeds.
-- Runtime behavior remains unverified until the focused Android client/dedicated-server checklist is completed.
+- System Guide rendering/navigation and the latest Android behavior remain unverified until their focused client/dedicated-server checks are completed.
 
 ## Verified milestones
 
@@ -607,3 +607,15 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 - Hardened the simplified Rogue Android Spawner: it searches multiple collision-free positions, respects the world border, charges 20,000 FE only after the world accepts the entity, retries rejected/blocked spawns after one second and recovers if world time moves backwards.
 - Updated the bundled Current Feature Reference and M2 Testing Checklist plus `ANDROID_SYSTEM_TESTING.md` and the short roadmap.
 - Build/CI and in-world runtime behavior are not yet verified. Exact next step: compile the branch, then run the complete Android checklist with special attention to melee/projectile separation, fixed Shockwave cost, battery transfer conservation, zero-power speed recovery and blocked-spawner FE conservation.
+
+
+## Complete in-game System Guide — awaiting runtime verification (2026-09-02)
+
+- Added a third non-stackable documentation item, `matteroverdrive:system_guide`, available in the Matter Overdrive creative tab and through a shapeless Book + Paper + Redstone + Mk1 Isolinear Circuit recipe.
+- Added a 28-section player manual covering every currently working system: survival resources, FE, matter machines, pattern acquisition/replication, handheld tools, production/utilities, three network types, Fusion Reactor/gravity, weapons, Androids/Rogue spawner, Contracts/Star Map, equipment, documentation, visuals and troubleshooting.
+- Every gameplay section pairs a short Simplified route with Detailed setup/limits. Android, Rogue Android, Contracts/Star Map, weapons, world progression and other incomplete legacy slices are explicitly marked PARTIAL or TESTING.
+- Generalized DocumentationItem metadata so each document owns its bundled resource path; invalid IDs continue to fall back safely.
+- Added model, translation, Survival recipe, bundled resource, feature-matrix entry, roadmap/index/changelog updates and focused runtime checks.
+- Updated the live standalone-item expectation from 102 to 103 and added `systemGuide=enabled` to the runtime marker/gate.
+- Repository and bundled copies of SYSTEM_GUIDE, TO_TEST and WORKING_FEATURES are kept identical.
+- Build/CI and in-world behavior are unverified. Exact next step: compile the branch, open all three documentation items at several GUI scales, navigate the 774-line System Guide with mouse wheel/Page Up/Page Down/Home/End, sample every major category and confirm no clipped text, missing resource, recipe conflict or dedicated-server client-class loading error.
