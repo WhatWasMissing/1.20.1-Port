@@ -43,6 +43,9 @@ The ore frequencies and vein sizes preserve the original mod's relative balance 
 - Matter Scanner: links to powered Pattern Storage for 128 FE, scans matter-valued blocks over 60 ticks, consumes only successfully recorded targets and adds 10% Pattern Drive progress per block.
 - Portable Decomposer: 128,000 FE rechargeable buffer, 512 kM matter storage, persistent pickup filters, automatic 10% matter conversion with fractional-yield retention and direct transfer into compatible matter receivers.
 - Data Pad: seven-page in-game guide plus persistent, deduplicated scan history for up to 16 blocks with registry IDs and matter values.
+- M2 Testing Checklist: scrollable in-game copy of the consolidated runtime test document.
+- Current Feature Reference: scrollable in-game copy of this implemented/missing feature matrix.
+- Login identity banner: reports Matter Overdrive Alpha 0.2 and MVQ1303 in chat once per world/server login.
 
 ### Matter/network logistics
 
