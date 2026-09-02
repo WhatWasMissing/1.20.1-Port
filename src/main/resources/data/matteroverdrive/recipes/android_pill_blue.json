@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "TDT",
+    "GEG",
+    "TDT"
+  ],
+  "key": {
+    "T": {
+      "item": "matteroverdrive:tritanium_ingot"
+    },
+    "D": {
+      "item": "matteroverdrive:dilithium_crystal"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "E": {
+      "item": "minecraft:ender_pearl"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:android_pill_blue"
+  }
+}

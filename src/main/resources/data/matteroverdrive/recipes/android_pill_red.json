@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RFR",
+    "DTD",
+    "RFR"
+  ],
+  "key": {
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "F": {
+      "item": "minecraft:fermented_spider_eye"
+    },
+    "D": {
+      "item": "matteroverdrive:dilithium_crystal"
+    },
+    "T": {
+      "item": "matteroverdrive:tritanium_ingot"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:android_pill_red"
+  }
+}
