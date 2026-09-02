@@ -832,5 +832,8 @@
   "item.matteroverdrive.debug_matter_container": "Debug Matter Container",
   "tooltip.matteroverdrive.debug_matter_container": "Contains up to 1,000,000 kM of matter",
   "tooltip.matteroverdrive.matter_value_shift": "Hold SHIFT for matter value",
-  "block.matteroverdrive.debug_matter_block": "Debug Matter Block"
+  "block.matteroverdrive.debug_matter_block": "Debug Matter Block",
+  "key.categories.matteroverdrive": "Matter Overdrive",
+  "key.matteroverdrive.android_cycle_ability": "Cycle Android Ability",
+  "key.matteroverdrive.android_activate_ability": "Activate Android Ability"
 }
