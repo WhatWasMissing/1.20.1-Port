@@ -26,6 +26,21 @@ Branch: `testing/main`
 - [ ] Legs: increased movement speed while Android FE is available.
 - [ ] Drain Android FE to zero and confirm abilities stop rather than becoming free.
 
+## Active Android abilities
+
+- [ ] Confirm the controls menu lists `Cycle Android Ability` (default `V`) and `Activate Android Ability` (default `B`) and that both can be rebound.
+- [ ] Install only one body part at a time. Confirm cycling skips abilities whose required part is not installed.
+- [ ] Confirm the HUD shows the selected ability, active toggle state or remaining cooldown.
+- [ ] Head / Cloak: toggle it on and confirm invisibility consumes exactly 128 FE/t, then disables when FE is insufficient. Toggle it off and confirm the effect expires without removing unrelated potion state.
+- [ ] Chest / Force Field: toggle it on and confirm 32 FE/t idle use. Take controlled damage and confirm it absorbs up to 50% at 64 FE per absorbed damage point without granting free absorption.
+- [ ] Arms / Sonic Shockwave: confirm it costs 4,096 FE, damages/knocks back non-allied living targets in a five-block radius and enforces a five-second cooldown.
+- [ ] Legs / Ender Teleport: confirm it costs 4,096 FE, moves up to eight blocks along the clear view ray and enforces a three-second cooldown.
+- [ ] Aim Teleport into a wall, outside the world border and where the player bounding box cannot fit. Confirm it chooses a safe nearer destination or refuses without consuming FE/cooldown.
+- [ ] Spam activation packets/keys during cooldown and with insufficient FE. Confirm the server refuses them and values never go negative.
+- [ ] Relog and die/respawn with Cloak/Force Field active and one-shot abilities cooling down. Confirm state remains coherent and no duplicate effect or free reset occurs.
+- [ ] Use a Red Pill while active. Confirm toggles, selection/cooldowns and installed parts are cleared/returned safely.
+- [ ] Repeat on a dedicated server with two Android players and confirm one player's ability state never changes the other's.
+
 ## Rogue Android Spawner
 
 - [ ] Power an Android Spawner from the reactor/cable network.

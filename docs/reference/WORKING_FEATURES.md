@@ -96,6 +96,8 @@ Implemented:
 - Yellow Pill Android-FE recharge.
 - Head, Chest, Arms and Legs bionic-part installation through the Android Station.
 - Android HUD energy/state synchronisation.
+- Part-gated active abilities with server-authoritative input: Head/Cloak, Chest/Force Field, Arms/Sonic Shockwave and Legs/Ender Teleport.
+- Persistent ability selection, toggle state and cooldowns, with FE costs and an expanded Android HUD.
 - Android Station charging within four blocks, shared fairly across nearby converted players.
 - Simplified Rogue Android Spawner using a tagged hostile Husk and bionic-part drops.
 
@@ -129,11 +131,11 @@ Visual runtime checks are still required for transparency, crate/Inscriber UV al
 
 The following are the major remaining parity gaps. This list tracks gameplay behaviour, not merely registry presence.
 
-## 1. Android RPG / biotic ability system — missing
+## 1. Android RPG / biotic ability system — partial
 
-The original Android system contained an unlockable RPG-style ability/stat layer. The current port has conversion, FE and four installed body parts, but does not yet restore the full ability tree.
+The first active-ability layer is restored: bionic parts unlock Cloak, Force Field, Sonic Shockwave and Ender Teleport, with server validation, FE costs, cooldowns, persistent selection/toggles and HUD status.
 
-Still missing includes the legacy-style abilities/stat progression such as teleportation, force-field/shield abilities, cloak, night vision, shockwave/flash-cooling style powers, ability cooldown/unlock progression and the richer Android minimap/team presentation.
+Still missing is the full legacy XP/unlock tree, multi-level stat progression, flash cooling and the richer Android minimap/team presentation. The current part-gated unlock model is a playable foundation rather than final legacy progression parity.
 
 ## 2. Full Star Map galaxy simulation — missing
 
@@ -183,7 +185,7 @@ Old optional integration layers such as ComputerCraft/Tinkers/other 1.12-era com
 
 # Recommended parity order
 
-1. Android ability tree/biotic stats and a real Rogue Android entity.
+1. Android XP/stat progression and a real Rogue Android entity.
 2. Security/Holo Sign/network-drive functionality.
 3. Themed world structures, anomaly/world events and legacy mobs/NPCs.
 4. Full quest framework and then full Star Map galaxy simulation.

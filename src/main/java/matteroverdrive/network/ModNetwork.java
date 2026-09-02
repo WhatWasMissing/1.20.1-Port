@@ -20,10 +20,14 @@ public final class ModNetwork {
             .serverAcceptedVersions(PROTOCOL::equals)
             .simpleChannel();
 
-    private ModNetwork() {}
+    private ModNetwork() {
+    }
+
     public static void register() {
         CHANNEL.registerMessage(nextId++, AndroidStatePacket.class, AndroidStatePacket::encode,
                 AndroidStatePacket::decode, AndroidStatePacket::handle);
+        CHANNEL.registerMessage(nextId++, AndroidAbilityPacket.class, AndroidAbilityPacket::encode,
+                AndroidAbilityPacket::decode, AndroidAbilityPacket::handle);
         CHANNEL.registerMessage(nextId++, DataPadOpenPacket.class, DataPadOpenPacket::encode,
                 DataPadOpenPacket::decode, DataPadOpenPacket::handle);
     }
@@ -33,7 +37,14 @@ public final class ModNetwork {
     }
 
     public static void syncAndroidState(ServerPlayer player) {
+        AndroidData.Ability selected = AndroidData.getSelectedAbility(player);
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new AndroidStatePacket(
-                AndroidData.isAndroid(player), AndroidData.getEnergy(player), AndroidData.getParts(player)));
+                AndroidData.isAndroid(player),
+                AndroidData.getEnergy(player),
+                AndroidData.getParts(player),
+                selected.ordinal(),
+                AndroidData.getRemainingCooldown(player, selected, player.level().getGameTime()),
+                AndroidData.getActiveAbilityFlags(player)
+        ));
     }
 }
