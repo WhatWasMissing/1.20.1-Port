@@ -367,7 +367,7 @@ tasks.register('verifyM2Sources') {
         if (!drive.contains('LEGACY_CAPACITY = 2')) throw new GradleException('Legacy Pattern Drive capacity must remain 2')
         if (!decomposer.contains('MatterNetworkUtil.transferMatter') || !analyzer.contains('findNetworkStorageFor') || !replicator.contains('queueNetworkReplication')) throw new GradleException('M2 network bridge wiring is incomplete')
 
-        if (mod_version != '0.8.0.0-alpha.4.1') throw new GradleException("Unexpected M2 version: ${mod_version}")
+        if (mod_version != '0.2.0-alpha') throw new GradleException("Unexpected M2 version: ${mod_version}")
 
         println 'M2 SOURCE VERIFICATION PASSED'
         println '  functionalBlocks=transporter,inscriber,decomposer,matter_recycler,matter_analyzer,replicator,pattern_storage,pattern_monitor,tritanium_crate_variants'
