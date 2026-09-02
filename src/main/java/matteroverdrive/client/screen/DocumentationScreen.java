@@ -38,9 +38,8 @@ public class DocumentationScreen extends Screen {
     }
 
     private void loadDocument() {
-        String path = document == DocumentationItem.Document.TESTING_CHECKLIST
-                ? "docs/to_test.txt" : "docs/current_features.txt";
-        ResourceLocation resource = new ResourceLocation(MatterOverdrive.MOD_ID, path);
+        ResourceLocation resource = new ResourceLocation(
+                MatterOverdrive.MOD_ID, document.resourcePath);
         Minecraft.getInstance().getResourceManager().getResource(resource).ifPresentOrElse(found -> {
             try (BufferedReader reader = found.openAsReader()) {
                 sourceLines.addAll(reader.lines().toList());
