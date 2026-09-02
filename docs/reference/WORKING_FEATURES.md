@@ -22,6 +22,7 @@ A registered item/block is not automatically considered feature-complete. Severa
 
 - Solar Panel: daylight FE generation, storage/export and Power Storage upgrades.
 - Charging Station: FE buffer and charging for compatible batteries/energy items.
+- Microwave: food-only FE-powered cooker using normal Minecraft smelting recipes, with a 512,000 FE base buffer, 1,000 FE nominal cost per cook, 10-tick base cook time, battery charging, Speed/Power/Power Storage/Hyper Speed upgrades, persistence and break-safe inventory return.
 - Transporter: Transport Flash Drive binding and same-dimension entity transport with active Speed, Range, Power and Power Storage upgrades.
 - Tritanium Crates: 54-slot portable storage across all colour variants with dropped-item NBT retention.
 - Weapon Station: weapon/module editing, persistence and safe content return on break.
@@ -161,41 +162,37 @@ Still missing includes the original-style quest stack/multi-quest system, mining
 
 `omni_tool` is registered but does not yet restore the original hybrid tool/energy-weapon behaviour, firing/beam behaviour and associated presentation.
 
-## 8. Microwave — missing
-
-The Microwave registry block currently exists as a normal placeholder block. Its original machine/block-entity gameplay has not been ported.
-
-## 9. Space-Time Accelerator — missing
+## 8. Space-Time Accelerator — missing
 
 The Space-Time Accelerator registry block currently exists as a normal placeholder block. The original nearby-machine acceleration mechanic is not implemented.
 
-## 10. Holo Sign and security/ownership gameplay — missing
+## 9. Holo Sign and security/ownership gameplay — missing
 
 The Holo Sign is presently a basic registered block rather than the original programmable/security-aware holographic sign. The broader legacy ownership/security layer and security protocol item behaviour are also not restored.
 
-## 11. Additional drive/network configuration items — incomplete
+## 10. Additional drive/network configuration items — incomplete
 
 Pattern Drives and Transport Flash Drives are functional, but legacy generic/network flash-drive configuration behaviour is not fully restored. `flash_drive`, `network_flash_drive` and the security protocol items are currently generic items.
 
-## 12. Original mobs and Rogue Android depth — mostly missing
+## 11. Original mobs and Rogue Android depth — mostly missing
 
 The current Android Spawner deliberately uses a tagged vanilla Husk as a simplified Rogue Android. The original dedicated entity ecosystem is not yet ported, including richer Rogue Android AI/levels/equipment/teams/ranged variants and other legacy entities such as drones, failed animals and scientist NPC/mob content.
 
-## 13. Legacy world generation — partial
+## 12. Legacy world generation — partial
 
 Natural Tritanium and Dilithium ore generation is now restored through 1.20.1 configured/placed features and a Forge biome modifier. The remaining worldgen parity gap is the original themed content and world-spawn layer: crashed/cargo ships, underwater bases, anomaly/world events and related mob/NPC spawning still need dedicated modern implementations.
 
-## 14. Remaining weapon parity — partial
+## 13. Remaining weapon parity — partial
 
 The core four weapons and module effects are implemented, but legacy extras remain incomplete, including the old weapon enchantment/random-weapon ecosystem, richer Rogue Android weapon generation/drops and final recoil/model/beam presentation parity.
 
-## 15. Legacy integrations — not ported
+## 14. Legacy integrations — not ported
 
 Old optional integration layers such as ComputerCraft/Tinkers/other 1.12-era compatibility code have not been recreated. These should be reconsidered individually against modern 1.20.1 equivalents rather than copied directly.
 
 # Recommended parity order
 
-1. Microwave + Space-Time Accelerator, because both are visible registered placeholder machines and can reuse the current FE/upgrade foundation.
+1. Space-Time Accelerator, completing the other visible registered placeholder machine that can reuse the current FE/upgrade foundation.
 2. Matter Scanner + Portable Decomposer + Data Pad/guide, completing the remaining core handheld matter loop.
 3. Android ability tree/biotic stats and a real Rogue Android entity.
 4. Security/Holo Sign/network-drive functionality.
@@ -212,5 +209,6 @@ Use the checklists under `docs/testing/`, especially:
 - `MATTER_NETWORK_LOGISTICS_TESTING.md`
 - `CONTRACTS_STAR_MAP_TESTING.md`
 - `SURVIVAL_PROGRESSION_TESTING.md`
+- `MICROWAVE_TESTING.md`
 
-A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify datapack loading, fresh-chunk ore generation, recipes, in-world behaviour or rendering.
+A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify datapack loading, fresh-chunk ore generation, recipes, machine behaviour, in-world behaviour or rendering.
