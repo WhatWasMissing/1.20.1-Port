@@ -157,8 +157,8 @@ public class SpacetimeAcceleratorBlockEntity extends BlockEntity implements Menu
         if (!(level instanceof ServerLevel serverLevel)) return 0;
         int radius = getRadius();
         int accelerated = 0;
-        for (int x = -radius; x < radius; x++) {
-            for (int z = -radius; z < radius; z++) {
+        for (int x = -radius; x <= radius; x++) {
+            for (int z = -radius; z <= radius; z++) {
                 BlockPos targetPos = worldPosition.offset(x, 0, z);
                 if (!serverLevel.hasChunkAt(targetPos)) continue;
                 BlockState targetState = serverLevel.getBlockState(targetPos);
