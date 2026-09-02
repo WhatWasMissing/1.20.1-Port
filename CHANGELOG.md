@@ -2,6 +2,25 @@
 
 All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 
+## Unreleased — Android system audit
+
+### Added
+
+- Sneak-held normal/HC Battery charging for converted Androids at up to 1,024 FE/t.
+- Legacy-style 50% movement penalty and HUD warning while the Android core has no FE.
+- Collision-safe fallback positions for the simplified Rogue Android Spawner.
+
+### Fixed
+
+- Failed Android actions no longer drain an unaffordable partial FE remainder.
+- The Arms damage bonus now applies only to direct melee attacks.
+- Sonic Shockwave no longer inherits the Arms melee bonus or extra per-target FE drain.
+- Rogue Android spawning no longer consumes 20,000 FE when the world rejects the entity.
+
+### Testing status
+
+Compilation and focused client/dedicated-server Android verification are required before this pass is marked runtime-verified.
+
 ## 0.8.0.0-alpha.4.1 — M2 functional systems test build
 
 ### Added

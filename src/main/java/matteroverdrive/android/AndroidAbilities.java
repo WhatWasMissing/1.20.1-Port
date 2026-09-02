@@ -19,6 +19,7 @@ import java.util.List;
 public final class AndroidAbilities {
     public static final int ACTION_CYCLE = 0;
     public static final int ACTION_ACTIVATE = 1;
+    public static final String ABILITY_DAMAGE_TAG = "MatterOverdriveAndroidAbilityDamage";
 
     public static final int CLOAK_ENERGY_PER_TICK = 128;
     public static final int SHIELD_IDLE_ENERGY_PER_TICK = 32;
@@ -79,7 +80,7 @@ public final class AndroidAbilities {
 
         if (AndroidData.isCloakEnabled(player)) {
             if (!AndroidData.isAbilityUnlocked(player, AndroidData.Ability.CLOAK)
-                    || AndroidData.consumeEnergy(player, CLOAK_ENERGY_PER_TICK) < CLOAK_ENERGY_PER_TICK) {
+                    || !AndroidData.tryConsumeEnergy(player, CLOAK_ENERGY_PER_TICK)) {
                 AndroidData.setCloakEnabled(player, false);
                 status(player, "Cloak disabled: insufficient Android FE.", ChatFormatting.RED);
             } else {
@@ -89,7 +90,7 @@ public final class AndroidAbilities {
 
         if (AndroidData.isShieldEnabled(player)
                 && (!AndroidData.isAbilityUnlocked(player, AndroidData.Ability.FORCE_FIELD)
-                || AndroidData.consumeEnergy(player, SHIELD_IDLE_ENERGY_PER_TICK) < SHIELD_IDLE_ENERGY_PER_TICK)) {
+                || !AndroidData.tryConsumeEnergy(player, SHIELD_IDLE_ENERGY_PER_TICK))) {
             AndroidData.setShieldEnabled(player, false);
             status(player, "Force Field disabled: insufficient Android FE.", ChatFormatting.RED);
         }
@@ -113,7 +114,9 @@ public final class AndroidAbilities {
         }
 
         int energyCost = Math.max(1, (int) Math.ceil(absorbed * SHIELD_ENERGY_PER_DAMAGE));
-        AndroidData.consumeEnergy(player, energyCost);
+        if (!AndroidData.tryConsumeEnergy(player, energyCost)) {
+            return;
+        }
         event.setAmount(Math.max(0.0F, event.getAmount() - absorbed));
         if (AndroidData.getEnergy(player) < SHIELD_ENERGY_PER_DAMAGE) {
             AndroidData.setShieldEnabled(player, false);
@@ -158,18 +161,28 @@ public final class AndroidAbilities {
         AABB area = player.getBoundingBox().inflate(SHOCKWAVE_RADIUS, 2.5D, SHOCKWAVE_RADIUS);
         List<LivingEntity> targets = player.level().getEntitiesOfClass(LivingEntity.class, area,
                 target -> target != player && target.isAlive() && !target.isAlliedTo(player));
-        for (LivingEntity target : targets) {
-            Vec3 offset = target.position().subtract(player.position());
-            Vec3 horizontal = new Vec3(offset.x, 0.0D, offset.z);
-            if (horizontal.lengthSqr() < 0.001D) {
-                horizontal = player.getLookAngle();
+        boolean previousAbilityDamage = player.getPersistentData().getBoolean(ABILITY_DAMAGE_TAG);
+        player.getPersistentData().putBoolean(ABILITY_DAMAGE_TAG, true);
+        try {
+            for (LivingEntity target : targets) {
+                Vec3 offset = target.position().subtract(player.position());
+                Vec3 horizontal = new Vec3(offset.x, 0.0D, offset.z);
+                if (horizontal.lengthSqr() < 0.001D) {
+                    horizontal = player.getLookAngle();
+                }
+                horizontal = horizontal.normalize();
+                target.hurt(player.damageSources().playerAttack(player), SHOCKWAVE_DAMAGE);
+                target.push(horizontal.x * 1.25D, 0.45D, horizontal.z * 1.25D);
             }
-            horizontal = horizontal.normalize();
-            target.hurt(player.damageSources().playerAttack(player), SHOCKWAVE_DAMAGE);
-            target.push(horizontal.x * 1.25D, 0.45D, horizontal.z * 1.25D);
+        } finally {
+            if (previousAbilityDamage) {
+                player.getPersistentData().putBoolean(ABILITY_DAMAGE_TAG, true);
+            } else {
+                player.getPersistentData().remove(ABILITY_DAMAGE_TAG);
+            }
         }
 
-        AndroidData.consumeEnergy(player, SHOCKWAVE_ENERGY);
+        AndroidData.tryConsumeEnergy(player, SHOCKWAVE_ENERGY);
         AndroidData.setCooldownUntil(player, AndroidData.Ability.SHOCKWAVE, gameTime + SHOCKWAVE_COOLDOWN);
         status(player, "Sonic Shockwave hit " + targets.size() + " target(s).", ChatFormatting.AQUA);
     }
@@ -220,7 +233,7 @@ public final class AndroidAbilities {
 
         player.teleportTo(destination.x, destination.y, destination.z);
         player.fallDistance = 0.0F;
-        AndroidData.consumeEnergy(player, TELEPORT_ENERGY);
+        AndroidData.tryConsumeEnergy(player, TELEPORT_ENERGY);
         AndroidData.setCooldownUntil(player, AndroidData.Ability.TELEPORT, gameTime + TELEPORT_COOLDOWN);
         status(player, "Ender Teleport complete.", ChatFormatting.AQUA);
     }

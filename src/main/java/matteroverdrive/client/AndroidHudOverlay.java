@@ -47,7 +47,10 @@ public final class AndroidHudOverlay {
 
         String state;
         int color;
-        if (AndroidClientState.isSelectedAbilityActive()) {
+        if (energy <= 0) {
+            state = "CORE OFFLINE: SPEED LIMITED";
+            color = 0xFFFF6060;
+        } else if (AndroidClientState.isSelectedAbilityActive()) {
             state = "ACTIVE";
             color = 0xFF65FF9A;
         } else if (AndroidClientState.cooldownTicks() > 0) {
