@@ -1,6 +1,6 @@
 # Current Features and Roadmap
 
-Status: `main`, updated 2026-09-01.
+Status: `testing/main`, updated 2026-09-02.
 
 The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../reference/WORKING_FEATURES.md). This file is the shorter implementation roadmap.
 
@@ -14,6 +14,7 @@ The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../referenc
 - Weapons: Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun, rechargeable batteries/Energy Packs, heat/energy checks and Weapon Station modules.
 - Android foundation: conversion/deactivation/recharge pills, persistent Android FE, Android Station, four bionic body parts, HUD and simplified Rogue Android Spawner.
 - Progression foundation: Contract Market, collect/hunt contracts, redemption/refresh flow and per-viewer Star Map contract summary.
+- Survival resource foundation: natural Tritanium and Dilithium ore generation, furnace/blast-furnace processing and temporary craftable Android-pill progression.
 - Storage/utility: Tritanium Crates, Transporter, Solar Panel, Tritanium tools/armour and the current debug/testing utilities.
 
 ## Major original-mod parity gaps
@@ -30,7 +31,7 @@ The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../referenc
 10. **Holo Sign/security/ownership** — programmable sign and security protocol/ownership behaviour are missing.
 11. **Legacy drive configuration** — generic/network flash-drive behaviour beyond Pattern/Transport drives is incomplete.
 12. **Dedicated mobs/entities** — proper Rogue Androids, ranged/levelled variants, drones, failed animals and scientist NPC/mob content are not restored; the current spawner uses a tagged Husk.
-13. **World generation** — themed structures and the legacy world-spawn layer are not ported.
+13. **World structures/spawn layer** — natural Tritanium/Dilithium ores are restored, but themed structures, legacy anomaly/world events and the wider spawn layer are not.
 14. **Remaining weapon depth** — original enchantment/random-weapon ecosystem and final recoil/model/beam parity remain.
 15. **Legacy optional integrations** — old ComputerCraft/Tinkers/etc. compatibility has not been recreated for modern equivalents.
 
@@ -40,10 +41,10 @@ The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../referenc
 2. Matter Scanner, Portable Decomposer and Data Pad/guide.
 3. Android ability tree/biotic stats and dedicated Rogue Android entities.
 4. Holo Sign, security/ownership and remaining network-drive behaviour.
-5. World generation and legacy mobs/NPCs.
+5. Themed world structures, anomaly/world events and legacy mobs/NPCs.
 6. Full quest framework followed by full Star Map galaxy gameplay.
 7. Remaining weapon parity and selected modern mod integrations.
 
 ## Current verification note
 
-The integrated main build includes the contract tracking correction that uses actual post-pickup amounts and forces player inventory/menu synchronization after progress changes. Build success does not replace the in-world regression check for collect/hunt progress, visual rendering or gameplay balance.
+The survival-progression branch now builds with natural Tritanium/Dilithium worldgen, ore processing and temporary survival Android-pill recipes. These datapack additions still require a fresh-chunk runtime test; use `docs/testing/SURVIVAL_PROGRESSION_TESTING.md`. Build success does not replace in-world regression checks for world generation, recipes, visual rendering or gameplay balance.
