@@ -17,7 +17,7 @@ The detailed source-of-truth feature matrix is [WORKING_FEATURES.md](../referenc
 - Progression foundation: Contract Market, collect/hunt contracts, redemption/refresh flow and per-viewer Star Map contract summary.
 - Survival resource foundation: natural Tritanium and Dilithium ore generation, furnace/blast-furnace processing and temporary craftable Android-pill progression.
 - Handheld matter loop: linked Matter Scanner pattern acquisition, filtered FE-powered Portable Decomposer pickup conversion and Data Pad guide/scan history.
-- Storage/utility: Tritanium Crates, Tritanium tools/armour and the current debug/testing utilities.
+- Storage/utility: Tritanium Crates, Tritanium tools/armour, current debug/testing utilities and three bundled in-game documents, including a simplified-plus-detailed System Guide for every playable slice.
 
 ## Major original-mod parity gaps
 
