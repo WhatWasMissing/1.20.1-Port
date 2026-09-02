@@ -1,6 +1,6 @@
 # Matter Overdrive 1.20.1 — Feature Reference
 
-This is the current source-of-truth feature list for the 1.20.1 port on `main`. It distinguishes systems that are implemented from legacy 1.12.2 content whose registry ID or resource may exist but whose original gameplay has not yet been restored.
+This is the current source-of-truth feature list for the 1.20.1 port on `testing/main`. It distinguishes systems that are implemented from legacy 1.12.2 content whose registry ID or resource may exist but whose original gameplay has not yet been restored.
 
 A registered item/block is not automatically considered feature-complete. Several legacy IDs intentionally remain compatibility/resource placeholders until their behaviour is ported.
 
@@ -25,6 +25,16 @@ A registered item/block is not automatically considered feature-complete. Severa
 - Transporter: Transport Flash Drive binding and same-dimension entity transport with active Speed, Range, Power and Power Storage upgrades.
 - Tritanium Crates: 54-slot portable storage across all colour variants with dropped-item NBT retention.
 - Weapon Station: weapon/module editing, persistence and safe content return on break.
+
+### Survival resources and world generation
+
+- Tritanium Ore generates naturally in Overworld biomes from Y -32 through 64, using 10 placement attempts per chunk and legacy vein size 6.
+- Dilithium Ore generates naturally in Overworld biomes from Y -64 through 16, using 6 placement attempts per chunk and legacy vein size 5.
+- Tritanium Ore smelts/blasts into Tritanium Ingots.
+- Dilithium Ore smelts/blasts into Dilithium Crystals.
+- Blue, Red and Yellow Android Pills have temporary survival crafting recipes so Android conversion/deactivation/recharge can be reached before the Mad Scientist/quest route is restored.
+
+The ore frequencies and vein sizes preserve the original mod's relative balance while the vertical ranges are adapted to the 1.20.1 world height. The pill recipes are a progression bridge, not final legacy-parity quest design.
 
 ### Matter/network logistics
 
@@ -171,9 +181,9 @@ Pattern Drives and Transport Flash Drives are functional, but legacy generic/net
 
 The current Android Spawner deliberately uses a tagged vanilla Husk as a simplified Rogue Android. The original dedicated entity ecosystem is not yet ported, including richer Rogue Android AI/levels/equipment/teams/ranged variants and other legacy entities such as drones, failed animals and scientist NPC/mob content.
 
-## 13. Legacy world generation — missing
+## 13. Legacy world generation — partial
 
-The original mod generated themed structures/content such as crashed/cargo ships, underwater bases and other image-based structures, alongside its world-spawn gameplay. The current port has no equivalent Matter Overdrive worldgen implementation yet. Natural legacy ore/structure/anomaly generation therefore still needs a dedicated 1.20.1 worldgen pass rather than relying on registered blocks alone.
+Natural Tritanium and Dilithium ore generation is now restored through 1.20.1 configured/placed features and a Forge biome modifier. The remaining worldgen parity gap is the original themed content and world-spawn layer: crashed/cargo ships, underwater bases, anomaly/world events and related mob/NPC spawning still need dedicated modern implementations.
 
 ## 14. Remaining weapon parity — partial
 
@@ -189,7 +199,7 @@ Old optional integration layers such as ComputerCraft/Tinkers/other 1.12-era com
 2. Matter Scanner + Portable Decomposer + Data Pad/guide, completing the remaining core handheld matter loop.
 3. Android ability tree/biotic stats and a real Rogue Android entity.
 4. Security/Holo Sign/network-drive functionality.
-5. World generation and legacy mobs/NPCs.
+5. Themed world structures, anomaly/world events and legacy mobs/NPCs.
 6. Full quest framework and then full Star Map galaxy simulation.
 7. Weapon visual/enchantment/random-generation parity and optional mod integrations.
 
@@ -201,5 +211,6 @@ Use the checklists under `docs/testing/`, especially:
 - `ANDROID_SYSTEM_TESTING.md`
 - `MATTER_NETWORK_LOGISTICS_TESTING.md`
 - `CONTRACTS_STAR_MAP_TESTING.md`
+- `SURVIVAL_PROGRESSION_TESTING.md`
 
-A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify in-world behaviour or rendering.
+A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify datapack loading, fresh-chunk ore generation, recipes, in-world behaviour or rendering.
