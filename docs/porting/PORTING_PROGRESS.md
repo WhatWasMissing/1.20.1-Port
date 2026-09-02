@@ -9,18 +9,15 @@ This file is the durable hand-off record for continuing the port in a new ChatGP
 - Do not mark runtime behavior as verified until it has been tested in Minecraft.
 - Add a temporary, clearly labelled debug UI readout for new or changed runtime mechanics so their effective server-side values can be tested directly; remove or convert these only during later UI polish.
 - Target: Minecraft 1.20.1, Forge 47.4.10, Java 17.
-- Current port version: `0.8.0.0-alpha.4.1`.
+- Current port version: `0.2.0-alpha`.
 
 ## Current repository state
 
-- Active work branch: `feature/machine-upgrades`
-- Base branch: `main`
-- Base commit: `701be7bfd7bfdd4e6e4aec77fe908ed735c6a866`
-- Latest code commit before this checkpoint: `b71ddc9d544a4b6bad7c25e74853ee0094c3a0e4`
-- Branch status before this checkpoint: 3 commits ahead of `main`, 0 behind.
-- Files changed relative to `main`:
-  - `src/main/java/matteroverdrive/blockentity/DecomposerBlockEntity.java`
-  - `src/main/java/matteroverdrive/network/MatterNetworkUtil.java`
+- Authoritative integration branch: `testing/main`.
+- Android audit branch: `testing/android-system-audit-alpha02`.
+- Audit base commit: `9760c334898eee6a041f452fc60ca67c94d25cb2`.
+- This pass must merge back into `testing/main` only after GitHub Actions compilation succeeds.
+- Runtime behavior remains unverified until the focused Android client/dedicated-server checklist is completed.
 
 ## Verified milestones
 
@@ -599,3 +596,14 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 
 - Added `WORKING_FEATURES.md`, an exhaustive current-branch reference for installing the test JAR, functional machines, items, networks, upgrades, Inscriber recipes, Fusion Reactor, Heavy Energy Cable, verified checks, and known non-functional legacy shells.
 - The document is deliberately explicit that only listed systems are gameplay-functional; remaining registered legacy content is not claimed as complete.
+
+
+## Android full-system audit — awaiting runtime verification (2026-09-02)
+
+- Added atomic Android FE spending so an unaffordable passive or active action cannot drain a smaller leftover amount.
+- Restricted the Arms +3 damage/+80 FE passive to direct player melee. Player-owned projectiles no longer inherit it, and Sonic Shockwave marks its damage so its documented six damage and fixed 4,096 FE cost remain stable at every target count.
+- Restored the legacy Android zero-power movement penalty at 50%, with automatic removal after recharge or deactivation and a visible `CORE OFFLINE` HUD state.
+- Restored sneak-held normal/HC Battery charging from either hand at a combined maximum of 1,024 FE/t. Batteries transfer only FE they really contain and remain as drained rechargeable items.
+- Hardened the simplified Rogue Android Spawner: it searches multiple collision-free positions, respects the world border, charges 20,000 FE only after the world accepts the entity, retries rejected/blocked spawns after one second and recovers if world time moves backwards.
+- Updated the bundled Current Feature Reference and M2 Testing Checklist plus `ANDROID_SYSTEM_TESTING.md` and the short roadmap.
+- Build/CI and in-world runtime behavior are not yet verified. Exact next step: compile the branch, then run the complete Android checklist with special attention to melee/projectile separation, fixed Shockwave cost, battery transfer conservation, zero-power speed recovery and blocked-spawner FE conservation.
