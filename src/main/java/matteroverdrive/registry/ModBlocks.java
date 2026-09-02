@@ -19,6 +19,7 @@ import matteroverdrive.block.GravitationalAnomalyBlock;
 import matteroverdrive.block.GravitationalStabilizerBlock;
 import matteroverdrive.block.TransporterBlock;
 import matteroverdrive.block.MatterRecyclerBlock;
+import matteroverdrive.block.MicrowaveBlock;
 import matteroverdrive.block.ReplicatorBlock;
 import matteroverdrive.block.SolarPanelBlock;
 import matteroverdrive.block.TritaniumCrateBlock;
@@ -165,6 +166,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DecomposerBlock(propertiesFor(id))));
         } else if (id.equals("matter_recycler")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterRecyclerBlock(propertiesFor(id))));
+        } else if (id.equals("microwave")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MicrowaveBlock(propertiesFor(id))));
         } else if (id.equals("transporter")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TransporterBlock(propertiesFor(id))));
         } else if (id.equals("inscriber")) {

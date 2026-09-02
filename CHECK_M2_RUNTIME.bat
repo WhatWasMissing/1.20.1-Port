@@ -16,7 +16,7 @@ if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
 echo        blocks=75, blockItems=72, standaloneItems=100, sounds=57
 
-findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=16, menus=13" "%LOG%" >nul
+findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=17, menus=14" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"gunSystem=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
@@ -33,6 +33,8 @@ if errorlevel 1 goto :fail32
 findstr /c:"decomposer=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"recycler=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"microwave=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"analyzer=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32

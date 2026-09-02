@@ -14,6 +14,7 @@ import matteroverdrive.menu.FusionReactorMenu;
 import matteroverdrive.menu.GravitationalStabilizerMenu;
 import matteroverdrive.menu.MatterAnalyzerMenu;
 import matteroverdrive.menu.MatterRecyclerMenu;
+import matteroverdrive.menu.MicrowaveMenu;
 import matteroverdrive.menu.ReplicatorMenu;
 import matteroverdrive.menu.SolarPanelMenu;
 import matteroverdrive.menu.TritaniumCrateMenu;
@@ -40,6 +41,7 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<InscriberMenu>> INSCRIBER = MENUS.register("inscriber", () -> IForgeMenuType.create(InscriberMenu::new));
     public static final RegistryObject<MenuType<DecomposerMenu>> DECOMPOSER = MENUS.register("decomposer", () -> IForgeMenuType.create(DecomposerMenu::new));
     public static final RegistryObject<MenuType<MatterRecyclerMenu>> MATTER_RECYCLER = MENUS.register("matter_recycler", () -> IForgeMenuType.create(MatterRecyclerMenu::new));
+    public static final RegistryObject<MenuType<MicrowaveMenu>> MICROWAVE = MENUS.register("microwave", () -> IForgeMenuType.create(MicrowaveMenu::new));
     public static final RegistryObject<MenuType<MatterAnalyzerMenu>> MATTER_ANALYZER = MENUS.register("matter_analyzer", () -> IForgeMenuType.create(MatterAnalyzerMenu::new));
     public static final RegistryObject<MenuType<ReplicatorMenu>> REPLICATOR = MENUS.register("replicator", () -> IForgeMenuType.create(ReplicatorMenu::new));
     public static final RegistryObject<MenuType<PatternStorageMenu>> PATTERN_STORAGE = MENUS.register("pattern_storage", () -> IForgeMenuType.create(PatternStorageMenu::new));

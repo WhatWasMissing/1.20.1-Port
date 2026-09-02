@@ -20,6 +20,7 @@ import matteroverdrive.blockentity.FusionReactorIOBlockEntity;
 import matteroverdrive.blockentity.GravitationalAnomalyBlockEntity;
 import matteroverdrive.blockentity.GravitationalStabilizerBlockEntity;
 import matteroverdrive.blockentity.MatterRecyclerBlockEntity;
+import matteroverdrive.blockentity.MicrowaveBlockEntity;
 import matteroverdrive.blockentity.ReplicatorBlockEntity;
 import matteroverdrive.blockentity.SolarPanelBlockEntity;
 import matteroverdrive.blockentity.TritaniumCrateBlockEntity;
@@ -50,6 +51,7 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<InscriberBlockEntity>> INSCRIBER = BLOCK_ENTITIES.register("inscriber", () -> BlockEntityType.Builder.of(InscriberBlockEntity::new, ModBlocks.get("inscriber").get()).build(null));
     public static final RegistryObject<BlockEntityType<DecomposerBlockEntity>> DECOMPOSER = BLOCK_ENTITIES.register("decomposer", () -> BlockEntityType.Builder.of(DecomposerBlockEntity::new, ModBlocks.get("decomposer").get()).build(null));
     public static final RegistryObject<BlockEntityType<MatterRecyclerBlockEntity>> MATTER_RECYCLER = BLOCK_ENTITIES.register("matter_recycler", () -> BlockEntityType.Builder.of(MatterRecyclerBlockEntity::new, ModBlocks.get("matter_recycler").get()).build(null));
+    public static final RegistryObject<BlockEntityType<MicrowaveBlockEntity>> MICROWAVE = BLOCK_ENTITIES.register("microwave", () -> BlockEntityType.Builder.of(MicrowaveBlockEntity::new, ModBlocks.get("microwave").get()).build(null));
     public static final RegistryObject<BlockEntityType<MatterAnalyzerBlockEntity>> MATTER_ANALYZER = BLOCK_ENTITIES.register("matter_analyzer", () -> BlockEntityType.Builder.of(MatterAnalyzerBlockEntity::new, ModBlocks.get("matter_analyzer").get()).build(null));
     public static final RegistryObject<BlockEntityType<ReplicatorBlockEntity>> REPLICATOR = BLOCK_ENTITIES.register("replicator", () -> BlockEntityType.Builder.of(ReplicatorBlockEntity::new, ModBlocks.get("replicator").get()).build(null));
     public static final RegistryObject<BlockEntityType<PatternStorageBlockEntity>> PATTERN_STORAGE = BLOCK_ENTITIES.register("pattern_storage", () -> BlockEntityType.Builder.of(PatternStorageBlockEntity::new, ModBlocks.get("pattern_storage").get()).build(null));
