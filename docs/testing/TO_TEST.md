@@ -1,6 +1,6 @@
 # Consolidated Runtime Testing Checklist
 
-Branch: `feature/handheld-matter-tools`
+Branch: `testing/main`
 
 Use this after a fresh pull and normal M2 client launch. Record the expected result, actual result, coordinates/orientation and relevant log lines for every failure.
 
@@ -9,7 +9,7 @@ Use this after a fresh pull and normal M2 client launch. Record the expected res
 - [ ] Reach the main menu without registry, datapack, model or menu errors.
 - [ ] Create/load a test world successfully.
 - [ ] Confirm the runtime marker reports `blocks=75`, `blockItems=72`, `standaloneItems=100`, `sounds=57`, `blockEntities=18` and `menus=15`.
-- [ ] Confirm the marker includes `microwave=enabled`, `spacetimeAccelerator=enabled` and `handheldMatterTools=enabled`.
+- [ ] Confirm the marker includes `microwave=enabled`, `spacetimeAccelerator=enabled`, `handheldMatterTools=enabled` and `androidAbilities=enabled`.
 - [ ] Confirm new handheld recipes appear in the recipe book/JEI and can be crafted in Survival.
 
 ## Survival resources and Android pills
@@ -18,6 +18,15 @@ Use this after a fresh pull and normal M2 client launch. Record the expected res
 - [ ] Smelt/blast both ores into their intended resources.
 - [ ] Craft and verify Blue, Red and Yellow Android Pills.
 - [ ] Save/reload and confirm Android state/FE remains correct.
+
+## Android active abilities
+
+- [ ] Install Head, Chest, Arms and Legs parts and confirm they unlock Cloak, Force Field, Sonic Shockwave and Ender Teleport respectively.
+- [ ] Use/rebind the default `V` cycle and `B` activate controls; verify selected ability, active state and cooldown on the Android HUD.
+- [ ] Verify exact FE use, no activation at insufficient FE and automatic shutdown of sustained abilities.
+- [ ] Verify server-authoritative shield damage reduction, shockwave target filtering/knockback and collision-safe teleport.
+- [ ] Verify ability selection, toggles and cooldowns across relog/death, and Red Pill cleanup.
+- [ ] See `ANDROID_SYSTEM_TESTING.md` for the focused checklist.
 
 ## Microwave
 
