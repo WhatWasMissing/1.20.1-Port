@@ -45,6 +45,7 @@ The ore frequencies and vein sizes preserve the original mod's relative balance 
 - Data Pad: seven-page in-game guide plus persistent, deduplicated scan history for up to 16 blocks with registry IDs and matter values.
 - M2 Testing Checklist: scrollable in-game copy of the consolidated runtime test document.
 - Current Feature Reference: scrollable in-game copy of this implemented/missing feature matrix.
+- Matter Overdrive System Guide: scrollable in-game instructions for every currently working system, pairing a simplified route with detailed setup and explicit partial-parity warnings.
 - Login identity banner: reports Matter Overdrive Alpha 0.2 and MVQ1303 in chat once per world/server login.
 
 ### Matter/network logistics
@@ -210,5 +211,6 @@ Use the checklists under `docs/testing/`, especially:
 - `MICROWAVE_TESTING.md`
 - `SPACETIME_ACCELERATOR_TESTING.md`
 - `HANDHELD_MATTER_TOOLS_TESTING.md`
+- `TO_TEST.md` for the three in-game documentation items, including the System Guide
 
 A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify datapack loading, fresh-chunk ore generation, recipes, machine behaviour, in-world behaviour or rendering.
