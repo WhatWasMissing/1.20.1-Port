@@ -24,7 +24,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private static final int PLAYER_END = 31;
     private static final int HOTBAR_START = 31;
     private static final int HOTBAR_END = 40;
-    private static final int DATA_COUNT = 28;
+    private static final int DATA_COUNT = 32;
     private static final int SLOT_X_OFFSET = 92;
 
     private final FusionReactorControllerBlockEntity reactor;
@@ -223,16 +223,51 @@ public class FusionReactorMenu extends AbstractContainerMenu {
         return data.get(27);
     }
 
+    public boolean reactorEnabled() {
+        return data.get(28) != 0;
+    }
+
+    public int redstoneMode() {
+        return data.get(29);
+    }
+
+    public boolean redstoneAllowsOperation() {
+        return data.get(30) != 0;
+    }
+
+    public int matterConsumedLastTick() {
+        return data.get(31);
+    }
+
     private int value(int low, int high) {
         return (data.get(low) & 0xffff) | ((data.get(high) & 0xffff) << 16);
     }
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (id != 1) return false;
-        boolean enabled = reactor.getEnergy().toggleInfiniteEnergy();
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
-        return true;
+        if (id == 1) {
+            boolean enabled = reactor.getEnergy().toggleInfiniteEnergy();
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
+            return true;
+        }
+        if (id == 2) {
+            boolean enabled = reactor.toggleReactorEnabled();
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "Fusion reactor: " + (enabled ? "ENABLED" : "SCRAMMED")), true);
+            return true;
+        }
+        if (id == 3) {
+            int mode = reactor.cycleRedstoneMode();
+            String label = switch (mode) {
+                case 1 -> "HIGH (signal runs)";
+                case 2 -> "LOW (signal stops)";
+                default -> "IGNORED";
+            };
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "Reactor redstone: " + label), true);
+            return true;
+        }
+        return false;
     }
 }
