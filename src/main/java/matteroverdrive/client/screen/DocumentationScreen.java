@@ -81,7 +81,7 @@ public class DocumentationScreen extends Screen {
             }
             addRenderableWidget(Button.builder(Component.literal("Back to guide"), button -> {
                 indexOpen = false;
-                rebuildWidgets();
+                rebuildGuideWidgets();
             }).bounds(width / 2 - 55, height - 27, 110, 20).build());
             return;
         }
@@ -92,7 +92,7 @@ public class DocumentationScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("Index"), button -> {
             rememberPage();
             indexOpen = true;
-            rebuildWidgets();
+            rebuildGuideWidgets();
         }).bounds(width / 2 - 65, height - 27, 70, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Next >"), button -> {
             pageIndex = Math.min(Math.max(0, pages.size() - 1), pageIndex + 1);
@@ -106,7 +106,7 @@ public class DocumentationScreen extends Screen {
         pageIndex = Math.max(0, Math.min(target, pages.size() - 1));
         indexOpen = false;
         rememberPage();
-        rebuildWidgets();
+        rebuildGuideWidgets();
     }
 
     private void rebuildPages(int maxWidth) {
