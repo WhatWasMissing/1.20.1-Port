@@ -25,11 +25,11 @@ public final class AndroidHudOverlay {
 
         GuiGraphics graphics = event.getGuiGraphics();
         int x = 8;
-        int y = event.getWindow().getGuiScaledHeight() - 82;
+        int y = event.getWindow().getGuiScaledHeight() - 94;
         int width = 142;
         int energy = AndroidClientState.energy();
 
-        graphics.fill(x, y, x + width, y + 57, 0xB0101820);
+        graphics.fill(x, y, x + width, y + 69, 0xB0101820);
         graphics.fill(x, y, x + width, y + 1, 0xFF53E6FF);
         graphics.drawString(minecraft.font, "ANDROID CORE", x + 6, y + 5, 0xFFE8F8FF, false);
 
@@ -41,9 +41,17 @@ public final class AndroidHudOverlay {
         graphics.drawString(minecraft.font, compact(energy) + " / 100k FE",
                 x + 6, y + 23, 0xFFB5DFFF, false);
 
+        int level = AndroidClientState.level();
+        int levelStart = (level - 1) * 100;
+        String progression = level >= 10
+                ? "LEVEL 10  MAX XP"
+                : String.format("LEVEL %d  XP %d / %d", level,
+                        Math.max(0, AndroidClientState.experience() - levelStart), 100);
+        graphics.drawString(minecraft.font, progression, x + 6, y + 34, 0xFFFFD27A, false);
+
         graphics.drawString(minecraft.font,
                 Component.literal("ABILITY: " + AndroidClientState.abilityName()),
-                x + 6, y + 35, 0xFFE8F8FF, false);
+                x + 6, y + 46, 0xFFE8F8FF, false);
 
         String state;
         int color;
@@ -69,7 +77,7 @@ public final class AndroidHudOverlay {
             state = "V: CYCLE   B: ACTIVATE";
             color = 0xFF9BB6C3;
         }
-        graphics.drawString(minecraft.font, state, x + 6, y + 46, color, false);
+        graphics.drawString(minecraft.font, state, x + 6, y + 57, color, false);
     }
 
     private static String compact(int value) {

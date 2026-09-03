@@ -101,7 +101,7 @@ Implemented:
 - Sneak-held normal/HC Battery charging from either hand at up to 1,024 FE/t, transferring only energy actually stored in the battery.
 - Legacy-style zero-power state: the Android HUD reports the offline core and movement speed is reduced by 50% until the core is recharged or conversion is removed.
 - Head, Chest, Arms and Legs bionic-part installation through the Android Station.
-- Android HUD energy/state synchronisation.
+- Android HUD energy/state synchronisation. Persistent Android XP/level progression foundation with a four-node, level-gated skill tree (Cloak L1, Force Field L2, Sonic Shockwave L3, Ender Teleport L4) (levels 1-10, XP from conversion, part installation and successful active abilities) with server-synchronised HUD display.
 - Part-gated active abilities with server-authoritative input: Head/Cloak, Chest/Force Field, Arms/Sonic Shockwave and Legs/Ender Teleport.
 - Atomic Android FE spending: actions that cannot afford their full cost fail without silently draining a partial remainder.
 - Arms damage is restricted to direct melee attacks; projectiles and Sonic Shockwave cannot inherit the melee bonus or its additional FE cost.

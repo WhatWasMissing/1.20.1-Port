@@ -96,3 +96,11 @@ Use this after a fresh pull and normal M2 client launch. Record the expected res
 ## Pass criteria
 
 The branch is ready to consolidate when the runtime gate passes and there are no new crashes, datapack errors, item loss/duplication, free-energy/free-matter exploits, asymmetric Accelerator range, broken pattern progression or handheld-state persistence failures.
+
+## Android skill tree and paged documentation
+
+- [ ] Convert and earn XP; confirm the Android HUD shows Level 1 and progression toward the next node.
+- [ ] Confirm abilities require both the matching bionic part and the documented level: Cloak L1, Force Field L2, Sonic Shockwave L3, Ender Teleport L4.
+- [ ] Confirm a locked ability reports whether its level or part requirement is missing, and that XP persists through relog/death/deactivation.
+- [ ] Open each documentation item and confirm it displays Page N / M with Previous/Next buttons and Left/Right or Page Up/Page Down navigation.
+- [ ] Open the reactor sections and confirm the paged guide explains controller, IO, heavy-cable routing, ring sharing, anomaly/stabilizer setup, overlay and current limits.

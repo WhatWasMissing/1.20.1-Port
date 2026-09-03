@@ -50,7 +50,9 @@ public final class ModNetwork {
                 AndroidData.getParts(player),
                 selected.ordinal(),
                 AndroidData.getRemainingCooldown(player, selected, player.level().getGameTime()),
-                AndroidData.getActiveAbilityFlags(player)
+                AndroidData.getActiveAbilityFlags(player),
+                AndroidData.getExperience(player),
+                AndroidData.getLevel(player)
         ));
     }
 }

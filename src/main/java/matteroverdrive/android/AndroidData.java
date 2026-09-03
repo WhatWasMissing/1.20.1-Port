@@ -9,6 +9,8 @@ import net.minecraft.world.item.ItemStack;
 /** Persistent Android state owned by a player rather than a block. */
 public final class AndroidData {
     public static final int ENERGY_CAPACITY = 100_000;
+    public static final int MAX_LEVEL = 10;
+    private static final String EXPERIENCE = "Experience";
     private static final String ROOT = "MatterOverdriveAndroid";
     private static final String ACTIVE = "Active";
     private static final String ENERGY = "Energy";
@@ -34,17 +36,19 @@ public final class AndroidData {
     }
 
     public enum Ability {
-        CLOAK("Cloak", Part.HEAD),
-        FORCE_FIELD("Force Field", Part.CHEST),
-        SHOCKWAVE("Sonic Shockwave", Part.ARMS),
-        TELEPORT("Ender Teleport", Part.LEGS);
+        CLOAK("Cloak", Part.HEAD, 1),
+        FORCE_FIELD("Force Field", Part.CHEST, 2),
+        SHOCKWAVE("Sonic Shockwave", Part.ARMS, 3),
+        TELEPORT("Ender Teleport", Part.LEGS, 4);
 
         public final String displayName;
         public final Part requiredPart;
+        public final int requiredLevel;
 
-        Ability(String displayName, Part requiredPart) {
+        Ability(String displayName, Part requiredPart, int requiredLevel) {
             this.displayName = displayName;
             this.requiredPart = requiredPart;
+            this.requiredLevel = requiredLevel;
         }
     }
 
@@ -67,6 +71,54 @@ public final class AndroidData {
         return data(player).getBoolean(ACTIVE);
     }
 
+    public static int getExperience(Player player) {
+        CompoundTag state = data(player);
+        if (!state.contains(EXPERIENCE)) {
+            // Migrate active players created before progression was added.
+            int migrated = state.getBoolean(ACTIVE)
+                    ? 100 + Integer.bitCount(state.getInt(PARTS) & 15) * 50
+                    : 0;
+            state.putInt(EXPERIENCE, migrated);
+            save(player, state);
+            return migrated;
+        }
+        return Math.max(0, state.getInt(EXPERIENCE));
+    }
+
+    public static int getLevel(Player player) {
+        int xp = getExperience(player);
+        int level = 1;
+        while (level < MAX_LEVEL && xp >= experienceForLevel(level + 1)) {
+            level++;
+        }
+        return level;
+    }
+
+    public static int experienceForLevel(int level) {
+        int clamped = Mth.clamp(level, 1, MAX_LEVEL);
+        return (clamped - 1) * 100;
+    }
+
+    public static int experienceIntoLevel(Player player) {
+        return getExperience(player) - experienceForLevel(getLevel(player));
+    }
+
+    public static int experienceToNextLevel(Player player) {
+        int level = getLevel(player);
+        return level >= MAX_LEVEL ? 0 : experienceForLevel(level + 1) - getExperience(player);
+    }
+
+    public static int addExperience(Player player, int amount) {
+        int before = getExperience(player);
+        int after = Mth.clamp(before + Math.max(0, amount), 0, experienceForLevel(MAX_LEVEL));
+        if (after != before) {
+            CompoundTag state = data(player);
+            state.putInt(EXPERIENCE, after);
+            save(player, state);
+        }
+        return after - before;
+    }
+
     public static int getEnergy(Player player) {
         return Mth.clamp(data(player).getInt(ENERGY), 0, ENERGY_CAPACITY);
     }
@@ -83,7 +135,14 @@ public final class AndroidData {
         CompoundTag data = data(player);
         data.putBoolean(ACTIVE, true);
         data.putInt(ENERGY, Math.max(25_000, getEnergy(player)));
+        boolean migrated = !data.contains(EXPERIENCE);
+        if (migrated) {
+            data.putInt(EXPERIENCE, 100 + Integer.bitCount(getParts(player)) * 50);
+        }
         save(player, data);
+        if (!migrated) {
+            addExperience(player, 100);
+        }
     }
 
     public static int receiveEnergy(Player player, int amount) {
@@ -142,6 +201,7 @@ public final class AndroidData {
             }
         }
         save(player, data);
+        addExperience(player, 50);
         return true;
     }
 
@@ -174,7 +234,7 @@ public final class AndroidData {
     }
 
     public static boolean isAbilityUnlocked(Player player, Ability ability) {
-        return isAndroid(player) && hasPart(player, ability.requiredPart);
+        return isAndroid(player) && getLevel(player) >= ability.requiredLevel && hasPart(player, ability.requiredPart);
     }
 
     public static boolean isCloakEnabled(Player player) {

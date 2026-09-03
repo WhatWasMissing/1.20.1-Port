@@ -19,6 +19,14 @@ Branch: `testing/main`
 - [ ] Use a Red Android Pill. Confirm conversion ends and all installed bionic parts return to the inventory/drop safely.
 - [ ] Relog and die/respawn. Confirm active conversion, energy, and parts persist.
 
+## Android progression foundation
+
+- [ ] Convert with a Blue Pill and confirm the HUD starts at Level 1 with 0 XP.
+- [ ] Install a new bionic part. Confirm XP increases by 50 and persists after relog/death.
+- [ ] Use Sonic Shockwave or Ender Teleport successfully. Confirm XP increases by 25; failed/cooldown/insufficient-FE actions grant no XP.
+- [ ] Earn enough XP to cross a 100 XP level boundary. Confirm the HUD advances one level and resets the per-level progress display; confirm Level 10 caps XP.
+- [ ] Confirm XP is player-specific on a dedicated server and is retained when using a Red Pill (deactivation removes abilities/energy but not progression).
+
 ## Bionic parts and abilities
 
 - [ ] While converted, hold each Rogue Android Part and right-click an Android Station to install it.

@@ -268,3 +268,13 @@ If a test fails, record:
   Relevant latest.log lines:
 
 End of checklist.
+
+
+## Current paged in-game reactor guide parity
+
+- The in-game System Guide is paged. Use Previous/Next or Left/Right/Page Up/Page Down to move between reactor sections.
+- Controller: assemble the validated ring, confirm the overlay reports exact missing/valid positions, and use the controller debug view for current output, matter, connected-machine demand, and stabilizer state.
+- Power IO: connect IO directly or through Heavy Energy Cables; chained cables must relay FE and survive cable replacement/rebuild.
+- Ring sharing: reactor ring blocks share controller power internally; external machines require Heavy Energy Cable routing from Reactor IO.
+- Anomaly/stabilizers: verify mass gain on event-horizon kills, pull radius, matching beam/facing, FE use, suppression, upgrades, and Space-Time Equalizer immunity.
+- Known limit: output balance and generation scaling remain a tuning/parity target; record anomaly mass, output, matter consumption, and upgrade state with each report.

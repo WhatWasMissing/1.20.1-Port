@@ -9,7 +9,7 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public record AndroidStatePacket(boolean active, int energy, int parts,
-                                 int selectedAbility, int cooldownTicks, int activeAbilityFlags) {
+                                 int selectedAbility, int cooldownTicks, int activeAbilityFlags, int experience, int level) {
     public static void encode(AndroidStatePacket packet, FriendlyByteBuf buffer) {
         buffer.writeBoolean(packet.active);
         buffer.writeVarInt(packet.energy);
@@ -17,6 +17,8 @@ public record AndroidStatePacket(boolean active, int energy, int parts,
         buffer.writeByte(packet.selectedAbility);
         buffer.writeVarInt(packet.cooldownTicks);
         buffer.writeByte(packet.activeAbilityFlags);
+        buffer.writeVarInt(packet.experience);
+        buffer.writeByte(packet.level);
     }
 
     public static AndroidStatePacket decode(FriendlyByteBuf buffer) {
@@ -24,6 +26,8 @@ public record AndroidStatePacket(boolean active, int energy, int parts,
                 buffer.readBoolean(),
                 buffer.readVarInt(),
                 buffer.readUnsignedByte(),
+                buffer.readUnsignedByte(),
+                buffer.readVarInt(),
                 buffer.readUnsignedByte(),
                 buffer.readVarInt(),
                 buffer.readUnsignedByte()
@@ -39,7 +43,9 @@ public record AndroidStatePacket(boolean active, int energy, int parts,
                         packet.parts,
                         packet.selectedAbility,
                         packet.cooldownTicks,
-                        packet.activeAbilityFlags
+                        packet.activeAbilityFlags,
+                        packet.experience,
+                        packet.level
                 )));
         context.setPacketHandled(true);
     }
