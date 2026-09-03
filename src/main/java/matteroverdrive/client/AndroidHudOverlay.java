@@ -41,6 +41,14 @@ public final class AndroidHudOverlay {
         graphics.drawString(minecraft.font, compact(energy) + " / 100k FE",
                 x + 6, y + 23, 0xFFB5DFFF, false);
 
+        int level = AndroidClientState.level();
+        int levelStart = (level - 1) * 100;
+        String progression = level >= 10
+                ? "LEVEL 10  MAX XP"
+                : String.format("LEVEL %d  XP %d / %d", level,
+                        Math.max(0, AndroidClientState.experience() - levelStart), 100);
+        graphics.drawString(minecraft.font, progression, x + 6, y + 34, 0xFFFFD27A, false);
+
         graphics.drawString(minecraft.font,
                 Component.literal("ABILITY: " + AndroidClientState.abilityName()),
                 x + 6, y + 46, 0xFFE8F8FF, false);
