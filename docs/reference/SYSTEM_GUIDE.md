@@ -774,33 +774,43 @@ For verification rather than ordinary play, open the M2 Testing Checklist item. 
 
 # Android selectable skill tree
 
-Status: TESTING selectable progression layer.
+Status: TESTING expanded progression layer.
 
 ## Simplified
 
 - Convert into an Android and press K to open the skill tree.
 - Each Android level awards one perk point.
-- Choose one of the two perks shown for that level.
-- A choice is permanent and the other perk on that row becomes unavailable.
+- Choose one Assault, Utility or Survival / Mobility perk for that level.
+- Click a node and then Confirm Perk, which prevents accidental choices.
+- Use Reset Perks twice to confirm a full refund for 25,000 Android FE.
 
 ## Detailed
 
-- The Assault branch improves melee, Sonic Shockwave, movement and Android FE efficiency.
-- The Survival / Mobility branch improves damage resistance, Force Field efficiency and Ender Teleport.
-- Perks are stored on the player and survive death, relog and Red Pill deactivation.
-- Perk selection is checked by the server; a modified client cannot select perks above its level or both perks on one row.
-- Level 1: Efficient Core (-10% ability FE) or Reinforced Frame (-5% incoming damage).
-- Level 2: Ghost Protocol (-25% Cloak FE) or Barrier Matrix (-25% Force Field FE).
-- Level 3: Resonant Pulse (+2 Shockwave damage) or Phase Capacitor (+4 Teleport range).
-- Level 4: Wideband Pulse (+2 Shockwave radius) or Rapid Blink (-15% Teleport cooldown).
-- Level 5: Combat Servos (+2 direct melee damage) or Kinetic Plating (-10% incoming damage).
-- Level 6: Shock Recycler (-25% Shockwave FE) or Blink Recycler (-25% Teleport FE).
-- Level 7: Shock Momentum (stronger knockback) or Phase Stabilizer (+4 Teleport range).
-- Level 8: Neural Accelerator (stronger leg speed) or Adaptive Armor (-10% incoming damage).
-- Level 9: Overcharged Pulse (+3 Shockwave damage) or Long-range Blink (+8 Teleport range).
-- Level 10: Apex Core (-15% ability FE and shorter active cooldowns) or Adamant Chassis (-15% incoming damage).
+- Assault improves melee, Sonic Shockwave, movement and active-system efficiency.
+- Utility improves passive FE drain, charging, XP, cooldowns, repair, scanning and emergency protection.
+- Survival / Mobility improves damage resistance, Force Field efficiency and Ender Teleport.
+- Existing two-branch selections retain their original save bits after upgrading to the expanded tree.
+- Perks survive death, relog and Red Pill deactivation. Selection and resets are validated by the server.
+- Level 1: Efficient Core (-10% ability FE), Sustained Systems (-25% passive part FE), or Reinforced Frame (-5% damage).
+- Level 2: Ghost Protocol (-25% Cloak FE), Quick Charge (2x handheld charging), or Barrier Matrix (-25% Force Field FE).
+- Level 3: Resonant Pulse (+2 Shockwave damage), Learning Matrix (+25% future XP), or Phase Capacitor (+4 Teleport range).
+- Level 4: Wideband Pulse (+2 Shockwave radius), Cooldown Router (-10% active cooldowns), or Rapid Blink (-15% Teleport cooldown).
+- Level 5: Combat Servos (+2 melee damage), Reactive Plating (-5% damage), or Kinetic Plating (-10% damage).
+- Level 6: Shock Recycler (-25% Shockwave FE), Self Repair (powered healing), or Blink Recycler (-25% Teleport FE).
+- Level 7: Shock Momentum (stronger knockback), Silent Cloak (further -15% Cloak FE), or Phase Stabilizer (+4 Teleport range).
+- Level 8: Neural Accelerator (stronger leg speed), Tactical Scan (highlights nearby hostiles), or Adaptive Armor (-10% damage).
+- Level 9: Overcharged Pulse (+3 Shockwave damage), Emergency Protocol (powered low-health resistance), or Long-range Blink (+8 Teleport range).
+- Level 10: Apex Core (ability efficiency/cooldowns), Synthetic Perfection (ability efficiency/damage reduction), or Adamant Chassis (-15% damage).
+
+## Quality-of-life features
+
+- The HUD displays K plus the number of unspent perk points.
+- Hovering any node explains its effect.
+- Locked, available, pending and installed nodes have different colours.
+- Selection requires confirmation.
+- Resetting refunds every point, turns off Cloak and Force Field, and costs 25,000 FE.
 
 ## Limitations
 
-- Alpha 0.2 has no perk reset item yet. Choose carefully.
-- The current tree is the first full selectable progression pass and remains subject to balance tuning.
+- Reset is all-or-nothing; individual-node refunds are not yet supported.
+- Values remain subject to Alpha 0.2 balance testing.
