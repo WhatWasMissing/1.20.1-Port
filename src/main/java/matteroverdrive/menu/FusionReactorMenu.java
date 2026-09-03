@@ -24,7 +24,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private static final int PLAYER_END = 31;
     private static final int HOTBAR_START = 31;
     private static final int HOTBAR_END = 40;
-    private static final int DATA_COUNT = 32;
+    private static final int DATA_COUNT = 34;
     private static final int SLOT_X_OFFSET = 92;
 
     private final FusionReactorControllerBlockEntity reactor;
@@ -237,6 +237,14 @@ public class FusionReactorMenu extends AbstractContainerMenu {
 
     public int matterConsumedLastTick() {
         return data.get(31);
+    }
+
+    public int destroyedBlocksLastCycle() {
+        return data.get(32);
+    }
+
+    public double anomalySuppression() {
+        return data.get(33) / 1_000.0D;
     }
 
     private int value(int low, int high) {
