@@ -138,3 +138,8 @@ The branch is ready to consolidate when the runtime gate passes and there are no
 - [ ] Test Power, Power Storage, Matter Storage, Speed and Range upgrades individually and in combinations; record mass, efficiency, potential FE/t, actual FE/t and kM/t.
 - [ ] Open Current Features, System Guide and To Test in game; verify the reactor/anomaly sections are paged, readable, current, and explicitly warn that world damage is active.
 
+## Android perk level-up persistence regression
+
+- [ ] Select perks at several levels, earn enough XP through a part installation or successful ability to cross the next level boundary, and confirm every earlier perk remains installed.
+- [ ] Close/reopen the tree, relog and die after leveling; confirm the same perk mask and correct new unspent-point count remain.
+- [ ] Confirm only the armed and confirmed 25,000 FE Reset Perks action clears choices.
