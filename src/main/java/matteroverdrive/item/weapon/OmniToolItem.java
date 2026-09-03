@@ -8,6 +8,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -51,9 +52,9 @@ import java.util.List;
 /**
  * Matter Overdrive's combined energy weapon and mining tool.
  *
- * The legacy Omni Tool fires from the attack input and mines the looked-at block
- * from range while the use input is held. All destructive work is resolved on
- * the server so the client only requests a shot and supplies no trusted target.
+ * The Omni Tool fires from the attack input and mines the looked-at block from
+ * range while the use input is held. All destructive work is resolved on the
+ * server so the client only requests a shot and supplies no trusted target.
  */
 public class OmniToolItem extends EnergyWeaponItem {
     public static final int RANGE = 24;
@@ -77,9 +78,9 @@ public class OmniToolItem extends EnergyWeaponItem {
 
     @Override
     public boolean supportsModule(WeaponModuleItem module) {
-        return module.getSlotType() == WeaponModuleItem.SlotType.COLOR
-                || (module.getSlotType() == WeaponModuleItem.SlotType.BARREL
-                && module.getEffect() == WeaponModuleItem.Effect.BLOCK);
+        // The Omni Tool is the universal platform: every normal weapon module
+        // has a meaningful combat, utility, range or visual effect here.
+        return true;
     }
 
     @Override
@@ -129,7 +130,8 @@ public class OmniToolItem extends EnergyWeaponItem {
             return InteractionResultHolder.fail(weapon);
         }
 
-        if (getEnergyStored(weapon) <= 0 && !reloadForShot(weapon, player)) {
+        if (!hasPower(weapon, ENERGY_PER_MINING_TICK)
+                && !reloadForEnergy(weapon, player, ENERGY_PER_MINING_TICK)) {
             if (!level.isClientSide) {
                 player.sendSystemMessage(Component.literal("No Omni Tool energy - carry an Energy Pack or charged battery")
                         .withStyle(ChatFormatting.RED));
@@ -165,7 +167,8 @@ public class OmniToolItem extends EnergyWeaponItem {
             return false;
         }
 
-        if (getEnergyStored(weapon) <= 0 && !reloadForShot(weapon, player)) {
+        if (!hasPower(weapon, ENERGY_PER_MINING_TICK)
+                && !reloadForEnergy(weapon, player, ENERGY_PER_MINING_TICK)) {
             clearRemoteMining(level, player, weapon);
             player.sendSystemMessage(Component.literal("Omni Tool out of mining energy").withStyle(ChatFormatting.RED));
             return false;
@@ -173,15 +176,20 @@ public class OmniToolItem extends EnergyWeaponItem {
 
         // Legacy digging consumed roughly one FE each active mining tick. It did
         // so even when the ray trace was temporarily over air, so preserve that.
-        setEnergyStored(weapon, getEnergyStored(weapon) - ENERGY_PER_MINING_TICK);
+        drainPower(weapon, ENERGY_PER_MINING_TICK);
 
         Vec3 start = player.getEyePosition();
-        Vec3 end = start.add(player.getLookAngle().scale(RANGE));
+        int range = getOmniRange(weapon);
+        Vec3 end = start.add(player.getLookAngle().scale(range));
         BlockHitResult hit = level.clip(new ClipContext(
                 start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (hit.getType() != HitResult.Type.BLOCK) {
             clearRemoteMining(level, player, weapon);
             return true;
+        }
+
+        if ((level.getGameTime() & 3L) == 0L) {
+            spawnBeam(level, start, hit.getLocation(), weapon);
         }
 
         BlockPos pos = hit.getBlockPos();
@@ -239,16 +247,20 @@ public class OmniToolItem extends EnergyWeaponItem {
         if (isOverheated(weapon)) {
             return false;
         }
+
+        int cooldown = getOmniCooldown(weapon);
         long lastShot = weapon.getOrCreateTag().getLong(LAST_SHOT_TAG);
-        if (level.getGameTime() - lastShot < SHOT_COOLDOWN) {
+        if (level.getGameTime() - lastShot < cooldown) {
             return true;
         }
-        if (getEnergyStored(weapon) < ENERGY_PER_SHOT && !reloadForShot(weapon, shooter)) {
+
+        int energyCost = getOmniEnergyCost(weapon);
+        if (!hasPower(weapon, energyCost) && !reloadForEnergy(weapon, shooter, energyCost)) {
             shooter.sendSystemMessage(Component.literal("Omni Tool out of energy").withStyle(ChatFormatting.RED));
             return false;
         }
 
-        setEnergyStored(weapon, getEnergyStored(weapon) - ENERGY_PER_SHOT);
+        drainPower(weapon, energyCost);
         weapon.getOrCreateTag().putLong(LAST_SHOT_TAG, level.getGameTime());
 
         float newHeat = Math.min(MAX_HEAT + 1.0F, (getHeat(weapon) + 4.0F) * 2.7F);
@@ -259,21 +271,24 @@ public class OmniToolItem extends EnergyWeaponItem {
             play(level, shooter, "weapons.overheat_alarm", 0.8F, 1.0F);
         }
 
-        Vec3 direction = applySpread(shooter.getLookAngle(), 0.3F + getHeat(weapon) / MAX_HEAT * 5.0F, shooter);
-        traceShot(level, shooter, weapon, direction);
+        float spread = (0.3F + getHeat(weapon) / MAX_HEAT * 5.0F)
+                * WeaponSystem.accuracyMultiplier(weapon, false);
+        Vec3 direction = applySpread(shooter.getLookAngle(), spread, shooter);
+        traceShot(level, shooter, weapon, direction, getOmniRange(weapon), getOmniDamage(weapon), true);
         play(level, shooter, "weapons.laser_fire", 0.7F, 1.15F + shooter.getRandom().nextFloat() * 0.1F);
         return true;
     }
 
-    private void traceShot(Level level, Player shooter, ItemStack weapon, Vec3 direction) {
+    private void traceShot(Level level, Player shooter, ItemStack weapon, Vec3 direction,
+                           int range, float damage, boolean allowRicochet) {
         Vec3 start = shooter.getEyePosition().add(direction.scale(0.25D));
-        Vec3 end = start.add(direction.scale(RANGE));
+        Vec3 end = start.add(direction.scale(range));
         BlockHitResult blockHit = level.clip(new ClipContext(
                 start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, shooter));
         double blockDistance = blockHit.getType() == HitResult.Type.MISS
                 ? Double.MAX_VALUE : start.distanceToSqr(blockHit.getLocation());
 
-        AABB searchBox = shooter.getBoundingBox().expandTowards(direction.scale(RANGE)).inflate(1.0D);
+        AABB searchBox = shooter.getBoundingBox().expandTowards(direction.scale(range)).inflate(1.0D);
         EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
                 level, shooter, start, end, searchBox,
                 entity -> entity != shooter && entity.isAlive() && entity.isPickable() && !entity.isSpectator());
@@ -283,26 +298,80 @@ public class OmniToolItem extends EnergyWeaponItem {
 
         spawnBeam(level, start, impact, weapon);
         if (hitEntity) {
-            if (WeaponSystem.getBarrelEffect(weapon) != WeaponModuleItem.Effect.BLOCK
-                    && entityHit.getEntity() instanceof LivingEntity target) {
-                target.hurt(level.damageSources().playerAttack(shooter), BASE_DAMAGE);
-                spawnImpact(level, impact);
-            }
+            applyEntityHit(level, shooter, weapon, entityHit, impact, damage);
             return;
         }
 
-        if (blockHit.getType() == HitResult.Type.BLOCK
-                && WeaponSystem.getBarrelEffect(weapon) == WeaponModuleItem.Effect.BLOCK) {
-            BlockPos pos = blockHit.getBlockPos();
+        if (blockHit.getType() == HitResult.Type.BLOCK) {
+            applyBlockHit(level, shooter, weapon, blockHit);
+            if (allowRicochet && WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.RICOCHET)) {
+                Vec3 reflected = reflect(direction, blockHit.getDirection()).normalize();
+                traceShot(level, shooter, weapon, reflected, Math.max(1, range / 2), damage * 0.75F, false);
+            }
+        }
+    }
+
+    private void applyEntityHit(Level level, Player shooter, ItemStack weapon, EntityHitResult entityHit,
+                                Vec3 impact, float damage) {
+        if (!(entityHit.getEntity() instanceof LivingEntity target)) {
+            return;
+        }
+
+        WeaponModuleItem.Effect barrel = WeaponSystem.getBarrelEffect(weapon);
+        if (barrel == WeaponModuleItem.Effect.HEAL) {
+            target.heal(Math.max(1.0F, BASE_DAMAGE * 0.2F));
+            spawnImpact(level, impact, ParticleTypes.HAPPY_VILLAGER);
+            return;
+        }
+        if (barrel == WeaponModuleItem.Effect.BLOCK) {
+            return;
+        }
+
+        if (damage > 0.0F) {
+            target.hurt(level.damageSources().playerAttack(shooter), damage);
+        }
+        if (barrel == WeaponModuleItem.Effect.FIRE) {
+            target.setSecondsOnFire(5);
+        }
+        if (barrel == WeaponModuleItem.Effect.EXPLOSION || barrel == WeaponModuleItem.Effect.DOOMSDAY) {
+            explode(level, shooter, impact, barrel);
+        }
+        spawnImpact(level, impact,
+                barrel == WeaponModuleItem.Effect.FIRE ? ParticleTypes.FLAME : ParticleTypes.ELECTRIC_SPARK);
+    }
+
+    private void applyBlockHit(Level level, Player shooter, ItemStack weapon, BlockHitResult hit) {
+        WeaponModuleItem.Effect barrel = WeaponSystem.getBarrelEffect(weapon);
+        BlockPos pos = hit.getBlockPos();
+        if (barrel == WeaponModuleItem.Effect.BLOCK) {
             BlockState state = level.getBlockState(pos);
             float hardness = state.getDestroySpeed(level, pos);
             if (hardness >= 0.0F && hardness <= 5.0F && !state.is(Blocks.BEDROCK)) {
                 level.destroyBlock(pos, true, shooter);
             }
+        } else if (barrel == WeaponModuleItem.Effect.FIRE) {
+            BlockPos firePos = pos.relative(hit.getDirection());
+            if (level.isEmptyBlock(firePos)) {
+                level.setBlockAndUpdate(firePos, Blocks.FIRE.defaultBlockState());
+            }
+        } else if (barrel == WeaponModuleItem.Effect.EXPLOSION || barrel == WeaponModuleItem.Effect.DOOMSDAY) {
+            explode(level, shooter, hit.getLocation(), barrel);
         }
-        if (blockHit.getType() == HitResult.Type.BLOCK) {
-            spawnImpact(level, blockHit.getLocation());
-        }
+        spawnImpact(level, hit.getLocation(), ParticleTypes.SMOKE);
+    }
+
+    private void explode(Level level, Player shooter, Vec3 impact, WeaponModuleItem.Effect barrel) {
+        float multiplier = barrel == WeaponModuleItem.Effect.DOOMSDAY ? 3.0F : 1.0F;
+        level.explode(shooter, impact.x, impact.y, impact.z,
+                1.0F + BASE_DAMAGE * 0.08F * multiplier, Level.ExplosionInteraction.NONE);
+    }
+
+    private Vec3 reflect(Vec3 direction, Direction face) {
+        return switch (face.getAxis()) {
+            case X -> new Vec3(-direction.x, direction.y, direction.z);
+            case Y -> new Vec3(direction.x, -direction.y, direction.z);
+            case Z -> new Vec3(direction.x, direction.y, -direction.z);
+        };
     }
 
     private Vec3 applySpread(Vec3 look, float spreadDegrees, Player player) {
@@ -331,16 +400,16 @@ public class OmniToolItem extends EnergyWeaponItem {
                 (color & 0xFF) / 255.0F);
         DustParticleOptions particle = new DustParticleOptions(rgb, 0.9F);
         Vec3 delta = end.subtract(start);
-        int steps = Mth.clamp((int) (delta.length() * 2.0D), 2, 64);
+        int steps = Mth.clamp((int) (delta.length() * 2.0D), 2, 96);
         for (int step = 0; step <= steps; step++) {
             Vec3 point = start.add(delta.scale(step / (double) steps));
             server.sendParticles(particle, point.x, point.y, point.z, 1, 0.0D, 0.0D, 0.0D, 0.0D);
         }
     }
 
-    private void spawnImpact(Level level, Vec3 impact) {
+    private void spawnImpact(Level level, Vec3 impact, ParticleOptions particle) {
         if (level instanceof ServerLevel server) {
-            server.sendParticles(ParticleTypes.ELECTRIC_SPARK, impact.x, impact.y, impact.z,
+            server.sendParticles(particle, impact.x, impact.y, impact.z,
                     6, 0.12D, 0.12D, 0.12D, 0.02D);
         }
     }
@@ -350,34 +419,49 @@ public class OmniToolItem extends EnergyWeaponItem {
                 ModSounds.get(id).get(), SoundSource.PLAYERS, volume, pitch);
     }
 
-    private boolean reloadForShot(ItemStack weapon, Player player) {
-        if (getEnergyStored(weapon) >= ENERGY_PER_SHOT) {
+    private int getOmniRange(ItemStack weapon) {
+        return Math.max(1, Math.round(RANGE * WeaponSystem.rangeMultiplier(weapon)));
+    }
+
+    private int getOmniCooldown(ItemStack weapon) {
+        return Math.max(1, Math.round(SHOT_COOLDOWN * WeaponSystem.cooldownMultiplier(weapon)));
+    }
+
+    private int getOmniEnergyCost(ItemStack weapon) {
+        return Math.max(1, Math.round(ENERGY_PER_SHOT * WeaponSystem.energyMultiplier(weapon)));
+    }
+
+    private float getOmniDamage(ItemStack weapon) {
+        return BASE_DAMAGE * WeaponSystem.damageMultiplier(weapon);
+    }
+
+    private boolean reloadForEnergy(ItemStack weapon, Player player, int required) {
+        if (hasPower(weapon, required)) {
             return true;
         }
 
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+        boolean transferred = false;
+        for (int slot = 0; slot < player.getInventory().getContainerSize() && !hasPower(weapon, required); slot++) {
             ItemStack candidate = player.getInventory().getItem(slot);
             if (candidate.is(ModItems.get("energy_pack").get())) {
                 if (!player.getAbilities().instabuild) {
                     candidate.shrink(1);
                 }
                 setEnergyStored(weapon, getEnergyStored(weapon) + EnergyPackItem.ENERGY_AMOUNT);
-                play(player.level(), player, "weapons.reload", 0.8F, 1.0F);
-                return getEnergyStored(weapon) >= ENERGY_PER_SHOT;
+                transferred = true;
             }
         }
 
-        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
-            if (transferBattery(weapon, player, player.getInventory().getItem(slot)) > 0
-                    && getEnergyStored(weapon) >= ENERGY_PER_SHOT) {
-                play(player.level(), player, "weapons.reload", 0.8F, 1.0F);
-                return true;
-            }
+        for (int slot = 0; slot < player.getInventory().getContainerSize() && !hasPower(weapon, required); slot++) {
+            transferred |= transferBattery(weapon, player, player.getInventory().getItem(slot)) > 0;
         }
-        if (transferBattery(weapon, player, player.getOffhandItem()) > 0) {
+        if (!hasPower(weapon, required)) {
+            transferred |= transferBattery(weapon, player, player.getOffhandItem()) > 0;
+        }
+        if (transferred) {
             play(player.level(), player, "weapons.reload", 0.8F, 1.0F);
         }
-        return getEnergyStored(weapon) >= ENERGY_PER_SHOT;
+        return hasPower(weapon, required);
     }
 
     private int transferBattery(ItemStack weapon, Player player, ItemStack candidate) {
@@ -405,26 +489,33 @@ public class OmniToolItem extends EnergyWeaponItem {
         return Math.max(0, extracted);
     }
 
-    private boolean hasToolPower(ItemStack stack) {
-        return getEnergyStored(stack) > 0;
+    private boolean hasPower(ItemStack stack, int required) {
+        return getEnergyStored(stack) >= Math.max(1, required);
+    }
+
+    private void drainPower(ItemStack stack, int amount) {
+        if (getEnergyStored(stack) != Integer.MAX_VALUE) {
+            setEnergyStored(stack, getEnergyStored(stack) - Math.max(0, amount));
+        }
     }
 
     private boolean isEffective(BlockState state) {
         return state.is(BlockTags.MINEABLE_WITH_PICKAXE)
                 || state.is(BlockTags.MINEABLE_WITH_AXE)
-                || state.is(BlockTags.MINEABLE_WITH_SHOVEL);
+                || state.is(BlockTags.MINEABLE_WITH_SHOVEL)
+                || state.is(BlockTags.MINEABLE_WITH_HOE);
     }
 
     @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
-        return hasToolPower(stack) && isEffective(state)
+        return hasPower(stack, ENERGY_PER_TOOL_ACTION) && isEffective(state)
                 ? TritaniumToolTier.TIER.getSpeed()
                 : super.getDestroySpeed(stack, state);
     }
 
     @Override
     public boolean isCorrectToolForDrops(ItemStack stack, BlockState state) {
-        if (!hasToolPower(stack) || !isEffective(state)) {
+        if (!hasPower(stack, ENERGY_PER_TOOL_ACTION) || !isEffective(state)) {
             return false;
         }
         return !state.requiresCorrectToolForDrops()
@@ -433,26 +524,27 @@ public class OmniToolItem extends EnergyWeaponItem {
 
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity miningEntity) {
-        if (!level.isClientSide && hasToolPower(stack) && isEffective(state)
+        if (!level.isClientSide && hasPower(stack, ENERGY_PER_TOOL_ACTION) && isEffective(state)
                 && !stack.getOrCreateTag().getBoolean(REMOTE_BREAK_TAG)) {
-            setEnergyStored(stack, getEnergyStored(stack) - ENERGY_PER_TOOL_ACTION);
+            drainPower(stack, ENERGY_PER_TOOL_ACTION);
         }
         return true;
     }
 
     @Override
     public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-        return hasToolPower(stack) && (
+        return hasPower(stack, ENERGY_PER_TOOL_ACTION) && (
                 ToolActions.DEFAULT_PICKAXE_ACTIONS.contains(toolAction)
                         || ToolActions.DEFAULT_AXE_ACTIONS.contains(toolAction)
-                        || ToolActions.DEFAULT_SHOVEL_ACTIONS.contains(toolAction));
+                        || ToolActions.DEFAULT_SHOVEL_ACTIONS.contains(toolAction)
+                        || ToolActions.DEFAULT_HOE_ACTIONS.contains(toolAction));
     }
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
         ItemStack stack = context.getItemInHand();
-        if ((player != null && player.isShiftKeyDown()) || !hasToolPower(stack)) {
+        if ((player != null && player.isShiftKeyDown()) || !hasPower(stack, ENERGY_PER_TOOL_ACTION)) {
             return InteractionResult.PASS;
         }
 
@@ -460,6 +552,14 @@ public class OmniToolItem extends EnergyWeaponItem {
         BlockPos pos = context.getClickedPos();
         BlockState state = level.getBlockState(pos);
         BlockState result = useAsAxe(state, context);
+
+        if (result == null && context.getClickedFace() != Direction.DOWN && level.isEmptyBlock(pos.above())) {
+            BlockState tilled = state.getToolModifiedState(context, ToolActions.HOE_TILL, false);
+            if (tilled != null) {
+                level.playSound(player, pos, SoundEvents.HOE_TILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+                result = tilled;
+            }
+        }
 
         if (result == null) {
             if (context.getClickedFace() == Direction.DOWN) {
@@ -486,7 +586,7 @@ public class OmniToolItem extends EnergyWeaponItem {
                 CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, stack);
             }
             level.setBlock(pos, result, Block.UPDATE_ALL_IMMEDIATE);
-            setEnergyStored(stack, getEnergyStored(stack) - ENERGY_PER_TOOL_ACTION);
+            drainPower(stack, ENERGY_PER_TOOL_ACTION);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
@@ -517,6 +617,12 @@ public class OmniToolItem extends EnergyWeaponItem {
         return null;
     }
 
+    private String moduleSummary(ItemStack stack) {
+        WeaponModuleItem.Effect barrel = WeaponSystem.getBarrelEffect(stack);
+        String barrelName = barrel == null ? "Standard" : barrel.name().replace('_', ' ');
+        return "Barrel: " + barrelName + " | Modules: " + WeaponSystem.installedModuleCount(stack) + "/6";
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         String energy = getEnergyStored(stack) == Integer.MAX_VALUE
@@ -525,19 +631,22 @@ public class OmniToolItem extends EnergyWeaponItem {
         tooltip.add(Component.literal("Heat: " + Math.round(getHeat(stack)) + " / " + MAX_HEAT
                 + (isOverheated(stack) ? " OVERHEATED" : ""))
                 .withStyle(isOverheated(stack) ? ChatFormatting.RED : ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Weapon: 7 damage | 24 range | 18t cooldown")
+        tooltip.add(Component.literal("Combat: " + String.format("%.1f", getOmniDamage(stack)) + " damage | "
+                + getOmniRange(stack) + " range | " + getOmniCooldown(stack) + "t cooldown")
                 .withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("Tool: Tritanium-tier Pickaxe + Axe + Shovel | 24-block mining")
+        tooltip.add(Component.literal("Tool: Tritanium-tier Pickaxe + Axe + Shovel + Hoe | "
+                + getOmniRange(stack) + "-block remote mining")
                 .withStyle(ChatFormatting.GREEN));
         tooltip.add(Component.literal("Left-click: fire | Hold right-click: ranged mine | Shift-right-click: reload")
                 .withStyle(ChatFormatting.LIGHT_PURPLE));
-        tooltip.add(Component.literal("Right-click blocks: strip, scrape, wax-off, flatten, extinguish")
+        tooltip.add(Component.literal("Right-click blocks: strip, scrape, wax-off, till, flatten, extinguish")
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Modules: Battery + Color + VENOM Block Barrel")
+        tooltip.add(Component.literal(moduleSummary(stack)).withStyle(ChatFormatting.BLUE));
+        tooltip.add(Component.literal("All standard weapon Battery, Color, Barrel, Sights and Other modules supported")
                 .withStyle(ChatFormatting.BLUE));
-        tooltip.add(Component.literal("[DEBUG] " + ENERGY_PER_SHOT + " FE/shot | "
+        tooltip.add(Component.literal("[DEBUG] " + getOmniEnergyCost(stack) + " FE/shot | "
                 + ENERGY_PER_MINING_TICK + " FE/mining tick | " + ENERGY_PER_TOOL_ACTION
-                + " FE/context action | Modules " + WeaponSystem.installedModuleCount(stack) + "/6")
+                + " FE/tool action")
                 .withStyle(ChatFormatting.GOLD));
     }
 }
