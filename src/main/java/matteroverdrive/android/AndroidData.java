@@ -36,17 +36,19 @@ public final class AndroidData {
     }
 
     public enum Ability {
-        CLOAK("Cloak", Part.HEAD),
-        FORCE_FIELD("Force Field", Part.CHEST),
-        SHOCKWAVE("Sonic Shockwave", Part.ARMS),
-        TELEPORT("Ender Teleport", Part.LEGS);
+        CLOAK("Cloak", Part.HEAD, 1),
+        FORCE_FIELD("Force Field", Part.CHEST, 2),
+        SHOCKWAVE("Sonic Shockwave", Part.ARMS, 3),
+        TELEPORT("Ender Teleport", Part.LEGS, 4);
 
         public final String displayName;
         public final Part requiredPart;
+        public final int requiredLevel;
 
-        Ability(String displayName, Part requiredPart) {
+        Ability(String displayName, Part requiredPart, int requiredLevel) {
             this.displayName = displayName;
             this.requiredPart = requiredPart;
+            this.requiredLevel = requiredLevel;
         }
     }
 
@@ -219,7 +221,7 @@ public final class AndroidData {
     }
 
     public static boolean isAbilityUnlocked(Player player, Ability ability) {
-        return isAndroid(player) && hasPart(player, ability.requiredPart);
+        return isAndroid(player) && getLevel(player) >= ability.requiredLevel && hasPart(player, ability.requiredPart);
     }
 
     public static boolean isCloakEnabled(Player player) {
