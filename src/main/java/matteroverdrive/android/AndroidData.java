@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 
 /** Persistent Android state owned by a player rather than a block. */
 public final class AndroidData {
-    public static final int ENERGY_CAPACITY = 100_000;
+    public static final int ENERGY_CAPACITY = 100_000;\n    public static final int MAX_LEVEL = 10;\n    private static final String EXPERIENCE = "Experience";
     private static final String ROOT = "MatterOverdriveAndroid";
     private static final String ACTIVE = "Active";
     private static final String ENERGY = "Energy";
@@ -67,7 +67,7 @@ public final class AndroidData {
         return data(player).getBoolean(ACTIVE);
     }
 
-    public static int getEnergy(Player player) {
+    public static int getExperience(Player player) {\n        return Math.max(0, data(player).getInt(EXPERIENCE));\n    }\n\n    public static int getLevel(Player player) {\n        int xp = getExperience(player);\n        int level = 1;\n        while (level < MAX_LEVEL && xp >= experienceForLevel(level + 1)) {\n            level++;\n        }\n        return level;\n    }\n\n    public static int experienceForLevel(int level) {\n        int clamped = Mth.clamp(level, 1, MAX_LEVEL);\n        return (clamped - 1) * 1_000;\n    }\n\n    public static int experienceIntoLevel(Player player) {\n        return getExperience(player) - experienceForLevel(getLevel(player));\n    }\n\n    public static int experienceToNextLevel(Player player) {\n        int level = getLevel(player);\n        return level >= MAX_LEVEL ? 0 : experienceForLevel(level + 1) - getExperience(player);\n    }\n\n    public static int addExperience(Player player, int amount) {\n        int before = getExperience(player);\n        int after = Mth.clamp(before + Math.max(0, amount), 0, experienceForLevel(MAX_LEVEL));\n        if (after != before) {\n            CompoundTag state = data(player);\n            state.putInt(EXPERIENCE, after);\n            save(player, state);\n        }\n        return after - before;\n    }\n\n    public static int getEnergy(Player player) {
         return Mth.clamp(data(player).getInt(ENERGY), 0, ENERGY_CAPACITY);
     }
 
@@ -82,7 +82,7 @@ public final class AndroidData {
     public static void activate(Player player) {
         CompoundTag data = data(player);
         data.putBoolean(ACTIVE, true);
-        data.putInt(ENERGY, Math.max(25_000, getEnergy(player)));
+        data.putInt(ENERGY, Math.max(25_000, getEnergy(player)));\n        if (!data.contains(EXPERIENCE)) {\n            data.putInt(EXPERIENCE, 0);\n        }
         save(player, data);
     }
 
