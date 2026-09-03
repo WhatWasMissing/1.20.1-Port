@@ -192,6 +192,7 @@ public final class AndroidAbilities {
 
         AndroidData.tryConsumeEnergy(player, SHOCKWAVE_ENERGY);
         AndroidData.setCooldownUntil(player, AndroidData.Ability.SHOCKWAVE, gameTime + SHOCKWAVE_COOLDOWN);
+        AndroidData.addExperience(player, 25);
         status(player, "Sonic Shockwave hit " + targets.size() + " target(s).", ChatFormatting.AQUA);
     }
 
@@ -254,6 +255,7 @@ public final class AndroidAbilities {
 
         AndroidData.tryConsumeEnergy(player, TELEPORT_ENERGY);
         AndroidData.setCooldownUntil(player, AndroidData.Ability.TELEPORT, gameTime + TELEPORT_COOLDOWN);
+        AndroidData.addExperience(player, 25);
         status(player, String.format("Ender Teleport complete: %.1f blocks.", origin.distanceTo(destination)),
                 ChatFormatting.AQUA);
     }
