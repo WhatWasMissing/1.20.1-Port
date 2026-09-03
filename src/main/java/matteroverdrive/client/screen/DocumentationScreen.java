@@ -60,6 +60,7 @@ public class DocumentationScreen extends Screen {
     protected void init() {
         viewportHeight = Math.max(40, height - 82);
         rebuildPages(Math.max(80, Math.min(500, width - 74)));
+        pageIndex = Math.max(0, Math.min(LAST_PAGES.getOrDefault(document.ordinal(), 0), pages.size() - 1));
         addRenderableWidget(Button.builder(Component.literal("< Previous"), button -> {
             pageIndex = Math.max(0, pageIndex - 1);
         }).bounds(width / 2 - 118, height - 27, 90, 20).build());
@@ -72,6 +73,7 @@ public class DocumentationScreen extends Screen {
 
     private void rebuildPages(int maxWidth) {
         pages.clear();
+        sectionPages.clear();
         List<RenderLine> current = new ArrayList<>();
         int used = 0;
         for (String raw : sourceLines) {
@@ -81,6 +83,9 @@ public class DocumentationScreen extends Screen {
                 pages.add(current);
                 current = new ArrayList<>();
                 used = 0;
+            }
+            if (raw.startsWith("# ")) {
+                sectionPages.put(raw.substring(2).trim(), pages.size());
             }
             Component line;
             int height = 12;
