@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IFC",
+    "SPI",
+    " BH"
+  ],
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "F": {
+      "item": "matteroverdrive:forcefield_emitter"
+    },
+    "C": {
+      "item": "matteroverdrive:isolinear_circuit_mk3"
+    },
+    "S": {
+      "item": "matteroverdrive:weapon_receiver"
+    },
+    "P": {
+      "item": "matteroverdrive:plasma_core"
+    },
+    "B": {
+      "item": "matteroverdrive:battery"
+    },
+    "H": {
+      "item": "matteroverdrive:weapon_handle"
+    }
+  },
+  "result": {
+    "item": "matteroverdrive:omni_tool"
+  }
+}
