@@ -147,6 +147,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 29 -> redstoneMode;
                 case 30 -> redstoneAllowsOperation() ? 1 : 0;
                 case 31 -> matterConsumedLastTick;
+                case 32 -> anomaly == null ? 0 : anomaly.getDestroyedBlocksLastCycle();
+                case 33 -> anomaly == null ? 1_000
+                        : (int) Math.round(anomaly.getSuppression() * 1_000.0D);
                 default -> 0;
             };
         }
@@ -157,7 +160,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 32;
+            return 34;
         }
     };
 
