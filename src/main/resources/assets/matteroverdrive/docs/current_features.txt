@@ -227,3 +227,4 @@ A successful GitHub Actions build proves that the Forge project compiles/package
 - The tree provides hover descriptions, selection confirmation, a 25,000 FE full respec and an unspent-point HUD reminder.
 
 - Android perk selections are written atomically with a mirrored recovery value, so earning XP or crossing a level boundary cannot clear installed perks.
+- Installed Android perks can be refunded individually for 2,500 FE with confirmation; the existing confirmed 25,000 FE full-tree reset remains available.
