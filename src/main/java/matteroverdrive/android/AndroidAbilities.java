@@ -174,6 +174,9 @@ public final class AndroidAbilities {
                 + (AndroidData.hasPerk(player, AndroidData.Perk.OVERCHARGED_PULSE) ? 3.0F : 0.0F);
         int cooldownTicks = AndroidData.hasPerk(player, AndroidData.Perk.APEX_CORE)
                 ? Math.max(1, (int) Math.ceil(SHOCKWAVE_COOLDOWN * 0.80D)) : SHOCKWAVE_COOLDOWN;
+        if (AndroidData.hasPerk(player, AndroidData.Perk.COOLDOWN_ROUTER)) {
+            cooldownTicks = Math.max(1, (int) Math.ceil(cooldownTicks * 0.90D));
+        }
         int cooldown = AndroidData.getRemainingCooldown(player, AndroidData.Ability.SHOCKWAVE, gameTime);
         if (cooldown > 0) {
             status(player, "Sonic Shockwave cooldown: " + formatSeconds(cooldown), ChatFormatting.RED);
@@ -225,6 +228,7 @@ public final class AndroidAbilities {
         int cooldownTicks = AndroidData.hasPerk(player, AndroidData.Perk.RAPID_BLINK)
                 ? Math.max(1, (int) Math.ceil(TELEPORT_COOLDOWN * 0.85D)) : TELEPORT_COOLDOWN;
         if (AndroidData.hasPerk(player, AndroidData.Perk.APEX_CORE)) cooldownTicks = Math.max(1, (int) Math.ceil(cooldownTicks * 0.80D));
+        if (AndroidData.hasPerk(player, AndroidData.Perk.COOLDOWN_ROUTER)) cooldownTicks = Math.max(1, (int) Math.ceil(cooldownTicks * 0.90D));
         int cooldown = AndroidData.getRemainingCooldown(player, AndroidData.Ability.TELEPORT, gameTime);
         if (cooldown > 0) {
             status(player, "Ender Teleport cooldown: " + formatSeconds(cooldown), ChatFormatting.RED);
