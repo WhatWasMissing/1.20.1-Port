@@ -89,7 +89,8 @@ public final class AndroidAbilities {
 
         if (AndroidData.isCloakEnabled(player)) {
             if (!AndroidData.isAbilityUnlocked(player, AndroidData.Ability.CLOAK)
-                    || !AndroidData.tryConsumeEnergy(player, CLOAK_ENERGY_PER_TICK)) {
+                    || !AndroidData.tryConsumeEnergy(player, AndroidData.scaleAbilityEnergy(
+                    player, CLOAK_ENERGY_PER_TICK, AndroidData.Perk.GHOST_PROTOCOL))) {
                 AndroidData.setCloakEnabled(player, false);
                 status(player, "Cloak disabled: insufficient Android FE.", ChatFormatting.RED);
             } else {
@@ -99,7 +100,8 @@ public final class AndroidAbilities {
 
         if (AndroidData.isShieldEnabled(player)
                 && (!AndroidData.isAbilityUnlocked(player, AndroidData.Ability.FORCE_FIELD)
-                || !AndroidData.tryConsumeEnergy(player, SHIELD_IDLE_ENERGY_PER_TICK))) {
+                || !AndroidData.tryConsumeEnergy(player, AndroidData.scaleAbilityEnergy(
+                player, SHIELD_IDLE_ENERGY_PER_TICK, AndroidData.Perk.BARRIER_MATRIX)))) {
             AndroidData.setShieldEnabled(player, false);
             status(player, "Force Field disabled: insufficient Android FE.", ChatFormatting.RED);
         }
@@ -113,8 +115,10 @@ public final class AndroidAbilities {
             return;
         }
 
+        int shieldCostPerDamage = AndroidData.scaleAbilityEnergy(
+                player, SHIELD_ENERGY_PER_DAMAGE, AndroidData.Perk.BARRIER_MATRIX);
         float desiredAbsorption = event.getAmount() * 0.5F;
-        float affordableAbsorption = AndroidData.getEnergy(player) / (float) SHIELD_ENERGY_PER_DAMAGE;
+        float affordableAbsorption = AndroidData.getEnergy(player) / (float) shieldCostPerDamage;
         float absorbed = Math.min(desiredAbsorption, affordableAbsorption);
         if (absorbed <= 0.0F) {
             AndroidData.setShieldEnabled(player, false);
@@ -122,13 +126,13 @@ public final class AndroidAbilities {
             return;
         }
 
-        int energyCost = Math.max(1, (int) Math.ceil(absorbed * SHIELD_ENERGY_PER_DAMAGE));
+        int energyCost = Math.max(1, (int) Math.ceil(absorbed * shieldCostPerDamage));
         if (!AndroidData.tryConsumeEnergy(player, energyCost)) {
             return;
         }
         event.setAmount(Math.max(0.0F, event.getAmount() - absorbed));
         showShieldPulse(player);
-        if (AndroidData.getEnergy(player) < SHIELD_ENERGY_PER_DAMAGE) {
+        if (AndroidData.getEnergy(player) < shieldCostPerDamage) {
             AndroidData.setShieldEnabled(player, false);
             status(player, "Force Field collapsed: Android FE depleted.", ChatFormatting.RED);
         }
@@ -136,8 +140,9 @@ public final class AndroidAbilities {
 
     private static void toggleCloak(ServerPlayer player) {
         boolean enabled = !AndroidData.isCloakEnabled(player);
-        if (enabled && AndroidData.getEnergy(player) < CLOAK_ENERGY_PER_TICK) {
-            status(player, "Cloak needs at least " + CLOAK_ENERGY_PER_TICK + " FE.", ChatFormatting.RED);
+        int energyCost = AndroidData.scaleAbilityEnergy(player, CLOAK_ENERGY_PER_TICK, AndroidData.Perk.GHOST_PROTOCOL);
+        if (enabled && AndroidData.getEnergy(player) < energyCost) {
+            status(player, "Cloak needs at least " + energyCost + " FE.", ChatFormatting.RED);
             return;
         }
         AndroidData.setCloakEnabled(player, enabled);
@@ -147,7 +152,8 @@ public final class AndroidAbilities {
 
     private static void toggleShield(ServerPlayer player) {
         boolean enabled = !AndroidData.isShieldEnabled(player);
-        if (enabled && AndroidData.getEnergy(player) < SHIELD_IDLE_ENERGY_PER_TICK) {
+        int energyCost = AndroidData.scaleAbilityEnergy(player, SHIELD_IDLE_ENERGY_PER_TICK, AndroidData.Perk.BARRIER_MATRIX);
+        if (enabled && AndroidData.getEnergy(player) < energyCost) {
             status(player, "Force Field needs Android FE.", ChatFormatting.RED);
             return;
         }
@@ -161,17 +167,24 @@ public final class AndroidAbilities {
 
     private static void activateShockwave(ServerPlayer player) {
         long gameTime = player.level().getGameTime();
+        int energyCost = AndroidData.scaleAbilityEnergy(player, SHOCKWAVE_ENERGY, AndroidData.Perk.SHOCK_RECYCLER);
+        double radius = SHOCKWAVE_RADIUS + (AndroidData.hasPerk(player, AndroidData.Perk.WIDEBAND_PULSE) ? 2.0D : 0.0D);
+        float damage = SHOCKWAVE_DAMAGE
+                + (AndroidData.hasPerk(player, AndroidData.Perk.RESONANT_PULSE) ? 2.0F : 0.0F)
+                + (AndroidData.hasPerk(player, AndroidData.Perk.OVERCHARGED_PULSE) ? 3.0F : 0.0F);
+        int cooldownTicks = AndroidData.hasPerk(player, AndroidData.Perk.APEX_CORE)
+                ? Math.max(1, (int) Math.ceil(SHOCKWAVE_COOLDOWN * 0.80D)) : SHOCKWAVE_COOLDOWN;
         int cooldown = AndroidData.getRemainingCooldown(player, AndroidData.Ability.SHOCKWAVE, gameTime);
         if (cooldown > 0) {
             status(player, "Sonic Shockwave cooldown: " + formatSeconds(cooldown), ChatFormatting.RED);
             return;
         }
-        if (AndroidData.getEnergy(player) < SHOCKWAVE_ENERGY) {
-            status(player, "Sonic Shockwave needs " + SHOCKWAVE_ENERGY + " FE.", ChatFormatting.RED);
+        if (AndroidData.getEnergy(player) < energyCost) {
+            status(player, "Sonic Shockwave needs " + energyCost + " FE.", ChatFormatting.RED);
             return;
         }
 
-        AABB area = player.getBoundingBox().inflate(SHOCKWAVE_RADIUS, 2.5D, SHOCKWAVE_RADIUS);
+        AABB area = player.getBoundingBox().inflate(radius, 2.5D, radius);
         List<LivingEntity> targets = player.level().getEntitiesOfClass(LivingEntity.class, area,
                 target -> target != player && target.isAlive() && !target.isAlliedTo(player));
         boolean previousAbilityDamage = player.getPersistentData().getBoolean(ABILITY_DAMAGE_TAG);
@@ -184,8 +197,9 @@ public final class AndroidAbilities {
                     horizontal = player.getLookAngle();
                 }
                 horizontal = horizontal.normalize();
-                target.hurt(player.damageSources().playerAttack(player), SHOCKWAVE_DAMAGE);
-                target.push(horizontal.x * 1.25D, 0.45D, horizontal.z * 1.25D);
+                target.hurt(player.damageSources().playerAttack(player), damage);
+                double push = AndroidData.hasPerk(player, AndroidData.Perk.SHOCK_MOMENTUM) ? 1.75D : 1.25D;
+                target.push(horizontal.x * push, 0.45D, horizontal.z * push);
             }
         } finally {
             if (previousAbilityDamage) {
@@ -195,21 +209,29 @@ public final class AndroidAbilities {
             }
         }
 
-        AndroidData.tryConsumeEnergy(player, SHOCKWAVE_ENERGY);
-        AndroidData.setCooldownUntil(player, AndroidData.Ability.SHOCKWAVE, gameTime + SHOCKWAVE_COOLDOWN);
+        AndroidData.tryConsumeEnergy(player, energyCost);
+        AndroidData.setCooldownUntil(player, AndroidData.Ability.SHOCKWAVE, gameTime + cooldownTicks);
         AndroidData.addExperience(player, 25);
         status(player, "Sonic Shockwave hit " + targets.size() + " target(s).", ChatFormatting.AQUA);
     }
 
     private static void activateTeleport(ServerPlayer player) {
         long gameTime = player.level().getGameTime();
+        int energyCost = AndroidData.scaleAbilityEnergy(player, TELEPORT_ENERGY, AndroidData.Perk.BLINK_RECYCLER);
+        double teleportRange = TELEPORT_RANGE
+                + (AndroidData.hasPerk(player, AndroidData.Perk.PHASE_CAPACITOR) ? 4.0D : 0.0D)
+                + (AndroidData.hasPerk(player, AndroidData.Perk.PHASE_STABILIZER) ? 4.0D : 0.0D)
+                + (AndroidData.hasPerk(player, AndroidData.Perk.LONG_RANGE_BLINK) ? 8.0D : 0.0D);
+        int cooldownTicks = AndroidData.hasPerk(player, AndroidData.Perk.RAPID_BLINK)
+                ? Math.max(1, (int) Math.ceil(TELEPORT_COOLDOWN * 0.85D)) : TELEPORT_COOLDOWN;
+        if (AndroidData.hasPerk(player, AndroidData.Perk.APEX_CORE)) cooldownTicks = Math.max(1, (int) Math.ceil(cooldownTicks * 0.80D));
         int cooldown = AndroidData.getRemainingCooldown(player, AndroidData.Ability.TELEPORT, gameTime);
         if (cooldown > 0) {
             status(player, "Ender Teleport cooldown: " + formatSeconds(cooldown), ChatFormatting.RED);
             return;
         }
-        if (AndroidData.getEnergy(player) < TELEPORT_ENERGY) {
-            status(player, "Ender Teleport needs " + TELEPORT_ENERGY + " FE.", ChatFormatting.RED);
+        if (AndroidData.getEnergy(player) < energyCost) {
+            status(player, "Ender Teleport needs " + energyCost + " FE.", ChatFormatting.RED);
             return;
         }
 
@@ -217,11 +239,11 @@ public final class AndroidAbilities {
         Vec3 origin = player.position();
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getLookAngle().normalize();
-        Vec3 rayEnd = eye.add(look.scale(TELEPORT_RANGE));
+        Vec3 rayEnd = eye.add(look.scale(teleportRange));
         HitResult hit = level.clip(new ClipContext(
                 eye, rayEnd, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         double clearDistance = hit.getType() == HitResult.Type.MISS
-                ? TELEPORT_RANGE
+                ? teleportRange
                 : Math.max(0.0D, hit.getLocation().distanceTo(eye) - 0.75D);
 
         // Trace from the eyes, then convert each point back to a feet position.
@@ -258,8 +280,8 @@ public final class AndroidAbilities {
         level.playSound(null, destination.x, destination.y, destination.z,
                 SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.8F, 1.15F);
 
-        AndroidData.tryConsumeEnergy(player, TELEPORT_ENERGY);
-        AndroidData.setCooldownUntil(player, AndroidData.Ability.TELEPORT, gameTime + TELEPORT_COOLDOWN);
+        AndroidData.tryConsumeEnergy(player, energyCost);
+        AndroidData.setCooldownUntil(player, AndroidData.Ability.TELEPORT, gameTime + cooldownTicks);
         AndroidData.addExperience(player, 25);
         status(player, String.format("Ender Teleport complete: %.1f blocks.", origin.distanceTo(destination)),
                 ChatFormatting.AQUA);
