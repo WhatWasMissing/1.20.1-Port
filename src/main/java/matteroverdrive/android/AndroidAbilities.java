@@ -63,8 +63,13 @@ public final class AndroidAbilities {
 
         AndroidData.Ability ability = AndroidData.getSelectedAbility(player);
         if (!AndroidData.isAbilityUnlocked(player, ability)) {
-            status(player, ability.displayName + " requires the "
-                    + ability.requiredPart.name().toLowerCase() + " bionic part.", ChatFormatting.RED);
+            if (AndroidData.getLevel(player) < ability.requiredLevel) {
+                status(player, ability.displayName + " unlocks at Android level "
+                        + ability.requiredLevel + ".", ChatFormatting.RED);
+            } else {
+                status(player, ability.displayName + " requires the "
+                        + ability.requiredPart.name().toLowerCase() + " bionic part.", ChatFormatting.RED);
+            }
             return;
         }
 
