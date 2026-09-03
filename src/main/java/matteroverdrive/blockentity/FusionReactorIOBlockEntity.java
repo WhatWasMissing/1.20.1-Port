@@ -182,10 +182,9 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         if (controller == null) {
             return super.getCapability(capability, side);
         }
-        if (capability == ForgeCapabilities.ENERGY && side != null
-                && level != null
-                && level.getBlockEntity(worldPosition.relative(side))
-                instanceof EnergyPipeBlockEntity) {
+        if (capability == ForgeCapabilities.ENERGY) {
+            // A formed IO is the reactor's sided FE face. Exposing it to every
+            // face restores direct machine, cable, and capability-based extraction.
             return LazyOptional.of(controller::getEnergy).cast();
         }
         if (capability == ModCapabilities.MATTER) {
