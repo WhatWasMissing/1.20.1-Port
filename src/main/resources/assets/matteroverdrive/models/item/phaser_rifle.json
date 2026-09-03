@@ -4,123 +4,39 @@
   "model": "matteroverdrive:models/item/phaser_rifle_item.obj",
   "display": {
     "gui": {
-      "rotation": [
-        20,
-        -25,
-        0
-      ],
-      "translation": [
-        0,
-        0,
-        0
-      ],
-      "scale": [
-        0.85,
-        0.85,
-        0.85
-      ]
+      "rotation": [20, -25, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.85, 0.85, 0.85]
     },
     "ground": {
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "translation": [
-        0,
-        2,
-        0
-      ],
-      "scale": [
-        0.45,
-        0.45,
-        0.45
-      ]
+      "rotation": [0, 90, 0],
+      "translation": [0, 2, 0],
+      "scale": [0.45, 0.45, 0.45]
     },
     "fixed": {
-      "rotation": [
-        180,
-        90,
-        0
-      ],
-      "translation": [
-        0,
-        0,
-        0
-      ],
-      "scale": [
-        0.75,
-        0.75,
-        0.75
-      ]
+      "rotation": [0, 90, 0],
+      "translation": [0, 0, 0],
+      "scale": [0.75, 0.75, 0.75]
     },
     "thirdperson_righthand": {
-      "rotation": [
-        180,
-        90,
-        30
-      ],
-      "translation": [
-        -3.5,
-        -1,
-        1
-      ],
-      "scale": [
-        0.55,
-        0.55,
-        0.55
-      ]
+      "rotation": [0, 90, 0],
+      "translation": [0, 1.1, -1.75],
+      "scale": [0.55, 0.55, 0.55]
     },
     "thirdperson_lefthand": {
-      "rotation": [
-        180,
-        -90,
-        -30
-      ],
-      "translation": [
-        3.5,
-        -1,
-        1
-      ],
-      "scale": [
-        0.55,
-        0.55,
-        0.55
-      ]
+      "rotation": [0, -90, 0],
+      "translation": [0, 1.1, -1.75],
+      "scale": [0.55, 0.55, 0.55]
     },
     "firstperson_righthand": {
-      "rotation": [
-        180,
-        90,
-        25
-      ],
-      "translation": [
-        -2,
-        -1,
-        1.5
-      ],
-      "scale": [
-        0.58,
-        0.58,
-        0.58
-      ]
+      "rotation": [0, 90, -4],
+      "translation": [1.05, 0.15, -1.6],
+      "scale": [0.58, 0.58, 0.58]
     },
     "firstperson_lefthand": {
-      "rotation": [
-        180,
-        -90,
-        -25
-      ],
-      "translation": [
-        2,
-        -1,
-        1.5
-      ],
-      "scale": [
-        0.58,
-        0.58,
-        0.58
-      ]
+      "rotation": [0, -90, 4],
+      "translation": [-1.05, 0.15, -1.6],
+      "scale": [0.58, 0.58, 0.58]
     }
   }
 }
