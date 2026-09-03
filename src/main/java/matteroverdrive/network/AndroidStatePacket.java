@@ -9,14 +9,14 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public record AndroidStatePacket(boolean active, int energy, int parts,
-                                 int selectedAbility, int cooldownTicks, int activeAbilityFlags) {
+                                 int selectedAbility, int cooldownTicks, int activeAbilityFlags, int experience, int level) {
     public static void encode(AndroidStatePacket packet, FriendlyByteBuf buffer) {
         buffer.writeBoolean(packet.active);
         buffer.writeVarInt(packet.energy);
         buffer.writeByte(packet.parts);
         buffer.writeByte(packet.selectedAbility);
         buffer.writeVarInt(packet.cooldownTicks);
-        buffer.writeByte(packet.activeAbilityFlags);
+        buffer.writeByte(packet.activeAbilityFlags);\n        buffer.writeVarInt(packet.experience);\n        buffer.writeByte(packet.level);
     }
 
     public static AndroidStatePacket decode(FriendlyByteBuf buffer) {
