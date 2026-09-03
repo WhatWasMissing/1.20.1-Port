@@ -24,7 +24,16 @@ public record AndroidPerkSelectPacket(int perkId) {
         if (sender != null) {
             context.enqueueWork(() -> {
                 AndroidData.Perk[] perks = AndroidData.Perk.values();
-                if (packet.perkId >= 0 && packet.perkId < perks.length) {
+                if (packet.perkId == -1) {
+                    if (AndroidData.tryResetPerks(sender)) {
+                        sender.displayClientMessage(Component.literal("Android perks reset for "
+                                + AndroidData.PERK_RESET_COST + " FE.").withStyle(ChatFormatting.YELLOW), true);
+                    } else {
+                        sender.displayClientMessage(Component.literal("Perk reset requires selected perks and "
+                                + AndroidData.PERK_RESET_COST + " Android FE.").withStyle(ChatFormatting.RED), true);
+                    }
+                    ModNetwork.syncAndroidState(sender);
+                } else if (packet.perkId >= 0 && packet.perkId < perks.length) {
                     AndroidData.Perk perk = perks[packet.perkId];
                     if (AndroidData.selectPerk(sender, perk)) {
                         sender.displayClientMessage(Component.literal("Installed perk: " + perk.displayName)
