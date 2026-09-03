@@ -771,3 +771,36 @@ Status: PLAYABLE building resources; some presentation remains under visual test
 # End of Guide
 
 For verification rather than ordinary play, open the M2 Testing Checklist item. For the exact implemented/missing parity matrix, open the Current Feature Reference item.
+
+# Android selectable skill tree
+
+Status: TESTING selectable progression layer.
+
+## Simplified
+
+- Convert into an Android and press K to open the skill tree.
+- Each Android level awards one perk point.
+- Choose one of the two perks shown for that level.
+- A choice is permanent and the other perk on that row becomes unavailable.
+
+## Detailed
+
+- The Assault branch improves melee, Sonic Shockwave, movement and Android FE efficiency.
+- The Survival / Mobility branch improves damage resistance, Force Field efficiency and Ender Teleport.
+- Perks are stored on the player and survive death, relog and Red Pill deactivation.
+- Perk selection is checked by the server; a modified client cannot select perks above its level or both perks on one row.
+- Level 1: Efficient Core (-10% ability FE) or Reinforced Frame (-5% incoming damage).
+- Level 2: Ghost Protocol (-25% Cloak FE) or Barrier Matrix (-25% Force Field FE).
+- Level 3: Resonant Pulse (+2 Shockwave damage) or Phase Capacitor (+4 Teleport range).
+- Level 4: Wideband Pulse (+2 Shockwave radius) or Rapid Blink (-15% Teleport cooldown).
+- Level 5: Combat Servos (+2 direct melee damage) or Kinetic Plating (-10% incoming damage).
+- Level 6: Shock Recycler (-25% Shockwave FE) or Blink Recycler (-25% Teleport FE).
+- Level 7: Shock Momentum (stronger knockback) or Phase Stabilizer (+4 Teleport range).
+- Level 8: Neural Accelerator (stronger leg speed) or Adaptive Armor (-10% incoming damage).
+- Level 9: Overcharged Pulse (+3 Shockwave damage) or Long-range Blink (+8 Teleport range).
+- Level 10: Apex Core (-15% ability FE and shorter active cooldowns) or Adamant Chassis (-15% incoming damage).
+
+## Limitations
+
+- Alpha 0.2 has no perk reset item yet. Choose carefully.
+- The current tree is the first full selectable progression pass and remains subject to balance tuning.
