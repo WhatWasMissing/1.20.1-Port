@@ -24,7 +24,7 @@ Branch: `testing/main`
 - [ ] Convert with a Blue Pill and confirm the HUD starts at Level 1 with 0 XP.
 - [ ] Install a new bionic part. Confirm XP increases by 50 and persists after relog/death.
 - [ ] Use Sonic Shockwave or Ender Teleport successfully. Confirm XP increases by 25; failed/cooldown/insufficient-FE actions grant no XP.
-- [ ] Earn enough XP to cross a 1,000 XP level boundary. Confirm the HUD advances one level and resets the per-level progress display; confirm Level 10 caps XP.
+- [ ] Earn enough XP to cross a 100 XP level boundary. Confirm the HUD advances one level and resets the per-level progress display; confirm Level 10 caps XP.
 - [ ] Confirm XP is player-specific on a dedicated server and is retained when using a Red Pill (deactivation removes abilities/energy but not progression).
 
 ## Bionic parts and abilities
