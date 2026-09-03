@@ -118,3 +118,23 @@ The branch is ready to consolidate when the runtime gate passes and there are no
 - [ ] Arm Reset Perks, cancel by choosing another action, then confirm a reset consumes exactly 25,000 FE, refunds every point and disables toggled abilities.
 - [ ] Confirm insufficient FE cannot reset perks and malformed/repeated perk packets grant nothing.
 - [ ] Verify selections and refunded points persist through screen close, relog, death and Red Pill deactivation/reactivation.
+
+## Fusion Reactor full-parity pass
+
+- [ ] Build the exact horizontal ring in all four controller facings; wait 40 ticks and verify hull, coil/IO, flexible-side, unloaded-area and missing-anomaly faults.
+- [ ] At anomaly offsets 0/1/2/3, verify 100%/75%/50%/25% base efficiency. Add Range upgrades and verify discovery through the documented 16-block cap.
+- [ ] Verify the formula against GUI telemetry: 9,048 FE/t × efficiency × (unsuppressed real mass × 10) × Speed rate.
+- [ ] Verify theoretical matter drain is 1/80 kM/t × the same mass multiplier and Speed rate. Confirm fractional drain accumulates, no free generation occurs at zero matter, and a nearly full FE buffer reduces accepted FE and matter use proportionally.
+- [ ] Confirm generated FE exactly matches the displayed generated value; there must be no hidden post-tick 8× boost.
+- [ ] Test direct receiver, one cable, 5+ cable chain, cable rebuild and multiple formed IO outputs. Test matter input/output and confirm no duplication or IO ping-pong.
+- [ ] Put multiple compatible machines inside the ring and verify fair internal distribution plus connected-demand telemetry.
+- [ ] Test persistent RUN/SCRAM. Test Ignored, High and Low redstone modes across save/reload and through a linked Reactor Remote.
+- [ ] Verify comparator: 0 invalid, 1 paused/SCRAMMED, and 1-15 based on stored FE for an available reactor.
+- [ ] Feed dropped items and kill a living entity in the horizon. Confirm raw mass persists and living mass is added exactly once.
+- [ ] Verify ordinary players/mobs are pulled, Space-Time Equalizer wearers are immune, and pull/horizon telemetry matches observed behavior.
+- [ ] In a disposable world area, raise anomaly mass until block/fluid hazard activates. Confirm fluids and breakable blocks are affected, unbreakable blocks survive, destroyed-block telemetry updates, and tick time remains acceptable.
+- [ ] Lock one and four powered stabilizers through a clear beam. Confirm visible beam particles and approximately 70% / 24.01% remaining strength before Power upgrades.
+- [ ] Block/rotate/unpower/redstone-pause a stabilizer and confirm suppression expires within roughly 20 ticks. Verify its Ignored/High/Low mode persists.
+- [ ] Test Power, Power Storage, Matter Storage, Speed and Range upgrades individually and in combinations; record mass, efficiency, potential FE/t, actual FE/t and kM/t.
+- [ ] Open Current Features, System Guide and To Test in game; verify the reactor/anomaly sections are paged, readable, current, and explicitly warn that world damage is active.
+
