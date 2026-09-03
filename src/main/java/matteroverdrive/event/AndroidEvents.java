@@ -83,7 +83,8 @@ public final class AndroidEvents {
             event.player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 45, 0, true, false, false));
         }
         if (AndroidData.hasPart(event.player, AndroidData.Part.LEGS)) {
-            event.player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 45, 0, true, false, false));
+            int amplifier = AndroidData.hasPerk(event.player, AndroidData.Perk.NEURAL_ACCELERATOR) ? 1 : 0;
+            event.player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 45, amplifier, true, false, false));
         }
     }
 
@@ -139,7 +140,8 @@ public final class AndroidEvents {
                 && !attacker.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG)
                 && AndroidData.hasPart(attacker, AndroidData.Part.ARMS)
                 && AndroidData.tryConsumeEnergy(attacker, 80)) {
-            event.setAmount(event.getAmount() + 3.0F);
+            float perkDamage = AndroidData.hasPerk(attacker, AndroidData.Perk.COMBAT_SERVOS) ? 2.0F : 0.0F;
+            event.setAmount(event.getAmount() + 3.0F + perkDamage);
         }
     }
 
@@ -147,6 +149,9 @@ public final class AndroidEvents {
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer defender) {
             AndroidAbilities.applyShield(event, defender);
+            if (AndroidData.isAndroid(defender)) {
+                event.setAmount(event.getAmount() * AndroidData.incomingDamageMultiplier(defender));
+            }
         }
     }
 
