@@ -61,14 +61,52 @@ public class DocumentationScreen extends Screen {
         viewportHeight = Math.max(40, height - 82);
         rebuildPages(Math.max(80, Math.min(500, width - 74)));
         pageIndex = Math.max(0, Math.min(LAST_PAGES.getOrDefault(document.ordinal(), 0), pages.size() - 1));
+        rebuildWidgets();
+    }
+
+    private void rebuildWidgets() {
+        clearWidgets();
+        if (indexOpen) {
+            int column = 0;
+            int row = 0;
+            for (Map.Entry<String, Integer> entry : sectionPages.entrySet()) {
+                int x = width / 2 - 270 + column * 275;
+                int y = 42 + row * 22;
+                int target = entry.getValue();
+                String label = entry.getKey();
+                if (label.length() > 32) label = label.substring(0, 29) + "...";
+                addRenderableWidget(Button.builder(Component.literal(label), button -> jumpTo(target))
+                        .bounds(x, y, 265, 20).build());
+                if (++column == 2) { column = 0; row++; }
+            }
+            addRenderableWidget(Button.builder(Component.literal("Back to guide"), button -> {
+                indexOpen = false;
+                rebuildWidgets();
+            }).bounds(width / 2 - 55, height - 27, 110, 20).build());
+            return;
+        }
         addRenderableWidget(Button.builder(Component.literal("< Previous"), button -> {
             pageIndex = Math.max(0, pageIndex - 1);
-        }).bounds(width / 2 - 118, height - 27, 90, 20).build());
+            rememberPage();
+        }).bounds(width / 2 - 170, height - 27, 90, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Index"), button -> {
+            rememberPage();
+            indexOpen = true;
+            rebuildWidgets();
+        }).bounds(width / 2 - 65, height - 27, 70, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Next >"), button -> {
             pageIndex = Math.min(Math.max(0, pages.size() - 1), pageIndex + 1);
-        }).bounds(width / 2 + 28, height - 27, 90, 20).build());
+            rememberPage();
+        }).bounds(width / 2 + 20, height - 27, 90, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
                 .bounds(width / 2 - 40, height - 51, 80, 20).build());
+    }
+
+    private void jumpTo(int target) {
+        pageIndex = Math.max(0, Math.min(target, pages.size() - 1));
+        indexOpen = false;
+        rememberPage();
+        rebuildWidgets();
     }
 
     private void rebuildPages(int maxWidth) {
