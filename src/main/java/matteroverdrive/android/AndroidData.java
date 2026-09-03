@@ -84,6 +84,7 @@ public final class AndroidData {
         data.putBoolean(ACTIVE, true);
         data.putInt(ENERGY, Math.max(25_000, getEnergy(player)));\n        if (!data.contains(EXPERIENCE)) {\n            data.putInt(EXPERIENCE, 0);\n        }
         save(player, data);
+        addExperience(player, 100);
     }
 
     public static int receiveEnergy(Player player, int amount) {
@@ -142,6 +143,7 @@ public final class AndroidData {
             }
         }
         save(player, data);
+        addExperience(player, 50);
         return true;
     }
 
