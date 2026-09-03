@@ -89,3 +89,13 @@ Branch: `testing/main`
 - [ ] Confirm the HUD unspent count matches Android level minus installed perks.
 - [ ] Confirm full respec costs exactly 25,000 FE, rejects insufficient FE, refunds all points and disables Cloak/Force Field.
 - [ ] Upgrade a save containing old Assault/Survival choices and confirm every existing selection maps to the same perk.
+
+## Perk persistence during level-up
+
+- [ ] Install a perk, record its name and current Android level, then earn enough XP to level up.
+- [ ] Confirm every previously installed perk stays green/installed and its gameplay effect remains active.
+- [ ] Confirm the new level adds exactly one unspent point rather than rebuilding or clearing the tree.
+- [ ] Repeat across multiple level boundaries, then close/reopen the screen, relog and die.
+- [ ] Confirm a save affected by the earlier zero-mask regression recovers from the mirrored perk value when available.
+- [ ] Confirm the deliberate Reset Perks confirmation still clears both the active and recovery values for exactly 25,000 FE.
+
