@@ -16,6 +16,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class DocumentationScreen extends Screen {
     private static final int PANEL_COLOR = 0xF0101820;
@@ -27,6 +31,10 @@ public class DocumentationScreen extends Screen {
     private final DocumentationItem.Document document;
     private final List<String> sourceLines = new ArrayList<>();
     private final List<List<RenderLine>> pages = new ArrayList<>();
+    private final Map<String, Integer> sectionPages = new LinkedHashMap<>();
+    private static final Map<Integer, Integer> LAST_PAGES = new LinkedHashMap<>();
+    private static boolean memoryLoaded;
+    private boolean indexOpen;
     private int pageIndex;
     private int viewportHeight;
 
@@ -34,6 +42,7 @@ public class DocumentationScreen extends Screen {
         super(Component.literal(DocumentationItem.Document.fromId(documentId).title));
         this.document = DocumentationItem.Document.fromId(documentId);
         loadDocument();
+        loadPageMemory();
     }
 
     private void loadDocument() {
