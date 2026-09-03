@@ -16,6 +16,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class DocumentationScreen extends Screen {
     private static final int PANEL_COLOR = 0xF0101820;
@@ -27,6 +31,10 @@ public class DocumentationScreen extends Screen {
     private final DocumentationItem.Document document;
     private final List<String> sourceLines = new ArrayList<>();
     private final List<List<RenderLine>> pages = new ArrayList<>();
+    private final Map<String, Integer> sectionPages = new LinkedHashMap<>();
+    private static final Map<Integer, Integer> LAST_PAGES = new LinkedHashMap<>();
+    private static boolean memoryLoaded;
+    private boolean indexOpen;
     private int pageIndex;
     private int viewportHeight;
 
@@ -34,6 +42,7 @@ public class DocumentationScreen extends Screen {
         super(Component.literal(DocumentationItem.Document.fromId(documentId).title));
         this.document = DocumentationItem.Document.fromId(documentId);
         loadDocument();
+        loadPageMemory();
     }
 
     private void loadDocument() {
@@ -51,18 +60,58 @@ public class DocumentationScreen extends Screen {
     protected void init() {
         viewportHeight = Math.max(40, height - 82);
         rebuildPages(Math.max(80, Math.min(500, width - 74)));
+        pageIndex = Math.max(0, Math.min(LAST_PAGES.getOrDefault(document.ordinal(), 0), pages.size() - 1));
+        rebuildGuideWidgets();
+    }
+
+    private void rebuildGuideWidgets() {
+        clearWidgets();
+        if (indexOpen) {
+            int column = 0;
+            int row = 0;
+            for (Map.Entry<String, Integer> entry : sectionPages.entrySet()) {
+                int x = width / 2 - 270 + column * 275;
+                int y = 42 + row * 22;
+                int target = entry.getValue();
+                String label = entry.getKey();
+                if (label.length() > 32) label = label.substring(0, 29) + "...";
+                addRenderableWidget(Button.builder(Component.literal(label), button -> jumpTo(target))
+                        .bounds(x, y, 265, 20).build());
+                if (++column == 2) { column = 0; row++; }
+            }
+            addRenderableWidget(Button.builder(Component.literal("Back to guide"), button -> {
+                indexOpen = false;
+                rebuildGuideWidgets();
+            }).bounds(width / 2 - 55, height - 27, 110, 20).build());
+            return;
+        }
         addRenderableWidget(Button.builder(Component.literal("< Previous"), button -> {
             pageIndex = Math.max(0, pageIndex - 1);
-        }).bounds(width / 2 - 118, height - 27, 90, 20).build());
+            rememberPage();
+        }).bounds(width / 2 - 170, height - 27, 90, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Index"), button -> {
+            rememberPage();
+            indexOpen = true;
+            rebuildGuideWidgets();
+        }).bounds(width / 2 - 65, height - 27, 70, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Next >"), button -> {
             pageIndex = Math.min(Math.max(0, pages.size() - 1), pageIndex + 1);
-        }).bounds(width / 2 + 28, height - 27, 90, 20).build());
+            rememberPage();
+        }).bounds(width / 2 + 20, height - 27, 90, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
                 .bounds(width / 2 - 40, height - 51, 80, 20).build());
     }
 
+    private void jumpTo(int target) {
+        pageIndex = Math.max(0, Math.min(target, pages.size() - 1));
+        indexOpen = false;
+        rememberPage();
+        rebuildGuideWidgets();
+    }
+
     private void rebuildPages(int maxWidth) {
         pages.clear();
+        sectionPages.clear();
         List<RenderLine> current = new ArrayList<>();
         int used = 0;
         for (String raw : sourceLines) {
@@ -72,6 +121,9 @@ public class DocumentationScreen extends Screen {
                 pages.add(current);
                 current = new ArrayList<>();
                 used = 0;
+            }
+            if (raw.startsWith("# ")) {
+                sectionPages.put(raw.substring(2).trim(), pages.size());
             }
             Component line;
             int height = 12;
@@ -114,6 +166,21 @@ public class DocumentationScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
+        if (indexOpen) {
+            int panelWidth = Math.min(600, width - 24);
+            int left = (width - panelWidth) / 2;
+            int right = left + panelWidth;
+            int top = 10;
+            int bottom = height - 18;
+            graphics.fill(left, top, right, bottom, PANEL_COLOR);
+            graphics.fill(left, top, right, top + 1, BORDER_COLOR);
+            graphics.fill(left, top, left + 1, bottom, BORDER_COLOR);
+            graphics.fill(right - 1, top, right, bottom, BORDER_COLOR);
+            graphics.drawCenteredString(font, Component.literal("Guide Index"), width / 2, top + 10, BORDER_COLOR);
+            graphics.drawCenteredString(font, Component.literal("Select a section"), width / 2, top + 24, MUTED_COLOR);
+            super.render(graphics, mouseX, mouseY, partialTick);
+            return;
+        }
         int panelWidth = Math.min(600, width - 24);
         int left = (width - panelWidth) / 2;
         int right = left + panelWidth;
@@ -149,21 +216,62 @@ public class DocumentationScreen extends Screen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN || keyCode == GLFW.GLFW_KEY_RIGHT) {
             pageIndex = Math.min(pages.size() - 1, pageIndex + 1);
+            rememberPage();
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_PAGE_UP || keyCode == GLFW.GLFW_KEY_LEFT) {
             pageIndex = Math.max(0, pageIndex - 1);
+            rememberPage();
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_HOME) {
             pageIndex = 0;
+            rememberPage();
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_END) {
             pageIndex = Math.max(0, pages.size() - 1);
+            rememberPage();
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public void onClose() {
+        rememberPage();
+        super.onClose();
+    }
+
+    private void rememberPage() {
+        if (indexOpen) return;
+        LAST_PAGES.put(document.ordinal(), pageIndex);
+        Path file = Minecraft.getInstance().gameDirectory.toPath().resolve("config/matteroverdrive_guide_pages.dat");
+        try {
+            Files.createDirectories(file.getParent());
+            StringBuilder out = new StringBuilder();
+            LAST_PAGES.forEach((id, page) -> out.append(id).append('=').append(page).append('\n'));
+            Files.writeString(file, out.toString());
+        } catch (IOException ignored) {
+            // Page memory is optional and must never block the guide.
+        }
+    }
+
+    private static void loadPageMemory() {
+        if (memoryLoaded) return;
+        memoryLoaded = true;
+        Path file = Minecraft.getInstance().gameDirectory.toPath().resolve("config/matteroverdrive_guide_pages.dat");
+        try {
+            if (!Files.exists(file)) return;
+            for (String line : Files.readAllLines(file)) {
+                String[] pair = line.split("=", 2);
+                if (pair.length == 2) {
+                    LAST_PAGES.put(Integer.parseInt(pair[0]), Math.max(0, Integer.parseInt(pair[1])));
+                }
+            }
+        } catch (Exception ignored) {
+            LAST_PAGES.clear();
+        }
     }
 
     @Override
