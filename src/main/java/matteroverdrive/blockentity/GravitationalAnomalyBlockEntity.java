@@ -24,6 +24,9 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
     public static final double GRAVITATIONAL_CONSTANT = 6.67384D;
     private static final double SPEED_OF_LIGHT = 2.99792458D;
     private static final int ITEM_ATTRACTION_INTERVAL = 5;
+    private static final int BLOCK_EFFECT_INTERVAL = 10;
+    private static final int MAX_BLOCK_ATTEMPTS = 48;
+    private static final double MAX_BLOCK_BREAK_RANGE = 12.0D;
     private static final double MAX_ITEM_ATTRACTION_RANGE = 32.0D;
     private static final double MIN_ITEM_CONSUMPTION_RADIUS = 1.0D;
     private static final double MAX_ENTITY_EFFECT_RANGE = 32.0D;
@@ -41,6 +44,7 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
     private int consumedEntitiesThisCycle;
     private int lastConsumedMatter;
     private int lastConsumedEntityCount;
+    private int destroyedBlocksLastCycle;
     private double nearestEntityDistance = -1.0D;
 
     public GravitationalAnomalyBlockEntity(BlockPos pos, BlockState state) {
@@ -69,6 +73,9 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
             anomaly.attractAndConsumeItems(level);
             anomaly.affectLivingEntities(level);
             anomaly.finishConsumptionCycle();
+        }
+        if (anomaly.tickCounter % BLOCK_EFFECT_INTERVAL == 0) {
+            anomaly.affectBlocks(level);
         }
     }
 
@@ -119,6 +126,10 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
 
     public int getLastConsumedEntityCount() {
         return lastConsumedEntityCount;
+    }
+
+    public int getDestroyedBlocksLastCycle() {
+        return destroyedBlocksLastCycle;
     }
 
     public double getRealMass() {
@@ -173,6 +184,56 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
                     .add(pull.normalize().scale(acceleration));
             itemEntity.setDeltaMovement(motion);
             itemEntity.hurtMarked = true;
+        }
+    }
+
+    private void affectBlocks(Level level) {
+        destroyedBlocksLastCycle = 0;
+        double range = Math.min(MAX_BLOCK_BREAK_RANGE, getBlockBreakRange());
+        if (range < 1.0D) {
+            return;
+        }
+
+        int radius = Math.max(1, (int) Math.ceil(range));
+        int diameter = radius * 2 + 1;
+        int attempts = Math.min(MAX_BLOCK_ATTEMPTS,
+                Math.max(8, (int) Math.ceil(range * 4.0D)));
+        double rangeSquared = range * range;
+        for (int attempt = 0; attempt < attempts; attempt++) {
+            int dx = level.random.nextInt(diameter) - radius;
+            int dy = level.random.nextInt(diameter) - radius;
+            int dz = level.random.nextInt(diameter) - radius;
+            double distanceSquared = dx * dx + dy * dy + dz * dz;
+            if (distanceSquared <= 0.0D || distanceSquared > rangeSquared) {
+                continue;
+            }
+
+            BlockPos target = worldPosition.offset(dx, dy, dz);
+            if (!level.hasChunkAt(target)) {
+                continue;
+            }
+            BlockState targetState = level.getBlockState(target);
+            if (targetState.isAir()
+                    || targetState.is(matteroverdrive.registry.ModBlocks.get("gravitational_anomaly").get())) {
+                continue;
+            }
+
+            float hardness = targetState.getDestroySpeed(level, target);
+            if (hardness < 0.0F) {
+                continue;
+            }
+            double falloff = Math.max(0.0D, 1.0D - Math.sqrt(distanceSquared) / range);
+            double breakStrength = getRealMass() * 4.0D * getSuppression() * falloff;
+            if (targetState.getFluidState().isEmpty() && hardness > breakStrength) {
+                continue;
+            }
+
+            if (level.destroyBlock(target, true)) {
+                destroyedBlocksLastCycle++;
+            }
+        }
+        if (destroyedBlocksLastCycle > 0) {
+            setChanged();
         }
     }
 
@@ -278,6 +339,7 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
         tag.putBoolean("MassInitialized", massInitialized);
         tag.putInt("LastConsumedMatter", lastConsumedMatter);
         tag.putInt("LastConsumedEntityCount", lastConsumedEntityCount);
+        tag.putInt("DestroyedBlocksLastCycle", destroyedBlocksLastCycle);
     }
 
     @Override
@@ -287,6 +349,7 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
         massInitialized = tag.getBoolean("MassInitialized") || tag.contains("Mass");
         lastConsumedMatter = Math.max(0, tag.getInt("LastConsumedMatter"));
         lastConsumedEntityCount = Math.max(0, tag.getInt("LastConsumedEntityCount"));
+        destroyedBlocksLastCycle = Math.max(0, tag.getInt("DestroyedBlocksLastCycle"));
     }
 
     private record Suppressor(long expiresAt, double amount) {
