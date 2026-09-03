@@ -34,6 +34,8 @@ public final class ModNetwork {
                 DataPadOpenPacket::decode, DataPadOpenPacket::handle);
         CHANNEL.registerMessage(nextId++, DocumentationOpenPacket.class, DocumentationOpenPacket::encode,
                 DocumentationOpenPacket::decode, DocumentationOpenPacket::handle);
+        CHANNEL.registerMessage(nextId++, OmniToolFirePacket.class, OmniToolFirePacket::encode,
+                OmniToolFirePacket::decode, OmniToolFirePacket::handle);
     }
 
     public static void openDataPad(ServerPlayer player, List<String> history) {
@@ -42,6 +44,10 @@ public final class ModNetwork {
 
     public static void openDocumentation(ServerPlayer player, int documentId) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), new DocumentationOpenPacket(documentId));
+    }
+
+    public static void fireOmniTool() {
+        CHANNEL.sendToServer(new OmniToolFirePacket());
     }
 
     public static void syncAndroidState(ServerPlayer player) {
