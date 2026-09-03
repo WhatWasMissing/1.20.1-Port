@@ -50,7 +50,7 @@ public class DocumentationScreen extends Screen {
     @Override
     protected void init() {
         viewportHeight = Math.max(40, height - 82);
-        rebuildPages(Math.max(80, Math.min(560, width - 54)));
+        rebuildPages(Math.max(80, Math.min(500, width - 74)));
         addRenderableWidget(Button.builder(Component.literal("< Previous"), button -> {
             pageIndex = Math.max(0, pageIndex - 1);
         }).bounds(width / 2 - 118, height - 27, 90, 20).build());
@@ -66,8 +66,15 @@ public class DocumentationScreen extends Screen {
         List<RenderLine> current = new ArrayList<>();
         int used = 0;
         for (String raw : sourceLines) {
+            // Give each major section its own page so headings are never buried
+            // in a dense wall of text.
+            if (raw.startsWith("# ") && !current.isEmpty()) {
+                pages.add(current);
+                current = new ArrayList<>();
+                used = 0;
+            }
             Component line;
-            int height = 11;
+            int height = 12;
             if (raw.isBlank()) {
                 line = Component.empty();
                 height = 6;
@@ -75,6 +82,10 @@ public class DocumentationScreen extends Screen {
                 line = Component.literal(raw.replaceFirst("^#+\\s*", ""))
                         .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
                 height = raw.startsWith("# ") ? 15 : 13;
+            } else if (raw.startsWith("## ")) {
+                line = Component.literal(raw.replaceFirst("^##\\s*", ""))
+                        .withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD);
+                height = 13;
             } else if (raw.startsWith("- [ ] ")) {
                 line = Component.literal("□ " + raw.substring(6)).withStyle(ChatFormatting.YELLOW);
             } else if (raw.startsWith("- ")) {
