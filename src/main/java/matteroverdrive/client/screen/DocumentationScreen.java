@@ -61,7 +61,7 @@ public class DocumentationScreen extends Screen {
         viewportHeight = Math.max(40, height - 82);
         rebuildPages(Math.max(80, Math.min(500, width - 74)));
         pageIndex = Math.max(0, Math.min(LAST_PAGES.getOrDefault(document.ordinal(), 0), pages.size() - 1));
-        rebuildWidgets();
+        rebuildGuideWidgets();
     }
 
     private void rebuildWidgets() {
