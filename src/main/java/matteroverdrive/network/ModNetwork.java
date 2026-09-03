@@ -28,6 +28,8 @@ public final class ModNetwork {
                 AndroidStatePacket::decode, AndroidStatePacket::handle);
         CHANNEL.registerMessage(nextId++, AndroidAbilityPacket.class, AndroidAbilityPacket::encode,
                 AndroidAbilityPacket::decode, AndroidAbilityPacket::handle);
+        CHANNEL.registerMessage(nextId++, AndroidPerkSelectPacket.class, AndroidPerkSelectPacket::encode,
+                AndroidPerkSelectPacket::decode, AndroidPerkSelectPacket::handle);
         CHANNEL.registerMessage(nextId++, DataPadOpenPacket.class, DataPadOpenPacket::encode,
                 DataPadOpenPacket::decode, DataPadOpenPacket::handle);
         CHANNEL.registerMessage(nextId++, DocumentationOpenPacket.class, DocumentationOpenPacket::encode,
@@ -52,7 +54,8 @@ public final class ModNetwork {
                 AndroidData.getRemainingCooldown(player, selected, player.level().getGameTime()),
                 AndroidData.getActiveAbilityFlags(player),
                 AndroidData.getExperience(player),
-                AndroidData.getLevel(player)
+                AndroidData.getLevel(player),
+                AndroidData.getSelectedPerks(player)
         ));
     }
 }

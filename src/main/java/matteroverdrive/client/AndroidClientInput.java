@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.android.AndroidAbilities;
+import matteroverdrive.client.screen.AndroidSkillTreeScreen;
 import matteroverdrive.network.AndroidAbilityPacket;
 import matteroverdrive.network.ModNetwork;
 import net.minecraft.client.Minecraft;
@@ -25,6 +26,9 @@ public final class AndroidClientInput {
             return;
         }
 
+        while (AndroidKeyMappings.OPEN_SKILL_TREE.consumeClick()) {
+            minecraft.setScreen(new AndroidSkillTreeScreen());
+        }
         while (AndroidKeyMappings.CYCLE_ABILITY.consumeClick()) {
             ModNetwork.CHANNEL.sendToServer(new AndroidAbilityPacket(AndroidAbilities.ACTION_CYCLE));
         }

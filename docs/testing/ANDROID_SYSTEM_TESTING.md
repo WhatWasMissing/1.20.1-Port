@@ -69,3 +69,14 @@ Branch: `testing/main`
 - [ ] Confirm heat value and bar rise with firing and cool down normally.
 - [ ] Confirm the HUD clearly shows `OVERHEATED` and the weapon cannot fire while overheated.
 - [ ] Switch to a non-energy item or hide the GUI. Confirm the HUD disappears.
+
+## Selectable perk tree pass
+
+- [ ] Press K while converted; verify all ten levels and both branches render without clipping at common GUI scales.
+- [ ] Confirm the player receives one selection per reached level, cannot select above their level and cannot select both perks on the same row.
+- [ ] Confirm chosen perks persist through death, relog and Red Pill deactivation/reactivation.
+- [ ] Verify Efficient/Apex Core and specialised efficiency perks reduce displayed and consumed FE consistently.
+- [ ] Verify Shockwave damage, radius and knockback perks independently and together.
+- [ ] Verify Teleport range and cooldown perks independently and together, including collision-safe destinations.
+- [ ] Verify Combat Servos affects direct melee only, Neural Accelerator affects powered leg speed, and chassis perks reduce incoming damage after Force Field handling.
+- [ ] Confirm invalid or repeated perk packets do not grant extra perks.

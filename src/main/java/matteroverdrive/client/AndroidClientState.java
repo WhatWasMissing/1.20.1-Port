@@ -12,12 +12,14 @@ public final class AndroidClientState {
     private static int activeAbilityFlags;
     private static int experience;
     private static int level;
+    private static long selectedPerks;
 
     private AndroidClientState() {
     }
 
     public static void set(boolean nextActive, int nextEnergy, int nextParts,
-                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags, int nextExperience, int nextLevel) {
+                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags, int nextExperience, int nextLevel,
+                           long nextSelectedPerks) {
         active = nextActive;
         energy = Math.max(0, nextEnergy);
         parts = nextParts & 15;
@@ -26,6 +28,7 @@ public final class AndroidClientState {
         activeAbilityFlags = nextActiveAbilityFlags & 3;
         experience = Math.max(0, nextExperience);
         level = Math.max(1, Math.min(AndroidData.MAX_LEVEL, nextLevel));
+        selectedPerks = nextSelectedPerks;
     }
 
     public static boolean isActive() {
@@ -58,6 +61,14 @@ public final class AndroidClientState {
 
     public static int level() {
         return level;
+    }
+
+    public static long selectedPerks() {
+        return selectedPerks;
+    }
+
+    public static boolean hasPerk(AndroidData.Perk perk) {
+        return (selectedPerks & (1L << perk.ordinal())) != 0L;
     }
 
     public static boolean isCloakEnabled() {
