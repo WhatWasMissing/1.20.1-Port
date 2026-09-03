@@ -73,7 +73,17 @@ public final class AndroidData {
         OVERCHARGED_PULSE(9, 0, "Overcharged Pulse", "Sonic Shockwave deals 3 more damage."),
         LONG_RANGE_BLINK(9, 1, "Long-range Blink", "Ender Teleport gains another 8 blocks of range."),
         APEX_CORE(10, 0, "Apex Core", "All Android abilities use a further 15% less FE."),
-        ADAMANT_CHASSIS(10, 1, "Adamant Chassis", "Reduce incoming damage by another 15%.");
+        ADAMANT_CHASSIS(10, 1, "Adamant Chassis", "Reduce incoming damage by another 15%."),
+        SUSTAINED_SYSTEMS(1, 2, "Sustained Systems", "Installed parts use 25% less passive FE."),
+        QUICK_CHARGE(2, 2, "Quick Charge", "Handheld batteries charge the Android twice as fast."),
+        LEARNING_MATRIX(3, 2, "Learning Matrix", "Future Android XP gains are increased by 25%."),
+        COOLDOWN_ROUTER(4, 2, "Cooldown Router", "Shockwave and Teleport cooldowns are 10% shorter."),
+        REACTIVE_PLATING(5, 2, "Reactive Plating", "Reduce incoming damage by 5%."),
+        SELF_REPAIR(6, 2, "Self Repair", "Spend FE to regenerate health while injured."),
+        SILENT_CLOAK(7, 2, "Silent Cloak", "Cloak uses a further 15% less FE."),
+        TACTICAL_SCAN(8, 2, "Tactical Scan", "Periodically highlight nearby hostile mobs."),
+        EMERGENCY_PROTOCOL(9, 2, "Emergency Protocol", "Gain powered resistance at critically low health."),
+        SYNTHETIC_PERFECTION(10, 2, "Synthetic Perfection", "Use 10% less ability FE and take 5% less damage.");
 
         public final int level;
         public final int branch;
@@ -126,6 +136,8 @@ public final class AndroidData {
         return Long.bitCount(getSelectedPerks(player));
     }
 
+    public static final int PERK_RESET_COST = 25_000;
+
     public static int getAvailableSkillPoints(Player player) {
         return Math.max(0, getLevel(player) - getSpentSkillPoints(player));
     }
@@ -141,11 +153,26 @@ public final class AndroidData {
         return true;
     }
 
+    public static boolean tryResetPerks(Player player) {
+        if (!isAndroid(player) || getSelectedPerks(player) == 0L
+                || !tryConsumeEnergy(player, PERK_RESET_COST)) {
+            return false;
+        }
+        CompoundTag state = data(player);
+        state.putLong(PERKS, 0L);
+        state.putBoolean(CLOAK_ENABLED, false);
+        state.putBoolean(SHIELD_ENABLED, false);
+        save(player, state);
+        return true;
+    }
+
     public static int scaleAbilityEnergy(Player player, int base, Perk specialisedEfficiency) {
         double multiplier = 1.0D;
         if (hasPerk(player, Perk.EFFICIENT_CORE)) multiplier *= 0.90D;
         if (hasPerk(player, specialisedEfficiency)) multiplier *= 0.75D;
         if (hasPerk(player, Perk.APEX_CORE)) multiplier *= 0.85D;
+        if (hasPerk(player, Perk.SYNTHETIC_PERFECTION)) multiplier *= 0.90D;
+        if (specialisedEfficiency == Perk.GHOST_PROTOCOL && hasPerk(player, Perk.SILENT_CLOAK)) multiplier *= 0.85D;
         return Math.max(1, (int) Math.ceil(base * multiplier));
     }
 
@@ -155,6 +182,8 @@ public final class AndroidData {
         if (hasPerk(player, Perk.KINETIC_PLATING)) multiplier *= 0.90D;
         if (hasPerk(player, Perk.ADAPTIVE_ARMOR)) multiplier *= 0.90D;
         if (hasPerk(player, Perk.ADAMANT_CHASSIS)) multiplier *= 0.85D;
+        if (hasPerk(player, Perk.REACTIVE_PLATING)) multiplier *= 0.95D;
+        if (hasPerk(player, Perk.SYNTHETIC_PERFECTION)) multiplier *= 0.95D;
         return (float) multiplier;
     }
 
@@ -196,6 +225,9 @@ public final class AndroidData {
     }
 
     public static int addExperience(Player player, int amount) {
+        if (amount > 0 && hasPerk(player, Perk.LEARNING_MATRIX)) {
+            amount = (int) Math.ceil(amount * 1.25D);
+        }
         int before = getExperience(player);
         int after = Mth.clamp(before + Math.max(0, amount), 0, experienceForLevel(MAX_LEVEL));
         if (after != before) {

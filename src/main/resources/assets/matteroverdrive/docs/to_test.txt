@@ -105,11 +105,16 @@ The branch is ready to consolidate when the runtime gate passes and there are no
 - [ ] Open each documentation item and confirm it displays Page N / M with Previous/Next buttons and Left/Right or Page Up/Page Down navigation.
 - [ ] Open the reactor sections and confirm the paged guide explains controller, IO, heavy-cable routing, ring sharing, anomaly/stabilizer setup, overlay and current limits.
 
-## Selectable Android perk tree
+## Expanded selectable Android perk tree
 
-- [ ] Press K while converted and confirm the two-column, ten-level perk tree opens.
-- [ ] Confirm one perk point is available per reached level and locked rows cannot be selected.
-- [ ] Select one perk on a row and confirm the opposite choice locks permanently.
-- [ ] Verify selection persists through screen close, relog, death and Red Pill deactivation/reactivation.
-- [ ] Test each perk against its displayed FE cost, damage, radius, knockback, range, cooldown, speed or defence effect.
-- [ ] Confirm perk selection is rejected when not converted, above the current level, already selected or attempting the second choice on a completed row.
+- [ ] Press K while converted and confirm the three-column, ten-level perk tree opens at multiple GUI scales.
+- [ ] Confirm one point is available per reached level and the HUD shows K plus the unspent count.
+- [ ] Click a node and confirm it remains pending until Confirm Perk is pressed.
+- [ ] Select Assault, Utility and Survival / Mobility perks on different levels; confirm the other two nodes on each completed row lock.
+- [ ] Verify all original twenty perk selections remain intact in a world upgraded from the previous tree build.
+- [ ] Test Sustained Systems passive drain, Quick Charge rate, Learning Matrix XP and Cooldown Router.
+- [ ] Test Reactive Plating, Self Repair, Silent Cloak, Tactical Scan, Emergency Protocol and Synthetic Perfection.
+- [ ] Hover every node and confirm its description, availability colour and selection state are accurate.
+- [ ] Arm Reset Perks, cancel by choosing another action, then confirm a reset consumes exactly 25,000 FE, refunds every point and disables toggled abilities.
+- [ ] Confirm insufficient FE cannot reset perks and malformed/repeated perk packets grant nothing.
+- [ ] Verify selections and refunded points persist through screen close, relog, death and Red Pill deactivation/reactivation.

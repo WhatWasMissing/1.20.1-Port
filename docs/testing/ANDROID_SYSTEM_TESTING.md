@@ -72,11 +72,20 @@ Branch: `testing/main`
 
 ## Selectable perk tree pass
 
-- [ ] Press K while converted; verify all ten levels and both branches render without clipping at common GUI scales.
-- [ ] Confirm the player receives one selection per reached level, cannot select above their level and cannot select both perks on the same row.
+- [ ] Press K while converted; verify all ten levels and all three branches render without clipping at common GUI scales.
+- [ ] Confirm the player receives one selection per reached level, cannot select above their level and cannot select more than one of the three perks on a row.
 - [ ] Confirm chosen perks persist through death, relog and Red Pill deactivation/reactivation.
 - [ ] Verify Efficient/Apex Core and specialised efficiency perks reduce displayed and consumed FE consistently.
 - [ ] Verify Shockwave damage, radius and knockback perks independently and together.
 - [ ] Verify Teleport range and cooldown perks independently and together, including collision-safe destinations.
 - [ ] Verify Combat Servos affects direct melee only, Neural Accelerator affects powered leg speed, and chassis perks reduce incoming damage after Force Field handling.
 - [ ] Confirm invalid or repeated perk packets do not grant extra perks.
+
+
+## Utility branch and tree QoL
+
+- [ ] Verify the Utility perk at every level has the documented server-side effect.
+- [ ] Confirm pending choices require confirmation and moving to another node changes the pending choice without spending a point.
+- [ ] Confirm the HUD unspent count matches Android level minus installed perks.
+- [ ] Confirm full respec costs exactly 25,000 FE, rejects insufficient FE, refunds all points and disables Cloak/Force Field.
+- [ ] Upgrade a save containing old Assault/Survival choices and confirm every existing selection maps to the same perk.

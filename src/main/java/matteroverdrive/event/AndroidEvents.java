@@ -15,6 +15,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -71,8 +72,14 @@ public final class AndroidEvents {
             return;
         }
 
+        runUtilityPerks(event.player);
+
         int activeParts = Integer.bitCount(AndroidData.getParts(event.player));
-        if (activeParts == 0 || !AndroidData.tryConsumeEnergy(event.player, activeParts * 5)) {
+        int passiveCost = activeParts * 5;
+        if (AndroidData.hasPerk(event.player, AndroidData.Perk.SUSTAINED_SYSTEMS)) {
+            passiveCost = Math.max(1, (int) Math.ceil(passiveCost * 0.75D));
+        }
+        if (activeParts == 0 || !AndroidData.tryConsumeEnergy(event.player, passiveCost)) {
             return;
         }
 
@@ -88,6 +95,31 @@ public final class AndroidEvents {
         }
     }
 
+    private static void runUtilityPerks(net.minecraft.world.entity.player.Player player) {
+        if (AndroidData.hasPerk(player, AndroidData.Perk.SELF_REPAIR)
+                && player.getHealth() < player.getMaxHealth()
+                && AndroidData.tryConsumeEnergy(player, 250)) {
+            player.heal(1.0F);
+        }
+
+        if (AndroidData.hasPerk(player, AndroidData.Perk.EMERGENCY_PROTOCOL)
+                && player.getHealth() <= player.getMaxHealth() * 0.30F
+                && AndroidData.tryConsumeEnergy(player, 100)) {
+            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 45, 1, true, false, false));
+        }
+
+        if (player.tickCount % 40 == 0
+                && AndroidData.hasPerk(player, AndroidData.Perk.TACTICAL_SCAN)) {
+            var targets = player.level().getEntitiesOfClass(Monster.class,
+                    player.getBoundingBox().inflate(12.0D), Monster::isAlive);
+            if (!targets.isEmpty() && AndroidData.tryConsumeEnergy(player, 250)) {
+                for (Monster target : targets) {
+                    target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 45, 0, true, false, false));
+                }
+            }
+        }
+    }
+
     private static void chargeFromHeldBattery(ServerPlayer player) {
         if (!AndroidData.isAndroid(player)
                 || !player.isCrouching()
@@ -95,7 +127,9 @@ public final class AndroidEvents {
             return;
         }
 
-        int remaining = Math.min(HANDHELD_CHARGE_PER_TICK,
+        int chargeRate = AndroidData.hasPerk(player, AndroidData.Perk.QUICK_CHARGE)
+                ? HANDHELD_CHARGE_PER_TICK * 2 : HANDHELD_CHARGE_PER_TICK;
+        int remaining = Math.min(chargeRate,
                 AndroidData.ENERGY_CAPACITY - AndroidData.getEnergy(player));
         for (InteractionHand hand : InteractionHand.values()) {
             if (remaining <= 0) {
