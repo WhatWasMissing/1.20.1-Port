@@ -234,6 +234,43 @@ public class DocumentationScreen extends Screen {
     }
 
     @Override
+    public void onClose() {
+        rememberPage();
+        super.onClose();
+    }
+
+    private void rememberPage() {
+        if (indexOpen) return;
+        LAST_PAGES.put(document.ordinal(), pageIndex);
+        Path file = Minecraft.getInstance().gameDirectory.toPath().resolve("config/matteroverdrive_guide_pages.dat");
+        try {
+            Files.createDirectories(file.getParent());
+            StringBuilder out = new StringBuilder();
+            LAST_PAGES.forEach((id, page) -> out.append(id).append('=').append(page).append('\n'));
+            Files.writeString(file, out.toString());
+        } catch (IOException ignored) {
+            // Page memory is optional and must never block the guide.
+        }
+    }
+
+    private static void loadPageMemory() {
+        if (memoryLoaded) return;
+        memoryLoaded = true;
+        Path file = Minecraft.getInstance().gameDirectory.toPath().resolve("config/matteroverdrive_guide_pages.dat");
+        try {
+            if (!Files.exists(file)) return;
+            for (String line : Files.readAllLines(file)) {
+                String[] pair = line.split("=", 2);
+                if (pair.length == 2) {
+                    LAST_PAGES.put(Integer.parseInt(pair[0]), Math.max(0, Integer.parseInt(pair[1])));
+                }
+            }
+        } catch (Exception ignored) {
+            LAST_PAGES.clear();
+        }
+    }
+
+    @Override
     public boolean isPauseScreen() {
         return false;
     }
