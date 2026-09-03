@@ -19,7 +19,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -52,25 +51,27 @@ import java.util.List;
 /**
  * Matter Overdrive's combined energy weapon and mining tool.
  *
- * The original Omni Tool was a 32k FE weapon that also harvested as a high-tier
- * pickaxe, axe, and shovel. This implementation keeps that identity while using
- * the 1.20.1 weapon/module/energy systems already used by the other restored guns.
+ * The legacy Omni Tool fires from the attack input and mines the looked-at block
+ * from range while the use input is held. All destructive work is resolved on
+ * the server so the client only requests a shot and supplies no trusted target.
  */
 public class OmniToolItem extends EnergyWeaponItem {
-    private static final int RANGE = 24;
+    public static final int RANGE = 24;
     private static final float BASE_DAMAGE = 7.0F;
     private static final int SHOT_COOLDOWN = 18;
     private static final int MAX_HEAT = 80;
     private static final int ENERGY_PER_SHOT = 512;
+    private static final int ENERGY_PER_MINING_TICK = 1;
     private static final int ENERGY_PER_TOOL_ACTION = 8;
+    private static final int MAX_USE_TIME = 240;
 
     private static final String LAST_SHOT_TAG = "MatterOverdriveLastShot";
     private static final String OVERHEATED_TAG = "MatterOverdriveWeaponOverheated";
+    private static final String REMOTE_MINING_POS_TAG = "MatterOverdriveOmniMiningPos";
+    private static final String REMOTE_MINING_PROGRESS_TAG = "MatterOverdriveOmniMiningProgress";
+    private static final String REMOTE_BREAK_TAG = "MatterOverdriveOmniRemoteBreak";
 
     public OmniToolItem(Properties properties) {
-        // The parent supplies FE capability, battery handling, cooling, and the
-        // shared weapon-station module contract. Omni-specific firing is handled
-        // here, so the inherited weapon type is only a framework fallback.
         super(properties, WeaponType.PHASER_RIFLE);
     }
 
@@ -87,8 +88,26 @@ public class OmniToolItem extends EnergyWeaponItem {
     }
 
     @Override
+    public int getUseDuration(ItemStack stack) {
+        return MAX_USE_TIME;
+    }
+
+    @Override
+    public int getEnchantmentValue() {
+        return 1;
+    }
+
+    @Override
     public UseAnim getUseAnimation(ItemStack stack) {
         return UseAnim.NONE;
+    }
+
+    /** Called only from the server-side Omni fire packet. */
+    public boolean fireFromInput(ServerPlayer shooter, ItemStack weapon) {
+        if (shooter.isSpectator() || weapon != shooter.getMainHandItem() || weapon.getItem() != this) {
+            return false;
+        }
+        return fireOmni(shooter.serverLevel(), shooter, weapon);
     }
 
     @Override
@@ -98,8 +117,8 @@ public class OmniToolItem extends EnergyWeaponItem {
             return InteractionResultHolder.pass(weapon);
         }
 
-        // Keep the shared weapon reload behavior and messages.
         if (player.isShiftKeyDown()) {
+            clearRemoteMining(level, player, weapon);
             return super.use(level, player, hand);
         }
 
@@ -110,7 +129,7 @@ public class OmniToolItem extends EnergyWeaponItem {
             return InteractionResultHolder.fail(weapon);
         }
 
-        if (getEnergyStored(weapon) < ENERGY_PER_SHOT && !reloadForShot(weapon, player)) {
+        if (getEnergyStored(weapon) <= 0 && !reloadForShot(weapon, player)) {
             if (!level.isClientSide) {
                 player.sendSystemMessage(Component.literal("No Omni Tool energy - carry an Energy Pack or charged battery")
                         .withStyle(ChatFormatting.RED));
@@ -124,13 +143,96 @@ public class OmniToolItem extends EnergyWeaponItem {
 
     @Override
     public void onUseTick(Level level, LivingEntity living, ItemStack weapon, int remainingUseDuration) {
-        if (level.isClientSide || !(living instanceof Player player)) {
+        if (level.isClientSide || !(living instanceof ServerPlayer player)) {
             return;
         }
-        int elapsed = getUseDuration(weapon) - remainingUseDuration;
-        if (elapsed % SHOT_COOLDOWN == 0 && !fireOmni(level, player, weapon)) {
+        if (!remoteMineTick(player, weapon)) {
             player.stopUsingItem();
         }
+    }
+
+    @Override
+    public void releaseUsing(ItemStack weapon, Level level, LivingEntity living, int timeLeft) {
+        if (!level.isClientSide && living instanceof Player player) {
+            clearRemoteMining(level, player, weapon);
+        }
+    }
+
+    private boolean remoteMineTick(ServerPlayer player, ItemStack weapon) {
+        ServerLevel level = player.serverLevel();
+        if (isOverheated(weapon) || player.isSpectator()) {
+            clearRemoteMining(level, player, weapon);
+            return false;
+        }
+
+        if (getEnergyStored(weapon) <= 0 && !reloadForShot(weapon, player)) {
+            clearRemoteMining(level, player, weapon);
+            player.sendSystemMessage(Component.literal("Omni Tool out of mining energy").withStyle(ChatFormatting.RED));
+            return false;
+        }
+
+        // Legacy digging consumed roughly one FE each active mining tick. It did
+        // so even when the ray trace was temporarily over air, so preserve that.
+        setEnergyStored(weapon, getEnergyStored(weapon) - ENERGY_PER_MINING_TICK);
+
+        Vec3 start = player.getEyePosition();
+        Vec3 end = start.add(player.getLookAngle().scale(RANGE));
+        BlockHitResult hit = level.clip(new ClipContext(
+                start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            clearRemoteMining(level, player, weapon);
+            return true;
+        }
+
+        BlockPos pos = hit.getBlockPos();
+        BlockState state = level.getBlockState(pos);
+        if (state.isAir() || state.getDestroySpeed(level, pos) < 0.0F) {
+            clearRemoteMining(level, player, weapon);
+            return true;
+        }
+
+        var tag = weapon.getOrCreateTag();
+        long current = tag.contains(REMOTE_MINING_POS_TAG) ? tag.getLong(REMOTE_MINING_POS_TAG) : Long.MIN_VALUE;
+        if (current != pos.asLong()) {
+            clearRemoteMining(level, player, weapon);
+            tag = weapon.getOrCreateTag();
+            tag.putLong(REMOTE_MINING_POS_TAG, pos.asLong());
+            tag.putFloat(REMOTE_MINING_PROGRESS_TAG, 0.0F);
+        }
+
+        float progress = tag.getFloat(REMOTE_MINING_PROGRESS_TAG)
+                + state.getDestroyProgress(player, level, pos) * 2.0F;
+        tag.putFloat(REMOTE_MINING_PROGRESS_TAG, progress);
+        level.destroyBlockProgress(player.getId(), pos, Mth.clamp((int) (progress * 10.0F), 0, 9));
+
+        if (progress >= 1.0F) {
+            tag.putBoolean(REMOTE_BREAK_TAG, true);
+            try {
+                player.gameMode.destroyBlock(pos);
+            } finally {
+                tag.remove(REMOTE_BREAK_TAG);
+            }
+            level.destroyBlockProgress(player.getId(), pos, -1);
+            tag.remove(REMOTE_MINING_POS_TAG);
+            tag.remove(REMOTE_MINING_PROGRESS_TAG);
+        }
+        return true;
+    }
+
+    private void clearRemoteMining(Level level, Player player, ItemStack weapon) {
+        if (level.isClientSide || weapon.isEmpty()) {
+            return;
+        }
+        var tag = weapon.getTag();
+        if (tag == null) {
+            return;
+        }
+        if (tag.contains(REMOTE_MINING_POS_TAG)) {
+            level.destroyBlockProgress(player.getId(), BlockPos.of(tag.getLong(REMOTE_MINING_POS_TAG)), -1);
+        }
+        tag.remove(REMOTE_MINING_POS_TAG);
+        tag.remove(REMOTE_MINING_PROGRESS_TAG);
+        tag.remove(REMOTE_BREAK_TAG);
     }
 
     private boolean fireOmni(Level level, Player shooter, ItemStack weapon) {
@@ -149,8 +251,6 @@ public class OmniToolItem extends EnergyWeaponItem {
         setEnergyStored(weapon, getEnergyStored(weapon) - ENERGY_PER_SHOT);
         weapon.getOrCreateTag().putLong(LAST_SHOT_TAG, level.getGameTime());
 
-        // Preserve the legacy Omni heat ramp. It intentionally reaches overheat
-        // quickly under sustained fire and then cools through EnergyWeaponItem.
         float newHeat = Math.min(MAX_HEAT + 1.0F, (getHeat(weapon) + 4.0F) * 2.7F);
         setHeat(weapon, newHeat);
         if (newHeat >= MAX_HEAT) {
@@ -333,7 +433,8 @@ public class OmniToolItem extends EnergyWeaponItem {
 
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity miningEntity) {
-        if (!level.isClientSide && hasToolPower(stack) && isEffective(state)) {
+        if (!level.isClientSide && hasToolPower(stack) && isEffective(state)
+                && !stack.getOrCreateTag().getBoolean(REMOTE_BREAK_TAG)) {
             setEnergyStored(stack, getEnergyStored(stack) - ENERGY_PER_TOOL_ACTION);
         }
         return true;
@@ -426,17 +527,17 @@ public class OmniToolItem extends EnergyWeaponItem {
                 .withStyle(isOverheated(stack) ? ChatFormatting.RED : ChatFormatting.GRAY));
         tooltip.add(Component.literal("Weapon: 7 damage | 24 range | 18t cooldown")
                 .withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("Tool: Tritanium-tier Pickaxe + Axe + Shovel")
+        tooltip.add(Component.literal("Tool: Tritanium-tier Pickaxe + Axe + Shovel | 24-block mining")
                 .withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal("Hold right-click: fire | Shift-right-click: reload")
+        tooltip.add(Component.literal("Left-click: fire | Hold right-click: ranged mine | Shift-right-click: reload")
                 .withStyle(ChatFormatting.LIGHT_PURPLE));
         tooltip.add(Component.literal("Right-click blocks: strip, scrape, wax-off, flatten, extinguish")
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.literal("Modules: Battery + Color + VENOM Block Barrel")
                 .withStyle(ChatFormatting.BLUE));
         tooltip.add(Component.literal("[DEBUG] " + ENERGY_PER_SHOT + " FE/shot | "
-                + ENERGY_PER_TOOL_ACTION + " FE/tool action | Modules "
-                + WeaponSystem.installedModuleCount(stack) + "/6")
+                + ENERGY_PER_MINING_TICK + " FE/mining tick | " + ENERGY_PER_TOOL_ACTION
+                + " FE/context action | Modules " + WeaponSystem.installedModuleCount(stack) + "/6")
                 .withStyle(ChatFormatting.GOLD));
     }
 }
