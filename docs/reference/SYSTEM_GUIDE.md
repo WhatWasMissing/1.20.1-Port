@@ -458,62 +458,68 @@ Status: PLAYABLE. Pattern networking shares the same enabled graph rules.
 
 # 18. Fusion Reactor
 
-Status: PLAYABLE large multiblock.
+Status: TESTING legacy-parity core with modern controls.
 
 ## Simplified
 
-- Right-click the Reactor Assembly Guide and build its highlighted 11 by 11 horizontal ring.
-- Put a Gravitational Anomaly at the centre, feed matter through Reactor IO and extract FE through Heavy Energy Cable.
-- Open the Controller and correct every reported structure fault until it shows VALID.
+- Find or place a Gravitational Anomaly, then put the Reactor Controller five blocks from its horizontal centre.
+- Use the Reactor Assembly Guide on the controller and fill the overlay: hull in hull positions, three coils on each straight side, and coil or Reactor IO in IO-capable positions.
+- Feed matter through a formed Reactor IO. Extract FE from any face of a formed IO, directly or with Heavy Energy Cable.
+- Open the controller and leave it ENABLED. Use Ignored redstone mode for continuous operation.
+- Press RUN / SCRAM for an immediate persistent shutdown. RS MODE cycles Ignored, High and Low.
 
 ## Detailed
 
-- Place the Controller first. The ring extends in the direction you faced during placement.
-- The anomaly centre is five blocks forward from the Controller and may be on the ring Y or up to three blocks above or below it.
-- Use Machine Hulls in hull positions and Fusion Reactor Coils or Reactor IO in coil-capable positions.
-- The two positions beside the Controller are flexible and may accept supported ring blocks or a Decomposer.
-- The Assembly Guide/overlay is the authoritative position reference and avoids guessing the ring coordinates.
-- Wait up to two seconds after structure changes for validation.
-- Feed matter into linked Reactor IO with Matter Pipe.
-- Extract FE from Reactor IO with Heavy Energy Cable.
-- The Controller stores 100,000,000 FE and 2,048 kM before upgrades.
-- Generation scales with anomaly mass and reactor efficiency. Vertical anomaly distance reduces efficiency.
-- Speed upgrades increase generation and matter use together.
-- Range upgrades extend vertical anomaly search up to sixteen blocks.
-- Power Storage and Matter Storage increase the matching capacities.
-- Machines inside the ring on the Controller level can receive shared reactor power without external cable; outside machines require Reactor IO and cable.
-- Shift-use a Reactor Remote on the Controller to bind it, then use the remote to reopen the linked controller screen.
+The controller checks its ring every 40 ticks. The anomaly is centred five blocks forward from the controller. At the base range, vertical offsets 0, 1, 2 and 3 produce 100%, 75%, 50% and 25% efficiency. Range upgrades permit farther vertical discovery, up to 16 blocks, and use that upgraded range for the extended efficiency curve.
 
-## Limitations
+Legacy generation is calculated directly rather than patched after the tick:
 
-- Use the Assembly Guide rather than old compact-reactor instructions. Older documents may describe obsolete layouts.
-- Full original exterior animation/presentation is still below legacy parity.
+- Potential FE/t = 9,048 × efficiency × (unsuppressed real anomaly mass × 10) × Speed rate.
+- Matter drain = 1/80 kM/t × (unsuppressed real anomaly mass × 10) × Speed rate.
+- If the FE buffer has less room than the potential output, accepted FE and matter use are reduced proportionally.
+- Stabilizers reduce dangerous gravitational effects, not the reactor's unsuppressed-mass generation value.
 
-# 19. Gravitational Anomaly, Stabilizers and Equalizer
+The controller stores 100,000,000 FE and 2,048 kM before upgrades. Power Storage and Matter Storage enlarge those buffers. Speed increases both FE generation and matter consumption. All formed IO blocks share the controller buffers. IO supports direct machine/cable extraction and matter networks. Compatible machines inside the ring receive a fair share from the internal bus.
 
-Status: PLAYABLE gravity/reactor support.
+The GUI reports structure fault, ring direction, operating/redstone state, potential and actual FE/t, connected demand, efficiency, theoretical drain, whole matter consumed this tick, anomaly mass/suppression, pull/horizon/block ranges, affected/consumed entities, recent destroyed blocks, IO count and internal distribution.
+
+Comparator output is 0 for an invalid reactor, 1 for a valid paused/SCRAMMED reactor, and 1-15 for a running/available reactor according to stored FE. Reactor Remote opens the same controller remotely after linking.
+
+## Safety and troubleshooting
+
+- SCRAM stops new generation but does not remove the anomaly or its gravity.
+- If potential output is non-zero but generated output is zero, check RUN/SCRAM, redstone status, matter and FE-buffer room.
+- If structure is invalid, use the exact fault plus the placement overlay; allow two seconds after rebuilding.
+- If external power does not move, confirm the IO is part of the currently valid ring, then test one direct receiver before the cable network.
+- Do not stand near an unstabilized, high-mass anomaly. Block and fluid destruction is active.
+
+# 19. Gravitational Anomaly and Stabilizers
+
+Status: TESTING legacy-parity hazard and suppression loop.
 
 ## Simplified
 
-- Drop items or allow living targets to reach the anomaly to increase its mass.
-- Aim powered Gravitational Stabilizers at it with a clear beam.
-- Equip the Space-Time Equalizer to resist anomaly pull and event-horizon effects.
+- Dropped matter-valued items are pulled into the anomaly and permanently increase its mass.
+- Living entities are pulled and damaged inside the event horizon unless wearing a Space-Time Equalizer.
+- Greater mass means stronger pull, a wider hazard area, more reactor output and more matter drain.
+- Aim powered Gravitational Stabilizers directly at the anomaly with a clear line.
+- Use RS MODE on each stabilizer if you want lever-controlled safety.
 
 ## Detailed
 
-- The anomaly stores persistent mass and pulls nearby entities/items.
-- Items reaching the event horizon are consumed and add mass.
-- A living entity adds its mass once when the event horizon kills it.
-- Higher usable mass increases Fusion Reactor generation.
-- Place a Stabilizer facing the anomaly, provide FE and keep the beam path unobstructed.
-- Multiple valid Stabilizers suppress the unsafe mass used for gravity behavior while preserving the reactor's unsuppressed generation mass.
-- Stabilizer Speed, Range, Power and Power Storage upgrades affect supported values.
-- Use the Stabilizer/controller status text to diagnose no power, wrong facing, blocked beam or missing anomaly.
-- The Space-Time Equalizer grants immunity while properly equipped and continues to work after relog.
+The anomaly stores raw mass persistently. Its real mass uses the legacy logarithmic conversion. Pull range, block-break range, acceleration and event horizon derive from the suppressed real mass. Item stacks add their registered matter value. A living entity contributes mass once, only when event-horizon damage kills it.
 
-## Limitations
+The restored environmental pass samples blocks and fluids within the calculated break range every ten ticks. Fluids can be removed; solid blocks are destroyed only when the anomaly's falloff-adjusted strength exceeds hardness. Unbreakable blocks are skipped, and the range/attempt count is capped for server safety. Drops can then be pulled back into the anomaly.
 
-- The original wider world-event system around natural anomalies is not restored.
+Each Stabilizer searches up to 63 blocks from its front, stopping at the first solid obstruction. A lock consumes FE and refreshes a 20-tick multiplicative suppression. The base remaining-strength multiplier is 0.7; four base stabilizers therefore leave about 24.01% strength. Power upgrades strengthen suppression and increase required FE; Power Storage enlarges its buffer. A visible End Rod particle line confirms a live lock.
+
+Stabilizer redstone defaults to Ignored for existing-world compatibility. High runs only with a signal; Low runs only without one. A blocked, unpowered or redstone-paused stabilizer does not refresh suppression, so hazard strength returns as the last 20-tick registration expires.
+
+## Partial/external limits
+
+- The original ComputerCraft/OpenComputers integration is not part of the core port because those optional 1.12 APIs do not map directly to a dependency-free 1.20.1 build.
+- Rendering and destructive balance require in-world testing at low and high anomaly mass before this system should be treated as release-stable.
+
 
 # 20. Energy weapons and Weapon Station
 
