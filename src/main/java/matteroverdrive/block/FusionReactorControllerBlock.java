@@ -1,7 +1,6 @@
 package matteroverdrive.block;
 
 import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
-import matteroverdrive.blockentity.RemainingBalanceFixes;
 import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModItems;
 import net.minecraft.core.BlockPos;
@@ -64,11 +63,10 @@ public class FusionReactorControllerBlock extends BaseEntityBlock {
         if (level.isClientSide || type != ModBlockEntities.FUSION_REACTOR_CONTROLLER.get()) {
             return null;
         }
-        return (tickerLevel, tickerPos, tickerState, entity) -> {
-            FusionReactorControllerBlockEntity reactor = (FusionReactorControllerBlockEntity) entity;
-            FusionReactorControllerBlockEntity.serverTick(tickerLevel, tickerPos, tickerState, reactor);
-            RemainingBalanceFixes.boostFusionOutput(reactor);
-        };
+        return (tickerLevel, tickerPos, tickerState, entity) ->
+                FusionReactorControllerBlockEntity.serverTick(
+                        tickerLevel, tickerPos, tickerState,
+                        (FusionReactorControllerBlockEntity) entity);
     }
 
     @Override
@@ -89,6 +87,18 @@ public class FusionReactorControllerBlock extends BaseEntityBlock {
             NetworkHooks.openScreen(serverPlayer, reactor, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        BlockEntity entity = level.getBlockEntity(pos);
+        return entity instanceof FusionReactorControllerBlockEntity reactor
+                ? reactor.getComparatorOutput() : 0;
     }
 
     @Override
