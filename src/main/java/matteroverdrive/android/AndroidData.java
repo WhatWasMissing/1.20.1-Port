@@ -125,11 +125,14 @@ public final class AndroidData {
         CompoundTag data = data(player);
         data.putBoolean(ACTIVE, true);
         data.putInt(ENERGY, Math.max(25_000, getEnergy(player)));
-        if (!data.contains(EXPERIENCE)) {
-            data.putInt(EXPERIENCE, 0);
+        boolean migrated = !data.contains(EXPERIENCE);
+        if (migrated) {
+            data.putInt(EXPERIENCE, 100 + Integer.bitCount(getParts(player)) * 50);
         }
         save(player, data);
-        addExperience(player, 100);
+        if (!migrated) {
+            addExperience(player, 100);
+        }
     }
 
     public static int receiveEnergy(Player player, int amount) {
