@@ -64,7 +64,7 @@ public class DocumentationScreen extends Screen {
         rebuildGuideWidgets();
     }
 
-    private void rebuildWidgets() {
+    private void rebuildGuideWidgets() {
         clearWidgets();
         if (indexOpen) {
             int column = 0;
