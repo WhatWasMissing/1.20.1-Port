@@ -225,3 +225,5 @@ A successful GitHub Actions build proves that the Forge project compiles/package
 - Thirty functional perks cover active/passive FE efficiency, charging, XP, repair, hostile scanning, emergency protection, Cloak/Force Field, Shockwave, Teleport, melee, speed and damage reduction.
 - Selection and resets are server-authoritative. Chosen perks persist through relog, death and deactivation.
 - The tree provides hover descriptions, selection confirmation, a 25,000 FE full respec and an unspent-point HUD reminder.
+
+- Android perk selections are written atomically with a mirrored recovery value, so earning XP or crossing a level boundary cannot clear installed perks.
