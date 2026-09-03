@@ -216,18 +216,22 @@ public class DocumentationScreen extends Screen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN || keyCode == GLFW.GLFW_KEY_RIGHT) {
             pageIndex = Math.min(pages.size() - 1, pageIndex + 1);
+            rememberPage();
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_PAGE_UP || keyCode == GLFW.GLFW_KEY_LEFT) {
             pageIndex = Math.max(0, pageIndex - 1);
+            rememberPage();
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_HOME) {
             pageIndex = 0;
+            rememberPage();
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_END) {
             pageIndex = Math.max(0, pages.size() - 1);
+            rememberPage();
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
