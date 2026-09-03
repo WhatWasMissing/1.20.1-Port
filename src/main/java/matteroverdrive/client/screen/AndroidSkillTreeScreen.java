@@ -25,6 +25,7 @@ public class AndroidSkillTreeScreen extends Screen {
     private long displayedPerks;
     private int displayedLevel;
     private int pendingPerk = -1;
+    private boolean pendingRefund;
     private boolean resetArmed;
 
     public AndroidSkillTreeScreen() {
@@ -58,12 +59,12 @@ public class AndroidSkillTreeScreen extends Screen {
                             ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY);
             Button button = Button.builder(label, pressed -> {
                 pendingPerk = perk.ordinal();
+                pendingRefund = selected;
                 resetArmed = false;
                 rebuildPerkButtons();
             }).bounds(x, y, 190, 26).build();
-            button.active = !selected && !levelChosen
-                    && AndroidClientState.isActive()
-                    && AndroidClientState.level() >= perk.level;
+            button.active = AndroidClientState.isActive() && (selected
+                    || (!levelChosen && AndroidClientState.level() >= perk.level));
             addRenderableWidget(button);
             perkButtons.put(button, perk);
         }
@@ -75,9 +76,11 @@ public class AndroidSkillTreeScreen extends Screen {
                         ModNetwork.CHANNEL.sendToServer(new AndroidPerkSelectPacket(-1));
                         resetArmed = false;
                         pendingPerk = -1;
+                        pendingRefund = false;
                     } else {
                         resetArmed = true;
                         pendingPerk = -1;
+                        pendingRefund = false;
                     }
                     rebuildPerkButtons();
                 }).bounds(width / 2 - 180, height - 27, 140, 20).build();
@@ -85,11 +88,14 @@ public class AndroidSkillTreeScreen extends Screen {
         addRenderableWidget(reset);
 
         Button confirm = Button.builder(Component.literal(pendingPerk >= 0
-                        ? "Confirm perk" : "Select a perk"),
+                        ? pendingRefund ? "Confirm refund" : "Confirm perk"
+                        : "Select a perk"),
                 button -> {
                     if (pendingPerk >= 0) {
-                        ModNetwork.CHANNEL.sendToServer(new AndroidPerkSelectPacket(pendingPerk));
+                        int request = pendingRefund ? -2 - pendingPerk : pendingPerk;
+                        ModNetwork.CHANNEL.sendToServer(new AndroidPerkSelectPacket(request));
                         pendingPerk = -1;
+                        pendingRefund = false;
                         rebuildPerkButtons();
                     }
                 }).bounds(width / 2 - 30, height - 27, 120, 20).build();
@@ -161,12 +167,16 @@ public class AndroidSkillTreeScreen extends Screen {
 
         String detail = resetArmed
                 ? "Resetting refunds all perk points, disables toggled abilities and costs 25,000 Android FE."
-                : "Hover a perk to view its effect.";
+                : pendingPerk >= 0 && pendingRefund
+                ? "Refund this installed perk for 2,500 Android FE; its level point becomes available again."
+                : "Hover a perk to view its effect. Click an installed perk to refund it.";
         int detailColor = resetArmed ? 0xFFFFB45B : 0xFFB5C4CF;
         for (Map.Entry<Button, AndroidData.Perk> entry : perkButtons.entrySet()) {
             if (entry.getKey().isHoveredOrFocused()) {
                 AndroidData.Perk perk = entry.getValue();
-                detail = perk.description;
+                detail = pendingRefund && pendingPerk == perk.ordinal()
+                        ? "Refund " + perk.displayName + " for 2,500 Android FE."
+                        : perk.description;
                 detailColor = AndroidClientState.hasPerk(perk) ? SELECTED
                         : pendingPerk == perk.ordinal() ? PENDING
                         : perk.level <= AndroidClientState.level() ? GOLD : LOCKED;
