@@ -86,7 +86,7 @@ public final class AndroidData {
 
     public static int experienceForLevel(int level) {
         int clamped = Mth.clamp(level, 1, MAX_LEVEL);
-        return (clamped - 1) * 1_000;
+        return (clamped - 1) * 100;
     }
 
     public static int experienceIntoLevel(Player player) {
