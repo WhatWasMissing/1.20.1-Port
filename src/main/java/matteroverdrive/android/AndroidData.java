@@ -72,7 +72,17 @@ public final class AndroidData {
     }
 
     public static int getExperience(Player player) {
-        return Math.max(0, data(player).getInt(EXPERIENCE));
+        CompoundTag state = data(player);
+        if (!state.contains(EXPERIENCE)) {
+            // Migrate active players created before progression was added.
+            int migrated = state.getBoolean(ACTIVE)
+                    ? 100 + Integer.bitCount(state.getInt(PARTS) & 15) * 50
+                    : 0;
+            state.putInt(EXPERIENCE, migrated);
+            save(player, state);
+            return migrated;
+        }
+        return Math.max(0, state.getInt(EXPERIENCE));
     }
 
     public static int getLevel(Player player) {
