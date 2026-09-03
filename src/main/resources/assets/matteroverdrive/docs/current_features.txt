@@ -86,8 +86,11 @@ Implemented energy weapons:
 - Phaser Rifle
 - Ion Sniper
 - Plasma Shotgun
+- Omni Tool — hybrid FE weapon plus powered pickaxe/axe/shovel; runtime verification is tracked separately.
 
 Implemented weapon support includes server-authoritative shot energy checks, heat/overheat state, battery/Energy Pack reloads, Weapon Station installation and the current barrel/sight/ricochet/colour module system.
+
+The restored Omni Tool uses the legacy 32,000 FE base capacity, 128 FE transfer framework, 24-block weapon range, 7 base ranged damage, 18-tick shot cooldown and 80 max heat. It mines pickaxe/axe/shovel-tagged blocks at Tritanium tier while powered, supports normal axe/shovel contextual actions, and accepts Battery, Colour and VENOM/Block Barrel modules. Its 1.20.1 input mapping uses conventional left-click block mining and hold-right-click firing rather than recreating the legacy client's reversed mouse-input hook.
 
 Normal and HC batteries transfer only the FE they actually contain and remain as drained rechargeable items. Energy Packs contribute their defined 32,000 FE and are consumed.
 
@@ -104,11 +107,13 @@ Implemented:
 - Sneak-held normal/HC Battery charging from either hand at up to 1,024 FE/t, transferring only energy actually stored in the battery.
 - Legacy-style zero-power state: the Android HUD reports the offline core and movement speed is reduced by 50% until the core is recharged or conversion is removed.
 - Head, Chest, Arms and Legs bionic-part installation through the Android Station.
-- Android HUD energy/state synchronisation. Persistent Android XP/level progression foundation with a four-node, level-gated skill tree (Cloak L1, Force Field L2, Sonic Shockwave L3, Ender Teleport L4) (levels 1-10, XP from conversion, part installation and successful active abilities) with server-synchronised HUD display.
+- Android HUD energy/state synchronisation and persistent Android XP/level progression across levels 1-10.
+- Connected three-branch selectable skill tree with one perk point per level and thirty functional Assault, Utility and Survival/Mobility perks covering FE efficiency, charging, XP, repair, hostile scanning, emergency protection, active abilities, melee, movement and damage reduction.
 - Part-gated active abilities with server-authoritative input: Head/Cloak, Chest/Force Field, Arms/Sonic Shockwave and Legs/Ender Teleport.
 - Atomic Android FE spending: actions that cannot afford their full cost fail without silently draining a partial remainder.
 - Arms damage is restricted to direct melee attacks; projectiles and Sonic Shockwave cannot inherit the melee bonus or its additional FE cost.
-- Persistent ability selection, toggle state and cooldowns, with FE costs and an expanded Android HUD.
+- Persistent ability selection, perk selection, toggle state and cooldowns, with FE costs and an expanded Android HUD.
+- Individual perk refunds for 2,500 FE with confirmation plus the existing confirmed 25,000 FE full-tree reset.
 - Android Station charging within four blocks, shared fairly across nearby converted players.
 - Simplified Rogue Android Spawner using a tagged hostile Husk and bionic-part drops. It searches collision-free spawn candidates and charges 20,000 FE only after the entity is accepted by the world.
 
@@ -144,9 +149,9 @@ The following are the major remaining parity gaps. This list tracks gameplay beh
 
 ## 1. Android RPG / biotic ability system — partial
 
-The first active-ability layer is restored: bionic parts unlock Cloak, Force Field, Sonic Shockwave and Ender Teleport, with server validation, FE costs, cooldowns, persistent selection/toggles and HUD status.
+The current Android system now has persistent XP/levels, a connected thirty-perk selectable tree, part-gated active abilities, server validation, FE costs, cooldowns, individual refunds, full respec and HUD status.
 
-Still missing is the full legacy XP/unlock tree, multi-level stat progression, flash cooling and the richer Android minimap/team presentation. The current part-gated unlock model is a playable foundation rather than final legacy progression parity.
+Remaining legacy-parity work is mainly deeper multi-rank/stat progression, flash cooling and the richer Android minimap/team presentation rather than the absence of a playable progression tree.
 
 ## 2. Full Star Map galaxy simulation — missing
 
@@ -166,31 +171,27 @@ The current Contract Market implements simple collect/hunt contracts. The origin
 
 Still missing includes the original-style quest stack/multi-quest system, mining/crafting and other quest types, quest XP progression, Mad Scientist dialog/progression and Data Pad quest pages.
 
-## 4. Omni Tool — missing
-
-`omni_tool` is registered but does not yet restore the original hybrid tool/energy-weapon behaviour, firing/beam behaviour and associated presentation.
-
-## 5. Holo Sign and security/ownership gameplay — missing
+## 4. Holo Sign and security/ownership gameplay — missing
 
 The Holo Sign is presently a basic registered block rather than the original programmable/security-aware holographic sign. The broader legacy ownership/security layer and security protocol item behaviour are also not restored.
 
-## 6. Additional drive/network configuration items — incomplete
+## 5. Additional drive/network configuration items — incomplete
 
 Pattern Drives and Transport Flash Drives are functional, but legacy generic/network flash-drive configuration behaviour is not fully restored. `flash_drive`, `network_flash_drive` and the security protocol items are currently generic items.
 
-## 7. Original mobs and Rogue Android depth — mostly missing
+## 6. Original mobs and Rogue Android depth — mostly missing
 
 The current Android Spawner deliberately uses a tagged vanilla Husk as a simplified Rogue Android. The original dedicated entity ecosystem is not yet ported, including richer Rogue Android AI/levels/equipment/teams/ranged variants and other legacy entities such as drones, failed animals and scientist NPC/mob content.
 
-## 8. Legacy world generation — partial
+## 7. Legacy world generation — partial
 
 Natural Tritanium and Dilithium ore generation is now restored through 1.20.1 configured/placed features and a Forge biome modifier. The remaining worldgen parity gap is the original themed content and world-spawn layer: crashed/cargo ships, underwater bases, anomaly/world events and related mob/NPC spawning still need dedicated modern implementations.
 
-## 9. Remaining weapon parity — partial
+## 8. Remaining weapon parity — partial
 
-The core four weapons and module effects are implemented, but legacy extras remain incomplete, including the old weapon enchantment/random-weapon ecosystem, richer Rogue Android weapon generation/drops and final recoil/model/beam presentation parity.
+The core four weapons plus the restored Omni Tool and module effects are implemented, but legacy extras remain incomplete, including the old weapon enchantment/random-weapon ecosystem, richer Rogue Android weapon generation/drops and final recoil/model/beam presentation parity.
 
-## 10. Legacy integrations — not ported
+## 9. Legacy integrations — not ported
 
 Old optional integration layers such as ComputerCraft/Tinkers/other 1.12-era compatibility code have not been recreated. These should be reconsidered individually against modern 1.20.1 equivalents rather than copied directly.
 
@@ -214,6 +215,7 @@ Use the checklists under `docs/testing/`, especially:
 - `MICROWAVE_TESTING.md`
 - `SPACETIME_ACCELERATOR_TESTING.md`
 - `HANDHELD_MATTER_TOOLS_TESTING.md`
+- `OMNI_TOOL_TESTING.md`
 - `TO_TEST.md` for the three in-game documentation items, including the System Guide
 
 A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify datapack loading, fresh-chunk ore generation, recipes, machine behaviour, in-world behaviour or rendering.
@@ -225,6 +227,5 @@ A successful GitHub Actions build proves that the Forge project compiles/package
 - Thirty functional perks cover active/passive FE efficiency, charging, XP, repair, hostile scanning, emergency protection, Cloak/Force Field, Shockwave, Teleport, melee, speed and damage reduction.
 - Selection and resets are server-authoritative. Chosen perks persist through relog, death and deactivation.
 - The tree provides hover descriptions, selection confirmation, a 25,000 FE full respec and an unspent-point HUD reminder.
-
 - Android perk selections are written atomically with a mirrored recovery value, so earning XP or crossing a level boundary cannot clear installed perks.
 - Installed Android perks can be refunded individually for 2,500 FE with confirmation; the existing confirmed 25,000 FE full-tree reset remains available.
