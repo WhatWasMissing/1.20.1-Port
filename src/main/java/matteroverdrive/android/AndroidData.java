@@ -19,6 +19,7 @@ public final class AndroidData {
     private static final String CLOAK_ENABLED = "CloakEnabled";
     private static final String SHIELD_ENABLED = "ShieldEnabled";
     private static final String COOLDOWNS = "AbilityCooldowns";
+    private static final String PERKS = "SelectedPerks";
 
     public enum Part {
         HEAD(1, "rogue_android_part_head"),
@@ -52,6 +53,41 @@ public final class AndroidData {
         }
     }
 
+    public enum Perk {
+        EFFICIENT_CORE(1, 0, "Efficient Core", "All Android abilities use 10% less FE."),
+        REINFORCED_FRAME(1, 1, "Reinforced Frame", "Reduce incoming damage by 5%."),
+        GHOST_PROTOCOL(2, 0, "Ghost Protocol", "Cloak uses 25% less FE."),
+        BARRIER_MATRIX(2, 1, "Barrier Matrix", "Force Field uses 25% less FE."),
+        RESONANT_PULSE(3, 0, "Resonant Pulse", "Sonic Shockwave deals 2 more damage."),
+        PHASE_CAPACITOR(3, 1, "Phase Capacitor", "Ender Teleport gains 4 blocks of range."),
+        WIDEBAND_PULSE(4, 0, "Wideband Pulse", "Sonic Shockwave gains 2 blocks of radius."),
+        RAPID_BLINK(4, 1, "Rapid Blink", "Ender Teleport cooldown is 15% shorter."),
+        COMBAT_SERVOS(5, 0, "Combat Servos", "Direct melee attacks deal 2 more damage."),
+        KINETIC_PLATING(5, 1, "Kinetic Plating", "Reduce incoming damage by another 10%."),
+        SHOCK_RECYCLER(6, 0, "Shock Recycler", "Sonic Shockwave uses 25% less FE."),
+        BLINK_RECYCLER(6, 1, "Blink Recycler", "Ender Teleport uses 25% less FE."),
+        SHOCK_MOMENTUM(7, 0, "Shock Momentum", "Sonic Shockwave launches targets farther."),
+        PHASE_STABILIZER(7, 1, "Phase Stabilizer", "Ender Teleport gains another 4 blocks of range."),
+        NEURAL_ACCELERATOR(8, 0, "Neural Accelerator", "Leg servos provide stronger movement speed."),
+        ADAPTIVE_ARMOR(8, 1, "Adaptive Armor", "Reduce incoming damage by another 10%."),
+        OVERCHARGED_PULSE(9, 0, "Overcharged Pulse", "Sonic Shockwave deals 3 more damage."),
+        LONG_RANGE_BLINK(9, 1, "Long-range Blink", "Ender Teleport gains another 8 blocks of range."),
+        APEX_CORE(10, 0, "Apex Core", "All Android abilities use a further 15% less FE."),
+        ADAMANT_CHASSIS(10, 1, "Adamant Chassis", "Reduce incoming damage by another 15%.");
+
+        public final int level;
+        public final int branch;
+        public final String displayName;
+        public final String description;
+
+        Perk(int level, int branch, String displayName, String description) {
+            this.level = level;
+            this.branch = branch;
+            this.displayName = displayName;
+            this.description = description;
+        }
+    }
+
     private AndroidData() {
     }
 
@@ -69,6 +105,57 @@ public final class AndroidData {
 
     public static boolean isAndroid(Player player) {
         return data(player).getBoolean(ACTIVE);
+    }
+
+    public static long getSelectedPerks(Player player) {
+        return data(player).getLong(PERKS);
+    }
+
+    public static boolean hasPerk(Player player, Perk perk) {
+        return (getSelectedPerks(player) & (1L << perk.ordinal())) != 0L;
+    }
+
+    public static boolean hasPerkAtLevel(Player player, int level) {
+        for (Perk perk : Perk.values()) {
+            if (perk.level == level && hasPerk(player, perk)) return true;
+        }
+        return false;
+    }
+
+    public static int getSpentSkillPoints(Player player) {
+        return Long.bitCount(getSelectedPerks(player));
+    }
+
+    public static int getAvailableSkillPoints(Player player) {
+        return Math.max(0, getLevel(player) - getSpentSkillPoints(player));
+    }
+
+    public static boolean selectPerk(Player player, Perk perk) {
+        if (!isAndroid(player) || getLevel(player) < perk.level || hasPerkAtLevel(player, perk.level)
+                || getAvailableSkillPoints(player) <= 0) {
+            return false;
+        }
+        CompoundTag state = data(player);
+        state.putLong(PERKS, getSelectedPerks(player) | (1L << perk.ordinal()));
+        save(player, state);
+        return true;
+    }
+
+    public static int scaleAbilityEnergy(Player player, int base, Perk specialisedEfficiency) {
+        double multiplier = 1.0D;
+        if (hasPerk(player, Perk.EFFICIENT_CORE)) multiplier *= 0.90D;
+        if (hasPerk(player, specialisedEfficiency)) multiplier *= 0.75D;
+        if (hasPerk(player, Perk.APEX_CORE)) multiplier *= 0.85D;
+        return Math.max(1, (int) Math.ceil(base * multiplier));
+    }
+
+    public static float incomingDamageMultiplier(Player player) {
+        double multiplier = 1.0D;
+        if (hasPerk(player, Perk.REINFORCED_FRAME)) multiplier *= 0.95D;
+        if (hasPerk(player, Perk.KINETIC_PLATING)) multiplier *= 0.90D;
+        if (hasPerk(player, Perk.ADAPTIVE_ARMOR)) multiplier *= 0.90D;
+        if (hasPerk(player, Perk.ADAMANT_CHASSIS)) multiplier *= 0.85D;
+        return (float) multiplier;
     }
 
     public static int getExperience(Player player) {
