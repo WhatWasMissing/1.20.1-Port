@@ -26,9 +26,8 @@ public class DocumentationScreen extends Screen {
 
     private final DocumentationItem.Document document;
     private final List<String> sourceLines = new ArrayList<>();
-    private final List<RenderLine> renderedLines = new ArrayList<>();
-    private int scroll;
-    private int contentHeight;
+    private final List<List<RenderLine>> pages = new ArrayList<>();
+    private int pageIndex;
     private int viewportHeight;
 
     public DocumentationScreen(int documentId) {
@@ -38,8 +37,7 @@ public class DocumentationScreen extends Screen {
     }
 
     private void loadDocument() {
-        ResourceLocation resource = new ResourceLocation(
-                MatterOverdrive.MOD_ID, document.resourcePath);
+        ResourceLocation resource = new ResourceLocation(MatterOverdrive.MOD_ID, document.resourcePath);
         Minecraft.getInstance().getResourceManager().getResource(resource).ifPresentOrElse(found -> {
             try (BufferedReader reader = found.openAsReader()) {
                 sourceLines.addAll(reader.lines().toList());
@@ -51,26 +49,31 @@ public class DocumentationScreen extends Screen {
 
     @Override
     protected void init() {
+        viewportHeight = Math.max(40, height - 82);
+        rebuildPages(Math.max(80, Math.min(560, width - 54)));
+        addRenderableWidget(Button.builder(Component.literal("< Previous"), button -> {
+            pageIndex = Math.max(0, pageIndex - 1);
+        }).bounds(width / 2 - 118, height - 27, 90, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Next >"), button -> {
+            pageIndex = Math.min(Math.max(0, pages.size() - 1), pageIndex + 1);
+        }).bounds(width / 2 + 28, height - 27, 90, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
-                .bounds(width / 2 - 40, height - 27, 80, 20).build());
-        rebuildLines(Math.max(80, Math.min(560, width - 54)));
+                .bounds(width / 2 - 40, height - 51, 80, 20).build());
     }
 
-    private void rebuildLines(int maxWidth) {
-        renderedLines.clear();
-        contentHeight = 0;
+    private void rebuildPages(int maxWidth) {
+        pages.clear();
+        List<RenderLine> current = new ArrayList<>();
+        int used = 0;
         for (String raw : sourceLines) {
-            if (raw.isBlank()) {
-                renderedLines.add(new RenderLine(FormattedCharSequence.EMPTY, 6));
-                contentHeight += 6;
-                continue;
-            }
-
             Component line;
             int height = 11;
-            if (raw.startsWith("#")) {
-                String heading = raw.replaceFirst("^#+\\s*", "");
-                line = Component.literal(heading).withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+            if (raw.isBlank()) {
+                line = Component.empty();
+                height = 6;
+            } else if (raw.startsWith("#")) {
+                line = Component.literal(raw.replaceFirst("^#+\\s*", ""))
+                        .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
                 height = raw.startsWith("# ") ? 15 : 13;
             } else if (raw.startsWith("- [ ] ")) {
                 line = Component.literal("□ " + raw.substring(6)).withStyle(ChatFormatting.YELLOW);
@@ -79,16 +82,22 @@ public class DocumentationScreen extends Screen {
             } else {
                 line = Component.literal(raw);
             }
-
             List<FormattedCharSequence> wrapped = font.split(line, maxWidth);
             for (int index = 0; index < wrapped.size(); index++) {
                 int lineHeight = index == wrapped.size() - 1 ? height : 11;
-                renderedLines.add(new RenderLine(wrapped.get(index), lineHeight));
-                contentHeight += lineHeight;
+                if (!current.isEmpty() && used + lineHeight > viewportHeight) {
+                    pages.add(current);
+                    current = new ArrayList<>();
+                    used = 0;
+                }
+                current.add(new RenderLine(wrapped.get(index), lineHeight));
+                used += lineHeight;
             }
         }
-        viewportHeight = Math.max(20, height - 82);
-        scroll = Math.min(scroll, maxScroll());
+        if (!current.isEmpty() || pages.isEmpty()) {
+            pages.add(current);
+        }
+        pageIndex = Math.min(pageIndex, pages.size() - 1);
     }
 
     @Override
@@ -98,8 +107,7 @@ public class DocumentationScreen extends Screen {
         int left = (width - panelWidth) / 2;
         int right = left + panelWidth;
         int top = 10;
-        int bottom = height - 34;
-
+        int bottom = height - 58;
         graphics.fill(left, top, right, bottom, PANEL_COLOR);
         graphics.fill(left, top, right, top + 1, BORDER_COLOR);
         graphics.fill(left, bottom - 1, right, bottom, BORDER_COLOR);
@@ -108,66 +116,43 @@ public class DocumentationScreen extends Screen {
         graphics.drawCenteredString(font, title, width / 2, top + 9, BORDER_COLOR);
         graphics.drawCenteredString(font, Component.literal("Matter Overdrive Alpha 0.2 • Made by MVQ1303"),
                 width / 2, top + 21, MUTED_COLOR);
+        graphics.drawCenteredString(font, Component.literal(String.format("Page %d / %d", pageIndex + 1, pages.size())),
+                width / 2, bottom + 7, MUTED_COLOR);
 
         int textLeft = left + 15;
         int textTop = top + 38;
-        int textBottom = bottom - 8;
-        viewportHeight = textBottom - textTop;
-        graphics.enableScissor(textLeft, textTop, right - 18, textBottom);
-
-        int y = textTop - scroll;
-        for (RenderLine line : renderedLines) {
-            if (y + line.height >= textTop && y < textBottom && line.text != FormattedCharSequence.EMPTY) {
-                int color = line.text.toString().startsWith("□") ? CHECK_COLOR : TEXT_COLOR;
-                graphics.drawString(font, line.text, textLeft, y, color, false);
+        int y = textTop;
+        if (!pages.isEmpty()) {
+            for (RenderLine line : pages.get(pageIndex)) {
+                if (line.text != FormattedCharSequence.EMPTY) {
+                    int color = line.text.toString().startsWith("□") ? CHECK_COLOR : TEXT_COLOR;
+                    graphics.drawString(font, line.text, textLeft, y, color, false);
+                }
+                y += line.height;
             }
-            y += line.height;
         }
-        graphics.disableScissor();
-
-        if (maxScroll() > 0) {
-            int trackTop = textTop;
-            int trackBottom = textBottom;
-            int trackHeight = trackBottom - trackTop;
-            int thumbHeight = Math.max(18, trackHeight * viewportHeight / Math.max(viewportHeight, contentHeight));
-            int thumbTravel = trackHeight - thumbHeight;
-            int thumbTop = trackTop + (maxScroll() == 0 ? 0 : thumbTravel * scroll / maxScroll());
-            graphics.fill(right - 10, trackTop, right - 7, trackBottom, 0xFF26333D);
-            graphics.fill(right - 10, thumbTop, right - 7, thumbTop + thumbHeight, BORDER_COLOR);
-        }
-
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        scroll = Math.max(0, Math.min(maxScroll(), scroll - (int) Math.signum(delta) * 30));
-        return true;
-    }
-
-    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
-            scroll = Math.min(maxScroll(), scroll + Math.max(30, viewportHeight - 20));
+        if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN || keyCode == GLFW.GLFW_KEY_RIGHT) {
+            pageIndex = Math.min(pages.size() - 1, pageIndex + 1);
             return true;
         }
-        if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
-            scroll = Math.max(0, scroll - Math.max(30, viewportHeight - 20));
+        if (keyCode == GLFW.GLFW_KEY_PAGE_UP || keyCode == GLFW.GLFW_KEY_LEFT) {
+            pageIndex = Math.max(0, pageIndex - 1);
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_HOME) {
-            scroll = 0;
+            pageIndex = 0;
             return true;
         }
         if (keyCode == GLFW.GLFW_KEY_END) {
-            scroll = maxScroll();
+            pageIndex = Math.max(0, pages.size() - 1);
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
-    private int maxScroll() {
-        return Math.max(0, contentHeight - viewportHeight);
     }
 
     @Override
