@@ -44,7 +44,8 @@ import java.util.Set;
 public class FusionReactorControllerBlockEntity extends BlockEntity implements MenuProvider {
     public static final int ENERGY_CAPACITY = 100_000_000;
     public static final int MATTER_CAPACITY = 2_048;
-    public static final int BASE_OUTPUT = 2_048;
+    public static final int BASE_OUTPUT = 9_048;
+    public static final double ANOMALY_MASS_MULTIPLIER = 10.0D;
     public static final int STRUCTURE_CHECK_DELAY = 40;
     public static final int MAX_GRAVITATIONAL_ANOMALY_DISTANCE = 3;
     private static final int MAX_UPGRADED_ANOMALY_DISTANCE = 16;
@@ -93,10 +94,14 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
     private boolean structureValid;
     private boolean overlayEnabled;
+    private boolean reactorEnabled = true;
+    /** 0 = ignored, 1 = requires signal, 2 = requires no signal. */
+    private int redstoneMode;
     private BlockPos anomalyPosition;
     private int anomalyDistance = -1;
     private int outputPotential;
     private int generatedLastTick;
+    private int matterConsumedLastTick;
     private int connectedUsage;
     private int internalPowerLastTick;
     private int tickCounter;
@@ -138,6 +143,13 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 25 -> internalPowerPositions.size();
                 case 26 -> internalPowerLastTick;
                 case 27 -> generatedLastTick;
+                case 28 -> reactorEnabled ? 1 : 0;
+                case 29 -> redstoneMode;
+                case 30 -> redstoneAllowsOperation() ? 1 : 0;
+                case 31 -> matterConsumedLastTick;
+                case 32 -> anomaly == null ? 0 : anomaly.getDestroyedBlocksLastCycle();
+                case 33 -> anomaly == null ? 1_000
+                        : (int) Math.round(anomaly.getSuppression() * 1_000.0D);
                 default -> 0;
             };
         }
@@ -148,7 +160,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 28;
+            return 34;
         }
     };
 
@@ -170,6 +182,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private void generate() {
         outputPotential = 0;
         generatedLastTick = 0;
+        matterConsumedLastTick = 0;
         if (!structureValid) {
             return;
         }
@@ -183,18 +196,27 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         }
 
         double unsuppressedMass = anomaly.getRealMassUnsuppressed();
+        double legacyMassMultiplier = unsuppressedMass * ANOMALY_MASS_MULTIPLIER;
         double rateMultiplier = generationRateMultiplier();
-        double rawOutput = BASE_OUTPUT * efficiency() * unsuppressedMass * rateMultiplier;
+        double rawOutput = BASE_OUTPUT * efficiency() * legacyMassMultiplier * rateMultiplier;
         int requested = (int) Math.min(Integer.MAX_VALUE,
                 Math.max(1L, Math.round(rawOutput)));
         outputPotential = requested;
 
+        if (!reactorEnabled) {
+            fault = "Disabled";
+            return;
+        }
+        if (!redstoneAllowsOperation()) {
+            fault = redstoneMode == 1 ? "Waiting for redstone" : "Redstone shutdown";
+            return;
+        }
         if (matter.getMatterStored() <= 0) {
             fault = "No matter";
             return;
         }
         if (energy.getEnergyStored() >= energy.getMaxEnergyStored()) {
-            fault = "Ready";
+            fault = "Energy storage full";
             return;
         }
 
@@ -204,7 +226,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             return;
         }
 
-        double proportionalDrain = BASE_MATTER_DRAIN * unsuppressedMass * rateMultiplier
+        double proportionalDrain = BASE_MATTER_DRAIN * legacyMassMultiplier * rateMultiplier
                 * (accepted / (double) requested);
         double pendingDrain = matterDrainRemainder + proportionalDrain;
         int wholeMatter = (int) Math.floor(pendingDrain);
@@ -216,6 +238,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         matterDrainRemainder = pendingDrain - wholeMatter;
         if (wholeMatter > 0) {
             matter.setMatterStored(matter.getMatterStored() - wholeMatter);
+            matterConsumedLastTick = wholeMatter;
         }
         energy.setEnergyStored(energy.getEnergyStored() + accepted);
         generatedLastTick = accepted;
@@ -356,7 +379,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private double matterDrain() {
         GravitationalAnomalyBlockEntity anomaly = getAnomaly();
         return anomaly == null ? 0.0D
-                : BASE_MATTER_DRAIN * anomaly.getRealMassUnsuppressed() * generationRateMultiplier();
+                : BASE_MATTER_DRAIN * anomaly.getRealMassUnsuppressed()
+                * ANOMALY_MASS_MULTIPLIER * generationRateMultiplier();
     }
 
     private double generationRateMultiplier() {
@@ -370,6 +394,43 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         return Math.max(MAX_GRAVITATIONAL_ANOMALY_DISTANCE,
                 Math.min(MAX_UPGRADED_ANOMALY_DISTANCE,
                         (int) Math.round(MAX_GRAVITATIONAL_ANOMALY_DISTANCE * rangeMultiplier)));
+    }
+
+    private boolean redstoneAllowsOperation() {
+        if (level == null || redstoneMode == 0) {
+            return true;
+        }
+        boolean powered = level.hasNeighborSignal(worldPosition);
+        return redstoneMode == 1 ? powered : !powered;
+    }
+
+    public boolean toggleReactorEnabled() {
+        reactorEnabled = !reactorEnabled;
+        setChanged();
+        syncState();
+        return reactorEnabled;
+    }
+
+    public int cycleRedstoneMode() {
+        redstoneMode = (redstoneMode + 1) % 3;
+        setChanged();
+        syncState();
+        return redstoneMode;
+    }
+
+    public int getComparatorOutput() {
+        if (!structureValid) return 0;
+        if (!reactorEnabled || !redstoneAllowsOperation()) return 1;
+        if (energy.getMaxEnergyStored() <= 0) return 0;
+        return Math.min(15, 1 + (int) Math.floor(14.0D
+                * energy.getEnergyStored() / energy.getMaxEnergyStored()));
+    }
+
+    private void syncState() {
+        if (level != null) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+        }
     }
 
     private void upgradesChanged() {
@@ -633,6 +694,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         tag.putDouble("MatterRemainder", matterDrainRemainder);
         tag.putLong("InternalPowerSequence", internalPowerSequence);
         tag.putBoolean("OverlayEnabled", overlayEnabled);
+        tag.putBoolean("ReactorEnabled", reactorEnabled);
+        tag.putInt("RedstoneMode", redstoneMode);
     }
 
     @Override
@@ -648,6 +711,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         matterDrainRemainder = tag.getDouble("MatterRemainder");
         internalPowerSequence = tag.getLong("InternalPowerSequence");
         overlayEnabled = tag.getBoolean("OverlayEnabled");
+        reactorEnabled = !tag.contains("ReactorEnabled") || tag.getBoolean("ReactorEnabled");
+        redstoneMode = Math.max(0, Math.min(2, tag.getInt("RedstoneMode")));
         updateClientOverlayCache();
     }
 
@@ -722,6 +787,10 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             case "Incorrect controller-side position" -> 7;
             case "Structure area unloaded" -> 8;
             case "Anomaly data unavailable" -> 9;
+            case "Disabled" -> 10;
+            case "Waiting for redstone" -> 11;
+            case "Redstone shutdown" -> 12;
+            case "Energy storage full" -> 13;
             default -> 0;
         };
     }

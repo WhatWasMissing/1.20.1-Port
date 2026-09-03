@@ -17,6 +17,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -46,6 +48,8 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
     private boolean beamBlocked;
     private int powerUsed;
     private boolean powered;
+    /** 0 = ignored, 1 = requires signal, 2 = requires no signal. */
+    private int redstoneMode;
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -61,12 +65,14 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
                 case 7 -> anomalyDistance + 1;
                 case 8 -> beamBlocked ? 1 : 0;
                 case 9 -> beamBlockedDistance + 1;
+                case 10 -> redstoneMode;
+                case 11 -> redstoneAllowsOperation() ? 1 : 0;
                 default -> 0;
             };
         }
 
         @Override public void set(int index, int value) {}
-        @Override public int getCount() { return 10; }
+        @Override public int getCount() { return 12; }
     };
 
     public GravitationalStabilizerBlockEntity(BlockPos pos, BlockState state) {
@@ -80,6 +86,10 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
         stabilizer.beamBlocked = false;
         stabilizer.powerUsed = 0;
         stabilizer.powered = false;
+
+        if (!stabilizer.redstoneAllowsOperation()) {
+            return;
+        }
 
         int required = stabilizer.requiredPower();
         if (stabilizer.energy.getEnergyStored() < required
@@ -97,6 +107,7 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
             if (level.getBlockEntity(targetPos) instanceof GravitationalAnomalyBlockEntity anomaly) {
                 anomaly.suppress(pos, 20, stabilizer.suppressionAmount());
                 stabilizer.anomalyDistance = distance;
+                stabilizer.spawnBeamParticles(level, pos, facing, distance);
                 return;
             }
             if (!targetState.isAir()
@@ -106,6 +117,38 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
                 return;
             }
         }
+    }
+
+    private boolean redstoneAllowsOperation() {
+        if (level == null || redstoneMode == 0) {
+            return true;
+        }
+        boolean signal = level.hasNeighborSignal(worldPosition);
+        return redstoneMode == 1 ? signal : !signal;
+    }
+
+    private void spawnBeamParticles(Level level, BlockPos pos, Direction facing, int distance) {
+        if (!(level instanceof ServerLevel serverLevel)
+                || level.getGameTime() % 5L != 0L) {
+            return;
+        }
+        double step = Math.max(1.0D, distance / 12.0D);
+        for (double offset = 0.75D; offset < distance; offset += step) {
+            serverLevel.sendParticles(ParticleTypes.END_ROD,
+                    pos.getX() + 0.5D + facing.getStepX() * offset,
+                    pos.getY() + 0.5D + facing.getStepY() * offset,
+                    pos.getZ() + 0.5D + facing.getStepZ() * offset,
+                    1, 0.01D, 0.01D, 0.01D, 0.0D);
+        }
+    }
+
+    public int cycleRedstoneMode() {
+        redstoneMode = (redstoneMode + 1) % 3;
+        setChanged();
+        if (level != null) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+        return redstoneMode;
     }
 
     private int requiredPower() {
@@ -172,6 +215,7 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
         super.saveAdditional(tag);
         tag.putInt("Energy", energy.getEnergyStored());
         tag.put("Upgrades", upgrades.serializeNBT());
+        tag.putInt("RedstoneMode", redstoneMode);
     }
 
     @Override public void load(CompoundTag tag) {
@@ -179,6 +223,7 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
         if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
         upgradesChanged();
         energy.setEnergyStored(tag.getInt("Energy"));
+        redstoneMode = Math.max(0, Math.min(2, tag.getInt("RedstoneMode")));
     }
 
     @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {

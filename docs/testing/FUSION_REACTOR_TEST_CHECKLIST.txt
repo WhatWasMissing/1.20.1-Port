@@ -1,6 +1,6 @@
 MATTER OVERDRIVE 1.20.1 - FUSION REACTOR TEST CHECKLIST
-Branch: feature/fusion-reactor
-Minimum implementation commit: e0a0aaf
+Branch: testing/fusion-reactor-full-parity
+Target branch: testing/main
 
 ============================================================
 1. BUILD AND INSTALL
@@ -8,7 +8,7 @@ Minimum implementation commit: e0a0aaf
 
 From the repository folder, run:
 
-  git pull origin feature/fusion-reactor
+  git pull origin testing/fusion-reactor-full-parity
   gradlew.bat clean build
 
 Copy the newly built Matter Overdrive jar from build\libs into the Minecraft
@@ -202,9 +202,10 @@ Expected result:
   [ ] Reactor unsuppressed mass increases.
   [ ] Reactor energy output increases.
 
-Current intentional limitation:
-  The anomaly does not yet pull players/living entities or destroy blocks.
-  This test concerns dropped item entities only.
+Legacy-parity hazard behavior:
+  The anomaly pulls living entities and destroys eligible blocks/fluids once
+  its suppressed mass is strong enough. Run destructive tests in a disposable
+  area. A worn Space-Time Equalizer must provide immunity.
 
 
 ============================================================
@@ -277,4 +278,25 @@ End of checklist.
 - Power IO: connect IO directly or through Heavy Energy Cables; chained cables must relay FE and survive cable replacement/rebuild.
 - Ring sharing: reactor ring blocks share controller power internally; external machines require Heavy Energy Cable routing from Reactor IO.
 - Anomaly/stabilizers: verify mass gain on event-horizon kills, pull radius, matching beam/facing, FE use, suppression, upgrades, and Space-Time Equalizer immunity.
-- Known limit: output balance and generation scaling remain a tuning/parity target; record anomaly mass, output, matter consumption, and upgrade state with each report.
+- Generation formula: 9,048 FE/t x efficiency x (unsuppressed real mass x 10) x Speed rate.
+- Matter formula: 1/80 kM/t x (unsuppressed real mass x 10) x Speed rate.
+- Test RUN/SCRAM, Ignored/High/Low redstone modes, comparator status, direct IO capability extraction, proportional drain at a nearly full FE buffer, block/fluid destruction telemetry and visible stabilizer beams.
+- External ComputerCraft/OpenComputers support is not included in the dependency-free core parity pass.
+
+============================================================
+11. FULL PARITY ACCEPTANCE GATE
+============================================================
+
+  [ ] Actual stored FE increase equals GUI generated FE/t exactly.
+  [ ] No reflection/post-tick multiplier remains.
+  [ ] Zero matter produces zero FE, including fractional-drain edge cases.
+  [ ] Near-full FE storage reduces both generation and drain proportionally.
+  [ ] Direct IO, cable chains, multiple IO and internal ring sharing work.
+  [ ] RUN/SCRAM and all redstone modes persist locally and through Remote use.
+  [ ] Comparator distinguishes invalid, paused and stored-energy states.
+  [ ] Item/living mass ingestion persists and living mass is counted once.
+  [ ] Block/fluid hazard respects hardness, range, suppression and tick limits.
+  [ ] One/four stabilizers produce expected multiplicative suppression.
+  [ ] Beam obstruction, FE loss and redstone pause expire suppression promptly.
+  [ ] All three in-game documents match their repository sources.
+

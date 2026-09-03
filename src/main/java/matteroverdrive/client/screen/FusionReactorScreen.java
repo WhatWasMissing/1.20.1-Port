@@ -27,6 +27,16 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
             }
         }).bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("RUN / SCRAM"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 2);
+            }
+        }).bounds(leftPos + 151, topPos + 5, 74, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("RS MODE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 3);
+            }
+        }).bounds(leftPos + 227, topPos + 5, 70, 16).build());
     }
 
     @Override
@@ -68,24 +78,26 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         graphics.drawString(font, "Structure " + (menu.valid() ? "VALID" : faultText())
                         + " | ring " + menu.ringDirection().getName().toUpperCase(Locale.ROOT),
                 20, 80, menu.valid() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, "Output capacity " + menu.output()
-                        + " FE/t | generated " + menu.generatedLastTick() + " FE/t",
-                20, 91, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Usage " + menu.connectedUsage() + " FE/t | efficiency "
-                        + Math.round(menu.efficiency() * 100) + "%",
+        graphics.drawString(font, "Reactor " + (menu.reactorEnabled() ? "ENABLED" : "SCRAMMED")
+                        + " | redstone " + redstoneText(),
+                20, 91, menu.reactorEnabled() && menu.redstoneAllowsOperation()
+                        ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "Potential " + menu.output()
+                        + " FE/t | generated " + menu.generatedLastTick()
+                        + " FE/t | used " + menu.connectedUsage(),
                 20, 102, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Efficiency " + Math.round(menu.efficiency() * 100)
+                        + "% | drain " + format(menu.matterDrain())
+                        + " kM/t | consumed " + menu.matterConsumedLastTick(),
+                20, 113, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, "Anomaly offset " + menu.anomalyDistance()
                         + " | mass " + format(menu.unsuppressedMass())
-                        + " (safe " + format(menu.suppressedMass()) + ")",
-                20, 113, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Matter drain " + format(menu.matterDrain())
-                        + " kM/t | linked IO " + menu.ioCount()
-                        + " | stabilizers " + menu.stabilizerCount(),
+                        + " | IO " + menu.ioCount() + " | stabilizers " + menu.stabilizerCount(),
                 20, 124, MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "Pull " + format(menu.anomalyRange())
-                        + " (" + menu.affectedEntityCount() + " affected) | block "
-                        + format(menu.blockHazardRange()),
+        graphics.drawString(font, "Gravity " + format(menu.anomalyRange())
+                        + " blocks | suppression " + Math.round((1.0D - menu.anomalySuppression()) * 100)
+                        + "% | affected " + menu.affectedEntityCount(),
                 20, 144, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, "Horizon " + format(menu.eventHorizon())
                         + " | inside " + menu.horizonEntityCount()
@@ -95,7 +107,9 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         graphics.drawString(font, "Ring power " + menu.internalMachineCount()
                         + " machines | sent " + menu.internalPowerLastTick() + " FE/t",
                 20, 166, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Block hazard: DISABLED",
+        graphics.drawString(font, "Block/fluid hazard ACTIVE | range "
+                        + format(menu.blockHazardRange()) + " | broken "
+                        + menu.destroyedBlocksLastCycle(),
                 20, 177, MachineScreenStyle.DANGER, false);
         graphics.drawString(font, playerInventoryTitle,
                 SLOT_X_OFFSET + 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
@@ -110,8 +124,21 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
             case 7 -> "wrong controller-side position";
             case 8 -> "structure area unloaded";
             case 9 -> "anomaly data unavailable";
+            case 10 -> "scrammed";
+            case 11 -> "waiting for redstone";
+            case 12 -> "redstone shutdown";
+            case 13 -> "energy storage full";
             default -> "checking";
         };
+    }
+
+    private String redstoneText() {
+        String mode = switch (menu.redstoneMode()) {
+            case 1 -> "HIGH";
+            case 2 -> "LOW";
+            default -> "IGNORED";
+        };
+        return mode + (menu.redstoneAllowsOperation() ? " / RUN" : " / PAUSED");
     }
 
     private static String format(double value) {

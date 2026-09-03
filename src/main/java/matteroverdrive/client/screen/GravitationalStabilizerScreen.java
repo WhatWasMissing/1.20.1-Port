@@ -2,6 +2,7 @@ package matteroverdrive.client.screen;
 
 import matteroverdrive.menu.GravitationalStabilizerMenu;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,6 +15,16 @@ public class GravitationalStabilizerScreen
         imageWidth = 176;
         imageHeight = 202;
         inventoryLabelY = 89;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("RS MODE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+            }
+        }).bounds(leftPos + 101, topPos + 5, 69, 16).build());
     }
 
     @Override
@@ -52,6 +63,9 @@ public class GravitationalStabilizerScreen
     }
 
     private String status() {
+        if (!menu.redstoneAllowsOperation()) {
+            return "Paused by redstone (" + redstoneLabel() + ")";
+        }
         if (!menu.isPowered()) {
             return "Waiting for reactor power";
         }
@@ -62,5 +76,13 @@ public class GravitationalStabilizerScreen
             return "Beam blocked: " + menu.beamBlockedDistance() + " blocks";
         }
         return "Powered: no anomaly in beam";
+    }
+
+    private String redstoneLabel() {
+        return switch (menu.redstoneMode()) {
+            case 1 -> "HIGH";
+            case 2 -> "LOW";
+            default -> "IGNORED";
+        };
     }
 }

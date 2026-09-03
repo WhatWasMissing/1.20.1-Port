@@ -61,19 +61,22 @@ The current item router remembers inventories that have received routed items as
 
 ## Fusion Reactor and gravitational systems
 
-- Large ring Fusion Reactor structure with Reactor Assembly Guide/overlay.
-- Reactor Controller and Reactor IO blocks.
-- 100,000,000 FE base controller storage and 2,048 kM base matter storage.
-- Matter-driven FE generation scaled by anomaly mass and reactor efficiency.
-- Internal ring power distribution and connected-machine FE usage diagnostics.
-- Reactor Remote support.
-- Power Storage and Matter Storage upgrades.
-- Speed upgrades increase generation rate and matter consumption proportionally.
-- Range upgrades extend vertical anomaly search from the base three-block distance, capped at 16 blocks.
-- Gravitational Anomaly persistent mass, entity/item pull and event-horizon consumption.
+- Legacy-parity horizontal Fusion Reactor ring with exact hull, coil/flexible, IO and controller positions plus the Reactor Assembly Guide overlay.
+- Reactor Controller and any formed Reactor IO expose a shared 100,000,000 FE base buffer and 2,048 kM base matter buffer.
+- Restored legacy generation equation: 9,048 FE/t × efficiency × (unsuppressed real anomaly mass × 10). Matter use is 1/80 kM/t × the same mass multiplier and is reduced proportionally when the FE buffer has limited room.
+- Vertical anomaly offsets 0/1/2/3 retain the legacy 100%/75%/50%/25% efficiency curve. Range upgrades extend discovery to 16 blocks; extended offsets use the upgraded range curve.
+- Speed upgrades increase generation and matter use together; Power Storage and Matter Storage upgrades enlarge their respective buffers.
+- Formed IO faces support direct FE extraction, cable chains and matter transfer. The controller fairly powers compatible machines built inside the ring.
+- Persistent RUN/SCRAM control and three redstone modes: Ignored, High (signal runs) and Low (signal stops).
+- Comparator output: 0 invalid, 1 paused/SCRAMMED, and 1-15 while available according to stored FE.
+- Reactor Remote support with the same live controller data and controls.
+- Expanded GUI telemetry for potential/actual FE, exact drain/consumption, efficiency, connected demand, IO count, ring power, anomaly mass, suppression, pull/horizon ranges and block destruction.
+- Gravitational Anomaly persistent mass, item and living-entity pull, event-horizon consumption, and restored block/fluid destruction. Destruction is hardness/falloff limited and sampled to cap tick cost.
 - Living-entity mass is added once when the event horizon kills the entity.
 - Space-Time Equalizer immunity to anomaly pull/event-horizon effects.
-- Gravitational Stabilizers with FE use, facing/beam checks, suppression and upgrades.
+- Gravitational Stabilizers search a clear 63-block beam, consume FE, apply multiplicative suppression, support power/storage upgrades, emit visible beam particles and have persistent redstone modes.
+
+Important: anomaly block/fluid damage is active again for legacy parity. Stabilize and isolate an anomaly before feeding it substantial mass.
 
 ## Weapons
 
