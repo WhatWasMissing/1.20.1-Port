@@ -9,19 +9,19 @@ public final class AndroidClientState {
     private static int parts;
     private static int selectedAbility;
     private static int cooldownTicks;
-    private static int activeAbilityFlags;
+    private static int activeAbilityFlags;\n    private static int experience;\n    private static int level;
 
     private AndroidClientState() {
     }
 
     public static void set(boolean nextActive, int nextEnergy, int nextParts,
-                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags) {
+                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags, int nextExperience, int nextLevel) {
         active = nextActive;
         energy = Math.max(0, nextEnergy);
         parts = nextParts & 15;
         selectedAbility = Math.max(0, Math.min(AndroidData.Ability.values().length - 1, nextSelectedAbility));
         cooldownTicks = Math.max(0, nextCooldownTicks);
-        activeAbilityFlags = nextActiveAbilityFlags & 3;
+        activeAbilityFlags = nextActiveAbilityFlags & 3;\n        experience = Math.max(0, nextExperience);\n        level = Math.max(1, Math.min(AndroidData.MAX_LEVEL, nextLevel));
     }
 
     public static boolean isActive() {
@@ -48,7 +48,7 @@ public final class AndroidClientState {
         return cooldownTicks;
     }
 
-    public static boolean isCloakEnabled() {
+    public static int experience() {\n        return experience;\n    }\n\n    public static int level() {\n        return level;\n    }\n\n    public static boolean isCloakEnabled() {
         return (activeAbilityFlags & 1) != 0;
     }
 
