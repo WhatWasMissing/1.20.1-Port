@@ -166,6 +166,21 @@ public class DocumentationScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
+        if (indexOpen) {
+            int panelWidth = Math.min(600, width - 24);
+            int left = (width - panelWidth) / 2;
+            int right = left + panelWidth;
+            int top = 10;
+            int bottom = height - 18;
+            graphics.fill(left, top, right, bottom, PANEL_COLOR);
+            graphics.fill(left, top, right, top + 1, BORDER_COLOR);
+            graphics.fill(left, top, left + 1, bottom, BORDER_COLOR);
+            graphics.fill(right - 1, top, right, bottom, BORDER_COLOR);
+            graphics.drawCenteredString(font, Component.literal("Guide Index"), width / 2, top + 10, BORDER_COLOR);
+            graphics.drawCenteredString(font, Component.literal("Select a section"), width / 2, top + 24, MUTED_COLOR);
+            super.render(graphics, mouseX, mouseY, partialTick);
+            return;
+        }
         int panelWidth = Math.min(600, width - 24);
         int left = (width - panelWidth) / 2;
         int right = left + panelWidth;
