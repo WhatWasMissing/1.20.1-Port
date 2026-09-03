@@ -217,7 +217,8 @@ A successful GitHub Actions build proves that the Forge project compiles/package
 
 ## Selectable Android perk tree
 
-- Press K while converted to open a connected two-branch skill tree.
-- Every Android level grants one perk point and offers one permanent choice between an Assault perk and a Survival / Mobility perk.
-- Twenty real perks cover ability FE efficiency, Cloak/Force Field costs, Shockwave damage/radius/knockback, Teleport range/cooldown, melee damage, leg speed and incoming damage reduction.
-- Selection, validation and effects are server-authoritative. Chosen perks persist through relog, death and deactivation.
+- Press K while converted to open a connected three-branch skill tree.
+- Every Android level grants one perk point and offers a choice between Assault, Utility and Survival / Mobility.
+- Thirty functional perks cover active/passive FE efficiency, charging, XP, repair, hostile scanning, emergency protection, Cloak/Force Field, Shockwave, Teleport, melee, speed and damage reduction.
+- Selection and resets are server-authoritative. Chosen perks persist through relog, death and deactivation.
+- The tree provides hover descriptions, selection confirmation, a 25,000 FE full respec and an unspent-point HUD reminder.
