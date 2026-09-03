@@ -820,3 +820,7 @@ Status: TESTING expanded progression layer.
 
 - Reset is all-or-nothing; individual-node refunds are not yet supported.
 - Values remain subject to Alpha 0.2 balance testing.
+
+## Perk persistence safeguard
+
+Installed perk choices remain selected when Android XP crosses a level boundary. The server saves the perk mask atomically with XP and maintains a mirrored recovery value for worlds affected by the earlier level-up reset regression. Only the confirmed 25,000 FE Reset Perks action intentionally clears the tree.

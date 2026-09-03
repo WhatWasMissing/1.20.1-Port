@@ -20,6 +20,7 @@ public final class AndroidData {
     private static final String SHIELD_ENABLED = "ShieldEnabled";
     private static final String COOLDOWNS = "AbilityCooldowns";
     private static final String PERKS = "SelectedPerks";
+    private static final String PERKS_BACKUP = "SelectedPerksBackup";
 
     public enum Part {
         HEAD(1, "rogue_android_part_head"),
@@ -118,7 +119,29 @@ public final class AndroidData {
     }
 
     public static long getSelectedPerks(Player player) {
-        return data(player).getLong(PERKS);
+        CompoundTag state = data(player);
+        long validMask = (1L << Perk.values().length) - 1L;
+        long selected = state.getLong(PERKS) & validMask;
+        long backup = state.getLong(PERKS_BACKUP) & validMask;
+
+        // XP and level writes must never erase installed choices. The mirrored
+        // value also repairs saves affected by the level-up persistence regression.
+        if (selected == 0L && backup != 0L) {
+            selected = backup;
+            state.putLong(PERKS, selected);
+            save(player, state);
+        } else if (selected != backup) {
+            state.putLong(PERKS_BACKUP, selected);
+            save(player, state);
+        }
+        return selected;
+    }
+
+    private static void writeSelectedPerks(CompoundTag state, long perks) {
+        long validMask = (1L << Perk.values().length) - 1L;
+        long selected = perks & validMask;
+        state.putLong(PERKS, selected);
+        state.putLong(PERKS_BACKUP, selected);
     }
 
     public static boolean hasPerk(Player player, Perk perk) {
@@ -148,7 +171,7 @@ public final class AndroidData {
             return false;
         }
         CompoundTag state = data(player);
-        state.putLong(PERKS, getSelectedPerks(player) | (1L << perk.ordinal()));
+        writeSelectedPerks(state, getSelectedPerks(player) | (1L << perk.ordinal()));
         save(player, state);
         return true;
     }
@@ -159,7 +182,7 @@ public final class AndroidData {
             return false;
         }
         CompoundTag state = data(player);
-        state.putLong(PERKS, 0L);
+        writeSelectedPerks(state, 0L);
         state.putBoolean(CLOAK_ENABLED, false);
         state.putBoolean(SHIELD_ENABLED, false);
         save(player, state);
@@ -231,8 +254,10 @@ public final class AndroidData {
         int before = getExperience(player);
         int after = Mth.clamp(before + Math.max(0, amount), 0, experienceForLevel(MAX_LEVEL));
         if (after != before) {
+            long installedPerks = getSelectedPerks(player);
             CompoundTag state = data(player);
             state.putInt(EXPERIENCE, after);
+            writeSelectedPerks(state, installedPerks);
             save(player, state);
         }
         return after - before;
