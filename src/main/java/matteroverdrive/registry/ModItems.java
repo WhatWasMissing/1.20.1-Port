@@ -31,6 +31,7 @@ import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
 import matteroverdrive.item.weapon.EnergyPackItem;
 import matteroverdrive.item.weapon.EnergyWeaponItem;
+import matteroverdrive.item.weapon.OmniToolItem;
 import matteroverdrive.item.weapon.WeaponBatteryItem;
 import matteroverdrive.item.weapon.WeaponModuleItem;
 
@@ -195,6 +196,7 @@ public final class ModItems {
         if (id.equals("phaser_rifle")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PHASER_RIFLE);
         if (id.equals("ion_sniper")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.ION_SNIPER);
         if (id.equals("plasma_shotgun")) return new EnergyWeaponItem(propertiesFor(id), EnergyWeaponItem.WeaponType.PLASMA_SHOTGUN);
+        if (id.equals("omni_tool")) return new OmniToolItem(propertiesFor(id));
         if (id.startsWith("weapon_module_barrel_")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.BARREL, WeaponModuleItem.Effect.valueOf(id.substring(21).toUpperCase()));
         if (id.equals("weapon_module_holo_sights")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.SIGHTS, WeaponModuleItem.Effect.HOLO_SIGHTS);
         if (id.equals("sniper_scope")) return new WeaponModuleItem(propertiesFor(id), WeaponModuleItem.SlotType.SIGHTS, WeaponModuleItem.Effect.SNIPER_SCOPE);
@@ -322,4 +324,3 @@ public final class ModItems {
         return item;
     }
 }
-
