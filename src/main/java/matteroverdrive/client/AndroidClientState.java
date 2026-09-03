@@ -17,7 +17,8 @@ public final class AndroidClientState {
     }
 
     public static void set(boolean nextActive, int nextEnergy, int nextParts,
-                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags, int nextExperience, int nextLevel) {
+                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags,
+                           int nextExperience, int nextLevel) {
         active = nextActive;
         energy = Math.max(0, nextEnergy);
         parts = nextParts & 15;
@@ -28,46 +29,16 @@ public final class AndroidClientState {
         level = Math.max(1, Math.min(AndroidData.MAX_LEVEL, nextLevel));
     }
 
-    public static boolean isActive() {
-        return active;
-    }
-
-    public static int energy() {
-        return energy;
-    }
-
-    public static int parts() {
-        return parts;
-    }
-
-    public static int selectedAbility() {
-        return selectedAbility;
-    }
-
-    public static String abilityName() {
-        return AndroidData.Ability.values()[selectedAbility].displayName;
-    }
-
-    public static int cooldownTicks() {
-        return cooldownTicks;
-    }
-
-    public static int experience() {
-        return experience;
-    }
-
-    public static int level() {
-        return level;
-    }
-
-    public static boolean isCloakEnabled() {
-        return (activeAbilityFlags & 1) != 0;
-    }
-
-    public static boolean isForceFieldEnabled() {
-        return (activeAbilityFlags & 2) != 0;
-    }
-
+    public static boolean isActive() { return active; }
+    public static int energy() { return energy; }
+    public static int parts() { return parts; }
+    public static int selectedAbility() { return selectedAbility; }
+    public static String abilityName() { return AndroidData.Ability.values()[selectedAbility].displayName; }
+    public static int cooldownTicks() { return cooldownTicks; }
+    public static int experience() { return experience; }
+    public static int level() { return level; }
+    public static boolean isCloakEnabled() { return (activeAbilityFlags & 1) != 0; }
+    public static boolean isForceFieldEnabled() { return (activeAbilityFlags & 2) != 0; }
     public static boolean isSelectedAbilityActive() {
         return (selectedAbility == AndroidData.Ability.CLOAK.ordinal() && isCloakEnabled())
                 || (selectedAbility == AndroidData.Ability.FORCE_FIELD.ordinal() && isForceFieldEnabled());
