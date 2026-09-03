@@ -214,3 +214,10 @@ Use the checklists under `docs/testing/`, especially:
 - `TO_TEST.md` for the three in-game documentation items, including the System Guide
 
 A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify datapack loading, fresh-chunk ore generation, recipes, machine behaviour, in-world behaviour or rendering.
+
+## Selectable Android perk tree
+
+- Press K while converted to open a connected two-branch skill tree.
+- Every Android level grants one perk point and offers one permanent choice between an Assault perk and a Survival / Mobility perk.
+- Twenty real perks cover ability FE efficiency, Cloak/Force Field costs, Shockwave damage/radius/knockback, Teleport range/cooldown, melee damage, leg speed and incoming damage reduction.
+- Selection, validation and effects are server-authoritative. Chosen perks persist through relog, death and deactivation.
