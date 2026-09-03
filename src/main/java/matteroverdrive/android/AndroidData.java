@@ -160,6 +160,7 @@ public final class AndroidData {
     }
 
     public static final int PERK_RESET_COST = 25_000;
+    public static final int PERK_REFUND_COST = 2_500;
 
     public static int getAvailableSkillPoints(Player player) {
         return Math.max(0, getLevel(player) - getSpentSkillPoints(player));
@@ -172,6 +173,17 @@ public final class AndroidData {
         }
         CompoundTag state = data(player);
         writeSelectedPerks(state, getSelectedPerks(player) | (1L << perk.ordinal()));
+        save(player, state);
+        return true;
+    }
+
+    public static boolean tryRefundPerk(Player player, Perk perk) {
+        if (!isAndroid(player) || perk == null || !hasPerk(player, perk)
+                || !tryConsumeEnergy(player, PERK_REFUND_COST)) {
+            return false;
+        }
+        CompoundTag state = data(player);
+        writeSelectedPerks(state, getSelectedPerks(player) & ~(1L << perk.ordinal()));
         save(player, state);
         return true;
     }

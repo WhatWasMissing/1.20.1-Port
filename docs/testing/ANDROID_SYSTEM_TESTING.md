@@ -99,3 +99,12 @@ Branch: `testing/main`
 - [ ] Confirm a save affected by the earlier zero-mask regression recovers from the mirrored perk value when available.
 - [ ] Confirm the deliberate Reset Perks confirmation still clears both the active and recovery values for exactly 25,000 FE.
 
+## Individual perk refund QoL
+
+- [ ] Click a green installed node and verify it stages a refund rather than changing immediately.
+- [ ] Confirm the refund removes only that node, deducts exactly 2,500 FE and returns one point.
+- [ ] Verify cancelling, insufficient FE, invalid IDs and uninstalled-node requests are atomic no-ops.
+- [ ] Spend the returned point on another branch at the same level.
+- [ ] Level up, relog and die; confirm all unchanged and replacement choices persist.
+- [ ] Confirm the separate full-tree reset still requires confirmation and exactly 25,000 FE.
+

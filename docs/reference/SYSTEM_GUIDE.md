@@ -814,11 +814,12 @@ Status: TESTING expanded progression layer.
 - Hovering any node explains its effect.
 - Locked, available, pending and installed nodes have different colours.
 - Selection requires confirmation.
+- Click an installed node, then Confirm refund, to remove only that perk for 2,500 FE and recover its level point.
 - Resetting refunds every point, turns off Cloak and Force Field, and costs 25,000 FE.
 
 ## Limitations
 
-- Reset is all-or-nothing; individual-node refunds are not yet supported.
+- Individual refunds and the full reset both require a second confirmation and are validated by the server.
 - Values remain subject to Alpha 0.2 balance testing.
 
 ## Perk persistence safeguard

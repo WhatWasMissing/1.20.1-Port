@@ -143,3 +143,13 @@ The branch is ready to consolidate when the runtime gate passes and there are no
 - [ ] Select perks at several levels, earn enough XP through a part installation or successful ability to cross the next level boundary, and confirm every earlier perk remains installed.
 - [ ] Close/reopen the tree, relog and die after leveling; confirm the same perk mask and correct new unspent-point count remain.
 - [ ] Confirm only the armed and confirmed 25,000 FE Reset Perks action clears choices.
+
+## Individual Android perk refunds
+
+- [ ] Click an installed perk and confirm the button changes to Confirm refund without immediately changing the tree.
+- [ ] Cancel by clicking another node or closing the screen; confirm no FE or perk is lost.
+- [ ] Confirm one refund removes only the selected perk, charges exactly 2,500 Android FE and restores one available point for that level.
+- [ ] Confirm insufficient FE, malformed packets and attempts to refund an uninstalled perk change nothing.
+- [ ] Re-select a different branch at the refunded level and confirm other levels remain intact across level-up, relog and death.
+- [ ] Confirm the separate full reset still costs exactly 25,000 FE and clears every installed perk.
+

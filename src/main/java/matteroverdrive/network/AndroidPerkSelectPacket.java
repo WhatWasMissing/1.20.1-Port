@@ -33,6 +33,21 @@ public record AndroidPerkSelectPacket(int perkId) {
                                 + AndroidData.PERK_RESET_COST + " Android FE.").withStyle(ChatFormatting.RED), true);
                     }
                     ModNetwork.syncAndroidState(sender);
+                } else if (packet.perkId <= -2) {
+                    long refundIndex = -2L - packet.perkId;
+                    if (refundIndex >= 0L && refundIndex < perks.length) {
+                        AndroidData.Perk perk = perks[(int) refundIndex];
+                        if (AndroidData.tryRefundPerk(sender, perk)) {
+                            sender.displayClientMessage(Component.literal("Refunded perk: " + perk.displayName
+                                            + " for " + AndroidData.PERK_REFUND_COST + " FE.")
+                                    .withStyle(ChatFormatting.YELLOW), true);
+                        } else {
+                            sender.displayClientMessage(Component.literal("That perk is not installed or you need "
+                                            + AndroidData.PERK_REFUND_COST + " Android FE.")
+                                    .withStyle(ChatFormatting.RED), true);
+                        }
+                        ModNetwork.syncAndroidState(sender);
+                    }
                 } else if (packet.perkId >= 0 && packet.perkId < perks.length) {
                     AndroidData.Perk perk = perks[packet.perkId];
                     if (AndroidData.selectPerk(sender, perk)) {
