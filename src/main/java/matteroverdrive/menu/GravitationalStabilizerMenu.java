@@ -23,7 +23,7 @@ public class GravitationalStabilizerMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public GravitationalStabilizerMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(10));
+        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(12));
     }
 
     public GravitationalStabilizerMenu(int id, Inventory inventory,
@@ -88,6 +88,22 @@ public class GravitationalStabilizerMenu extends AbstractContainerMenu {
     public int anomalyDistance() { return data.get(7) - 1; }
     public boolean isBeamBlocked() { return data.get(8) != 0; }
     public int beamBlockedDistance() { return data.get(9) - 1; }
+    public int redstoneMode() { return data.get(10); }
+    public boolean redstoneAllowsOperation() { return data.get(11) != 0; }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id != 1) return false;
+        int mode = stabilizer.cycleRedstoneMode();
+        String label = switch (mode) {
+            case 1 -> "HIGH (signal runs)";
+            case 2 -> "LOW (signal stops)";
+            default -> "IGNORED";
+        };
+        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                "Stabilizer redstone: " + label), true);
+        return true;
+    }
 
     private static int combine(int low, int high) {
         return (low & 0xFFFF) | ((high & 0xFFFF) << 16);
