@@ -17,6 +17,12 @@ public final class AndroidKeyMappings {
             GLFW.GLFW_KEY_V,
             "key.categories.matteroverdrive"
     );
+    public static final KeyMapping OPEN_SKILL_TREE = new KeyMapping(
+            "key.matteroverdrive.android_skill_tree",
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_K,
+            "key.categories.matteroverdrive"
+    );
     public static final KeyMapping ACTIVATE_ABILITY = new KeyMapping(
             "key.matteroverdrive.android_activate_ability",
             InputConstants.Type.KEYSYM,
@@ -31,5 +37,6 @@ public final class AndroidKeyMappings {
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(CYCLE_ABILITY);
         event.register(ACTIVATE_ABILITY);
+        event.register(OPEN_SKILL_TREE);
     }
 }
