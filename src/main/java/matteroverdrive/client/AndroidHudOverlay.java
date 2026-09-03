@@ -26,7 +26,7 @@ public final class AndroidHudOverlay {
         GuiGraphics graphics = event.getGuiGraphics();
         int x = 8;
         int y = event.getWindow().getGuiScaledHeight() - 94;
-        int width = 142;
+        int width = 166;
         int energy = AndroidClientState.energy();
 
         graphics.fill(x, y, x + width, y + 69, 0xB0101820);
@@ -43,10 +43,12 @@ public final class AndroidHudOverlay {
 
         int level = AndroidClientState.level();
         int levelStart = (level - 1) * 100;
-        String progression = level >= 10
+        int unspent = Math.max(0, level - Long.bitCount(AndroidClientState.selectedPerks()));
+        String progression = (level >= 10
                 ? "LEVEL 10  MAX XP"
                 : String.format("LEVEL %d  XP %d / %d", level,
-                        Math.max(0, AndroidClientState.experience() - levelStart), 100);
+                        Math.max(0, AndroidClientState.experience() - levelStart), 100))
+                + (unspent > 0 ? "  K:" + unspent : "");
         graphics.drawString(minecraft.font, progression, x + 6, y + 34, 0xFFFFD27A, false);
 
         graphics.drawString(minecraft.font,
