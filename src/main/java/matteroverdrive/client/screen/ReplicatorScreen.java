@@ -49,12 +49,12 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
             MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 101);
         }
 
-        MachineScreenStyle.drawHorizontalBar(graphics, x + 82, y + 48, 29, 6,
-                menu.getProgress(), menu.getMaxProgress(), MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 30, 7, 40,
-                menu.getEnergy(), menu.getEnergyCapacity(), MachineScreenStyle.RED);
-        MachineScreenStyle.drawVerticalBar(graphics, x + 161, y + 30, 7, 40,
-                menu.getMatter(), menu.getMatterCapacity(), MachineScreenStyle.BLUE);
+        MachineScreenStyle.drawLegacyProgressArrow(graphics, x + 83, y + 43,
+                menu.getProgress(), menu.getMaxProgress());
+        MachineScreenStyle.drawLegacyEnergyMeter(graphics, x + 6, y + 30,
+                menu.getEnergy(), menu.getEnergyCapacity());
+        MachineScreenStyle.drawLegacyMatterMeter(graphics, x + 154, y + 30,
+                menu.getMatter(), menu.getMatterCapacity());
     }
 
     @Override
