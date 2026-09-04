@@ -48,6 +48,9 @@ import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
+
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 
 public class EnergyWeaponItem extends Item {
     public enum WeaponType {
@@ -555,6 +558,19 @@ public class EnergyWeaponItem extends Item {
 
     private String phaserModeName(int power) {
         return power < 3 ? "STUN " + (power + 1) : "KILL " + (power - 2);
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(new IClientItemExtensions() {
+            private final net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer renderer =
+                    new matteroverdrive.client.WeaponItemRenderer();
+
+            @Override
+            public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                return renderer;
+            }
+        });
     }
 
     @Override
