@@ -11,6 +11,7 @@ import matteroverdrive.block.ContractMarketBlock;
 import matteroverdrive.block.StarMapBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
+import matteroverdrive.block.HoloSignBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
 import matteroverdrive.block.FusionReactorControllerBlock;
@@ -187,6 +188,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SolarPanelBlock(propertiesFor(id))));
         } else if (id.equals("weapon_station")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new WeaponStationBlock(propertiesFor(id))));
+        } else if (id.equals("holo_sign")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new HoloSignBlock(propertiesFor(id))));
         } else if (id.equals("tritanium_crate") || id.startsWith("tritanium_crate_")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TritaniumCrateBlock(propertiesFor(id))));
         } else {
@@ -206,7 +209,8 @@ public final class ModBlocks {
                 || id.equals("bounding_box")
                 || id.equals("matter_plasma")
                 || id.equals("molten_tritanium")
-                || id.equals("gravitational_anomaly")) {
+                || id.equals("gravitational_anomaly")
+                || id.equals("holo_sign")) {
             properties = properties.noOcclusion();
         }
 
@@ -238,7 +242,8 @@ public final class ModBlocks {
                 || id.contains("inscriber")
                 || id.contains("microwave")
                 || id.contains("solar")
-                || id.contains("crate");
+                || id.contains("crate")
+                || id.contains("holo_sign");
     }
 
     public static Map<String, RegistryObject<Block>> all() {

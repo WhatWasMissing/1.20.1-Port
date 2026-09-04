@@ -5,6 +5,7 @@ import matteroverdrive.capability.ModCapabilities;
 import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModCreativeTabs;
+import matteroverdrive.registry.ModExtraBlockEntities;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
 import matteroverdrive.network.ModNetwork;
@@ -30,6 +31,7 @@ public final class MatterOverdrive {
         ModCreativeTabs.CREATIVE_TABS.register(modBus);
         ModSounds.SOUND_EVENTS.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
+        ModExtraBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModMenus.MENUS.register(modBus);
         modBus.addListener(ModCapabilities::register);
         modBus.addListener(this::commonSetup);
