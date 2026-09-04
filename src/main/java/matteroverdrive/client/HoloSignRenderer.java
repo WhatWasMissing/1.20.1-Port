@@ -38,14 +38,19 @@ public class HoloSignRenderer implements BlockEntityRenderer<HoloSignBlockEntity
 
         poseStack.pushPose();
         switch (facing) {
-            case NORTH -> poseStack.translate(0.5D, 0.52D, 0.868D);
-            case SOUTH -> poseStack.translate(0.5D, 0.52D, 0.132D);
-            case WEST -> poseStack.translate(0.868D, 0.52D, 0.5D);
-            case EAST -> poseStack.translate(0.132D, 0.52D, 0.5D);
+            case NORTH -> poseStack.translate(0.5D, 0.52D, 0.866D);
+            case SOUTH -> poseStack.translate(0.5D, 0.52D, 0.134D);
+            case WEST -> poseStack.translate(0.866D, 0.52D, 0.5D);
+            case EAST -> poseStack.translate(0.134D, 0.52D, 0.5D);
             default -> poseStack.translate(0.5D, 0.52D, 0.5D);
         }
-        poseStack.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
+
+        // The model's unrotated screen is its NORTH face. Rotate the text onto the
+        // same physical face, then turn it 180 degrees from the previous implementation
+        // so the glyph fronts face away from the panel rather than being read through it.
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - facing.toYRot()));
         poseStack.scale(-scale, -scale, scale);
+
         Matrix4f matrix = poseStack.last().pose();
         float x = -font.width(text) / 2.0F;
         font.drawInBatch(text, x, -4.0F, 0x66E8FF, false, matrix, bufferSource,
