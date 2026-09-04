@@ -20,7 +20,7 @@ public class AndroidStationMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public AndroidStationMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(9));
+        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(15));
     }
     public AndroidStationMenu(int id, Inventory inventory, AndroidStationBlockEntity station) {
         this(id, inventory, station, station.getContainerData(inventory.player));
@@ -30,8 +30,8 @@ public class AndroidStationMenu extends AbstractContainerMenu {
         this.station = station;
         this.data = data;
         for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++)
-            addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 103 + row * 18));
-        for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column, 8 + column * 18, 161));
+            addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 132 + row * 18));
+        for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column, 8 + column * 18, 190));
         addDataSlots(data);
     }
     private static AndroidStationBlockEntity find(Inventory inventory, BlockPos pos) {
@@ -47,4 +47,10 @@ public class AndroidStationMenu extends AbstractContainerMenu {
     public int androidCapacity() { return data.get(4) | data.get(5) << 16; }
     public int stationEnergy() { return data.get(6) | data.get(7) << 16; }
     public int lastTransfer() { return data.get(8); }
+    public int androidLevel() { return data.get(9); }
+    public int experienceIntoLevel() { return data.get(10); }
+    public int experienceToNextLevel() { return data.get(11); }
+    public int availableSkillPoints() { return data.get(12); }
+    public int selectedAbilityOrdinal() { return data.get(13); }
+    public int activeAbilityFlags() { return data.get(14); }
 }
