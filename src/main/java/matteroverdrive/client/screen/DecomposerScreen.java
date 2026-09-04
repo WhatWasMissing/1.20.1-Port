@@ -47,12 +47,12 @@ public class DecomposerScreen extends AbstractContainerScreen<DecomposerMenu> {
             MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 79);
         }
 
-        MachineScreenStyle.drawHorizontalBar(graphics, x + 48, y + 48, 43, 6,
-                menu.getProgress(), menu.getMaxProgress(), MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 30, 7, 40,
-                menu.getEnergy(), menu.getEnergyCapacity(), MachineScreenStyle.RED);
-        MachineScreenStyle.drawVerticalBar(graphics, x + 161, y + 30, 7, 40,
-                menu.getMatter(), menu.getMatterCapacity(), MachineScreenStyle.BLUE);
+        MachineScreenStyle.drawLegacyProgressArrow(graphics, x + 50, y + 44,
+                menu.getProgress(), menu.getMaxProgress());
+        MachineScreenStyle.drawLegacyEnergyMeter(graphics, x + 6, y + 30,
+                menu.getEnergy(), menu.getEnergyCapacity());
+        MachineScreenStyle.drawLegacyMatterMeter(graphics, x + 154, y + 30,
+                menu.getMatter(), menu.getMatterCapacity());
     }
 
     @Override
