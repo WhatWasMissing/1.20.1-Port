@@ -7,9 +7,14 @@ import matteroverdrive.item.weapon.WeaponBatteryItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.registry.ModItems;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -72,6 +77,7 @@ public final class AndroidEvents {
             return;
         }
 
+        applyAndroidBaseline(event.player);
         runUtilityPerks(event.player);
 
         int activeParts = Integer.bitCount(AndroidData.getParts(event.player));
@@ -92,6 +98,23 @@ public final class AndroidEvents {
         if (AndroidData.hasPart(event.player, AndroidData.Part.LEGS)) {
             int amplifier = AndroidData.hasPerk(event.player, AndroidData.Perk.NEURAL_ACCELERATOR) ? 1 : 0;
             event.player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 45, amplifier, true, false, false));
+        }
+    }
+
+    /** Core Android traits documented by the original mod, applied while the core has power. */
+    private static void applyAndroidBaseline(net.minecraft.world.entity.player.Player player) {
+        player.getFoodData().setFoodLevel(20);
+        player.getFoodData().setSaturation(5.0F);
+        player.setAirSupply(player.getMaxAirSupply());
+
+        for (MobEffectInstance effect : java.util.List.copyOf(player.getActiveEffects())) {
+            if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
+                player.removeEffect(effect.getEffect());
+            }
+        }
+
+        if (player.isInWater() && !player.getAbilities().flying) {
+            player.setDeltaMovement(player.getDeltaMovement().add(0.0D, -0.035D, 0.0D));
         }
     }
 
@@ -169,6 +192,17 @@ public final class AndroidEvents {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onLivingHurt(LivingHurtEvent event) {
+        if (event.getEntity() instanceof ServerPlayer damaged
+                && AndroidData.isAndroid(damaged)
+                && AndroidData.getEnergy(damaged) > 0
+                && event.getAmount() > 0.0F) {
+            damaged.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK,
+                    damaged.getX(), damaged.getY() + damaged.getBbHeight() * 0.55D, damaged.getZ(),
+                    10, 0.3D, 0.45D, 0.3D, 0.04D);
+            damaged.level().playSound(null, damaged.getX(), damaged.getY(), damaged.getZ(),
+                    SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.PLAYERS, 0.25F, 1.7F);
+        }
+
         if (event.getSource().getEntity() instanceof ServerPlayer attacker
                 && event.getSource().getDirectEntity() == attacker
                 && !attacker.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG)
