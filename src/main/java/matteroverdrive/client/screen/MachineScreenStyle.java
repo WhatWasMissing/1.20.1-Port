@@ -18,22 +18,79 @@ public final class MachineScreenStyle {
     private static final int OUTER = 0xFF070B0F;
     private static final int PANEL = 0xFF131A21;
     private static final int HEADER = 0xFF1C2730;
-    private static final int INNER = 0xFF0E141A;
-    private static final int INVENTORY = 0xFF11171D;
     private static final int BAR_BACK = 0xFF27343D;
+
+    private static final ResourceLocation LEGACY_MACHINE_FRAME =
+            new ResourceLocation("matteroverdrive", "textures/gui/elements/base_gui_hotbar.png");
     private static final ResourceLocation LEGACY_SLOT =
             new ResourceLocation("matteroverdrive", "textures/gui/elements/slot_small.png");
+    private static final ResourceLocation LEGACY_PROGRESS =
+            new ResourceLocation("matteroverdrive", "textures/gui/elements/progress_arrow_right.png");
+    private static final ResourceLocation LEGACY_ENERGY =
+            new ResourceLocation("matteroverdrive", "textures/gui/elements/fe.png");
+    private static final ResourceLocation LEGACY_MATTER =
+            new ResourceLocation("matteroverdrive", "textures/gui/elements/matter.png");
+
+    private static final int FRAME_W = 92;
+    private static final int FRAME_H = 77;
+    private static final int FRAME_LEFT = 57;
+    private static final int FRAME_RIGHT = 34;
+    private static final int FRAME_TOP = 42;
+    private static final int FRAME_BOTTOM = 34;
 
     private MachineScreenStyle() {
     }
 
     public static void drawFrame(GuiGraphics graphics, int x, int y, int width, int height,
                                  int inventoryLabelY, int accent) {
-        drawStandaloneFrame(graphics, x, y, width, height, accent);
-        int inventoryTop = y + Math.max(28, inventoryLabelY - 3);
-        graphics.fill(x + 5, y + 28, x + width - 5, inventoryTop - 3, INNER);
-        graphics.fill(x + 5, inventoryTop, x + width - 5, y + height - 5, INVENTORY);
-        graphics.fill(x + 5, inventoryTop, x + width - 5, inventoryTop + 1, 0xFF2B3B45);
+        if (width >= FRAME_LEFT + FRAME_RIGHT + 1 && height >= FRAME_TOP + FRAME_BOTTOM + 1) {
+            drawLegacyNineSlice(graphics, x, y, width, height);
+        } else {
+            drawStandaloneFrame(graphics, x, y, width, height, accent);
+        }
+    }
+
+    private static void drawLegacyNineSlice(GuiGraphics graphics, int x, int y, int width, int height) {
+        int centerWidth = width - FRAME_LEFT - FRAME_RIGHT;
+        int centerHeight = height - FRAME_TOP - FRAME_BOTTOM;
+        int sourceCenterX = FRAME_LEFT;
+        int sourceRightX = FRAME_LEFT + 1;
+        int sourceCenterY = FRAME_TOP;
+        int sourceBottomY = FRAME_TOP + 1;
+
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x, y,
+                FRAME_LEFT, FRAME_TOP, 0, 0, FRAME_LEFT, FRAME_TOP, FRAME_W, FRAME_H);
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x + FRAME_LEFT, y,
+                centerWidth, FRAME_TOP, sourceCenterX, 0, 1, FRAME_TOP, FRAME_W, FRAME_H);
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x + FRAME_LEFT + centerWidth, y,
+                FRAME_RIGHT, FRAME_TOP, sourceRightX, 0, FRAME_RIGHT, FRAME_TOP, FRAME_W, FRAME_H);
+
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x, y + FRAME_TOP,
+                FRAME_LEFT, centerHeight, 0, sourceCenterY, FRAME_LEFT, 1, FRAME_W, FRAME_H);
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x + FRAME_LEFT, y + FRAME_TOP,
+                centerWidth, centerHeight, sourceCenterX, sourceCenterY, 1, 1, FRAME_W, FRAME_H);
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x + FRAME_LEFT + centerWidth, y + FRAME_TOP,
+                FRAME_RIGHT, centerHeight, sourceRightX, sourceCenterY, FRAME_RIGHT, 1, FRAME_W, FRAME_H);
+
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x, y + FRAME_TOP + centerHeight,
+                FRAME_LEFT, FRAME_BOTTOM, 0, sourceBottomY, FRAME_LEFT, FRAME_BOTTOM, FRAME_W, FRAME_H);
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x + FRAME_LEFT, y + FRAME_TOP + centerHeight,
+                centerWidth, FRAME_BOTTOM, sourceCenterX, sourceBottomY, 1, FRAME_BOTTOM, FRAME_W, FRAME_H);
+        drawStretch(graphics, LEGACY_MACHINE_FRAME, x + FRAME_LEFT + centerWidth, y + FRAME_TOP + centerHeight,
+                FRAME_RIGHT, FRAME_BOTTOM, sourceRightX, sourceBottomY, FRAME_RIGHT, FRAME_BOTTOM, FRAME_W, FRAME_H);
+    }
+
+    private static void drawStretch(GuiGraphics graphics, ResourceLocation texture,
+                                    int x, int y, int width, int height,
+                                    int u, int v, int sourceWidth, int sourceHeight,
+                                    int textureWidth, int textureHeight) {
+        if (width <= 0 || height <= 0 || sourceWidth <= 0 || sourceHeight <= 0) return;
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0.0F);
+        graphics.pose().scale((float) width / (float) sourceWidth,
+                (float) height / (float) sourceHeight, 1.0F);
+        graphics.blit(texture, 0, 0, u, v, sourceWidth, sourceHeight, textureWidth, textureHeight);
+        graphics.pose().popPose();
     }
 
     public static void drawStandaloneFrame(GuiGraphics graphics, int x, int y, int width, int height,
@@ -46,12 +103,38 @@ public final class MachineScreenStyle {
     }
 
     public static void drawSection(GuiGraphics graphics, int x, int y, int width, int height) {
-        graphics.fill(x, y, x + width, y + height, 0xFF1A242C);
-        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xFF0B1116);
+        graphics.fill(x, y, x + width, y + height, 0xB81A242C);
+        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xB80B1116);
     }
 
     public static void drawSlot(GuiGraphics graphics, int x, int y) {
         graphics.blit(LEGACY_SLOT, x, y, 0, 0, 18, 18, 18, 18);
+    }
+
+    public static void drawLegacyProgressArrow(GuiGraphics graphics, int x, int y, int value, int max) {
+        graphics.blit(LEGACY_PROGRESS, x, y, 0, 0, 24, 16, 48, 16);
+        int amount = scale(value, max, 24);
+        if (amount > 0) {
+            graphics.blit(LEGACY_PROGRESS, x, y, 24, 0, amount, 16, 48, 16);
+        }
+    }
+
+    public static void drawLegacyEnergyMeter(GuiGraphics graphics, int x, int y, int value, int max) {
+        drawLegacyMeter(graphics, LEGACY_ENERGY, x, y, value, max);
+    }
+
+    public static void drawLegacyMatterMeter(GuiGraphics graphics, int x, int y, int value, int max) {
+        drawLegacyMeter(graphics, LEGACY_MATTER, x, y, value, max);
+    }
+
+    private static void drawLegacyMeter(GuiGraphics graphics, ResourceLocation texture,
+                                        int x, int y, int value, int max) {
+        graphics.blit(texture, x, y, 0, 0, 16, 42, 32, 64);
+        int amount = max <= 0 ? 42 : scale(value, max, 42);
+        if (amount > 0) {
+            graphics.blit(texture, x, y + 42 - amount, 16, 42 - amount,
+                    16, amount, 32, 64);
+        }
     }
 
     public static void drawHorizontalBar(GuiGraphics graphics, int x, int y, int width, int height,
@@ -76,8 +159,8 @@ public final class MachineScreenStyle {
     }
 
     public static void drawDebugPanel(GuiGraphics graphics, int x, int y, int width, int height) {
-        graphics.fill(x, y, x + width, y + height, 0xFF253039);
-        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xFF10171D);
+        graphics.fill(x, y, x + width, y + height, 0xD8253039);
+        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xD810171D);
     }
 
     private static int scale(int value, int max, int pixels) {
