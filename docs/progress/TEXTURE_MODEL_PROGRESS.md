@@ -1,59 +1,44 @@
 # Texture and Model Parity Progress
 
-Branch: `testing/alpha`
+Branch: `testing/main`
 Legacy reference: MatterOverdrive 1.12.2 `0.7.1.0` jar and recovered source/resources.
+Build identity: `Alpha Version 3`, made by MVQ1303.
 
-## Why this pass was needed
+## Runtime-confirmed visual pass
 
-A large number of port textures were already the correct original PNGs, but many 1.20.1 models were still generic `cube_all` placeholders or had incomplete face/facing mappings. That made correct legacy atlases look wrong in game. This pass checks texture file, model geometry, UV/face assignment and blockstate rotation separately.
+The latest player test confirmed the restored Android Station, Weapon Station, Star Map, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage, Replicator, Charging Station, Space-Time Accelerator and Solar Panel models are working. The only reported defects were neighbouring faces disappearing beside Pattern Monitor and Space-Time Accelerator.
 
-## Previously restored
+The Holo Sign now renders as a thin monitor and renamed-item programming works. Its text was readable but camera-billboarded in the latest screenshots.
 
-- Tritanium worn armour textures.
-- Weapon Station GUI alignment.
-- Tritanium Crate original OBJ mesh across colour variants.
-- Inscriber original OBJ mesh and facing.
-- Gun base OBJ transforms for inventory/world/hands.
-- Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium render-type declarations.
-- Dedicated machine face art for several machines.
+## Second source-parity pass implemented
 
-## Current source-faithful restoration
+- Pattern Monitor and Space-Time Accelerator are now non-occluding so their non-full geometry does not cull adjacent block faces.
+- Holo Sign text is now transformed from the sign's FACING state and anchored directly in front of its monitor plane instead of facing the camera.
+- Matter Pipe, Heavy Energy Cable (`heavy_matter_pipe`) and Network Pipe now use the original 6x6 centre plus six directional-arm concept with modern multipart blockstates and matching collision outlines.
+- Matter Pipe and Network Pipe received visual connection state blocks without changing their existing routing IDs; Heavy Energy Cable keeps its existing block entity/network logic.
+- Fusion Reactor Coil now uses the original Base Stripes artwork.
+- Reactor Controller restores Base Stripes top/bottom/back, Decomposer Top sides and Holo Monitor front.
+- Reactor IO restores Decomposer Top on all faces.
+- Gravitational Stabilizer restores Base Coil caps, Vent2 sides, Holo Monitor front and Network Port back, and its blockstate rotations now match the original source-facing convention.
+- Bright/Dark vent assignments were corrected to original `vent2`/`vent` respectively.
+- Holo Matrix restores Weapon Station Top artwork.
+- Striped Tritanium Plate restores ordinary Tritanium Plate top/bottom and yellow-striped sides.
+- `decorative.clean` restores Transporter Side artwork.
+- Pylon is no longer a one-block cube placeholder: a source-proportioned tall centre, rings, base and four arms reproduce the original overall multi-part silhouette. The exact old CTM/animated OBJ overlay remains a renderer-specific follow-up.
+- Shared machine GUIs now use the original 18x18 `slot_small.png` artwork for machine slots while retaining modern 1.20.1 menus and telemetry.
+- Pattern Drives now use the original empty / partially-full / full inventory textures according to stored-pattern capacity.
+- Matter Scanner now uses the original offline icon until linked and switches to the original online scanner icon when linked.
+- Existing Matter Container empty/partial/full model predicates, battery FE bars, weapon FE/overheat bars and Portable Decomposer state display remain in place.
 
-- **Holo Sign:** original thin monitor panel, Holo Monitor front, Base edges/back and horizontal facing. Runtime confirms the panel/programming fix; hologram text still needs face-anchored orientation instead of camera billboarding.
-- **Android Station:** original stepped station geometry and source top/bottom/side mapping.
-- **Weapon Station:** original stepped station geometry and source top/bottom/side mapping.
-- **Star Map:** original station geometry with `starmap_side` artwork.
-- **Contract Market:** original thin display geometry, Holo Monitor front, Network Port back and Base sides; horizontal facing added.
-- **Matter Analyzer:** original detailed JSON geometry/UVs and source face textures; active state no longer prevents directional model selection.
-- **Decomposer:** legacy Vent2 bottom, Decomposer top, Tank front and Base Stripes side/back mapping, with all four facings across active/inactive states.
-- **Matter Recycler:** legacy Vent2 bottom, Decomposer top and Recycler side/front/back mapping, with all four facings across active/inactive states.
-- **Microwave:** original compact model with separate front/back/body textures; horizontal facing added.
-- **Pattern Monitor:** original thin monitor geometry and facing.
-- **Pattern Storage:** original legacy OBJ/MTL restored with modern Forge OBJ references and horizontal facing.
-- **Replicator:** original legacy model geometry/UV layout restored with correct source-facing orientation for all active states.
-- **Charging Station:** original tall legacy OBJ/MTL restored, centred for modern block coordinates and given horizontal facing.
-- **Space-Time Accelerator:** original narrow three-stage column model and dedicated side/top-bottom textures.
-- **Solar Panel:** restored half-height visual model with panel top and Base sides/bottom.
+## Asset audit result
 
-## Runtime tests required
+Corresponding original block, item and GUI PNGs present in the port matched the recovered 1.12.2 assets byte-for-byte during the audit. The dominant visual problems were model geometry, UV/face assignment, blockstate rotation, occlusion and unused state artwork rather than damaged PNGs.
 
-1. Holo Sign four-direction/persistence regression plus the remaining hologram front-plane anchoring fix (thin geometry and programming now pass).
-2. Android Station, Weapon Station and Star Map stepped geometry.
-3. Contract Market, Microwave and Pattern Monitor front/back orientation in four directions.
-4. Matter Analyzer, Decomposer, Recycler and Replicator in all four facings, including active/inactive states where present.
-5. Pattern Storage and Charging Station OBJ model baking, UV alignment and inventory appearance.
-6. Space-Time Accelerator column and Solar Panel half-height appearance.
-7. Existing Inscriber and crate OBJ regression.
-8. Existing transparency, armour and held-gun regression.
-9. Save/reload existing worlds containing newly directional Contract Market, Microwave, Pattern Storage and Charging Station.
-10. Confirm machine contents, FE/matter/upgrades/contracts/drives survive the state additions.
+## Still renderer-specific / not claimed complete
 
-## Still intentionally incomplete
+- Exact Pylon legacy multi-block OBJ plus animated/CTM overlay state.
+- Remaining legacy emissive, animated overlay and connected-texture effects that require dedicated modern render code.
+- Full weapon module meshes, recoil, zoom and every original first/third-person renderer animation.
+- Exact per-machine legacy GUI background recreation where current 1.20.1 menu layout no longer matches the old container coordinates. Original shared slot artwork is restored now without breaking modern slot placement.
 
-- Matter Pipe, Heavy Energy Cable and Network Pipe still need centre-plus-six-connection geometry/state parity.
-- Pylon needs a dedicated safe pass for its original multi-block OBJ and overlay presentation.
-- The old Charging Station connected-texture/overlay layer is not yet fully recreated; the base source mesh is restored first.
-- Some legacy glow/emissive/overlay/CTM effects require dedicated modern render code rather than static model JSON.
-- Gun module meshes, recoil, zoom and final hand animation remain deeper renderer work.
-
-These items remain open even if the corresponding PNG/OBJ files are present. Visual parity is only marked complete after an in-game pass.
+Visual parity is only marked complete after an in-game test; a successful Actions build only verifies compilation/packaging.

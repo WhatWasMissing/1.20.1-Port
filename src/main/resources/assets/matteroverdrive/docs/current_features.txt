@@ -1,194 +1,88 @@
 # Matter Overdrive 1.20.1 - Current Feature Reference
 
-Branch: `testing/alpha`
+Branch: `testing/main`
 Legacy reference: MatterOverdrive 1.12.2 `0.7.1.0` jar and recovered source/resources
 Build identity: `Alpha Version 3`, made by MVQ1303
 
-This file is the source-of-truth feature summary and is bundled in-game as the **Current Feature Reference** item. Registered legacy IDs are not automatically counted as complete systems.
+This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**.
 
-## Runtime-confirmed in the latest player test
+## Latest runtime-confirmed results
 
-- Rogue Android melee combat works.
-- Rogue Android sounds work.
+- Rogue Android combat and sounds work.
 - Failed Cow, Pig, Sheep and Chicken spawn and behave correctly.
 - Mad Scientist interaction and the current Puny Humans quest slice work.
+- Holo Sign thin geometry and renamed-item programming work.
+- The first large source-model pass was runtime-tested successfully: restored stations/displays/machines worked, with only neighbour-face culling reported beside Pattern Monitor and Space-Time Accelerator.
 
-The Holo Sign's original cube-model and crouch-programming failures are now runtime-confirmed fixed. The latest screenshots show the remaining renderer issue clearly: holographic text is still camera-billboarded, so it separates from the monitor plane at side/top viewing angles. That transform remains pending before the Holo Sign is visually verified.
+## Matter / replication
 
-## Matter and replication systems
+- Decomposer, Recycler, Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor and Replicator.
+- Inscriber and circuit progression.
+- Matter Scanner, Portable Decomposer and Matter Containers.
+- Matter Pipe routing and storage integration.
 
-- Matter Decomposer: FE-powered decomposition, matter storage/output, upgrades, failure behaviour and debug telemetry.
-- Matter Recycler: FE-powered Matter Dust recycling with persistence and upgrades.
-- Matter Analyzer: item analysis and Pattern Drive progression.
-- Pattern Drive: two normal pattern entries with persistent progress/data.
-- Pattern Storage: six drive slots and network pattern supply.
-- Pattern Monitor: network discovery and replication request queue.
-- Matter Replicator: FE + matter replication, queueing and intended failure output.
-- Molecular Inscriber: Mk2-Mk4 Isolinear Circuit production with FE, upgrades and persistence.
-- Matter Scanner: links to powered Pattern Storage and adds pattern progress from matter-valued blocks.
-- Portable Decomposer: rechargeable filtered pickup conversion and direct matter transfer.
-- Matter Containers and Matter Pipe: portable storage and machine-to-machine matter transfer.
+## Power / logistics / utility
 
-## Power, transport and utility
+- Solar Panel, Charging Station, Heavy Energy Cable, Microwave and Space-Time Accelerator.
+- Network Pipe, Network Switch, Network Router and matching-channel Pylon routing.
+- Transporter / Transport Flash Drive.
+- Tritanium Crates and Weapon Station.
 
-- Solar Panel daylight generation, storage, export and Power Storage upgrades.
-- Charging Station buffered charging for compatible FE items.
-- Heavy Energy Cable using the legacy `heavy_matter_pipe` ID for FE transport.
-- Microwave food-only powered cooking with upgrades, battery support and persistence.
-- Space-Time Accelerator FE + matter extra-tick system with range/upgrades/redstone/debug controls.
-- Transporter and Transport Flash Drive for supported same-dimension transport.
-- Tritanium Crates: 54-slot portable inventory for base plus colour variants.
-- Weapon Station: weapon/module editing, persistence and safe return on break.
+## Fusion Reactor / gravity
 
-## Matter Network logistics
-
-- Network Pipe item/pattern-network connectivity.
-- Network Switch route enable/disable and pattern traversal control.
-- Powered Network Router with filtering, diagnostics and anti-bounce routing.
-- Matching-channel Pylon wireless item-network bridging in the current supported range.
-
-## Fusion Reactor and gravity
-
-- Horizontal Fusion Reactor ring validation and exact fault/overlay diagnostics.
-- Controller plus formed Reactor IO shared FE/matter storage.
-- Mass/efficiency-scaled generation and proportional matter use.
-- Speed, Range, Power Storage and Matter Storage upgrade behaviour.
-- Direct IO extraction, long Heavy Energy Cable chains and multiple outputs.
-- Internal ring machine power distribution and demand telemetry.
-- Persistent RUN/SCRAM, redstone modes, comparator output and Reactor Remote.
-- Persistent Gravitational Anomaly mass, pull, event-horizon consumption and environmental destruction.
-- Living-entity mass is added once when event-horizon damage kills the entity.
-- Space-Time Equalizer immunity.
-- Powered Gravitational Stabilizers with clear-beam targeting, suppression, upgrades and redstone modes.
+- Horizontal reactor validation, Controller/IO shared storage, mass-scaled generation, upgrades, long cable output and demand telemetry.
+- Ring power sharing, RUN/SCRAM, redstone/comparator modes, Reactor Remote and placement overlay.
+- Persistent Gravitational Anomaly mass/pull/event horizon and living-entity mass contribution.
+- Space-Time Equalizer and powered Gravitational Stabilizers.
 
 ## Weapons
 
-Playable weapons:
+Playable Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reloads, Batteries/HC Batteries, Energy Packs and current module effects. Base transforms are restored; the complete legacy module-mesh/recoil/zoom renderer remains deeper parity work.
 
-- Phaser
-- Phaser Rifle
-- Ion Sniper
-- Plasma Shotgun
-- Omni Tool
+## Android
 
-Current support includes server-authoritative FE payment, heat/overheat, reloads, rechargeable Batteries/HC Batteries, consumable Energy Packs, Weapon Station persistence, current barrel/sight/ricochet/colour modules and Omni Tool powered tool actions.
+Persistent conversion, FE/HUD, four body-part slots, part-gated abilities, V/B/K controls and the modern selectable 30-perk tree with level persistence and refund/reset flows.
 
-Remaining weapon parity is mainly renderer presentation and the wider original random/enchantment/module ecosystem.
+## Security
 
-## Android system
+Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching Access permission and matching Remove clearing are implemented across Matter Overdrive block entities.
 
-- Persistent Android conversion, FE and HUD.
-- Head, Chest, Arms and Legs installation through Android Station.
-- Part-gated Cloak, Force Field, Sonic Shockwave and Ender Teleport.
-- V to cycle, B to activate and K to open the selectable skill tree.
-- Three branches, ten levels and thirty functional perks.
-- One point per reached level; perk selections survive level-up, relog and death.
-- Individual confirmed refunds and confirmed full reset.
-- Android Station charging and real-FE held Battery/HC Battery charging.
-- Zero-power CORE OFFLINE state and movement penalty.
+## Legacy entities / quests
 
-The modern tree is extensive and playable, but not every original multi-rank/stat/minimap/team presentation feature is reproduced yet.
+- Real Rogue Android with levels, legendary state, sounds, drops and Spawner integration.
+- Real Failed Cow/Pig/Sheep/Chicken.
+- Mad Scientist normal/Junkie persistence.
+- Puny Humans quest and one-time Battery + Blue Pill + five Yellow Pill reward.
 
-## Security Protocol and ownership
+Cocktail of Ascension, Mutant Scientist, ranged Androids/drones and the broader legacy dialog framework remain future parity work.
 
-Restored from the original jar:
+## Source-faithful visuals now in testing/main
 
-- Empty, Claim, Access and Remove protocol states.
-- Sneak-use binding and Claim -> Access -> Remove cycling.
-- Persistent owner UUID.
-- Machine/block-entity claiming and removal.
-- Owner/Creative/matching-Access use and break permission checks.
-- Broad integration across Matter Overdrive block-entity machines, including Holo Sign.
+Previously restored and runtime-tested: Holo Sign monitor body, Android Station, Weapon Station, Star Map, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage OBJ, Replicator, Charging Station OBJ, Space-Time Accelerator, Solar Panel, Tritanium Crates, Inscriber, armour and weapon base transforms.
 
-This is build-verified and still needs a focused multiplayer runtime pass.
+Second pass now build-verified:
 
-## Holo Sign
+- Pattern Monitor and Space-Time Accelerator no-occlusion correction for neighbouring faces.
+- Holo Sign text anchored to the monitor FACING plane rather than camera-billboarded.
+- Matter Pipe, Heavy Energy Cable and Network Pipe centre-plus-directional-arm models/states and outlines.
+- Original source texture assignments restored for Reactor Coil, Controller, IO, Gravitational Stabilizer, bright/dark vents, Holo Matrix, striped Tritanium Plate and Decorative Clean.
+- Gravitational Stabilizer rotations corrected to match original front-direction convention.
+- Pylon upgraded from cube placeholder to a source-proportioned tall multi-part silhouette; exact obsolete CTM/animated OBJ overlay remains separate.
+- Original Pattern Drive empty/partial/full icons are driven by stored capacity.
+- Original Matter Scanner offline/online icons are driven by link state.
+- Shared machine slots use the original `slot_small.png` GUI element without changing modern menu coordinates.
 
-- Dedicated Holo Sign block entity with persistent `Text`.
-- Legacy thin monitor geometry and horizontal facing.
-- Full-bright holographic text renderer with long-text scaling; current runtime feedback shows its camera-facing transform still needs to be replaced with monitor-face anchoring.
-- Renamed-item sneak-use programming intercepted before a held BlockItem can place itself.
-- Empty-hand sneak-use clearing.
-- Client update/chunk sync and a 256-character cap.
-- Security Protocol integration.
-
-The original text-entry GUI is not yet recreated; the current programming route uses an anvil-renamed item.
-
-## Restored legacy entities and quest slice
-
-### Rogue Android
-
-- Real `matteroverdrive:rogue_android` entity replaces new tagged-Husk spawns.
-- Levels 0-3, Legendary state, persistent combat state, legacy-inspired health/damage/speed/follow range.
-- No sunlight burning and potion-effect immunity.
-- Original Rogue Android sounds and bionic-part drops.
-- Android Spawner creates the real entity after successful placement/FE checks.
-- Natural spawn logic is present and remains balance-sensitive.
-
-### Failed animals
-
-Real registered entity types and legacy resources:
-
-- Failed Cow
-- Failed Pig
-- Failed Sheep
-- Failed Chicken
-
-### Mad Scientist / Puny Humans
-
-- Real Mad Scientist NPC with persistent normal/Junkie state.
-- Puny Humans starts from NPC interaction, persists on the player and completes after Android conversion.
-- Current reward bundle is one Battery, one Blue Android Pill and five Yellow Android Pills.
-- Start/completion feedback and one-time completion are implemented.
-
-Deeper Cocktail of Ascension / Mutant Scientist progression remains future work.
-
-## Survival and progression foundation
-
-- Natural Tritanium and Dilithium ore generation in fresh Overworld chunks.
-- Furnace/blast recipes for intended resources.
-- Tritanium tools and armour plus configured full-set behaviour.
-- Contract Market collect/hunt contracts, exact progress tracking, one-time redemption and refresh persistence.
-- Data Pad guide and persistent scan history.
-- Star Map currently displays viewer-specific contract status; it is not yet the original galaxy simulation.
-
-## Source-faithful texture/model restoration
-
-The current alpha visual pass deliberately reuses the original jar resources where practical instead of approximating them with generic cubes.
-
-Restored or refined in this pass:
-
-- Holo Sign: original thin monitor geometry.
-- Android Station: original stepped platform geometry and texture assignment.
-- Weapon Station: original stepped platform geometry and texture assignment.
-- Star Map: original station geometry with Star Map side artwork.
-- Contract Market: original thin monitor with Holo Monitor front, Network Port back and Base edges.
-- Matter Analyzer: original detailed model/UV layout and directional placement.
-- Decomposer and Matter Recycler: restored original face texture mapping.
-- Microwave: original compact model/front/back/side mapping plus horizontal facing.
-- Pattern Monitor: original thin monitor geometry plus horizontal facing.
-- Pattern Storage: restored original legacy OBJ/MTL mesh and horizontal facing.
-- Replicator: restored legacy model geometry/UVs and directional mapping.
-- Charging Station: restored original tall OBJ/MTL mesh and horizontal facing.
-- Space-Time Accelerator: restored original narrow three-stage column model.
-- Solar Panel: restored half-height visual model.
-- Existing earlier restorations remain in place for Tritanium Crate OBJ, Inscriber OBJ, armour textures, gun transforms and translucent render types.
-
-These visual changes are source/build checked but require the runtime checklist before being marked visually verified.
+The asset audit found that corresponding original block/item/GUI PNGs already present in the port match the recovered 1.12.2 PNGs; most remaining visual errors were model/state/render usage rather than damaged art.
 
 ## Major remaining parity gaps
 
-1. Full Cocktail of Ascension / Mutant Scientist and wider dialog/quest framework.
-2. Ranged Rogue Androids, drones and richer original entity AI/equipment/team systems.
-3. Crashed/cargo ships, underwater bases, Mad Scientist houses and other legacy structures/world events.
-4. Full Star Map galaxy/star/planet simulation, ownership, buildings, ships and travel/events.
-5. Connected pipe geometry matching the original centre-plus-six-connection models.
-6. Full Pylon legacy multi-block OBJ/overlay presentation.
-7. Remaining emissive/overlay/connected-texture presentation not expressible by the current simple model pass.
-8. Complete weapon module meshes, recoil/zoom/hand animation and random/enchantment ecosystem.
-9. Deeper generic/network flash-drive configuration.
-10. Optional old 1.12 integrations, which need modern equivalents rather than direct API copies.
+1. Cocktail of Ascension, Mutant Scientist and deeper quest/dialog framework.
+2. Ranged Rogue Androids, drones and richer entity AI/team/equipment systems.
+3. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining world events.
+4. Full Star Map galaxy/star/planet simulation and travel/events.
+5. Exact legacy Pylon multi-block OBJ/animated CTM overlay and other renderer-specific glow/overlay effects.
+6. Full weapon module meshes, recoil, zoom and remaining hand animations/random ecosystem.
+7. Exact old per-machine GUI background recreation where modern menu coordinates differ; shared source slot art is restored safely now.
+8. Deeper network/flash-drive configuration and optional legacy integrations.
 
-## Verification
-
-Open the in-game **M2 Testing Checklist** or `docs/testing/TO_TEST.md` for the exact current runtime pass. GitHub Actions compilation is necessary, but visual orientation, model baking, persistence, multiplayer ownership and balance must still be checked in Minecraft.
+See the in-game **M2 Testing Checklist** for the current runtime pass.
