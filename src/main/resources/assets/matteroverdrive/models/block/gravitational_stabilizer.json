@@ -1,8 +1,12 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "top": "matteroverdrive:block/base",
-    "front": "matteroverdrive:block/anti_gravitational_anomaly_core",
-    "side": "matteroverdrive:block/base_coil"
+    "particle": "matteroverdrive:block/base_stripes",
+    "down": "matteroverdrive:block/base_coil",
+    "up": "matteroverdrive:block/base_coil",
+    "north": "matteroverdrive:block/holo_monitor",
+    "south": "matteroverdrive:block/network_port",
+    "east": "matteroverdrive:block/vent2",
+    "west": "matteroverdrive:block/vent2"
   }
 }

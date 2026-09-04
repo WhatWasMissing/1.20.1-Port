@@ -11,6 +11,7 @@ import matteroverdrive.block.ContractMarketBlock;
 import matteroverdrive.block.StarMapBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
+import matteroverdrive.block.VisualPipeBlock;
 import matteroverdrive.block.HoloSignBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
@@ -154,6 +155,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidSpawnerBlock(propertiesFor(id))));
         } else if (id.equals("heavy_matter_pipe")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
+        } else if (id.equals("matter_pipe") || id.equals("network_pipe")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new VisualPipeBlock(propertiesFor(id))));
         } else if (id.equals("charging_station")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ChargingStationBlock(propertiesFor(id))));
         } else if (id.equals("fusion_reactor_controller")) {
@@ -210,7 +213,13 @@ public final class ModBlocks {
                 || id.equals("matter_plasma")
                 || id.equals("molten_tritanium")
                 || id.equals("gravitational_anomaly")
-                || id.equals("holo_sign")) {
+                || id.equals("holo_sign")
+                || id.equals("pattern_monitor")
+                || id.equals("spacetime_accelerator")
+                || id.equals("matter_pipe")
+                || id.equals("heavy_matter_pipe")
+                || id.equals("network_pipe")
+                || id.equals("pylon")) {
             properties = properties.noOcclusion();
         }
 

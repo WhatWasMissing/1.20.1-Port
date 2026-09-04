@@ -1,4 +1,4 @@
 {
-  "parent": "matteroverdrive:block/pipe/pipe_center",
+  "parent": "matteroverdrive:block/pipe/pipe_part",
   "textures": { "0": "matteroverdrive:block/heavy_matter_pipe" }
 }

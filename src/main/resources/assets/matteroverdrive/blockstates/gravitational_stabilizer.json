@@ -2,9 +2,9 @@
   "variants": {
     "facing=down": { "model": "matteroverdrive:block/gravitational_stabilizer", "x": 90 },
     "facing=up": { "model": "matteroverdrive:block/gravitational_stabilizer", "x": 270 },
-    "facing=north": { "model": "matteroverdrive:block/gravitational_stabilizer", "y": 180 },
-    "facing=south": { "model": "matteroverdrive:block/gravitational_stabilizer" },
-    "facing=west": { "model": "matteroverdrive:block/gravitational_stabilizer", "y": 90 },
-    "facing=east": { "model": "matteroverdrive:block/gravitational_stabilizer", "y": 270 }
+    "facing=north": { "model": "matteroverdrive:block/gravitational_stabilizer" },
+    "facing=south": { "model": "matteroverdrive:block/gravitational_stabilizer", "y": 180 },
+    "facing=west": { "model": "matteroverdrive:block/gravitational_stabilizer", "y": 270 },
+    "facing=east": { "model": "matteroverdrive:block/gravitational_stabilizer", "y": 90 }
   }
 }

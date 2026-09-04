@@ -1,6 +1,8 @@
 {
   "parent": "item/generated",
-  "textures": {
-    "layer0": "matteroverdrive:item/pattern_drive"
-  }
+  "textures": { "layer0": "matteroverdrive:item/pattern_drive" },
+  "overrides": [
+    {"predicate":{"matteroverdrive:pattern_fill":0.0001},"model":"matteroverdrive:item/pattern_drive_partial"},
+    {"predicate":{"matteroverdrive:pattern_fill":1.0},"model":"matteroverdrive:item/pattern_drive_full"}
+  ]
 }

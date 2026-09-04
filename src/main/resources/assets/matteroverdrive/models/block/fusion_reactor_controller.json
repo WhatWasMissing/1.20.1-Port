@@ -1,12 +1,12 @@
 {
   "parent": "minecraft:block/cube",
   "textures": {
-    "particle": "matteroverdrive:block/base",
-    "down": "matteroverdrive:block/base",
-    "up": "matteroverdrive:block/base",
-    "north": "matteroverdrive:block/screen",
-    "south": "matteroverdrive:block/base",
-    "east": "matteroverdrive:block/base",
-    "west": "matteroverdrive:block/base"
+    "particle": "matteroverdrive:block/base_stripes",
+    "down": "matteroverdrive:block/base_stripes",
+    "up": "matteroverdrive:block/base_stripes",
+    "north": "matteroverdrive:block/holo_monitor",
+    "south": "matteroverdrive:block/base_stripes",
+    "east": "matteroverdrive:block/decomposer_top",
+    "west": "matteroverdrive:block/decomposer_top"
   }
 }

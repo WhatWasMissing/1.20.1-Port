@@ -1,7 +1,11 @@
 {
-  "variants": {
-    "": {
-      "model": "matteroverdrive:block/heavy_matter_pipe"
-    }
-  }
+  "multipart": [
+    {"apply":{"model":"matteroverdrive:block/heavy_matter_pipe"}},
+    {"when":{"north":"true"},"apply":{"model":"matteroverdrive:block/heavy_matter_pipe_part"}},
+    {"when":{"south":"true"},"apply":{"model":"matteroverdrive:block/heavy_matter_pipe_part","y":180}},
+    {"when":{"east":"true"},"apply":{"model":"matteroverdrive:block/heavy_matter_pipe_part","y":90}},
+    {"when":{"west":"true"},"apply":{"model":"matteroverdrive:block/heavy_matter_pipe_part","y":270}},
+    {"when":{"up":"true"},"apply":{"model":"matteroverdrive:block/heavy_matter_pipe_part","x":270}},
+    {"when":{"down":"true"},"apply":{"model":"matteroverdrive:block/heavy_matter_pipe_part","x":90}}
+  ]
 }

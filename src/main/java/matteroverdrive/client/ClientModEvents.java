@@ -23,6 +23,7 @@ import matteroverdrive.client.screen.PatternStorageScreen;
 import matteroverdrive.client.screen.PatternMonitorScreen;
 import matteroverdrive.client.screen.WeaponStationScreen;
 import matteroverdrive.item.MatterContainerItem;
+import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
@@ -75,6 +76,29 @@ public final class ClientModEvents {
                     new ResourceLocation(MatterOverdrive.MOD_ID, "matter_fill"),
                     (stack, level, entity, seed) -> MatterContainerItem.getFillFraction(stack)
             );
+
+            ItemProperties.register(
+                    ModItems.get("pattern_drive").get(),
+                    new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
+                    (stack, level, entity, seed) -> patternFill(stack)
+            );
+            ItemProperties.register(
+                    ModItems.get("creative_pattern_drive").get(),
+                    new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
+                    (stack, level, entity, seed) -> patternFill(stack)
+            );
+            ItemProperties.register(
+                    ModItems.get("matter_scanner").get(),
+                    new ResourceLocation(MatterOverdrive.MOD_ID, "scanner_linked"),
+                    (stack, level, entity, seed) -> stack.hasTag()
+                            && stack.getTag().getBoolean("ScannerLinked") ? 1.0F : 0.0F
+            );
         });
+    }
+
+    private static float patternFill(net.minecraft.world.item.ItemStack stack) {
+        int capacity = PatternDriveItem.getCapacity(stack);
+        if (capacity <= 0) return 0.0F;
+        return Math.min(1.0F, PatternDriveItem.getPatterns(stack).size() / (float) capacity);
     }
 }

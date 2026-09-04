@@ -1,6 +1,7 @@
 package matteroverdrive.client.screen;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 
 public final class MachineScreenStyle {
     public static final int TEXT = 0xEAF4F7;
@@ -19,9 +20,9 @@ public final class MachineScreenStyle {
     private static final int HEADER = 0xFF1C2730;
     private static final int INNER = 0xFF0E141A;
     private static final int INVENTORY = 0xFF11171D;
-    private static final int SLOT_EDGE = 0xFF3C4E5A;
-    private static final int SLOT_INNER = 0xFF0A0F13;
     private static final int BAR_BACK = 0xFF27343D;
+    private static final ResourceLocation LEGACY_SLOT =
+            new ResourceLocation("matteroverdrive", "textures/gui/elements/slot_small.png");
 
     private MachineScreenStyle() {
     }
@@ -50,9 +51,7 @@ public final class MachineScreenStyle {
     }
 
     public static void drawSlot(GuiGraphics graphics, int x, int y) {
-        graphics.fill(x, y, x + 18, y + 18, SLOT_EDGE);
-        graphics.fill(x + 1, y + 1, x + 17, y + 17, SLOT_INNER);
-        graphics.fill(x + 1, y + 1, x + 17, y + 2, 0xFF536A77);
+        graphics.blit(LEGACY_SLOT, x, y, 0, 0, 18, 18, 18, 18);
     }
 
     public static void drawHorizontalBar(GuiGraphics graphics, int x, int y, int width, int height,
