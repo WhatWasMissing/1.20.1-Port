@@ -1,6 +1,1 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "matteroverdrive:block/pattern_storage"
-  }
-}
+{"loader":"forge:obj","flip_v":true,"model":"matteroverdrive:models/block/pattern_storage.obj","textures":{"vent":"matteroverdrive:block/vent","pattern_storage":"matteroverdrive:block/pattern_storage","particle":"matteroverdrive:block/pattern_storage"}}

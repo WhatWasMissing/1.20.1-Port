@@ -1,7 +1,1 @@
-{
-  "variants": {
-    "": {
-      "model": "matteroverdrive:block/charging_station"
-    }
-  }
-}
+{"variants":{"facing=north":{"model":"matteroverdrive:block/charging_station","y":180},"facing=east":{"model":"matteroverdrive:block/charging_station","y":90},"facing=south":{"model":"matteroverdrive:block/charging_station"},"facing=west":{"model":"matteroverdrive:block/charging_station","y":270}}}

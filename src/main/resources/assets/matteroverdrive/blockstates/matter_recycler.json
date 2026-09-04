@@ -1,5 +1,1 @@
-{
-  "multipart": [
-    { "apply": { "model": "matteroverdrive:block/matter_recycler" } }
-  ]
-}
+{"multipart":[{"when":{"facing":"north"},"apply":{"model":"matteroverdrive:block/matter_recycler"}},{"when":{"facing":"east"},"apply":{"model":"matteroverdrive:block/matter_recycler","y":90}},{"when":{"facing":"south"},"apply":{"model":"matteroverdrive:block/matter_recycler","y":180}},{"when":{"facing":"west"},"apply":{"model":"matteroverdrive:block/matter_recycler","y":270}}]}

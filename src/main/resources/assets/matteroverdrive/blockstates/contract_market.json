@@ -1,7 +1,1 @@
-{
-  "variants": {
-    "": {
-      "model": "matteroverdrive:block/contract_market"
-    }
-  }
-}
+{"variants":{"facing=north":{"model":"matteroverdrive:block/contract_market"},"facing=east":{"model":"matteroverdrive:block/contract_market","y":90},"facing=south":{"model":"matteroverdrive:block/contract_market","y":180},"facing=west":{"model":"matteroverdrive:block/contract_market","y":270}}}

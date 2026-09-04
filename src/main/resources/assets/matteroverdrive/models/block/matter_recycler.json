@@ -1,12 +1,1 @@
-{
-  "parent": "minecraft:block/cube",
-  "textures": {
-    "particle": "matteroverdrive:block/recycler_side",
-    "down": "matteroverdrive:block/base",
-    "up": "matteroverdrive:block/base",
-    "north": "matteroverdrive:block/recycler_side",
-    "south": "matteroverdrive:block/recycler_side",
-    "east": "matteroverdrive:block/recycler_side",
-    "west": "matteroverdrive:block/recycler_side"
-  }
-}
+{"parent":"minecraft:block/cube","textures":{"particle":"matteroverdrive:block/recycler_side","down":"matteroverdrive:block/vent2","up":"matteroverdrive:block/decomposer_top","north":"matteroverdrive:block/recycler_side","east":"matteroverdrive:block/recycler_side","south":"matteroverdrive:block/recycler_side","west":"matteroverdrive:block/recycler_side"}}

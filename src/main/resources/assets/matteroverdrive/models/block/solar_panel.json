@@ -1,12 +1,1 @@
-{
-  "parent": "minecraft:block/cube",
-  "textures": {
-    "particle": "matteroverdrive:block/solar_panel",
-    "down": "matteroverdrive:block/base",
-    "up": "matteroverdrive:block/solar_panel",
-    "north": "matteroverdrive:block/base",
-    "south": "matteroverdrive:block/base",
-    "east": "matteroverdrive:block/base",
-    "west": "matteroverdrive:block/base"
-  }
-}
+{"textures":{"particle":"matteroverdrive:block/solar_panel","top":"matteroverdrive:block/solar_panel","side":"matteroverdrive:block/base","bottom":"matteroverdrive:block/base"},"elements":[{"from":[0,0,0],"to":[16,8,16],"faces":{"north":{"texture":"#side","uv":[0,8,16,16],"cullface":"north"},"east":{"texture":"#side","uv":[0,8,16,16],"cullface":"east"},"south":{"texture":"#side","uv":[0,8,16,16],"cullface":"south"},"west":{"texture":"#side","uv":[0,8,16,16],"cullface":"west"},"up":{"texture":"#top","uv":[0,0,16,16]},"down":{"texture":"#bottom","uv":[0,0,16,16],"cullface":"down"}}}]}

@@ -1,161 +1,121 @@
-# Consolidated Runtime Testing Checklist
+# Matter Overdrive 1.20.1 - Alpha Runtime Testing Checklist
 
 Branch: `testing/alpha`
-Legacy reference: MatterOverdrive 1.12.2 `0.7.1.0` jar plus recovered source/resources
+Legacy reference: MatterOverdrive 1.12.2 `0.7.1.0` jar and recovered source/resources
+Build identity: `Alpha Version 3`, made by MVQ1303
 
-Use this after a fresh pull and normal M2 client launch. Record the expected result, actual result, coordinates/orientation and relevant log lines for every failure.
+This checklist is also bundled in-game as the **M2 Testing Checklist** item. A successful GitHub Actions build proves the project compiles and packages; it does not prove an in-world model, renderer, save, network or gameplay path is correct.
 
-The current parity batch compiles/packages successfully in GitHub Actions, but the items below still require in-game verification.
+## Already runtime-verified in the previous alpha test
 
-## Build and runtime gate
+These do not need a full retest unless a later item below touches them:
 
-- [ ] Reach the main menu without registry, datapack, model, block-entity, entity or menu errors.
-- [ ] Create/load a test world successfully and confirm no missing-registry warnings appear for existing test saves.
-- [ ] Confirm the login marker reports `Alpha Version 3` and `Made by MVQ1303`.
-- [ ] Confirm the Holo Sign block entity and restored legacy entity types register without client/server class-loading errors.
-- [ ] Confirm a dedicated server can start without attempting to load client render classes.
-- [ ] Run the normal M2 runtime/build checks and record any changed registry totals rather than relying on older `testing/main` counts.
+- [x] Rogue Android melee combat works.
+- [x] Rogue Android sounds work.
+- [x] Failed Cow, Pig, Sheep and Chicken all spawn and behave correctly.
+- [x] Mad Scientist interaction and the current Puny Humans quest slice work.
 
-## In-game documentation
+## Priority 1 - Holo Sign regression retest
 
-- [ ] Obtain the M2 Testing Checklist, Current Feature Reference and Matter Overdrive System Guide items.
-- [ ] Right-click each item and confirm it opens the correct paged document.
-- [ ] Compare this checklist with the in-game Testing Checklist and `docs/testing/TO_TEST.md`.
-- [ ] Compare the Current Feature Reference with `docs/reference/WORKING_FEATURES.md`.
-- [ ] Verify Previous/Next, Page Up/Page Down, Left/Right, mouse wheel, index navigation, Done/Escape and multiple GUI scales.
-- [ ] Close and reopen a document and confirm its last-opened page is remembered where persistence is expected.
-- [ ] Confirm the newly restored Security/Holo Sign, Rogue Android/failed-animal and Mad Scientist/Puny Humans sections are visible in game.
+The latest screenshots confirm the two original failures are fixed: the sign is now a thin monitor and renamed-item sneak-use programs it. A third presentation issue is now isolated: the hologram still faces the camera instead of staying anchored to the monitor plane, so it visibly floats away from the panel from side/top angles.
 
-## Security Protocol and machine ownership
+- [x] Place a Holo Sign. It renders as the original thin monitor panel rather than a full cube.
+- [ ] Place it while facing north, east, south and west. The monitor face and collision outline must rotate together.
+- [x] Rename any item in an anvil, then sneak-use it on the sign. Programming works and the text is applied without the old placement failure.
+- [ ] Confirm holographic text is readable, scales down for a long name, and remains physically anchored just in front of the monitor face from front/side/top views. **Current screenshots: readable, but camera-billboarded/detached.**
+- [ ] Sneak-use with an empty hand and confirm the text clears.
+- [ ] Save/reload and leave/re-enter the chunk. Confirm programmed text persists and resynchronises.
+- [ ] Claim the sign with a Security Protocol and verify owner/access protection still applies.
 
-- [ ] Obtain `security_protocol_empty`, `security_protocol_claim`, `security_protocol_access` and `security_protocol_remove`.
-- [ ] Sneak-use an unbound protocol in the air. Confirm it binds to the player and becomes Claim mode.
-- [ ] Continue sneak-using it and confirm the bound modes cycle Claim -> Access -> Remove -> Claim while retaining the same owner UUID.
-- [ ] Confirm another Survival player cannot rebind a protocol owned by someone else.
-- [ ] Apply a bound Claim protocol to several Matter Overdrive block-entity machines. Confirm the machine becomes claimed and one Claim protocol is consumed.
-- [ ] Confirm the owner can open/use and break a claimed machine normally.
-- [ ] Confirm a non-owner without a matching Access protocol cannot use or break the claimed machine.
-- [ ] Give the second player an Access protocol bound to the owner's UUID and confirm use/break access is granted while it remains in inventory.
-- [ ] Confirm an Access protocol for a different owner does not grant access.
-- [ ] Apply a matching Remove protocol and confirm security is removed and one Remove protocol is consumed.
-- [ ] Confirm mismatched/unbound Remove protocols cannot clear ownership.
-- [ ] Save/reload the world and confirm machine ownership and protocol owner NBT persist.
-- [ ] Test security on representative systems: crate, Decomposer, Replicator, Pattern Storage, Network Router, Transporter, Weapon Station, Android Station, Reactor Controller/IO and Holo Sign.
+## Priority 2 - Full source texture/model pass
 
-## Holographic Sign
+This pass uses the legacy jar model geometry and original textures rather than wrapping legacy atlases around generic cubes. Check the following in-world and as inventory items.
 
-- [ ] Place a Holo Sign and confirm its model renders without opaque/transparency artefacts.
-- [ ] Rename an item in an anvil, then sneak-use that item on the Holo Sign. Confirm the renamed text becomes the holographic message.
-- [ ] Confirm the text renders full-bright, remains readable from sensible angles and scales down instead of overflowing for long text.
-- [ ] Sneak-use with an empty hand and confirm the sign clears.
-- [ ] Normal-use the sign and confirm its current text/status message is reported.
-- [ ] Save/reload, leave/re-enter the chunk and reconnect to the world/server; confirm text persists and resynchronises to clients.
-- [ ] Test a long message near the 256-character cap and confirm no crash, packet overflow or visual corruption.
-- [ ] Claim the Holo Sign with a Security Protocol and repeat editing/break/access tests with owner and non-owner players.
+### Legacy-shaped stations and displays
 
-## Restored Rogue Android entity
+- [ ] Android Station is a low stepped 9-pixel platform with the original top/bottom/side artwork, not a cube.
+- [ ] Weapon Station is the matching stepped platform using Weapon Station artwork.
+- [ ] Star Map uses the stepped station geometry with the original Star Map side artwork.
+- [ ] Contract Market is a thin monitor with a holographic front, network-port back and base-textured edges.
+- [ ] Pattern Monitor is a thin monitor rather than a full cube and faces the player when placed.
+- [ ] Microwave uses the original compact geometry and front/back/side textures rather than one texture on all six cube faces.
+- [ ] Space-Time Accelerator uses the original narrow three-stage column shape rather than a Base-textured cube.
+- [ ] Solar Panel is visually half-height with the original panel top and Base sides/bottom.
 
-- [ ] Confirm the Android Spawner now creates `matteroverdrive:rogue_android`, not a tagged vanilla Husk.
-- [ ] Confirm the spawner searches collision-free locations and consumes 20,000 FE only after a spawn succeeds.
-- [ ] Confirm natural Rogue Android spawning occurs only in valid hostile-spawn conditions and is not excessive.
-- [ ] Inspect several Rogue Androids and confirm levels 0-3 occur and names match `Rogue Android [Lv N]`.
-- [ ] Find or summon a Legendary Rogue Android and confirm the legendary name/state persists through chunk unload/reload.
-- [ ] Verify base movement speed/follow behaviour feels consistent with the intended 0.30 movement speed and 24-block follow range.
-- [ ] Verify normal health scales from 32 + 10 per Android level and melee damage from 4 + level; Legendary should use the stronger restored values.
-- [ ] Confirm Rogue Androids are not sun-sensitive and reject potion effects as intended.
-- [ ] Confirm original Rogue Android ambient/death sounds play.
-- [ ] Kill multiple Rogue Androids and confirm bionic-part drops still work.
-- [ ] Load an older world containing the previous tagged-Husk workaround and confirm it does not crash or invalidate the save.
+### Legacy machine face and geometry restoration
 
-## Failed animals
+- [ ] Matter Analyzer uses its original detailed top geometry, Analyzer front, Network Port back, Vent side and Base bottom.
+- [ ] Place Matter Analyzer north/east/south/west and confirm its front follows placement direction. Repeat while active and inactive.
+- [ ] Decomposer front is the tank, top is Decomposer top, bottom is Vent2 and side/back is Base Stripes. Check all four facings and both active states.
+- [ ] Matter Recycler uses Recycler sides with legacy top/bottom mapping. Check all four facings and both active states.
+- [ ] Replicator uses the restored legacy 3D model/UV layout and points the intended front toward the player. Check all four facings and both active states.
+- [ ] Pattern Storage uses the original legacy OBJ mesh and texture mapping, not a cube. Check all four facings.
+- [ ] Charging Station uses the original tall legacy OBJ mesh and correct Charging Station atlas. Check all four facings.
 
-- [ ] Summon `matteroverdrive:failed_cow`, `failed_pig`, `failed_sheep` and `failed_chicken`.
-- [ ] Confirm each uses its Matter Overdrive texture rather than the vanilla animal texture.
-- [ ] Confirm movement, collisions, dimensions and basic passive-animal behaviour are sane.
-- [ ] Confirm the restored failed-animal idle/death sounds play for the appropriate species.
-- [ ] Save/reload with each failed animal present and confirm entities persist without registry or renderer errors.
+### Previously restored visual regressions
 
-## Mad Scientist and Puny Humans quest
+- [ ] Tritanium Crates still use the legacy 3D crate mesh for base and coloured variants.
+- [ ] Inscriber still uses its legacy OBJ model and faces correctly in all four directions.
+- [ ] Industrial Glass remains transparent/cutout rather than opaque.
+- [ ] Bounding Box, Matter Plasma and Molten Tritanium retain their intended translucent rendering.
+- [ ] Tritanium armour renders correctly when worn.
+- [ ] Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool remain visible and sensibly positioned in GUI, ground, item frame, first person and third person.
 
-- [ ] Summon `matteroverdrive:mad_scientist` and confirm the legacy scientist texture renders correctly.
-- [ ] Spawn several and confirm the normal/Junkie state and display naming persist across save/reload.
-- [ ] As a non-Android player, interact with a Mad Scientist and confirm `Puny Humans` starts with objective: become an Android, then return.
-- [ ] Interact again before conversion and confirm the objective reminder appears without duplicating rewards or quest state.
-- [ ] Become an Android, return to a Mad Scientist and confirm completion occurs once.
-- [ ] Confirm the exact current reward bundle is one Battery, one Blue Android Pill and five Yellow Android Pills.
-- [ ] Confirm the quest-start and quest-complete sounds play.
-- [ ] Confirm a full inventory safely drops rewards rather than deleting them.
-- [ ] Relog/death between starting and completing and confirm player-persistent quest state survives.
-- [ ] Interact again after completion and confirm rewards cannot be claimed twice.
-- [ ] Note: deeper legacy Mad Scientist dialogue/quest chains, including Cocktail of Ascension and Mutant Scientist progression, are not part of this test build yet.
+### Save compatibility after new facing properties
 
-## Android system and selectable perk tree
+Contract Market, Microwave, Pattern Storage and Charging Station now have explicit horizontal facing states for their restored directional models.
 
-- [ ] Convert and confirm persistent Android FE/state, HUD and XP/level progression.
-- [ ] Install Head, Chest, Arms and Legs and verify Cloak, Force Field, Sonic Shockwave and Ender Teleport gating.
-- [ ] Use/rebind `V` cycle and `B` activate; verify selection, cooldown and persistent toggle indicators.
-- [ ] Press `K` and verify the three-column, ten-level selectable perk tree.
-- [ ] Confirm one point per reached level and that selections persist through level-up, relog, death and screen close.
-- [ ] Test individual 2,500 FE refunds and the confirmed 25,000 FE full reset.
-- [ ] Sneak with a charged Battery/HC Battery and verify actual stored FE transfers at the expected rate without creating energy.
-- [ ] Drain Android FE to zero and verify the offline HUD state and 50% movement penalty recover after recharge/deactivation.
-- [ ] Verify direct-melee Arms bonus, Force Field final-damage reduction, Shockwave cost/filtering and collision-safe Teleport.
+- [ ] Load an existing test world containing each of these blocks and confirm there is no missing-state or registry error.
+- [ ] Verify existing inventories, FE, matter, upgrades, contracts, drives and charging contents are intact.
+- [ ] Break/re-place each block in every direction and confirm it faces the player correctly.
+- [ ] Save/reload after re-placement and confirm both facing and machine contents persist.
 
-## Fusion Reactor and anomaly
+## Priority 3 - Security Protocol
 
-- [ ] Build the horizontal ring in all four controller facings and verify structure faults/overlay positions.
-- [ ] Verify anomaly offset efficiency, Range upgrades and the current 16-block discovery cap.
-- [ ] Verify potential and actual FE/t against the displayed formula and confirm matter use scales with accepted generation.
-- [ ] Test direct FE receiver, one cable, 5+ cable chains, cable rebuild and multiple formed IO outputs.
-- [ ] Verify shared ring FE, internal machine distribution, connected-demand telemetry and stabilizer power integration/upgrades.
-- [ ] Test persistent RUN/SCRAM, redstone modes, comparator output and Reactor Remote controls.
-- [ ] Feed dropped items and kill living entities in the event horizon; confirm mass is added once and persists.
-- [ ] Verify pull, Space-Time Equalizer immunity, block/fluid hazard, stabilizer beam/suppression and acceptable tick time.
-- [ ] Re-test output across several anomaly masses to ensure reactor generation is not stuck at an old fixed cap.
+- [ ] Sneak-use Empty Security Protocol in air: it binds to the player and becomes Claim.
+- [ ] Continue sneak-using: Claim -> Access -> Remove -> Claim while retaining owner UUID.
+- [ ] Claim representative block-entity machines and confirm Claim is consumed.
+- [ ] Non-owner Survival player without matching Access cannot use or break a claimed machine.
+- [ ] Matching Access in inventory grants use/break access; mismatched Access does not.
+- [ ] Matching Remove clears ownership and is consumed.
+- [ ] Ownership and protocol owner NBT persist through save/reload.
+- [ ] Include Holo Sign, Tritanium Crate, Decomposer, Replicator, Pattern Storage, Weapon Station, Android Station and Reactor IO/controller in the spot check.
 
-## Weapons and Weapon Station
+## Priority 4 - Core regression after visual changes
 
-- [ ] Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool fire only when their own valid energy path can pay the full shot cost.
-- [ ] Confirm empty weapons cannot drain unrelated weapons in the inventory.
-- [ ] Verify Battery/HC Battery transfer only real FE and remain rechargeable; Energy Packs remain consumable.
-- [ ] Test heat, overheat, reloads, cooldowns and all implemented barrel/sight/ricochet/colour modules.
-- [ ] Test first- and third-person held placement, aiming, firing and module rendering. Record any remaining visual mismatch with the 1.12.2 jar.
-- [ ] Verify Weapon Station contents/modules persist across reload and return safely on block break.
+- [ ] Decomposer, Recycler, Analyzer, Pattern Storage, Pattern Monitor and Replicator still complete their normal FE/matter/pattern workflows.
+- [ ] Microwave still cooks only valid food recipes and returns contents safely on break.
+- [ ] Charging Station still charges a standard Battery at its item receive limit and an HC Battery at up to the station transfer limit.
+- [ ] Solar Panel still generates and exports FE.
+- [ ] Weapon Station still preserves installed weapon/modules and returns contents on break.
+- [ ] Android Station still installs parts and charges nearby Android players.
+- [ ] Contract Market still provides/redeems contracts and survives save/reload.
+- [ ] Star Map screen still opens and reports viewer-specific contract status.
 
-## Matter machines and networks
+## Reactor/anomaly regression
 
-- [ ] Decomposer, Recycler, Analyzer, Pattern Storage, Pattern Monitor and Replicator complete their normal FE/matter workflows.
-- [ ] Verify Pattern Drives, Scanner-created pattern progress, queue routing and failure behaviour.
-- [ ] Test Matter Pipes and Heavy Energy Cables across short and long chains, break/rebuild and multiple endpoints.
-- [ ] Test Network Pipe/Switch/Router/Pylon traversal, filtering and anti-bounce behaviour.
-- [ ] Confirm machine inventories, matter, FE and upgrades persist through save/reload and return safely where expected on break.
+- [ ] Ring validation, Reactor IO, cable output and matter input still work.
+- [ ] Shared ring power and stabilizer reactor-power integration still work.
+- [ ] One consumed living entity adds anomaly mass exactly once; waiting/reloading does not repeat the old bonus.
+- [ ] Reactor output scales with anomaly mass and is not stuck at the old fixed-cap behaviour.
+- [ ] RUN/SCRAM, redstone mode, remote control, overlay and persistence still work.
 
-## Power, transport and utility machines
+## Weapon/Android regression
 
-- [ ] Solar Panel generates/exports FE correctly.
-- [ ] Charging Station charges compatible batteries/items without duplication.
-- [ ] Microwave accepts food-smelting inputs only and obeys FE/timing/upgrades/output blocking.
-- [ ] Space-Time Accelerator requires FE and matter, accelerates targets symmetrically and respects redstone/upgrades/range.
-- [ ] Transporter/Transport Flash Drive bind and transport correctly within supported limits.
-- [ ] Tritanium Crates retain 54-slot contents in-world and as dropped items.
+- [ ] Empty normal weapons cannot fire in Survival or Creative unless the explicit Creative Battery path is installed.
+- [ ] Weapons cannot drain unrelated guns to pay shot energy.
+- [ ] Heat/reload/cooldown behaviour still works.
+- [ ] Android HUD, V cycle, B activate and K skill tree still work.
+- [ ] Selected perks survive level-up, relog and death and only reset through the confirmed reset/refund flows.
 
-## Survival/world generation and visual regression
+## Known visual follow-up not claimed complete in this pass
 
-- [ ] In fresh Overworld chunks confirm Tritanium and Dilithium ores generate in their documented ranges.
-- [ ] Smelt/blast ores into intended resources and verify survival recipes still load.
-- [ ] Confirm Industrial Glass and other translucent blocks render transparently.
-- [ ] Check Tritanium Crate and Inscriber UV/model alignment.
-- [ ] Check equipped Tritanium armour textures and held weapon transforms.
-- [ ] Verify original Rogue Android, Mad Scientist and failed-animal textures load without purple/black missing textures.
+- Connected Matter Pipe, Heavy Energy Cable and Network Pipe geometry is still a modern full-block approximation. The original used centre plus six connection pieces and needs a dedicated connection-state renderer/model pass.
+- Pylon gameplay works, but the complete legacy multi-block OBJ/overlay presentation still needs a dedicated renderer-safe pass.
+- Legacy emissive/overlay/connected-texture effects are not all reproduced by ordinary model JSON.
+- Gun base transforms are restored, but every legacy module mesh, recoil/zoom animation and renderer detail is not yet at full parity.
+- A model being copied from the legacy jar does not guarantee a shader/resource-pack combination will render it correctly; report screenshots for any remaining mismatch.
 
-## Contracts, Data Pad and Star Map
+## Pass criteria for this build
 
-- [ ] Contract collect/hunt progress advances exactly one matching contract and rewards redeem once.
-- [ ] Verify Contract Market refresh timing and persistence.
-- [ ] Confirm the Data Pad guide/history works and persists.
-- [ ] Confirm the Star Map contract-status screen is viewer-specific and stable.
-- [ ] Do not treat the current Star Map as full galaxy simulation parity; galaxy/star/planet gameplay remains future work.
-
-## Pass criteria
-
-The alpha build is ready for the next parity pass when there are no new crashes, registry/datapack failures, item loss/duplication, ownership bypasses, free-energy/free-matter exploits or save corruption, and the new Holo Sign, security protocols, restored entities and Puny Humans progression have all been verified in a fresh world and after save/reload.
+The visual pass can be marked runtime-passed when the Priority 1 and Priority 2 checks are correct in a fresh world and an existing test world, there are no purple/black missing textures or model-bake errors, directional machines retain their contents, and the Priority 4 gameplay regressions remain functional.

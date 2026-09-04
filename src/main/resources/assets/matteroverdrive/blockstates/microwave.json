@@ -1,7 +1,1 @@
-{
-  "variants": {
-    "": {
-      "model": "matteroverdrive:block/microwave"
-    }
-  }
-}
+{"variants":{"facing=north":{"model":"matteroverdrive:block/microwave"},"facing=east":{"model":"matteroverdrive:block/microwave","y":90},"facing=south":{"model":"matteroverdrive:block/microwave","y":180},"facing=west":{"model":"matteroverdrive:block/microwave","y":270}}}

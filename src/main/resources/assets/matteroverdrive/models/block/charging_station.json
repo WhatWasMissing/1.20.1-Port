@@ -1,6 +1,1 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "matteroverdrive:block/charging_station"
-  }
-}
+{"loader":"forge:obj","flip_v":true,"model":"matteroverdrive:models/block/charging_station.obj","textures":{"texture0":"matteroverdrive:block/charging_station","particle":"matteroverdrive:block/charging_station"}}

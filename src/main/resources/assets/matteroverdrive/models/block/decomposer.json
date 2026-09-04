@@ -1,8 +1,1 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "side": "matteroverdrive:block/base",
-    "top": "matteroverdrive:block/decomposer_top",
-    "bottom": "matteroverdrive:block/base"
-  }
-}
+{"parent":"minecraft:block/cube","textures":{"particle":"matteroverdrive:block/base_stripes","down":"matteroverdrive:block/vent2","up":"matteroverdrive:block/decomposer_top","north":"matteroverdrive:block/tank_empty","east":"matteroverdrive:block/base_stripes","south":"matteroverdrive:block/base_stripes","west":"matteroverdrive:block/base_stripes"}}

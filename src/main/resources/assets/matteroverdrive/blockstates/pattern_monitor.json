@@ -1,8 +1,1 @@
-{
-  "variants": {
-    "facing=north": { "model": "matteroverdrive:block/pattern_monitor" },
-    "facing=east": { "model": "matteroverdrive:block/pattern_monitor", "y": 90 },
-    "facing=south": { "model": "matteroverdrive:block/pattern_monitor", "y": 180 },
-    "facing=west": { "model": "matteroverdrive:block/pattern_monitor", "y": 270 }
-  }
-}
+{"variants":{"facing=north":{"model":"matteroverdrive:block/pattern_monitor"},"facing=east":{"model":"matteroverdrive:block/pattern_monitor","y":90},"facing=south":{"model":"matteroverdrive:block/pattern_monitor","y":180},"facing=west":{"model":"matteroverdrive:block/pattern_monitor","y":270}}}

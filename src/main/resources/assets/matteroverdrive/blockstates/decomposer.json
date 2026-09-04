@@ -1,9 +1,1 @@
-{
-  "multipart": [
-    {
-      "apply": {
-        "model": "matteroverdrive:block/decomposer"
-      }
-    }
-  ]
-}
+{"multipart":[{"when":{"facing":"north"},"apply":{"model":"matteroverdrive:block/decomposer"}},{"when":{"facing":"east"},"apply":{"model":"matteroverdrive:block/decomposer","y":90}},{"when":{"facing":"south"},"apply":{"model":"matteroverdrive:block/decomposer","y":180}},{"when":{"facing":"west"},"apply":{"model":"matteroverdrive:block/decomposer","y":270}}]}
