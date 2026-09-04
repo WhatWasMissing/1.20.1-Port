@@ -21,6 +21,7 @@ This branch is isolated from testing/main. It is a reference-driven parity pass 
   - harmful potion effects are cleared;
   - the player sinks while in water unless flying;
   - damage produces a lightweight electrical glitch pulse.
+- Android Station now exposes core level, current XP, unspent perk choices and selected ability alongside its existing body-part and charge status.
 - Weapon optics now follow the old renderer's design:
   - only Holo Sights and Sniper Scope are candidate visual attachments;
   - legacy per-weapon mount positions are used for Ion Sniper, Phaser Rifle, and Plasma Shotgun;
@@ -37,6 +38,7 @@ This branch is isolated from testing/main. It is a reference-driven parity pass 
 ## Test focus
 
 - Convert to Android, power the core, then test hunger, water, a harmful potion, and incoming damage.
+- Open Android Station at normal and large GUI scale: verify the added progression status does not overlap the player inventory.
 - Test an Ion Sniper with each optic installed in first and third person.
 - Confirm barrel, colour, battery and utility modules retain their gameplay effects and do not create floating visuals.
 - Confirm the existing testing/main branch is unchanged.
