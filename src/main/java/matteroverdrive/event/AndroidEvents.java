@@ -84,7 +84,7 @@ public final class AndroidEvents {
         }
 
         if (AndroidData.hasPart(event.player, AndroidData.Part.HEAD)) {
-            event.player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 45, 0, true, false, false));
+            event.player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 240, 0, true, false, false));
         }
         if (AndroidData.hasPart(event.player, AndroidData.Part.CHEST)) {
             event.player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 45, 0, true, false, false));
