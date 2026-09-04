@@ -2,6 +2,21 @@
 
 This checklist covers the September 2026 gun placement pass for the OBJ weapon models.
 
+## 1.12.2 restoration baseline
+
+The current placement pass deliberately uses the original Matter Overdrive 1.12.2 weapon geometry and renderer transforms as the baseline instead of the temporary transformed `_item.obj` copies.
+
+Restored model targets:
+
+- Phaser -> `models/item/phaser2.obj`
+- Phaser Rifle -> `models/item/phaser_rifle.obj`
+- Ion Sniper -> `models/item/ion_sniper.obj`
+- Plasma Shotgun -> `models/item/plasma_shotgun.obj`
+
+The 1.12.2 renderer used a shared weapon transform with a Phaser-specific GUI override. Those original perspective values have been translated into 1.20.1 item-display transforms for the first runtime pass. Left-hand transforms are mirrored equivalents because the old renderer was main-hand focused.
+
+Important: the old first-person recoil/zoom behavior lived in a dedicated `WeaponRenderHandler`, not in the item JSON. This pass restores the original models and static placement first; recoil/ADS animation parity should be judged separately from base placement.
+
 ## Weapons
 
 Test all four weapons:
