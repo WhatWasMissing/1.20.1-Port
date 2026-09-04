@@ -13,6 +13,7 @@ import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.VisualPipeBlock;
 import matteroverdrive.block.HoloSignBlock;
+import matteroverdrive.block.IndustrialGlassBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.block.InscriberBlock;
 import matteroverdrive.block.FusionReactorControllerBlock;
@@ -193,6 +194,8 @@ public final class ModBlocks {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new WeaponStationBlock(propertiesFor(id))));
         } else if (id.equals("holo_sign")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new HoloSignBlock(propertiesFor(id))));
+        } else if (id.equals("industrial_glass")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new IndustrialGlassBlock(propertiesFor(id))));
         } else if (id.equals("tritanium_crate") || id.startsWith("tritanium_crate_")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TritaniumCrateBlock(propertiesFor(id))));
         } else {
@@ -215,6 +218,7 @@ public final class ModBlocks {
                 || id.equals("gravitational_anomaly")
                 || id.equals("holo_sign")
                 || id.equals("pattern_monitor")
+                || id.equals("pattern_storage")
                 || id.equals("spacetime_accelerator")
                 || id.equals("matter_pipe")
                 || id.equals("heavy_matter_pipe")
