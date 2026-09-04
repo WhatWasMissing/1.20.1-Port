@@ -109,11 +109,17 @@ public class AndroidStationBlockEntity extends BlockEntity implements MenuProvid
                     case 6 -> low(energy.getEnergyStored());
                     case 7 -> high(energy.getEnergyStored());
                     case 8 -> lastTransfer;
+                    case 9 -> AndroidData.getLevel(viewer);
+                    case 10 -> AndroidData.experienceIntoLevel(viewer);
+                    case 11 -> AndroidData.experienceToNextLevel(viewer);
+                    case 12 -> AndroidData.getAvailableSkillPoints(viewer);
+                    case 13 -> AndroidData.getSelectedAbility(viewer).ordinal();
+                    case 14 -> AndroidData.getActiveAbilityFlags(viewer);
                     default -> 0;
                 };
             }
             @Override public void set(int index, int value) {}
-            @Override public int getCount() { return 9; }
+            @Override public int getCount() { return 15; }
         };
     }
 
