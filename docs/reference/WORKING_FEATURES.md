@@ -1,7 +1,9 @@
 # Matter Overdrive 1.20.1 - Current Feature Reference
 
 Branch: `testing/main`
-Legacy reference: MatterOverdrive 1.12.2 `0.7.1.0` jar and recovered source/resources
+Legacy references:
+- Original Matter Overdrive 1.7.10 source branch `simeonradivoev/MatterOverdrive@1.7.10` (`0.4.2`).
+- Matter Overdrive 1.12.2 `0.7.1.0` jar and recovered source/resources.
 Build identity: `Alpha Version 3`, made by MVQ1303
 
 This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**.
@@ -12,7 +14,7 @@ This is the source-of-truth feature summary and is bundled in-game as **Current 
 - Failed Cow, Pig, Sheep and Chicken spawn and behave correctly.
 - Mad Scientist interaction and the current Puny Humans quest slice work.
 - Holo Sign thin geometry and renamed-item programming work.
-- The first large source-model pass was runtime-tested successfully: restored stations/displays/machines worked, with only neighbour-face culling reported beside Pattern Monitor and Space-Time Accelerator.
+- Restored machine-model pass runtime-tested successfully apart from the specifically tracked visual regressions now patched below.
 
 ## Matter / replication
 
@@ -37,7 +39,7 @@ This is the source-of-truth feature summary and is bundled in-game as **Current 
 
 ## Weapons
 
-Playable Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reloads, Batteries/HC Batteries, Energy Packs and current module effects. Base transforms are restored; the complete legacy module-mesh/recoil/zoom renderer remains deeper parity work.
+Playable Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reloads, Batteries/HC Batteries, Energy Packs and current module effects. Base transforms are restored; complete legacy module meshes, recoil, zoom and remaining first-person presentation remain deeper parity work.
 
 ## Android
 
@@ -56,33 +58,40 @@ Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching 
 
 Cocktail of Ascension, Mutant Scientist, ranged Androids/drones and the broader legacy dialog framework remain future parity work.
 
-## Source-faithful visuals now in testing/main
+## Source-faithful visuals
 
-Previously restored and runtime-tested: Holo Sign monitor body, Android Station, Weapon Station, Star Map, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage OBJ, Replicator, Charging Station OBJ, Space-Time Accelerator, Solar Panel, Tritanium Crates, Inscriber, armour and weapon base transforms.
+Restored machine/display models include Holo Sign, Android Station, Weapon Station, Star Map, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage, Replicator, Charging Station, Space-Time Accelerator, Solar Panel, Tritanium Crates and Inscriber.
 
-Second pass now build-verified:
+Further restored/fixed:
+- Matter Pipe, Heavy Energy Cable and Network Pipe centre-plus-directional-arm models/states.
+- Original source texture assignments for Reactor Coil, Controller, IO, Gravitational Stabilizer and several decorative blocks.
+- Pattern Drive empty/partial/full icons and Matter Scanner offline/online icons.
+- Shared original Matter Overdrive GUI slot artwork.
+- Pattern Monitor, Space-Time Accelerator and now Pattern Storage are non-occluding so adjacent block faces remain visible.
+- Holo Sign text is anchored to the physical screen and the latest pass flips the text onto the correct readable side.
+- Pylon model was rebuilt within valid modern model-bake bounds after the previous oversized JSON produced a purple/black missing model.
+- Industrial Glass now suppresses shared internal faces between adjacent glass blocks, restoring the core connected-glass behaviour from the original 1.7 ForceGlass implementation.
 
-- Pattern Monitor and Space-Time Accelerator no-occlusion correction for neighbouring faces.
-- Holo Sign text anchored to the monitor FACING plane rather than camera-billboarded.
-- Matter Pipe, Heavy Energy Cable and Network Pipe centre-plus-directional-arm models/states and outlines.
-- Original source texture assignments restored for Reactor Coil, Controller, IO, Gravitational Stabilizer, bright/dark vents, Holo Matrix, striped Tritanium Plate and Decorative Clean.
-- Gravitational Stabilizer rotations corrected to match original front-direction convention.
-- Pylon upgraded from cube placeholder to a source-proportioned tall multi-part silhouette; exact obsolete CTM/animated OBJ overlay remains separate.
-- Original Pattern Drive empty/partial/full icons are driven by stored capacity.
-- Original Matter Scanner offline/online icons are driven by link state.
-- Shared machine slots use the original `slot_small.png` GUI element without changing modern menu coordinates.
+## 1.7.10 parity work now incorporated
 
-The asset audit found that corresponding original block/item/GUI PNGs already present in the port match the recovered 1.12.2 PNGs; most remaining visual errors were model/state/render usage rather than damaged art.
+The original 1.7.10 source is now a first-class reference alongside 1.12.2. The first comparison pass restored or identified:
+- ForceGlass-style connected internal-face suppression for Industrial Glass.
+- Navigable Star Map presentation: mouse-wheel zoom and click-drag pan have been restored as a safe first step toward the original astronomical UI.
+- Original wrench behaviour confirms normal-use rotation and sneak-use dismantling. Rotation is already present; dismantling is deliberately not enabled yet until it can be made security-safe.
+- Original machine framework included generic redstone modes (none/high/low); the current port has reactor-specific redstone handling but not yet the complete generic per-machine system.
+- Original Network Flash Drive, Star Map galaxy model, Android ability branches and richer weapon presentation are confirmed deeper parity targets.
 
 ## Major remaining parity gaps
 
 1. Cocktail of Ascension, Mutant Scientist and deeper quest/dialog framework.
 2. Ranged Rogue Androids, drones and richer entity AI/team/equipment systems.
 3. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining world events.
-4. Full Star Map galaxy/star/planet simulation and travel/events.
-5. Exact legacy Pylon multi-block OBJ/animated CTM overlay and other renderer-specific glow/overlay effects.
-6. Full weapon module meshes, recoil, zoom and remaining hand animations/random ecosystem.
-7. Exact old per-machine GUI background recreation where modern menu coordinates differ; shared source slot art is restored safely now.
-8. Deeper network/flash-drive configuration and optional legacy integrations.
+4. Full 1.7/1.12 Star Map galaxy/star/planet data model, selection, travel and events beyond the newly restored zoom/pan UI.
+5. Generic legacy machine redstone modes and additional machine configuration controls.
+6. Security-safe wrench sneak-dismantle behaviour.
+7. Exact legacy Pylon multi-block/animated overlay and other renderer-specific glow layers.
+8. Full weapon module meshes, recoil, zoom and remaining hand animations.
+9. Deeper Network Flash Drive configuration and optional legacy mod integrations.
+10. Exact old per-machine GUI backgrounds where modern menu coordinates differ.
 
 See the in-game **M2 Testing Checklist** for the current runtime pass.
