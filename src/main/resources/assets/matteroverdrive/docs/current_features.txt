@@ -29,6 +29,7 @@ This is the source-of-truth feature summary and is bundled in-game as **Current 
 - Network Pipe, Network Switch, Network Router and matching-channel Pylon routing.
 - Transporter / Transport Flash Drive.
 - Tritanium Crates and Weapon Station.
+- Tritanium Wrench rotates blocks on normal use and now restores the original 1.7 sneak-dismantle mode for Matter Overdrive blocks through the normal server break path.
 
 ## Fusion Reactor / gravity
 
@@ -47,7 +48,7 @@ Persistent conversion, FE/HUD, four body-part slots, part-gated abilities, V/B/K
 
 ## Security
 
-Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching Access permission and matching Remove clearing are implemented across Matter Overdrive block entities.
+Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching Access permission and matching Remove clearing are implemented across Matter Overdrive block entities. Wrench dismantling uses the normal server destruction path so the same break-security event can deny unauthorized removal.
 
 ## Legacy entities / quests
 
@@ -67,19 +68,20 @@ Further restored/fixed:
 - Original source texture assignments for Reactor Coil, Controller, IO, Gravitational Stabilizer and several decorative blocks.
 - Pattern Drive empty/partial/full icons and Matter Scanner offline/online icons.
 - Shared original Matter Overdrive GUI slot artwork.
-- Pattern Monitor, Space-Time Accelerator and now Pattern Storage are non-occluding so adjacent block faces remain visible.
+- Pattern Monitor, Space-Time Accelerator and Pattern Storage are non-occluding so adjacent block faces remain visible.
 - Holo Sign text is anchored to the physical screen and the latest pass flips the text onto the correct readable side.
 - Pylon model was rebuilt within valid modern model-bake bounds after the previous oversized JSON produced a purple/black missing model.
-- Industrial Glass now suppresses shared internal faces between adjacent glass blocks, restoring the core connected-glass behaviour from the original 1.7 ForceGlass implementation.
+- Industrial Glass suppresses shared internal faces between adjacent glass blocks, restoring the core connected-glass behaviour from the original 1.7 ForceGlass implementation.
 
 ## 1.7.10 parity work now incorporated
 
-The original 1.7.10 source is now a first-class reference alongside 1.12.2. The first comparison pass restored or identified:
+The original 1.7.10 source is now a first-class reference alongside 1.12.2. The first comparison pass restored:
 - ForceGlass-style connected internal-face suppression for Industrial Glass.
-- Navigable Star Map presentation: mouse-wheel zoom and click-drag pan have been restored as a safe first step toward the original astronomical UI.
-- Original wrench behaviour confirms normal-use rotation and sneak-use dismantling. Rotation is already present; dismantling is deliberately not enabled yet until it can be made security-safe.
-- Original machine framework included generic redstone modes (none/high/low); the current port has reactor-specific redstone handling but not yet the complete generic per-machine system.
-- Original Network Flash Drive, Star Map galaxy model, Android ability branches and richer weapon presentation are confirmed deeper parity targets.
+- Navigable Star Map presentation: mouse-wheel zoom and click-drag pan are restored as a first step toward the original astronomical UI.
+- Tritanium Wrench sneak-dismantle for Matter Overdrive blocks, routed through normal server destruction so Security Protocol break checks remain active.
+- Original source behaviour is now being used to audit machine redstone modes, network drives, Android abilities and weapon presentation rather than relying on the later 1.12 build alone.
+
+The original machine framework also included generic redstone modes (none/high/low); the current port has reactor-specific redstone handling but not yet the complete generic per-machine system.
 
 ## Major remaining parity gaps
 
@@ -88,10 +90,9 @@ The original 1.7.10 source is now a first-class reference alongside 1.12.2. The 
 3. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining world events.
 4. Full 1.7/1.12 Star Map galaxy/star/planet data model, selection, travel and events beyond the newly restored zoom/pan UI.
 5. Generic legacy machine redstone modes and additional machine configuration controls.
-6. Security-safe wrench sneak-dismantle behaviour.
-7. Exact legacy Pylon multi-block/animated overlay and other renderer-specific glow layers.
-8. Full weapon module meshes, recoil, zoom and remaining hand animations.
-9. Deeper Network Flash Drive configuration and optional legacy mod integrations.
-10. Exact old per-machine GUI backgrounds where modern menu coordinates differ.
+6. Exact legacy Pylon multi-block/animated overlay and other renderer-specific glow layers.
+7. Full weapon module meshes, recoil, zoom and remaining hand animations.
+8. Deeper Network Flash Drive configuration and optional legacy mod integrations.
+9. Exact old per-machine GUI backgrounds where modern menu coordinates differ.
 
 See the in-game **M2 Testing Checklist** for the current runtime pass.
