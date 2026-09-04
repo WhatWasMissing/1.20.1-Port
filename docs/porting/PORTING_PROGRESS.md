@@ -619,3 +619,13 @@ Exact next step: map the legacy structure positions into a clear 1.20.1 build va
 - Updated the live standalone-item expectation from 102 to 103 and added `systemGuide=enabled` to the runtime marker/gate.
 - Repository and bundled copies of SYSTEM_GUIDE, TO_TEST and WORKING_FEATURES are kept identical.
 - Build/CI and in-world behavior are unverified. Exact next step: compile the branch, open all three documentation items at several GUI scales, navigate the 774-line System Guide with mouse wheel/Page Up/Page Down/Home/End, sample every major category and confirm no clipped text, missing resource, recipe conflict or dedicated-server client-class loading error.
+
+
+## 2026-09-04 — Alpha reference parity audit
+
+- Created branch `testing/alpha` from the current testing integration state.
+- Compared the supplied 1.12.2 jar's package/resource inventory and dedicated client-renderer structure against the 1.20.1 source tree.
+- Added `docs/porting/ALPHA_PARITY_AUDIT.md` as the authoritative gameplay parity matrix.
+- Confirmed broad registry/core-machine coverage, while recording the major unfinished areas: dedicated weapon rendering, Holo Sign/security, full legacy entities/NPCs, structures/events, deeper quests and full Star Map simulation.
+- Added small, reference-backed Android baseline traits and Android Station status presentation on the alpha branch.
+- Do not mark the audit rows `Implemented` as runtime-verified unless the corresponding test checklist has been completed in Minecraft.
