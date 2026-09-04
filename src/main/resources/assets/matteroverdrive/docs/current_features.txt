@@ -1,8 +1,11 @@
 # Matter Overdrive 1.20.1 — Feature Reference
 
-This is the current source-of-truth feature list for the 1.20.1 port on `testing/main`. It distinguishes systems that are implemented from legacy 1.12.2 content whose registry ID or resource may exist but whose original gameplay has not yet been restored.
+Branch: `testing/alpha`
+Legacy reference: MatterOverdrive 1.12.2 `0.7.1.0` jar plus recovered source/resources
 
-A registered item/block is not automatically considered feature-complete. Several legacy IDs intentionally remain compatibility/resource placeholders until their behaviour is ported.
+This is the current source-of-truth feature list for the 1.20.1 port. A registered ID or bundled resource is not automatically considered complete; this document separates working implementations from partial legacy-parity work.
+
+The latest restored-entity/Mad Scientist parity batch has passed the repository GitHub Actions build. Runtime behaviour still needs the focused tests in `docs/testing/TO_TEST.md`.
 
 ## Implemented core systems
 
@@ -10,73 +13,61 @@ A registered item/block is not automatically considered feature-complete. Severa
 
 - Matter Decomposer: FE-powered decomposition into matter, upgrades, failure chance and debug telemetry.
 - Matter Recycler: FE-powered recycling into matter, upgrades and persistence.
-- Matter Analyzer: analysis/pattern workflow and pattern-network participation.
-- Matter Replicator: queued pattern replication using matter and FE, including cycle/failure state.
+- Matter Analyzer: item analysis and Pattern Drive progression.
+- Matter Replicator: queued pattern replication using matter and FE, including failure/cycle state.
 - Pattern Storage: Pattern Drive storage and network pattern supply.
 - Pattern Monitor: discovers network storage/replicators and submits replication work.
 - Molecular Inscriber: Mk2-Mk4 Isolinear Circuit production, FE, upgrades and persistence.
-- Matter Container: portable matter storage/transfer.
+- Matter Container: portable matter storage and transfer.
 - Matter Pipe: matter transport between compatible endpoints.
+- Matter Scanner: links to powered Pattern Storage and adds Pattern Drive progress from successfully scanned matter-valued blocks.
+- Portable Decomposer: rechargeable FE buffer, persistent pickup filters, matter conversion and direct matter transfer.
 
-### Power and machines
+### Power, transport and utility machines
 
 - Solar Panel: daylight FE generation, storage/export and Power Storage upgrades.
 - Charging Station: FE buffer and charging for compatible batteries/energy items.
-- Microwave: food-only FE-powered cooker using normal Minecraft smelting recipes, with a 512,000 FE base buffer, 1,000 FE nominal cost per cook, 10-tick base cook time, battery charging, Speed/Power/Power Storage/Hyper Speed upgrades, persistence and break-safe inventory return.
-- Space-Time Accelerator: FE-and-matter-powered extra ticking for nearby random-tick blocks and block entities, with redstone disable, Speed/Hyper Speed/Power/Power Storage/Matter Storage/Range upgrades, persistence, debug controls and ticker-failure isolation.
-- Transporter: Transport Flash Drive binding and same-dimension entity transport with active Speed, Range, Power and Power Storage upgrades.
-- Tritanium Crates: 54-slot portable storage across all colour variants with dropped-item NBT retention.
+- Microwave: food-only FE-powered cooker with battery support, upgrades, persistence and break-safe inventory return.
+- Space-Time Accelerator: FE-and-matter-powered extra ticking with redstone control, upgrades, persistence and debug controls.
+- Transporter: Transport Flash Drive binding and same-dimension entity transport with upgrades.
+- Tritanium Crates: 54-slot portable storage across colour variants with dropped-item NBT retention.
 - Weapon Station: weapon/module editing, persistence and safe content return on break.
-
-### Survival resources and world generation
-
-- Tritanium Ore generates naturally in Overworld biomes from Y -32 through 64, using 10 placement attempts per chunk and legacy vein size 6.
-- Dilithium Ore generates naturally in Overworld biomes from Y -64 through 16, using 6 placement attempts per chunk and legacy vein size 5.
-- Tritanium Ore smelts/blasts into Tritanium Ingots.
-- Dilithium Ore smelts/blasts into Dilithium Crystals.
-- Blue, Red and Yellow Android Pills have temporary survival crafting recipes so Android conversion/deactivation/recharge can be reached before the Mad Scientist/quest route is restored.
-
-The ore frequencies and vein sizes preserve the original mod's relative balance while the vertical ranges are adapted to the 1.20.1 world height. The pill recipes are a progression bridge, not final legacy-parity quest design.
-
-### Handheld matter tools
-
-- Matter Scanner: links to powered Pattern Storage for 128 FE, scans matter-valued blocks over 60 ticks, consumes only successfully recorded targets and adds 10% Pattern Drive progress per block.
-- Portable Decomposer: 128,000 FE rechargeable buffer, 512 kM matter storage, persistent pickup filters, automatic 10% matter conversion with fractional-yield retention and direct transfer into compatible matter receivers.
-- Data Pad: seven-page in-game guide plus persistent, deduplicated scan history for up to 16 blocks with registry IDs and matter values.
-- M2 Testing Checklist: scrollable in-game copy of the consolidated runtime test document.
-- Current Feature Reference: scrollable in-game copy of this implemented/missing feature matrix.
-- Matter Overdrive System Guide: scrollable in-game instructions for every currently working system, pairing a simplified route with detailed setup and explicit partial-parity warnings.
-- Login identity banner: reports Matter Overdrive Alpha 0.2 and MVQ1303 in chat once per world/server login.
 
 ### Matter/network logistics
 
-- Heavy Energy Cable: FE-only cable using the legacy `heavy_matter_pipe` registry ID.
-- Network Pipe: item/pattern-network connectivity.
-- Network Switch: enables/disables item logistics and pattern traversal.
-- Network Router: powered filtered logistics with endpoint diagnostics, anti-bounce sink tracking and one active router executor per connected graph.
-- Dimensional Pylon: matching-channel wireless item-network bridge.
-- Pattern-network discovery across enabled Pipe/Router/Switch paths.
+- Heavy Energy Cable uses the legacy `heavy_matter_pipe` registry ID for FE transport.
+- Network Pipe provides item/pattern-network connectivity.
+- Network Switch enables/disables item logistics and pattern traversal.
+- Network Router provides powered filtered logistics, diagnostics and anti-bounce routing.
+- Dimensional Pylon provides matching-channel wireless item-network bridging.
+- Pattern-network discovery works across enabled Pipe/Router/Switch paths.
 
-The current item router remembers inventories that have received routed items as sinks until they empty. This prevents an undirected two-inventory network from repeatedly moving the same stack A -> B -> A while consuming FE.
+### Survival resources and world generation
+
+- Tritanium Ore generates naturally in fresh Overworld chunks and smelts/blasts into Tritanium Ingots.
+- Dilithium Ore generates naturally in fresh Overworld chunks and smelts/blasts into Dilithium Crystals.
+- Tritanium tools and armour are functional, including the configured full-set bonus.
+- Blue, Red and Yellow Android Pills remain craftable as a practical progression/test path while deeper legacy NPC quest progression is still being restored.
 
 ## Fusion Reactor and gravitational systems
 
-- Legacy-parity horizontal Fusion Reactor ring with exact hull, coil/flexible, IO and controller positions plus the Reactor Assembly Guide overlay.
-- Reactor Controller and any formed Reactor IO expose a shared 100,000,000 FE base buffer and 2,048 kM base matter buffer.
-- Restored legacy generation equation: 9,048 FE/t × efficiency × (unsuppressed real anomaly mass × 10). Matter use is 1/80 kM/t × the same mass multiplier and is reduced proportionally when the FE buffer has limited room.
-- Vertical anomaly offsets 0/1/2/3 retain the legacy 100%/75%/50%/25% efficiency curve. Range upgrades extend discovery to 16 blocks; extended offsets use the upgraded range curve.
-- Speed upgrades increase generation and matter use together; Power Storage and Matter Storage upgrades enlarge their respective buffers.
-- Formed IO faces support direct FE extraction, cable chains and matter transfer. The controller fairly powers compatible machines built inside the ring.
-- Persistent RUN/SCRAM control and three redstone modes: Ignored, High (signal runs) and Low (signal stops).
-- Comparator output: 0 invalid, 1 paused/SCRAMMED, and 1-15 while available according to stored FE.
-- Reactor Remote support with the same live controller data and controls.
-- Expanded GUI telemetry for potential/actual FE, exact drain/consumption, efficiency, connected demand, IO count, ring power, anomaly mass, suppression, pull/horizon ranges and block destruction.
-- Gravitational Anomaly persistent mass, item and living-entity pull, event-horizon consumption, and restored block/fluid destruction. Destruction is hardness/falloff limited and sampled to cap tick cost.
-- Living-entity mass is added once when the event horizon kills the entity.
+- Horizontal Fusion Reactor ring validation with controller, hull, coil/flexible and IO positions.
+- Reactor Assembly Guide/overlay support.
+- Shared controller/formed-IO FE and matter storage.
+- Legacy-style generation scaling with anomaly mass and structure efficiency.
+- Vertical anomaly offset efficiency curve and Range-upgrade extension.
+- Speed upgrades scale generation and matter consumption together; Power Storage and Matter Storage expand buffers.
+- Formed IO faces support FE extraction, cable chains and matter transfer.
+- Compatible machines inside the ring can receive shared reactor power.
+- Persistent RUN/SCRAM and redstone modes.
+- Comparator output and Reactor Remote controls.
+- Expanded GUI/debug telemetry for output, demand, IO count, ring power, anomaly mass, suppression, pull/horizon ranges and destruction.
+- Gravitational Anomaly persistent mass, item/living pull, event-horizon consumption and block/fluid destruction.
+- Living-entity mass is added once when the event horizon kills an entity.
 - Space-Time Equalizer immunity to anomaly pull/event-horizon effects.
-- Gravitational Stabilizers search a clear 63-block beam, consume FE, apply multiplicative suppression, support power/storage upgrades, emit visible beam particles and have persistent redstone modes.
+- Gravitational Stabilizers consume FE, search a clear beam, apply suppression, support upgrades and persistent redstone modes.
 
-Important: anomaly block/fluid damage is active again for legacy parity. Stabilize and isolate an anomaly before feeding it substantial mass.
+Important: anomaly block/fluid damage is active. Stabilize and isolate large anomalies before feeding them substantial mass.
 
 ## Weapons
 
@@ -86,146 +77,199 @@ Implemented energy weapons:
 - Phaser Rifle
 - Ion Sniper
 - Plasma Shotgun
-- Omni Tool — hybrid FE weapon plus powered pickaxe/axe/shovel; runtime verification is tracked separately.
+- Omni Tool
 
-Implemented weapon support includes server-authoritative shot energy checks, heat/overheat state, battery/Energy Pack reloads, Weapon Station installation and the current barrel/sight/ricochet/colour module system.
+Implemented weapon support includes:
 
-The restored Omni Tool uses the legacy 32,000 FE base capacity, 128 FE transfer framework, 24-block weapon range, 7 base ranged damage, 18-tick shot cooldown and 80 max heat. It mines pickaxe/axe/shovel-tagged blocks at Tritanium tier while powered, supports normal axe/shovel contextual actions, and accepts Battery, Colour and VENOM/Block Barrel modules. Its 1.20.1 input mapping uses conventional left-click block mining and hold-right-click firing rather than recreating the legacy client's reversed mouse-input hook.
+- server-authoritative shot energy checks;
+- heat/overheat and reload behaviour;
+- normal and HC batteries that transfer only their stored FE and remain rechargeable;
+- consumable Energy Packs;
+- Weapon Station installation/persistence;
+- barrel, sight, ricochet and colour module support;
+- Omni Tool ranged fire plus powered pickaxe/axe/shovel behaviour.
 
-Normal and HC batteries transfer only the FE they actually contain and remain as drained rechargeable items. Energy Packs contribute their defined 32,000 FE and are consumed.
-
-Weapon held transforms and some original visual/recoil presentation are still below legacy parity and remain a client-side refinement target.
+Remaining weapon parity is mostly presentation and deeper legacy ecosystem work: first-person positioning, recoil/zoom/hand animation, richer beam/module rendering, random/enchantment weapon generation and ranged Rogue Android weapon variants.
 
 ## Android system
 
 Implemented:
 
-- Blue Pill conversion to Android state.
-- Persistent Android FE/state.
+- Blue Pill conversion and persistent Android state/FE.
 - Red Pill deactivation and installed-part return.
-- Yellow Pill Android-FE recharge.
-- Sneak-held normal/HC Battery charging from either hand at up to 1,024 FE/t, transferring only energy actually stored in the battery.
-- Legacy-style zero-power state: the Android HUD reports the offline core and movement speed is reduced by 50% until the core is recharged or conversion is removed.
-- Head, Chest, Arms and Legs bionic-part installation through the Android Station.
-- Android HUD energy/state synchronisation and persistent Android XP/level progression across levels 1-10.
-- Connected three-branch selectable skill tree with one perk point per level and thirty functional Assault, Utility and Survival/Mobility perks covering FE efficiency, charging, XP, repair, hostile scanning, emergency protection, active abilities, melee, movement and damage reduction.
-- Part-gated active abilities with server-authoritative input: Head/Cloak, Chest/Force Field, Arms/Sonic Shockwave and Legs/Ender Teleport.
-- Atomic Android FE spending: actions that cannot afford their full cost fail without silently draining a partial remainder.
-- Arms damage is restricted to direct melee attacks; projectiles and Sonic Shockwave cannot inherit the melee bonus or its additional FE cost.
-- Persistent ability selection, perk selection, toggle state and cooldowns, with FE costs and an expanded Android HUD.
-- Individual perk refunds for 2,500 FE with confirmation plus the existing confirmed 25,000 FE full-tree reset.
-- Android Station charging within four blocks, shared fairly across nearby converted players.
-- Simplified Rogue Android Spawner using a tagged hostile Husk and bionic-part drops. It searches collision-free spawn candidates and charges 20,000 FE only after the entity is accepted by the world.
+- Yellow Pill recharge.
+- Battery/HC Battery charging while sneaking, consuming only actual battery FE.
+- Zero-power HUD/offline state with movement penalty until recharge/deactivation.
+- Head, Chest, Arms and Legs installation through the Android Station.
+- Android HUD synchronisation and persistent XP/level progression.
+- Three-branch, ten-level selectable perk tree with thirty functional perks.
+- One perk point per reached level, persistent selections and level-up persistence protection.
+- Individual 2,500 FE perk refunds and confirmed 25,000 FE full reset.
+- Part-gated active abilities: Cloak, Force Field, Sonic Shockwave and Ender Teleport.
+- Server-authoritative FE costs/cooldowns and atomic FE spending.
+- Android Station nearby-player charging.
 
-The Chest part uses vanilla Resistance while powered and does not stack a hidden second damage multiplier.
+The current progression tree is playable but still does not reproduce every old multi-rank/stat/minimap/team feature from the 1.12.2 Android system.
 
-## Contracts and Star Map
+## Security Protocol and machine ownership
+
+Restored from the 1.12.2 jar:
+
+- Security Protocol states: Empty, Claim, Access and Remove.
+- Sneak-use in air binds an unbound protocol to the player and cycles bound modes Claim -> Access -> Remove -> Claim.
+- Claim protocols store ownership on Matter Overdrive block-entity machines and are consumed when successfully applied.
+- Machine owners can use and dismantle their claimed machines normally.
+- Other players are denied machine use/break access unless they carry a matching Access protocol or are in Creative mode.
+- Matching Remove protocols clear ownership and are consumed on success.
+- Protocol owner UUID and machine ownership persist in NBT.
+- Security applies broadly across Matter Overdrive block-entity machines rather than being limited to one machine type.
+
+This system is build-verified but still needs multiplayer/runtime verification for all machine interaction paths.
+
+## Holographic Sign
+
+The old placeholder Holo Sign has been replaced by a dedicated 1.20.1 block/block-entity implementation:
+
+- persistent `Text` data;
+- client update packets and chunk/reconnect synchronisation;
+- full-bright floating holographic text renderer;
+- automatic text scaling for long messages;
+- renamed-item programming by sneak-use;
+- empty-hand sneak-use clearing;
+- normal-use status/text feedback;
+- 256-character safety cap;
+- integration with the restored Security Protocol ownership layer.
+
+The legacy 1.12.2 sign GUI is not reproduced exactly; the modern interaction route intentionally avoids requiring a dedicated text-entry packet/GUI for the initial parity implementation.
+
+## Restored legacy entities
+
+### Rogue Android
+
+The previous tagged-Husk shortcut has been replaced for new spawns by a real `matteroverdrive:rogue_android` entity type.
+
+Current restored behaviour includes:
+
+- dedicated Rogue Android entity registration and renderer/resource path;
+- legacy-inspired 0.30 movement speed and 24-block follow range;
+- Android levels 0-3;
+- normal max health `32 + level * 10`;
+- normal melee damage `4 + level`;
+- Legendary state with stronger restored combat values;
+- persistent level/Legendary state through save/load;
+- no sunlight burning;
+- immunity to potion effects;
+- original Rogue Android ambient/death sounds;
+- bionic-part drops;
+- Android Spawner now creates the real entity after successful collision checks and FE payment;
+- natural-spawn placement logic has been restored and is tracked for balance testing.
+
+Compatibility handling for older tagged-Husk Rogue Android test entities is retained so existing test worlds do not need to be discarded immediately.
+
+### Failed animals
+
+Real entity types now exist for:
+
+- `matteroverdrive:failed_cow`
+- `matteroverdrive:failed_pig`
+- `matteroverdrive:failed_sheep`
+- `matteroverdrive:failed_chicken`
+
+They use restored Matter Overdrive textures/resources and the bundled failed-animal sounds while retaining stable modern passive-animal foundations.
+
+### Mad Scientist
+
+A real `matteroverdrive:mad_scientist` NPC has been restored using the bundled legacy scientist resources.
+
+Current behaviour includes:
+
+- normal and Junkie states;
+- persistent NPC state/name;
+- direct player interaction;
+- restored `Puny Humans` progression slice.
+
+## Puny Humans quest
+
+The first concrete legacy NPC quest route is restored:
+
+1. A non-Android player interacts with a Mad Scientist.
+2. `Puny Humans` starts and asks the player to become an Android.
+3. Quest state is stored in player-persistent NBT.
+4. After Android conversion, returning to a Mad Scientist completes the quest.
+5. Current restored reward bundle: one Battery, one Blue Android Pill and five Yellow Android Pills.
+6. Quest start/complete sounds play and rewards are protected against a full inventory by dropping overflow safely.
+7. Completion is one-time and persists across relog/death.
+
+This is not yet the entire old Mad Scientist quest/dialogue chain. `Cocktail of Ascension`, Mutant Scientist replacement/progression and the broader generated quest framework remain future parity work.
+
+## Contracts, Data Pad and Star Map
 
 Implemented current progression slice:
 
 - Contract Market with collect/hunt Contract items.
 - Persistent target, goal, progress and reward data.
-- Exact post-pickup collect tracking and player-kill hunt tracking.
-- One action advances one matching contract rather than every duplicate contract.
-- Completed-contract redemption at the Contract Market.
-- 1,200-tick market refresh delay after the final offer is taken.
-- Star Map screen reports the viewing player's active/completed contracts with viewer-specific data.
+- Exact pickup/kill tracking with one action advancing one matching contract.
+- Completed-contract redemption and market refresh timing.
+- Data Pad guide plus persistent scan history.
+- Star Map screen currently reports viewer-specific active/completed contract state.
 
-This is a simplified replacement for part of the original quest/Star Map ecosystem and is not full legacy parity.
+The current Star Map is not a recreation of the original galaxy simulation.
 
-## Armour, tools and presentation
+## In-game documentation and version identity
 
-- Tritanium tool set and armour set are functional.
-- Full Tritanium armour applies the configured defensive set bonus.
-- Equipped armour uses the restored Tritanium armour textures.
-- Industrial Glass, Bounding Box, Matter Plasma and Molten Tritanium are assigned translucent client render layers.
-- Legacy decorative blocks, resources and recipes are substantially registered/restored.
+- M2 Testing Checklist item opens the bundled `TO_TEST` documentation.
+- Current Feature Reference item opens the bundled copy of this document.
+- Matter Overdrive System Guide provides simplified and detailed instructions for currently working systems.
+- Paged/indexed documentation navigation and last-page persistence are implemented.
+- Current alpha chat identity marker is `Alpha Version 3`, made by MVQ1303.
 
-Visual runtime checks are still required for transparency, crate/Inscriber UV alignment, equipped armour and held weapon transforms.
+The build verifies that repository documentation and bundled in-game copies are identical for the files configured in `build.gradle`.
 
-# Missing or incomplete compared with the original 1.12.2 mod
+# Major remaining parity gaps
 
-The following are the major remaining parity gaps. This list tracks gameplay behaviour, not merely registry presence.
+## 1. Weapon presentation and legacy weapon ecosystem — partial
 
-## 1. Android RPG / biotic ability system — partial
+Core weapon gameplay works, but dedicated legacy-grade first-person recoil/zoom/hand/module rendering and richer random/enchantment weapon generation remain incomplete.
 
-The current Android system now has persistent XP/levels, a connected thirty-perk selectable tree, part-gated active abilities, server validation, FE costs, cooldowns, individual refunds, full respec and HUD status.
+## 2. Full quest/dialog framework — partial
 
-Remaining legacy-parity work is mainly deeper multi-rank/stat progression, flash cooling and the richer Android minimap/team presentation rather than the absence of a playable progression tree.
+`Puny Humans` is restored, but the original mod had a much broader quest stack including additional objective types, generated quests, dialog chains, XP/rewards, HUD/pages and deeper Mad Scientist progression.
 
-## 2. Full Star Map galaxy simulation — missing
+Still missing includes `Cocktail of Ascension`, Mutant Scientist progression and several NPC-driven quest branches.
 
-The current Star Map is a contract-status interface. The original system modelled galaxies, stars and planets and developed gameplay around planet statistics, buildings, ships and travel/attack events.
+## 3. Additional entities/AI — partial
 
-Still missing:
+Rogue Android, Mad Scientist and four failed animals now exist as real entity types. Still missing or incomplete are ranged Rogue Android variants, drones, Mutant/Hulking Scientist content and richer legacy AI/team/equipment systems.
 
-- generated/persistent galaxy, star and planet data;
-- galaxy/system/planet navigation UI;
-- planet population, happiness, energy and matter-production statistics;
-- residential/power/matter-extractor/ship-hangar building gameplay;
-- ships, ownership and travel/attack events.
+## 4. Legacy structures and world events — partial
 
-## 3. Full quest/dialog progression system — partial
+Ore generation is restored, but themed structures/events remain incomplete: crashed/cargo ships, underwater bases, Mad Scientist houses, anomaly/world events and associated mob/NPC spawn ecosystems.
 
-The current Contract Market implements simple collect/hunt contracts. The original contained a broader quest framework with multiple quest logic types, quest XP/rewards, quest HUD/pages, generated progression and NPC/dialog-driven quests.
+## 5. Full Star Map galaxy simulation — missing
 
-Still missing includes the original-style quest stack/multi-quest system, mining/crafting and other quest types, quest XP progression, Mad Scientist dialog/progression and Data Pad quest pages.
+Still missing are persistent galaxies/stars/planets, navigation UI, planet statistics, population/happiness/production, buildings, ships, ownership and travel/attack events.
 
-## 4. Holo Sign and security/ownership gameplay — missing
+## 6. Network/drive depth — incomplete
 
-The Holo Sign is presently a basic registered block rather than the original programmable/security-aware holographic sign. The broader legacy ownership/security layer and security protocol item behaviour are also not restored.
+Pattern Drives and Transport Flash Drives work. Generic/network flash-drive configuration and some advanced legacy network controls still need modern implementations.
 
-## 5. Additional drive/network configuration items — incomplete
+## 7. Android deep parity — partial
 
-Pattern Drives and Transport Flash Drives are functional, but legacy generic/network flash-drive configuration behaviour is not fully restored. `flash_drive`, `network_flash_drive` and the security protocol items are currently generic items.
+The modern Android tree is extensive and functional, but exact legacy multi-rank stat progression, flash cooling and richer minimap/team/presentation behaviour remain incomplete.
 
-## 6. Original mobs and Rogue Android depth — mostly missing
+## 8. Legacy integrations — not ported
 
-The current Android Spawner deliberately uses a tagged vanilla Husk as a simplified Rogue Android. The original dedicated entity ecosystem is not yet ported, including richer Rogue Android AI/levels/equipment/teams/ranged variants and other legacy entities such as drones, failed animals and scientist NPC/mob content.
+Old 1.12-era optional integrations should be reconsidered individually against modern 1.20.1 equivalents rather than copied directly.
 
-## 7. Legacy world generation — partial
+# Recommended next parity order
 
-Natural Tritanium and Dilithium ore generation is now restored through 1.20.1 configured/placed features and a Forge biome modifier. The remaining worldgen parity gap is the original themed content and world-spawn layer: crashed/cargo ships, underwater bases, anomaly/world events and related mob/NPC spawning still need dedicated modern implementations.
-
-## 8. Remaining weapon parity — partial
-
-The core four weapons plus the restored Omni Tool and module effects are implemented, but legacy extras remain incomplete, including the old weapon enchantment/random-weapon ecosystem, richer Rogue Android weapon generation/drops and final recoil/model/beam presentation parity.
-
-## 9. Legacy integrations — not ported
-
-Old optional integration layers such as ComputerCraft/Tinkers/other 1.12-era compatibility code have not been recreated. These should be reconsidered individually against modern 1.20.1 equivalents rather than copied directly.
-
-# Recommended parity order
-
-1. Android XP/stat progression and a real Rogue Android entity.
-2. Security/Holo Sign/network-drive functionality.
-3. Themed world structures, anomaly/world events and legacy mobs/NPCs.
-4. Full quest framework and then full Star Map galaxy simulation.
-5. Weapon visual/enchantment/random-generation parity and optional mod integrations.
+1. Complete in-game testing of Security/Holo Sign and restored entities.
+2. Restore ranged Rogue Androids/drones plus Mutant Scientist/Cocktail of Ascension.
+3. Expand the quest/dialog framework.
+4. Add legacy structures/world events.
+5. Finish weapon visual parity.
+6. Build out the full Star Map galaxy simulation.
 
 ## Verification
 
-Use the checklists under `docs/testing/`, especially:
-
-- `AUDIT_FIXES_TESTING.md`
-- `ANDROID_SYSTEM_TESTING.md`
-- `MATTER_NETWORK_LOGISTICS_TESTING.md`
-- `CONTRACTS_STAR_MAP_TESTING.md`
-- `SURVIVAL_PROGRESSION_TESTING.md`
-- `MICROWAVE_TESTING.md`
-- `SPACETIME_ACCELERATOR_TESTING.md`
-- `HANDHELD_MATTER_TOOLS_TESTING.md`
-- `OMNI_TOOL_TESTING.md`
-- `TO_TEST.md` for the three in-game documentation items, including the System Guide
-
-A successful GitHub Actions build proves that the Forge project compiles/packages. It does not certify datapack loading, fresh-chunk ore generation, recipes, machine behaviour, in-world behaviour or rendering.
-
-## Selectable Android perk tree
-
-- Press K while converted to open a connected three-branch skill tree.
-- Every Android level grants one perk point and offers a choice between Assault, Utility and Survival / Mobility.
-- Thirty functional perks cover active/passive FE efficiency, charging, XP, repair, hostile scanning, emergency protection, Cloak/Force Field, Shockwave, Teleport, melee, speed and damage reduction.
-- Selection and resets are server-authoritative. Chosen perks persist through relog, death and deactivation.
-- The tree provides hover descriptions, selection confirmation, a 25,000 FE full respec and an unspent-point HUD reminder.
-- Android perk selections are written atomically with a mirrored recovery value, so earning XP or crossing a level boundary cannot clear installed perks.
-- Installed Android perks can be refunded individually for 2,500 FE with confirmation; the existing confirmed 25,000 FE full-tree reset remains available.
+Use `docs/testing/TO_TEST.md` as the consolidated runtime checklist. A successful GitHub Actions build proves that the Forge project compiles and packages; it does not certify in-world rendering, balance, networking, persistence, fresh-chunk generation or multiplayer security behaviour.
