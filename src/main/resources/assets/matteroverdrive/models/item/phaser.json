@@ -4,9 +4,9 @@
   "model": "matteroverdrive:models/item/phaser2.obj",
   "display": {
     "gui": {
-      "rotation": [20, 45, 0],
-      "translation": [12.8, 14.4, 0],
-      "scale": [1.5, 1.5, 1.5]
+      "rotation": [45, 120, 0],
+      "translation": [3.2, 33.6, 0],
+      "scale": [2.65, 2.65, 2.65]
     },
     "ground": {
       "rotation": [0, 0, 0],
