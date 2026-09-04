@@ -1,14 +1,14 @@
 package matteroverdrive.blockentity;
 
 import matteroverdrive.capability.MachineEnergyStorage;
+import matteroverdrive.entity.RogueAndroidEntity;
 import matteroverdrive.event.AndroidEvents;
 import matteroverdrive.registry.ModBlockEntities;
+import matteroverdrive.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.level.Level;
@@ -55,8 +55,10 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
         }
 
         AABB area = new AABB(pos).inflate(12.0D);
-        if (!level.getEntitiesOfClass(Husk.class, area,
-                entity -> entity.getPersistentData().getBoolean(AndroidEvents.ROGUE_ANDROID_TAG)).isEmpty()) {
+        boolean hasModernAndroid = !level.getEntitiesOfClass(RogueAndroidEntity.class, area).isEmpty();
+        boolean hasLegacyTaggedAndroid = !level.getEntitiesOfClass(Husk.class, area,
+                entity -> entity.getPersistentData().getBoolean(AndroidEvents.ROGUE_ANDROID_TAG)).isEmpty();
+        if (hasModernAndroid || hasLegacyTaggedAndroid) {
             return;
         }
 
@@ -76,18 +78,19 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
                 continue;
             }
 
-            Husk android = new Husk(EntityType.HUSK, level);
+            RogueAndroidEntity android = ModEntities.ROGUE_ANDROID.get().create(level);
+            if (android == null) {
+                return false;
+            }
             android.moveTo(candidate.getX() + 0.5D, candidate.getY(), candidate.getZ() + 0.5D,
                     level.random.nextFloat() * 360.0F, 0.0F);
             if (!level.noCollision(android)) {
+                android.discard();
                 continue;
             }
 
             android.finalizeSpawn(level, level.getCurrentDifficultyAt(candidate),
                     MobSpawnType.SPAWNER, null, null);
-            android.setCustomName(Component.literal("Rogue Android"));
-            android.setCustomNameVisible(true);
-            android.getPersistentData().putBoolean(AndroidEvents.ROGUE_ANDROID_TAG, true);
             if (level.addFreshEntity(android)) {
                 return true;
             }
