@@ -3,6 +3,7 @@ package matteroverdrive.network;
 import matteroverdrive.blockentity.NetworkRouterBlockEntity;
 import matteroverdrive.blockentity.NetworkSwitchBlockEntity;
 import matteroverdrive.blockentity.PylonBlockEntity;
+import matteroverdrive.item.NetworkFlashDriveItem;
 import matteroverdrive.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -72,6 +73,10 @@ public final class ItemNetworkUtil {
     public static MoveResult moveOneStack(Level level, List<Endpoint> endpoints, ItemStack filter,
                                           int maximum, long cursor, Set<BlockPos> blockedSources) {
         if (maximum <= 0 || endpoints.size() < 2) return MoveResult.NONE;
+
+        boolean destinationFilter = NetworkFlashDriveItem.isNetworkFlashDrive(filter);
+        Set<BlockPos> allowedDestinations = destinationFilter
+                ? NetworkFlashDriveItem.getConnections(filter) : null;
         int start = (int) Math.floorMod(cursor, endpoints.size());
         for (int sourceOffset = 0; sourceOffset < endpoints.size(); sourceOffset++) {
             Endpoint source = endpoints.get((start + sourceOffset) % endpoints.size());
@@ -80,10 +85,13 @@ public final class ItemNetworkUtil {
             if (sourceHandler == null) continue;
             for (int slot = 0; slot < sourceHandler.getSlots(); slot++) {
                 ItemStack candidate = sourceHandler.extractItem(slot, maximum, true);
-                if (candidate.isEmpty() || (!filter.isEmpty() && !ItemStack.isSameItemSameTags(candidate, filter))) continue;
+                if (candidate.isEmpty()
+                        || (!destinationFilter && !filter.isEmpty()
+                        && !ItemStack.isSameItemSameTags(candidate, filter))) continue;
                 for (int destinationOffset = 1; destinationOffset < endpoints.size(); destinationOffset++) {
                     Endpoint destination = endpoints.get((start + sourceOffset + destinationOffset) % endpoints.size());
                     if (destination.pos().equals(source.pos())) continue;
+                    if (allowedDestinations != null && !allowedDestinations.contains(destination.pos())) continue;
                     IItemHandler destinationHandler = handler(level, destination);
                     if (destinationHandler == null) continue;
                     ItemStack remaining = candidate.copy();
