@@ -4,9 +4,9 @@
   "model": "matteroverdrive:models/item/phaser2.obj",
   "display": {
     "gui": {
-      "rotation": [45, 120, 0],
-      "translation": [3.2, 33.6, 0],
-      "scale": [2.65, 2.65, 2.65]
+      "rotation": [20, 45, 0],
+      "translation": [12.8, 14.4, 0],
+      "scale": [1.5, 1.5, 1.5]
     },
     "ground": {
       "rotation": [0, 0, 0],
@@ -31,12 +31,12 @@
     "firstperson_righthand": {
       "rotation": [3, 185, 0],
       "translation": [2.08, -2.88, -24.0],
-      "scale": [1.0, 1.0, 0.8]
+      "scale": [1.25, 1.25, 1.0]
     },
     "firstperson_lefthand": {
       "rotation": [3, 175, 0],
       "translation": [-2.08, -2.88, -24.0],
-      "scale": [1.0, 1.0, 0.8]
+      "scale": [1.25, 1.25, 1.0]
     }
   }
 }
