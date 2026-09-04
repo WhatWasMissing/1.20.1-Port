@@ -1,7 +1,8 @@
 {
   "variants": {
-    "": {
-      "model": "matteroverdrive:block/holo_sign"
-    }
+    "facing=north": { "model": "matteroverdrive:block/holo_sign" },
+    "facing=south": { "model": "matteroverdrive:block/holo_sign", "y": 180 },
+    "facing=west":  { "model": "matteroverdrive:block/holo_sign", "y": 270 },
+    "facing=east":  { "model": "matteroverdrive:block/holo_sign", "y": 90 }
   }
 }

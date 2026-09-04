@@ -12,8 +12,8 @@ import org.joml.Matrix4f;
 
 /** Holographic text renderer for the legacy Holo Sign. */
 public class HoloSignRenderer implements BlockEntityRenderer<HoloSignBlockEntity> {
-    private static final float BASE_SCALE = 0.025F;
-    private static final int MAX_PIXEL_WIDTH = 180;
+    private static final float BASE_SCALE = 0.0125F;
+    private static final int MAX_PIXEL_WIDTH = 120;
 
     public HoloSignRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -32,12 +32,13 @@ public class HoloSignRenderer implements BlockEntityRenderer<HoloSignBlockEntity
         float scale = BASE_SCALE * autoScale;
 
         poseStack.pushPose();
-        poseStack.translate(0.5D, 1.18D, 0.5D);
+        // Keep the hologram centred on the restored thin monitor body while remaining readable from any angle.
+        poseStack.translate(0.5D, 0.52D, 0.5D);
         poseStack.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
         poseStack.scale(-scale, -scale, scale);
         Matrix4f matrix = poseStack.last().pose();
         float x = -font.width(text) / 2.0F;
-        font.drawInBatch(text, x, 0.0F, 0x66E8FF, false, matrix, bufferSource,
+        font.drawInBatch(text, x, -4.0F, 0x66E8FF, false, matrix, bufferSource,
                 Font.DisplayMode.SEE_THROUGH, 0x40000000, LightTexture.FULL_BRIGHT);
         poseStack.popPose();
     }

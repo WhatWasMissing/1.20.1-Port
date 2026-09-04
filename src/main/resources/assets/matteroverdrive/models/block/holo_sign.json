@@ -1,6 +1,22 @@
 {
-  "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "matteroverdrive:block/base"
-  }
+    "particle": "matteroverdrive:block/holo_monitor",
+    "front": "matteroverdrive:block/holo_monitor",
+    "side": "matteroverdrive:block/base"
+  },
+  "elements": [
+    {
+      "name": "Main",
+      "from": [ 0.0, 0.0, 14.0 ],
+      "to": [ 16.0, 16.0, 16.0 ],
+      "faces": {
+        "north": { "texture": "#front", "uv": [ 0.0, 0.0, 16.0, 16.0 ] },
+        "east":  { "texture": "#side",  "uv": [ 0.0, 0.0, 2.0, 16.0 ] },
+        "south": { "texture": "#side",  "uv": [ 0.0, 0.0, 16.0, 16.0 ] },
+        "west":  { "texture": "#side",  "uv": [ 0.0, 0.0, 2.0, 16.0 ] },
+        "up":    { "texture": "#side",  "uv": [ 0.0, 0.0, 16.0, 2.0 ] },
+        "down":  { "texture": "#side",  "uv": [ 0.0, 0.0, 16.0, 2.0 ] }
+      }
+    }
+  ]
 }
