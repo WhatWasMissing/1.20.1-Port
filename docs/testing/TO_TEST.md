@@ -32,7 +32,10 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Open Star Map. Mouse wheel should zoom between roughly 0.45x and 2.5x.
 - [ ] Click-drag inside the Star Map field to pan it.
 - [ ] Contract counts must remain visible and functional while zooming/panning.
-- [ ] Closing and reopening Star Map must not affect contracts or inventory state.
+- [ ] Normal Tritanium Wrench use still rotates supported blocks.
+- [ ] Sneak-use the Tritanium Wrench on an unclaimed Matter Overdrive block. It should dismantle through normal block breaking and drop the block normally.
+- [ ] Claim a block with a Security Protocol, then try sneak-wrenching as a player without access. Dismantling must be denied.
+- [ ] Owner or matching Access user can sneak-wrench the claimed block normally.
 
 ## Priority 3 - connected pipes
 
@@ -72,7 +75,6 @@ Test Matter Pipe, Heavy Energy Cable and Network Pipe.
 ## 1.7 parity targets not claimed yet
 
 - Generic per-machine redstone modes (none/high/low) beyond current reactor-specific controls.
-- Wrench sneak-dismantle. The 1.7 source had it, but the modern implementation must first respect Security Protocol ownership so it cannot become a protection bypass.
 - Full Star Map galaxy/star/planet data model, selection, travel and events. This build restores navigation presentation only.
 - Deeper Network Flash Drive configuration.
 - Legacy Android attack/ability branches not already represented by the modern skill tree.
@@ -82,4 +84,4 @@ Test Matter Pipe, Heavy Energy Cable and Network Pipe.
 
 ## Pass criteria
 
-Pass this build when Holo Sign text is readable on the correct face, Pylon no longer shows a missing model, Pattern Storage/Monitor/Accelerator do not cull neighbours, Industrial Glass connects cleanly, Star Map zoom/pan works without breaking contracts, and the existing core systems remain functional.
+Pass this build when Holo Sign text is readable on the correct face, Pylon no longer shows a missing model, Pattern Storage/Monitor/Accelerator do not cull neighbours, Industrial Glass connects cleanly, Star Map zoom/pan works without breaking contracts, security-safe wrench dismantling works, and the existing core systems remain functional.
