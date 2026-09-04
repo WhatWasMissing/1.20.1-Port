@@ -1,155 +1,161 @@
 # Consolidated Runtime Testing Checklist
 
-Branch: `testing/main`
+Branch: `testing/alpha`
+Legacy reference: MatterOverdrive 1.12.2 `0.7.1.0` jar plus recovered source/resources
 
 Use this after a fresh pull and normal M2 client launch. Record the expected result, actual result, coordinates/orientation and relevant log lines for every failure.
 
+The current parity batch compiles/packages successfully in GitHub Actions, but the items below still require in-game verification.
+
 ## Build and runtime gate
 
-- [ ] Reach the main menu without registry, datapack, model or menu errors.
-- [ ] Create/load a test world successfully.
-- [ ] Confirm the runtime marker reports `blocks=75`, `blockItems=72`, `standaloneItems=103`, `sounds=57`, `blockEntities=18` and `menus=15`.
-- [ ] Confirm the marker includes `microwave=enabled`, `spacetimeAccelerator=enabled`, `handheldMatterTools=enabled`, `androidAbilities=enabled`, `documentationItems=enabled` and `systemGuide=enabled`.
-- [ ] Confirm new handheld recipes appear in the recipe book/JEI and can be crafted in Survival.
+- [ ] Reach the main menu without registry, datapack, model, block-entity, entity or menu errors.
+- [ ] Create/load a test world successfully and confirm no missing-registry warnings appear for existing test saves.
+- [ ] Confirm the login marker reports `Alpha Version 3` and `Made by MVQ1303`.
+- [ ] Confirm the Holo Sign block entity and restored legacy entity types register without client/server class-loading errors.
+- [ ] Confirm a dedicated server can start without attempting to load client render classes.
+- [ ] Run the normal M2 runtime/build checks and record any changed registry totals rather than relying on older `testing/main` counts.
 
-## In-game documentation and version identity
+## In-game documentation
 
-- [ ] Obtain the M2 Testing Checklist, Current Feature Reference and Matter Overdrive System Guide items from the Matter Overdrive creative tab or craft them in Survival.
-- [ ] Right-click each item and confirm it opens the correct full document in a scrollable screen.
-- [ ] Verify mouse wheel, Page Up/Down, Home/End, scrollbar, Done/Escape and multiple GUI scales.
-- [ ] Compare several headings and entries with `docs/testing/TO_TEST.md`, `docs/reference/WORKING_FEATURES.md` and `docs/reference/SYSTEM_GUIDE.md`.
-- [ ] In the System Guide, sample survival, machine, network, reactor, weapon, Android and Contract sections. Confirm each provides Simplified and Detailed instructions and labels partial systems clearly.
-- [ ] Join a single-player world and dedicated server. Confirm chat reports `Matter Overdrive Alpha 0.2 • Made by MVQ1303` once per login.
-- [ ] Confirm the documentation packet handles an invalid fourth document safely and causes no dedicated-server client-class loading error.
+- [ ] Obtain the M2 Testing Checklist, Current Feature Reference and Matter Overdrive System Guide items.
+- [ ] Right-click each item and confirm it opens the correct paged document.
+- [ ] Compare this checklist with the in-game Testing Checklist and `docs/testing/TO_TEST.md`.
+- [ ] Compare the Current Feature Reference with `docs/reference/WORKING_FEATURES.md`.
+- [ ] Verify Previous/Next, Page Up/Page Down, Left/Right, mouse wheel, index navigation, Done/Escape and multiple GUI scales.
+- [ ] Close and reopen a document and confirm its last-opened page is remembered where persistence is expected.
+- [ ] Confirm the newly restored Security/Holo Sign, Rogue Android/failed-animal and Mad Scientist/Puny Humans sections are visible in game.
 
-## Survival resources and Android pills
+## Security Protocol and machine ownership
 
-- [ ] In fresh Overworld chunks, confirm Tritanium generates from Y -32 through 64 and Dilithium from Y -64 through 16.
-- [ ] Smelt/blast both ores into their intended resources.
-- [ ] Craft and verify Blue, Red and Yellow Android Pills.
-- [ ] Save/reload and confirm Android state/FE remains correct.
+- [ ] Obtain `security_protocol_empty`, `security_protocol_claim`, `security_protocol_access` and `security_protocol_remove`.
+- [ ] Sneak-use an unbound protocol in the air. Confirm it binds to the player and becomes Claim mode.
+- [ ] Continue sneak-using it and confirm the bound modes cycle Claim -> Access -> Remove -> Claim while retaining the same owner UUID.
+- [ ] Confirm another Survival player cannot rebind a protocol owned by someone else.
+- [ ] Apply a bound Claim protocol to several Matter Overdrive block-entity machines. Confirm the machine becomes claimed and one Claim protocol is consumed.
+- [ ] Confirm the owner can open/use and break a claimed machine normally.
+- [ ] Confirm a non-owner without a matching Access protocol cannot use or break the claimed machine.
+- [ ] Give the second player an Access protocol bound to the owner's UUID and confirm use/break access is granted while it remains in inventory.
+- [ ] Confirm an Access protocol for a different owner does not grant access.
+- [ ] Apply a matching Remove protocol and confirm security is removed and one Remove protocol is consumed.
+- [ ] Confirm mismatched/unbound Remove protocols cannot clear ownership.
+- [ ] Save/reload the world and confirm machine ownership and protocol owner NBT persist.
+- [ ] Test security on representative systems: crate, Decomposer, Replicator, Pattern Storage, Network Router, Transporter, Weapon Station, Android Station, Reactor Controller/IO and Holo Sign.
 
-## Android system and active abilities
+## Holographic Sign
 
-- [ ] Install Head, Chest, Arms and Legs parts and confirm they unlock Cloak, Force Field, Sonic Shockwave and Ender Teleport respectively.
-- [ ] Use/rebind the default `V` cycle and `B` activate controls; verify selected ability and cooldown on the Android HUD, and confirm enabled Cloak/Force Field indicators remain visible after cycling away.
-- [ ] Sneak with a charged normal/HC Battery in either hand. Verify at most 1,024 FE/t transfers, only real battery FE is drained and the battery remains rechargeable.
-- [ ] Drain Android FE to zero. Verify the HUD reports core offline, movement is reduced by 50%, and normal speed returns after recharge or deactivation.
-- [ ] Verify exact/atomic FE use: insufficient actions leave partial FE untouched and sustained abilities shut down safely.
-- [ ] Verify Arms adds 3 damage for 80 FE only to direct melee attacks; projectiles and Sonic Shockwave must not trigger that bonus.
-- [ ] Verify Force Field reduces final post-armour/effect damage and shows activation/impact feedback. Verify Shockwave's fixed 4,096 FE cost/target filtering/knockback and test collision-safe Ender Teleport with level, upward and downward aim.
-- [ ] Verify the Rogue Android Spawner uses a collision-free candidate and consumes no 20,000 FE charge when spawning fails.
-- [ ] Verify ability selection, toggles and cooldowns across relog/death, and Red Pill cleanup.
-- [ ] See `ANDROID_SYSTEM_TESTING.md` for the focused checklist.
+- [ ] Place a Holo Sign and confirm its model renders without opaque/transparency artefacts.
+- [ ] Rename an item in an anvil, then sneak-use that item on the Holo Sign. Confirm the renamed text becomes the holographic message.
+- [ ] Confirm the text renders full-bright, remains readable from sensible angles and scales down instead of overflowing for long text.
+- [ ] Sneak-use with an empty hand and confirm the sign clears.
+- [ ] Normal-use the sign and confirm its current text/status message is reported.
+- [ ] Save/reload, leave/re-enter the chunk and reconnect to the world/server; confirm text persists and resynchronises to clients.
+- [ ] Test a long message near the 256-character cap and confirm no crash, packet overflow or visual corruption.
+- [ ] Claim the Holo Sign with a Security Protocol and repeat editing/break/access tests with owner and non-owner players.
 
-## Microwave
+## Restored Rogue Android entity
 
-- [ ] Accept valid food-smelting inputs and reject non-food items.
-- [ ] Cook from cable FE and from a charged battery without free processing.
-- [ ] Confirm base timing/cost, output blocking, upgrades, persistence, automation and break-safe drops.
-- [ ] See `MICROWAVE_TESTING.md` for the focused checklist.
+- [ ] Confirm the Android Spawner now creates `matteroverdrive:rogue_android`, not a tagged vanilla Husk.
+- [ ] Confirm the spawner searches collision-free locations and consumes 20,000 FE only after a spawn succeeds.
+- [ ] Confirm natural Rogue Android spawning occurs only in valid hostile-spawn conditions and is not excessive.
+- [ ] Inspect several Rogue Androids and confirm levels 0-3 occur and names match `Rogue Android [Lv N]`.
+- [ ] Find or summon a Legendary Rogue Android and confirm the legendary name/state persists through chunk unload/reload.
+- [ ] Verify base movement speed/follow behaviour feels consistent with the intended 0.30 movement speed and 24-block follow range.
+- [ ] Verify normal health scales from 32 + 10 per Android level and melee damage from 4 + level; Legendary should use the stronger restored values.
+- [ ] Confirm Rogue Androids are not sun-sensitive and reject potion effects as intended.
+- [ ] Confirm original Rogue Android ambient/death sounds play.
+- [ ] Kill multiple Rogue Androids and confirm bionic-part drops still work.
+- [ ] Load an older world containing the previous tagged-Husk workaround and confirm it does not crash or invalidate the save.
 
-## Space-Time Accelerator
+## Failed animals
 
-- [ ] Require both FE and matter; verify base usage and 40-tick pulse timing.
-- [ ] Accelerate crops/random ticks and several block entities on the same Y level.
-- [ ] Verify equal +X/-X/+Z/-Z boundary coverage.
-- [ ] Verify redstone disable, every supported upgrade, persistence, break-safe drops and acceptable tick-time impact.
-- [ ] See `SPACETIME_ACCELERATOR_TESTING.md` for the focused checklist.
+- [ ] Summon `matteroverdrive:failed_cow`, `failed_pig`, `failed_sheep` and `failed_chicken`.
+- [ ] Confirm each uses its Matter Overdrive texture rather than the vanilla animal texture.
+- [ ] Confirm movement, collisions, dimensions and basic passive-animal behaviour are sane.
+- [ ] Confirm the restored failed-animal idle/death sounds play for the appropriate species.
+- [ ] Save/reload with each failed animal present and confirm entities persist without registry or renderer errors.
 
-## Matter Scanner
+## Mad Scientist and Puny Humans quest
 
-- [ ] Sneak-use the Scanner on a powered Pattern Storage containing a Pattern Drive and confirm the link is stored.
-- [ ] Hold-use the linked Scanner on a block with a matter value for the full scan time.
-- [ ] Confirm the block is destroyed only after a successful scan and the linked drive gains 10% pattern progress.
-- [ ] Confirm ten valid blocks complete a normal pattern and a completed/full/unpowered/offline storage refuses further scans without destroying the target.
-- [ ] Move dimensions, unload/break the linked storage and confirm scanning fails safely.
-- [ ] Save/reload the Scanner and confirm its link and last-scan status persist.
+- [ ] Summon `matteroverdrive:mad_scientist` and confirm the legacy scientist texture renders correctly.
+- [ ] Spawn several and confirm the normal/Junkie state and display naming persist across save/reload.
+- [ ] As a non-Android player, interact with a Mad Scientist and confirm `Puny Humans` starts with objective: become an Android, then return.
+- [ ] Interact again before conversion and confirm the objective reminder appears without duplicating rewards or quest state.
+- [ ] Become an Android, return to a Mad Scientist and confirm completion occurs once.
+- [ ] Confirm the exact current reward bundle is one Battery, one Blue Android Pill and five Yellow Android Pills.
+- [ ] Confirm the quest-start and quest-complete sounds play.
+- [ ] Confirm a full inventory safely drops rewards rather than deleting them.
+- [ ] Relog/death between starting and completing and confirm player-persistent quest state survives.
+- [ ] Interact again after completion and confirm rewards cannot be claimed twice.
+- [ ] Note: deeper legacy Mad Scientist dialogue/quest chains, including Cocktail of Ascension and Mutant Scientist progression, are not part of this test build yet.
 
-## Portable Decomposer
+## Android system and selectable perk tree
 
-- [ ] Charge it in the Charging Station and confirm its 128,000 FE capacity persists.
-- [ ] Sneak-use with an offhand matter-valued item to add/remove that item from its pickup filter.
-- [ ] Pick up matching stacks and confirm they are automatically consumed at the intended 10% matter yield while FE is available.
-- [ ] Confirm unmatched, zero-matter, insufficient-FE and full-storage pickups enter the inventory normally.
-- [ ] Confirm fractional yield is retained rather than granting free matter or silently losing every low-value item.
-- [ ] Transfer stored matter into a compatible machine/container and verify exact values before/after.
-- [ ] Save/reload with FE, matter, filter entries and fractional remainder present.
+- [ ] Convert and confirm persistent Android FE/state, HUD and XP/level progression.
+- [ ] Install Head, Chest, Arms and Legs and verify Cloak, Force Field, Sonic Shockwave and Ender Teleport gating.
+- [ ] Use/rebind `V` cycle and `B` activate; verify selection, cooldown and persistent toggle indicators.
+- [ ] Press `K` and verify the three-column, ten-level selectable perk tree.
+- [ ] Confirm one point per reached level and that selections persist through level-up, relog, death and screen close.
+- [ ] Test individual 2,500 FE refunds and the confirmed 25,000 FE full reset.
+- [ ] Sneak with a charged Battery/HC Battery and verify actual stored FE transfers at the expected rate without creating energy.
+- [ ] Drain Android FE to zero and verify the offline HUD state and 50% movement penalty recover after recharge/deactivation.
+- [ ] Verify direct-melee Arms bonus, Force Field final-damage reduction, Shockwave cost/filtering and collision-safe Teleport.
 
-## Data Pad and guide
+## Fusion Reactor and anomaly
 
-- [ ] Right-click in air and confirm the guide screen opens.
-- [ ] Navigate every guide page and verify text/buttons at multiple GUI scales.
-- [ ] Use the Data Pad on supported blocks and confirm scan-history entries record the block/item and matter value.
-- [ ] Confirm history is capped, ordered newest-first and persists through save/reload.
-- [ ] Confirm unknown/zero-matter blocks are identified without crashing.
+- [ ] Build the horizontal ring in all four controller facings and verify structure faults/overlay positions.
+- [ ] Verify anomaly offset efficiency, Range upgrades and the current 16-block discovery cap.
+- [ ] Verify potential and actual FE/t against the displayed formula and confirm matter use scales with accepted generation.
+- [ ] Test direct FE receiver, one cable, 5+ cable chains, cable rebuild and multiple formed IO outputs.
+- [ ] Verify shared ring FE, internal machine distribution, connected-demand telemetry and stabilizer power integration/upgrades.
+- [ ] Test persistent RUN/SCRAM, redstone modes, comparator output and Reactor Remote controls.
+- [ ] Feed dropped items and kill living entities in the event horizon; confirm mass is added once and persists.
+- [ ] Verify pull, Space-Time Equalizer immunity, block/fluid hazard, stabilizer beam/suppression and acceptable tick time.
+- [ ] Re-test output across several anomaly masses to ensure reactor generation is not stuck at an old fixed cap.
 
-## Core regression checks
+## Weapons and Weapon Station
 
-- [ ] Reactor structure, anomaly mass, IO/cable FE transfer and stabilizers remain correct.
-- [ ] Empty weapons cannot fire; real batteries transfer only their stored FE; Energy Packs remain consumable.
-- [ ] Contract pickup/kill progress advances only one matching contract.
-- [ ] Pattern Analyzer/Storage/Monitor/Replicator still work after Scanner-created patterns.
-- [ ] Transparent blocks, crate/Inscriber models, equipped armour and held weapon transforms remain visually correct.
-- [ ] Machine inventories/upgrades survive reload and return safely on block break.
+- [ ] Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool fire only when their own valid energy path can pay the full shot cost.
+- [ ] Confirm empty weapons cannot drain unrelated weapons in the inventory.
+- [ ] Verify Battery/HC Battery transfer only real FE and remain rechargeable; Energy Packs remain consumable.
+- [ ] Test heat, overheat, reloads, cooldowns and all implemented barrel/sight/ricochet/colour modules.
+- [ ] Test first- and third-person held placement, aiming, firing and module rendering. Record any remaining visual mismatch with the 1.12.2 jar.
+- [ ] Verify Weapon Station contents/modules persist across reload and return safely on block break.
+
+## Matter machines and networks
+
+- [ ] Decomposer, Recycler, Analyzer, Pattern Storage, Pattern Monitor and Replicator complete their normal FE/matter workflows.
+- [ ] Verify Pattern Drives, Scanner-created pattern progress, queue routing and failure behaviour.
+- [ ] Test Matter Pipes and Heavy Energy Cables across short and long chains, break/rebuild and multiple endpoints.
+- [ ] Test Network Pipe/Switch/Router/Pylon traversal, filtering and anti-bounce behaviour.
+- [ ] Confirm machine inventories, matter, FE and upgrades persist through save/reload and return safely where expected on break.
+
+## Power, transport and utility machines
+
+- [ ] Solar Panel generates/exports FE correctly.
+- [ ] Charging Station charges compatible batteries/items without duplication.
+- [ ] Microwave accepts food-smelting inputs only and obeys FE/timing/upgrades/output blocking.
+- [ ] Space-Time Accelerator requires FE and matter, accelerates targets symmetrically and respects redstone/upgrades/range.
+- [ ] Transporter/Transport Flash Drive bind and transport correctly within supported limits.
+- [ ] Tritanium Crates retain 54-slot contents in-world and as dropped items.
+
+## Survival/world generation and visual regression
+
+- [ ] In fresh Overworld chunks confirm Tritanium and Dilithium ores generate in their documented ranges.
+- [ ] Smelt/blast ores into intended resources and verify survival recipes still load.
+- [ ] Confirm Industrial Glass and other translucent blocks render transparently.
+- [ ] Check Tritanium Crate and Inscriber UV/model alignment.
+- [ ] Check equipped Tritanium armour textures and held weapon transforms.
+- [ ] Verify original Rogue Android, Mad Scientist and failed-animal textures load without purple/black missing textures.
+
+## Contracts, Data Pad and Star Map
+
+- [ ] Contract collect/hunt progress advances exactly one matching contract and rewards redeem once.
+- [ ] Verify Contract Market refresh timing and persistence.
+- [ ] Confirm the Data Pad guide/history works and persists.
+- [ ] Confirm the Star Map contract-status screen is viewer-specific and stable.
+- [ ] Do not treat the current Star Map as full galaxy simulation parity; galaxy/star/planet gameplay remains future work.
 
 ## Pass criteria
 
-The branch is ready to consolidate when the runtime gate passes and there are no new crashes, datapack errors, item loss/duplication, free-energy/free-matter exploits, asymmetric Accelerator range, broken pattern progression or handheld-state persistence failures.
-
-## Android skill tree and paged documentation
-
-- [ ] Convert and earn XP; confirm the Android HUD shows Level 1 and progression toward the next node.
-- [ ] Confirm abilities require both the matching bionic part and the documented level: Cloak L1, Force Field L2, Sonic Shockwave L3, Ender Teleport L4.
-- [ ] Confirm a locked ability reports whether its level or part requirement is missing, and that XP persists through relog/death/deactivation.
-- [ ] Open each documentation item and confirm it displays Page N / M with Previous/Next buttons and Left/Right or Page Up/Page Down navigation.
-- [ ] Open the reactor sections and confirm the paged guide explains controller, IO, heavy-cable routing, ring sharing, anomaly/stabilizer setup, overlay and current limits.
-
-## Expanded selectable Android perk tree
-
-- [ ] Press K while converted and confirm the three-column, ten-level perk tree opens at multiple GUI scales.
-- [ ] Confirm one point is available per reached level and the HUD shows K plus the unspent count.
-- [ ] Click a node and confirm it remains pending until Confirm Perk is pressed.
-- [ ] Select Assault, Utility and Survival / Mobility perks on different levels; confirm the other two nodes on each completed row lock.
-- [ ] Verify all original twenty perk selections remain intact in a world upgraded from the previous tree build.
-- [ ] Test Sustained Systems passive drain, Quick Charge rate, Learning Matrix XP and Cooldown Router.
-- [ ] Test Reactive Plating, Self Repair, Silent Cloak, Tactical Scan, Emergency Protocol and Synthetic Perfection.
-- [ ] Hover every node and confirm its description, availability colour and selection state are accurate.
-- [ ] Arm Reset Perks, cancel by choosing another action, then confirm a reset consumes exactly 25,000 FE, refunds every point and disables toggled abilities.
-- [ ] Confirm insufficient FE cannot reset perks and malformed/repeated perk packets grant nothing.
-- [ ] Verify selections and refunded points persist through screen close, relog, death and Red Pill deactivation/reactivation.
-
-## Fusion Reactor full-parity pass
-
-- [ ] Build the exact horizontal ring in all four controller facings; wait 40 ticks and verify hull, coil/IO, flexible-side, unloaded-area and missing-anomaly faults.
-- [ ] At anomaly offsets 0/1/2/3, verify 100%/75%/50%/25% base efficiency. Add Range upgrades and verify discovery through the documented 16-block cap.
-- [ ] Verify the formula against GUI telemetry: 9,048 FE/t × efficiency × (unsuppressed real mass × 10) × Speed rate.
-- [ ] Verify theoretical matter drain is 1/80 kM/t × the same mass multiplier and Speed rate. Confirm fractional drain accumulates, no free generation occurs at zero matter, and a nearly full FE buffer reduces accepted FE and matter use proportionally.
-- [ ] Confirm generated FE exactly matches the displayed generated value; there must be no hidden post-tick 8× boost.
-- [ ] Test direct receiver, one cable, 5+ cable chain, cable rebuild and multiple formed IO outputs. Test matter input/output and confirm no duplication or IO ping-pong.
-- [ ] Put multiple compatible machines inside the ring and verify fair internal distribution plus connected-demand telemetry.
-- [ ] Test persistent RUN/SCRAM. Test Ignored, High and Low redstone modes across save/reload and through a linked Reactor Remote.
-- [ ] Verify comparator: 0 invalid, 1 paused/SCRAMMED, and 1-15 based on stored FE for an available reactor.
-- [ ] Feed dropped items and kill a living entity in the horizon. Confirm raw mass persists and living mass is added exactly once.
-- [ ] Verify ordinary players/mobs are pulled, Space-Time Equalizer wearers are immune, and pull/horizon telemetry matches observed behavior.
-- [ ] In a disposable world area, raise anomaly mass until block/fluid hazard activates. Confirm fluids and breakable blocks are affected, unbreakable blocks survive, destroyed-block telemetry updates, and tick time remains acceptable.
-- [ ] Lock one and four powered stabilizers through a clear beam. Confirm visible beam particles and approximately 70% / 24.01% remaining strength before Power upgrades.
-- [ ] Block/rotate/unpower/redstone-pause a stabilizer and confirm suppression expires within roughly 20 ticks. Verify its Ignored/High/Low mode persists.
-- [ ] Test Power, Power Storage, Matter Storage, Speed and Range upgrades individually and in combinations; record mass, efficiency, potential FE/t, actual FE/t and kM/t.
-- [ ] Open Current Features, System Guide and To Test in game; verify the reactor/anomaly sections are paged, readable, current, and explicitly warn that world damage is active.
-
-## Android perk level-up persistence regression
-
-- [ ] Select perks at several levels, earn enough XP through a part installation or successful ability to cross the next level boundary, and confirm every earlier perk remains installed.
-- [ ] Close/reopen the tree, relog and die after leveling; confirm the same perk mask and correct new unspent-point count remain.
-- [ ] Confirm only the armed and confirmed 25,000 FE Reset Perks action clears choices.
-
-## Individual Android perk refunds
-
-- [ ] Click an installed perk and confirm the button changes to Confirm refund without immediately changing the tree.
-- [ ] Cancel by clicking another node or closing the screen; confirm no FE or perk is lost.
-- [ ] Confirm one refund removes only the selected perk, charges exactly 2,500 Android FE and restores one available point for that level.
-- [ ] Confirm insufficient FE, malformed packets and attempts to refund an uninstalled perk change nothing.
-- [ ] Re-select a different branch at the refunded level and confirm other levels remain intact across level-up, relog and death.
-- [ ] Confirm the separate full reset still costs exactly 25,000 FE and clears every installed perk.
-
+The alpha build is ready for the next parity pass when there are no new crashes, registry/datapack failures, item loss/duplication, ownership bypasses, free-energy/free-matter exploits or save corruption, and the new Holo Sign, security protocols, restored entities and Puny Humans progression have all been verified in a fresh world and after save/reload.
