@@ -10,10 +10,11 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class LegacyEntityClientEvents {
     private LegacyEntityClientEvents() {}
-
-    @SubscribeEvent
-    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+    @SubscribeEvent public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ROGUE_ANDROID.get(), LegacyEntityRenderers.RogueAndroidRenderer::new);
+        event.registerEntityRenderer(ModEntities.RANGED_ROGUE_ANDROID.get(), LegacyEntityRenderers.RangedRogueAndroidRenderer::new);
+        event.registerEntityRenderer(ModEntities.DRONE.get(), LegacyEntityRenderers.DroneRenderer::new);
+        event.registerEntityRenderer(ModEntities.MUTANT_SCIENTIST.get(), LegacyEntityRenderers.MutantScientistRenderer::new);
         event.registerEntityRenderer(ModEntities.MAD_SCIENTIST.get(), LegacyEntityRenderers.MadScientistRenderer::new);
         event.registerEntityRenderer(ModEntities.FAILED_COW.get(), LegacyEntityRenderers.FailedCowRenderer::new);
         event.registerEntityRenderer(ModEntities.FAILED_PIG.get(), LegacyEntityRenderers.FailedPigRenderer::new);
