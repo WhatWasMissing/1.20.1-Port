@@ -39,37 +39,45 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         itemRenderer.render(weapon, displayContext, leftHand, poseStack, buffer,
                 packedLight, packedOverlay, weaponModel);
 
-        for (int slot = WeaponSystem.COLOR_SLOT; slot < WeaponSystem.MODULE_SLOT_COUNT; slot++) {
-            ItemStack module = WeaponSystem.getModule(weapon, slot);
-            if (module.isEmpty() || !(module.getItem() instanceof WeaponModuleItem moduleItem)
-                    || moduleItem.getEffect() == WeaponModuleItem.Effect.COLOR) {
-                continue;
-            }
-
+        // The original renderer mounted only visual optics. Barrels, colours and utility
+        // modules affect weapon behaviour but were never rendered as floating item icons.
+        ItemStack module = WeaponSystem.getModule(weapon, WeaponSystem.SIGHTS_SLOT);
+        if (module.getItem() instanceof WeaponModuleItem moduleItem
+                && (moduleItem.getEffect() == WeaponModuleItem.Effect.HOLO_SIGHTS
+                || moduleItem.getEffect() == WeaponModuleItem.Effect.SNIPER_SCOPE)) {
             poseStack.pushPose();
-            applyMountTransform(poseStack, displayContext, slot);
+            applyOpticMount(poseStack, weapon, moduleItem.getEffect());
             BakedModel moduleModel = itemRenderer.getModel(module, level, null, 0);
-            itemRenderer.render(module, displayContext, leftHand, poseStack, buffer,
+            itemRenderer.render(module, ItemDisplayContext.FIXED, false, poseStack, buffer,
                     packedLight, packedOverlay, moduleModel);
             poseStack.popPose();
         }
     }
 
-    private static void applyMountTransform(PoseStack poseStack,
-                                             ItemDisplayContext context, int slot) {
-        boolean firstPerson = context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
-                || context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
-        float scale = firstPerson ? 0.28F : 0.20F;
+    private static void applyOpticMount(PoseStack poseStack, ItemStack weapon,
+                                        WeaponModuleItem.Effect effect) {
+        double x = 0.0D;
+        double y = 0.12D;
+        double z = 0.20D;
 
-        if (slot == WeaponSystem.SIGHTS_SLOT) {
-            poseStack.translate(0.0D, 0.0D, 0.24D);
-            poseStack.scale(scale, scale, scale);
-        } else if (slot == WeaponSystem.BARREL_SLOT) {
-            poseStack.translate(0.0D, 0.0D, 0.16D);
-            poseStack.scale(scale, scale, scale);
-        } else {
-            poseStack.translate(0.0D, 0.0D, 0.08D);
-            poseStack.scale(scale, scale, scale);
+        if (weapon.getItem() instanceof EnergyWeaponItem energyWeapon) {
+            switch (energyWeapon.getWeaponType()) {
+                case ION_SNIPER -> {
+                    x = effect == WeaponModuleItem.Effect.HOLO_SIGHTS ? 0.18D : 0.0D;
+                    y = effect == WeaponModuleItem.Effect.HOLO_SIGHTS ? 0.11D : 0.125D;
+                    z = effect == WeaponModuleItem.Effect.HOLO_SIGHTS ? 0.20D : 0.30D;
+                }
+                case PHASER_RIFLE -> y = 0.123D;
+                case PLASMA_SHOTGUN -> {
+                    x = 0.21D;
+                    y = 0.10D;
+                }
+                case PHASER -> { }
+            }
         }
+
+        poseStack.translate(x, y, z);
+        float scale = effect == WeaponModuleItem.Effect.HOLO_SIGHTS ? 0.16F : 0.20F;
+        poseStack.scale(scale, scale, scale);
     }
 }
