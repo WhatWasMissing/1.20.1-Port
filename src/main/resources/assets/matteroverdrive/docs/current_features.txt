@@ -11,7 +11,7 @@ Build identity: `Alpha Version 3`, made by MVQ1303
 This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**. Implemented does not mean runtime-confirmed; use the M2 Testing Checklist for verification status.
 
 ## Matter / power / machines
-Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe are implemented. Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench are functional. Legacy-inspired Home/Tasks/Config/Upgrades presentation is exposed where real server state exists and physical slots remain visible.
+Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe are implemented. Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench are functional. Legacy-inspired Home/Tasks/Config/Upgrades presentation is exposed where real server state exists and physical slots remain visible. Decomposer now uses a wide HOME/TASKS/UPGRADES operator layout with persistent access to its real IO and four upgrade slots; Replicator and Transporter already expose their corresponding real task/config/location/upgrade state.
 
 Fusion Reactor/gravity includes horizontal structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behavior, Reactor Remote, persistent overlay, Gravitational Anomaly mass/pull/event horizon, Equalizer and powered Stabilizers.
 
@@ -22,7 +22,11 @@ Network Pipe, Network Switch, Network Router and matching-channel Pylon routing 
 Android conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent perk tree are present. Android Spawner restores the six-unit 30% melee / 70% ranged population, persistent ownership, six patrol drives, PATROL/GUARD/HOLD/ESCORT, commander formations, squad colors and coordinated targeting. Rogue and Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Linked Drones support FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE while unowned Drones remain hostile. Puny Humans and Cocktail of Ascension are implemented.
 
 ## Weapons
-Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station exposes real Battery/Color/Barrel/Sights/Utility slots and stat/loadout preview. Exact module meshes, recoil, zoom and remaining first-person animation parity remain incomplete.
+Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station retains the seven real Weapon/Battery/Color/Barrel/Sights/Utility slots on every page and now exposes legacy-inspired HOME/MODULES/STATS operator pages with live energy, heat, overheat, module and effective-stat telemetry.
+
+Legacy aiming presentation is now substantially closer to 1.12: Ion Sniper uses the recovered **0.40 base zoom multiplier** while aimed, and the Sniper Scope module uses the recovered **0.85 scope zoom override** through the same scope-first/base-second rule as legacy `EnergyWeapon#getZoomMultiply`. Scope accuracy/range effects remain server-authoritative through the current weapon module backend. Camera recoil now reacts to actual shot timestamps and heat instead of the previous continuous held-weapon wobble; Ion Sniper uses the recovered legacy 3/4-class recoil distinction as the reference point. Exact remaining module mesh placement and full legacy hand/weapon animation choreography remain incomplete.
+
+Weapon energy sourcing remains constrained to the weapon's own stored energy, its installed creative battery, explicit Energy Packs and real `WeaponBatteryItem` inventory/offhand sources; unrelated energy weapons are not treated as reload batteries.
 
 ## Restored legacy world structures
 Six legacy structure families use the native Forge 1.20.1 Feature -> configured feature -> placed feature -> biome modifier pipeline: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. They have terrain/rarity guards, persisted structure-specific Tritanium Crate salvage and one-time persistent inhabitants using real current-port Android/Drone/Scientist/Failed-animal entities. Structure Androids are deliberately unowned by Android Spawners and structure Drones begin unowned/hostile. Exact old PNG-template geometry remains incomplete: authoritative Android House is 21x21/yOffset -2 and Sand Pit is 24x24/yOffset -9, while current translations are still approximate.
@@ -77,7 +81,7 @@ A Scout arriving at a friendly colony with room stations there. The authoritativ
 This supports the strategic loop **homeworld -> balance building/fleet capacity -> queue industry -> travel while industry continues -> build ships -> transfer/colonize -> develop destination -> expand again**.
 
 ## Security / GUI
-Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across major machines, with real slots remaining visible and controls only shown when they have genuine server-side behavior.
+Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Major operator screens use the legacy Home/Tasks/Configurations/Upgrades vocabulary only where the underlying 1.20.1 machine has real state to expose. Physical machine/player slots stay visible while side pages change, and no decorative control is added for an absent backend. Weapon Station and Decomposer were brought into this pattern in the current pass; Transporter and Replicator retain their existing richer operator pages, while Fusion Reactor continues exposing its real RUN/SCRAM/redstone/output/hazard telemetry directly.
 
 ## Major remaining parity gaps
 1. Exact legacy world-structure templates and deeper structure-specific scripted objectives/events.
@@ -86,7 +90,7 @@ Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are im
 4. Generic legacy machine redstone/configuration modes where backend equivalents are absent.
 5. Remaining machine-specific GUI pages that map to real backend state.
 6. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
-7. Full weapon module meshes, recoil, zoom and first-person animation parity.
+7. Remaining weapon module mesh positioning and full first-person hand/weapon animation choreography.
 8. Deeper dispatcher/broadcaster network concepts where cleanly mappable to the working Forge routing core.
 9. Broader dialog/quest framework.
 
