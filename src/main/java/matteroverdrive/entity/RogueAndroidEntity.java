@@ -1,5 +1,6 @@
 package matteroverdrive.entity;
 
+import matteroverdrive.blockentity.AndroidSpawnerBlockEntity;
 import matteroverdrive.registry.ModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -8,6 +9,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -25,8 +27,6 @@ import java.util.List;
 
 /**
  * Real Rogue Android entity based on the 1.12.2 EntityRougeAndroidMob hierarchy.
- * Legacy base values: 0.30 movement speed, 24 follow range, 32 + level*10 health,
- * 4 + level melee damage, levels 0-3 and a 3%*level legendary roll.
  */
 public class RogueAndroidEntity extends Zombie {
     public static final float NATURAL_SPAWN_CHANCE = 0.10F;
@@ -66,8 +66,8 @@ public class RogueAndroidEntity extends Zombie {
         int difficultyId = level.getLevel().getDifficulty().getId();
         int rolledLevel = Mth.clamp((int) Math.abs(getRandom().nextGaussian()
                 * (1.0D + difficultyId * 0.25D)), 0, 3);
-        this.androidLevel = rolledLevel;
-        this.legendary = rolledLevel > 0
+        androidLevel = rolledLevel;
+        legendary = rolledLevel > 0
                 && getRandom().nextDouble() < LEGENDARY_CHANCE_PER_LEVEL * rolledLevel;
         applyLegacyStats(true);
         updateLegacyName();
@@ -78,12 +78,8 @@ public class RogueAndroidEntity extends Zombie {
     private void applyLegacyStats(boolean refillHealth) {
         double maxHealth = legendary ? 128.0D : 32.0D + androidLevel * 10.0D;
         double attack = legendary ? 8.0D : 4.0D + androidLevel;
-        if (getAttribute(Attributes.MAX_HEALTH) != null) {
-            getAttribute(Attributes.MAX_HEALTH).setBaseValue(maxHealth);
-        }
-        if (getAttribute(Attributes.ATTACK_DAMAGE) != null) {
-            getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(attack);
-        }
+        if (getAttribute(Attributes.MAX_HEALTH) != null) getAttribute(Attributes.MAX_HEALTH).setBaseValue(maxHealth);
+        if (getAttribute(Attributes.ATTACK_DAMAGE) != null) getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(attack);
         if (refillHealth) setHealth((float) maxHealth);
         else if (getHealth() > maxHealth) setHealth((float) maxHealth);
     }
@@ -121,6 +117,15 @@ public class RogueAndroidEntity extends Zombie {
     }
 
     public List<BlockPos> getPatrolPoints() { return List.copyOf(patrolPoints); }
+
+    @Override
+    public void remove(Entity.RemovalReason reason) {
+        if (!level().isClientSide && spawnerPosition != null && level().hasChunkAt(spawnerPosition)
+                && level().getBlockEntity(spawnerPosition) instanceof AndroidSpawnerBlockEntity spawner) {
+            spawner.unregisterOwnedAndroid(getUUID());
+        }
+        super.remove(reason);
+    }
 
     @Override public boolean canBeAffected(MobEffectInstance effect) { return false; }
     @Override protected boolean isSunSensitive() { return false; }
