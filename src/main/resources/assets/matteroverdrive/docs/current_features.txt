@@ -47,20 +47,24 @@ A substantial 1.7-style planetary economy layer is implemented with real server 
 - **Matter Extractor** uses the recovered **14,400 tick** build time and exact legacy stat effects: **+10 matter production / -6 energy production** per building.
 - **Power Generator** uses **14,400 ticks** and exact legacy effects: **+8 energy production / -2 matter production** per building.
 - **Residential** uses **6,000 ticks** and exact legacy effects: **+10,000 population / -4 energy / -2 matter / +4 building capacity** per building.
-- Residential happiness follows the recovered legacy rule: each Residential contributes **+0.5** when net colony energy is non-negative or **-0.4** when negative, plus **+0.5** when net matter is non-negative or **-0.6** when negative. The GUI synchronizes the resulting colony happiness value.
+- Residential happiness follows the recovered legacy positive/negative power and matter rule, with the resulting colony value synchronized to the GUI.
 - Only one construction project can run on a Star Map fleet at a time. Queue action, finish time, target planet and Scout/Colonizer composition persist in block-entity NBT; departure is blocked during active construction.
-- On an unowned current planet, deploying a completed Colonizer consumes exactly one Colonizer, establishes the Base and assigns ownership transactionally. Already-owned planets reject colonization without consuming the ship.
-- The current-planet GUI exposes Scout/Colonizer/colony-management controls plus **Extractor / Generator / Residential** controls and real synchronized **energy, matter, population, happiness, building count/capacity** telemetry.
-- Economy requests use the validated Star Map economy C2S path and enforce open-menu, block-position, range and commander checks.
+- Completed Scout and Colonizer production now creates **physical non-stacking ship tokens** carrying owner, ship type, fleet-console and planet metadata as well as the authoritative fleet count.
+- Non-current Planet pages expose **SEND S / SEND C**. Dispatch requires the matching physical token in the commander's inventory and removes that token plus the available fleet count transactionally.
+- Independent ship dispatches are stored as server-global persistent travel events containing one ship type, owner, console, origin, destination, start time and legacy-derived travel duration. Multiple dispatches can coexist without moving the main console fleet.
+- Scout arrival deliberately has no invented reward because the authoritative 1.7 `ItemScoutShip.onTravel` is empty. The Scout returns to available fleet composition and rematerializes its token on arrival.
+- Colonizer arrival follows the recovered 1.7 travel hook: an unowned destination gains ownership + Base and consumes the Colonizer; if the destination cannot be claimed, the Colonizer returns intact instead of being silently lost.
+- Transit counts for Scout/Colonizer ships are synchronized to the Planet GUI. The existing whole-fleet travel/encounter layer remains usable separately.
+- Economy and dispatch requests use dedicated validated C2S paths enforcing open-menu, block-position, range, commander and destination checks.
 
-This restores the core 1.7 Base -> production/building -> Factory/Hangar -> Scout/Colonizer -> new Base loop while keeping the later navigation/fleet systems intact. Scout/Colonizer composition is currently persistent fleet state rather than restored physical legacy item stacks, and it does not yet alter fleet-combat firepower because the references do not justify invented class combat values. Current per-building count guards are modern safety limits, not claimed legacy constants.
+This restores both the strategic colony loop and the old per-ship TravelEvent concept while preserving the newer console-fleet navigation/combat layer. Scout/Colonizer ships still do not alter combat firepower because the references do not justify invented combat values. Current per-building count guards are modern safety limits, not claimed legacy constants.
 
 ## Security / GUI
 Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across major machines, with real slots remaining visible and controls only shown when they have genuine server-side behavior.
 
 ## Major remaining parity gaps
 1. Exact legacy world-structure templates and deeper structure-specific scripted objectives/events.
-2. Star Map physical ship items, multiple independently travelling fleets, richer building types/economic consequences, richer star/planet events and physical arrival/dimensions.
+2. Star Map planet-local fleet inventories, additional ship classes where source-backed, richer economic consequences/events and physical planet arrival/dimensions.
 3. Drone flying navigation/renderer/equipment parity and richer owner-management presentation.
 4. Generic legacy machine redstone/configuration modes where backend equivalents are absent.
 5. Remaining machine-specific GUI pages that map to real backend state.
