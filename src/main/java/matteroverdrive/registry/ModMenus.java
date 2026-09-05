@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.menu.DecomposerMenu;
+import matteroverdrive.menu.AndroidSpawnerMenu;
 import matteroverdrive.menu.AndroidStationMenu;
 import matteroverdrive.menu.NetworkRouterMenu;
 import matteroverdrive.menu.ContractMarketMenu;
@@ -33,6 +34,7 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContractMarketMenu>> CONTRACT_MARKET = MENUS.register("contract_market", () -> IForgeMenuType.create(ContractMarketMenu::new));
     public static final RegistryObject<MenuType<StarMapMenu>> STAR_MAP = MENUS.register("star_map", () -> IForgeMenuType.create(StarMapMenu::new));
     public static final RegistryObject<MenuType<NetworkRouterMenu>> NETWORK_ROUTER = MENUS.register("network_router", () -> IForgeMenuType.create(NetworkRouterMenu::new));
+    public static final RegistryObject<MenuType<AndroidSpawnerMenu>> ANDROID_SPAWNER = MENUS.register("android_spawner", () -> IForgeMenuType.create(AndroidSpawnerMenu::new));
     public static final RegistryObject<MenuType<AndroidStationMenu>> ANDROID_STATION = MENUS.register("android_station", () -> IForgeMenuType.create(AndroidStationMenu::new));
     public static final RegistryObject<MenuType<ChargingStationMenu>> CHARGING_STATION = MENUS.register("charging_station", () -> IForgeMenuType.create(ChargingStationMenu::new));
     public static final RegistryObject<MenuType<EnergyPipeMenu>> ENERGY_PIPE = MENUS.register("heavy_matter_pipe", () -> IForgeMenuType.create(EnergyPipeMenu::new));
