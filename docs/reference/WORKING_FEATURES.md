@@ -2,99 +2,102 @@
 
 Branch: `testing/main`
 Legacy references:
-- Original Matter Overdrive 1.7.10 source branch `simeonradivoev/MatterOverdrive@1.7.10` (`0.4.2`).
-- Matter Overdrive 1.12.2 `0.7.1.0` jar and recovered source/resources.
+- Matter Overdrive 1.7.10 `0.4.2`.
+- Matter Overdrive 1.12.2 `0.7.1.0`.
+
+The 0.8 alpha jar is not a parity authority.
 Build identity: `Alpha Version 3`, made by MVQ1303
 
-This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**.
+This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**. “Implemented” does not mean runtime-confirmed; use the M2 Testing Checklist for verification status.
 
-## Latest runtime-confirmed results
+## Runtime-confirmed baseline
 
-- Rogue Android combat and sounds work.
-- Failed Cow, Pig, Sheep and Chicken spawn and behave correctly.
-- Mad Scientist interaction and the current Puny Humans quest slice work.
-- Holo Sign thin geometry and renamed-item programming work.
-- Previous 1.7 parity baseline through wrench/Star Map/visual fixes is GitHub-Actions build verified. The GUI/network-drive pass below still needs runtime verification.
+- Rogue Android combat and sounds.
+- Failed Cow, Pig, Sheep and Chicken spawning/behaviour.
+- Mad Scientist interaction and Puny Humans quest baseline.
+- Holo Sign thin geometry and renamed-item programming.
+- Earlier matter/reactor/network/wrench/Star Map baseline and the Charging Station / Accelerator / deeper Star Map code through `7fee056` were GitHub-Actions build verified.
 
 ## Matter / replication
 
-- Decomposer, Recycler, Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor and Replicator.
-- Inscriber and circuit progression.
-- Matter Scanner, Portable Decomposer and Matter Containers.
-- Matter Pipe routing and storage integration.
+Implemented Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe integration. Legacy-inspired Home/Tasks/Config/Upgrades presentation is wired where real server-side state exists; real container slots remain visible on every page.
 
-## Power / logistics / utility
+## Power / machines / logistics
 
-- Solar Panel, Charging Station, Heavy Energy Cable, Microwave and Space-Time Accelerator.
-- Network Pipe, Network Switch, Network Router and matching-channel Pylon routing.
-- Transporter / Transport Flash Drive.
-- Tritanium Crates and Weapon Station.
-- Tritanium Wrench rotates normally and restores the original 1.7 sneak-dismantle mode through the normal server break path, preserving Security Protocol checks.
-- Network Flash Drive restores the original `CONNECTIONS` destination-list concept: right-click inventory endpoints to toggle destinations, then install the drive in a Network Router filter slot to restrict routing destinations. An installed empty drive permits no destinations.
+- Solar Panel, Heavy Energy Cable, Microwave and Space-Time Accelerator.
+- Charging Station restores legacy nearby-Android wireless charging while retaining modern FE-item charging. Base Android range/rate and Range/Power/Power Storage upgrades are implemented.
+- Space-Time Accelerator uses the 1.12 `[-radius, radius)` footprint and exposes live task/upgrade telemetry.
+- Transporter supports direct Transport Flash Drive use plus persistent machine-side imported destinations, selection/removal, named drive imports, legacy range validity and the 3-entity-per-cycle cap.
+- Tritanium Crates and Weapon Station are functional.
+- Tritanium Wrench rotates normally and sneak-dismantles through the normal security-aware server break path.
+
+## Item network
+
+- Network Pipe, Network Switch, Network Router and matching-channel Pylon links.
+- Network Switch persists enabled state and visibly changes between inactive/active legacy textures.
+- Network Router supports ordinary item filtering and 1.7-style Network Flash Drive destination filtering.
+- Network Flash Drive stores a persistent `CONNECTIONS` endpoint set; an installed empty drive allows no destinations.
+- Router has four real Speed/Hyper-Speed upgrade slots. Speed upgrades increase the per-tick item budget and the executor can spend that budget across multiple stack moves rather than only changing a display number.
+- Router telemetry exposes FE, endpoints, nodes, pylons, routing mode, destination count, current item budget and last moved amount.
+
+There is no standalone legacy Network Controller machine in the authoritative 1.7/1.12 implementations; `network_controller.png` is not being treated as evidence for a fake block.
 
 ## Fusion Reactor / gravity
 
-- Horizontal reactor validation, Controller/IO shared storage, mass-scaled generation, upgrades, long cable output and demand telemetry.
-- Ring power sharing, RUN/SCRAM, redstone/comparator modes, Reactor Remote and placement overlay.
-- Persistent Gravitational Anomaly mass/pull/event horizon and living-entity mass contribution.
-- Space-Time Equalizer and powered Gravitational Stabilizers.
+Implemented horizontal structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, connected demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behaviour, Reactor Remote and persistent placement/debug overlay. Gravitational Anomaly mass/pull/event horizon, living-entity mass contribution, Space-Time Equalizer and powered Gravitational Stabilizers are present. Reactor GUI exposes legacy-inspired dual FE/matter rings plus current fault/output/hazard telemetry.
 
 ## Weapons
 
-Playable Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reloads, Batteries/HC Batteries, Energy Packs and current module effects. Base transforms are restored; complete legacy module meshes, recoil, zoom and remaining first-person presentation remain deeper parity work.
+Playable Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload, Battery/HC Battery/Energy Pack support and current module effects. Weapon Station exposes the real Battery, Color, Barrel, Sights and two Utility module roles plus live loadout/stat preview. Full legacy module meshes, recoil, zoom and remaining first-person animation parity are still incomplete.
 
-## Android
+## Android player system
 
-Persistent conversion, FE/HUD, four body-part slots, part-gated abilities, V/B/K controls and the modern selectable 30-perk tree with level persistence and refund/reset flows.
+Persistent conversion, FE/HUD, HEAD/CHEST/ARMS/LEGS part state, part/level-gated abilities, V cycle, B activate, K skill tree and a selectable 30-perk tree with persistence/refund flows. Android Station has server-authoritative ability cycling, direct skill-tree access and restored legacy bionic/feature icon presentation.
 
-## Security
+## Android Spawner / Rogue Androids
 
-Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching Access permission and matching Remove clearing are implemented across Matter Overdrive block entities. Wrench dismantling goes through the same break-security path.
+- Melee Rogue Androids have levels, legendary state, legacy-scaled health/damage, sounds and drops.
+- Ranged Rogue Android entity is implemented and uses Phaser Rifle / Ion Sniper equipment with ranged attacks.
+- Android Spawner is FE-powered and now restores the 1.7 population model: maximum 6 owned Androids and a 30% melee / 70% ranged spawn mix.
+- Spawned Rogue Androids persist their originating spawner position so unrelated/natural Androids do not block a machine’s population cap.
+- Android Spawner operator screen reports FE, owned population, max population and next-spawn timing. `KILL ALL` removes only Androids owned by that spawner.
+- Legacy path/team/teleport-drive configuration from the old spawner is not exposed until equivalent modern AI state exists; no fake controls are shown.
 
 ## Legacy entities / quests
 
-- Real Rogue Android with levels, legendary state, sounds, drops and Spawner integration.
 - Real Failed Cow/Pig/Sheep/Chicken.
-- Mad Scientist normal/Junkie persistence.
+- Mad Scientist normal/Junkie state persists.
 - Puny Humans quest and one-time Battery + Blue Pill + five Yellow Pill reward.
+- Cocktail of Ascension is implemented: 5 Creepers killed with a shovel, 5 gunpowder and 5 red mushrooms, followed by Junkie Scientist transformation.
+- Cocktail completion is transactional: ingredients and completion state are committed only after the Mutant Scientist successfully spawns.
+- Mutant Scientist is implemented with 256 HP, 0.25 speed, 4 base damage, restored 1.0 x 2.3 dimensions and broad legacy-style hostility toward living entities except other Mutant Scientists.
+- Drone entity is implemented. Owner UUID persists; owned drones do not attack their owner and same-owner drones are allied. Broader owner/team command systems remain incomplete.
 
-Cocktail of Ascension, Mutant Scientist, ranged Androids/drones and the broader legacy dialog framework remain future parity work.
+## Star Map / contracts
 
-## Legacy GUI presentation wired to modern logic
+Contract Market and contract counting are present. Star Map navigation now reaches **Galaxy -> Quadrant -> Star -> Planet**, with deterministic planet type, orbit, habitability, temperature, gravity, moons and atmosphere data plus wheel zoom, drag pan and right-click back navigation. Actual server-side interplanetary travel/events are not restored yet, so the UI intentionally does not provide a fake working travel action.
 
-The 1.7 GUI framework used a scalable `base_gui_hotbar.png` shell plus reusable elements rather than one fixed background per machine. The port now uses that original scalable shell for modern machine screens while retaining the current 1.20.1 menus, slot coordinates, FE/matter storage, progress calculations, debug buttons and persistence.
+## Security
 
-- Shared machine screens now render through the original 92x77 nine-slice-style shell instead of the synthetic dark frame.
-- Existing original `slot_small.png` remains wired to current menu slots.
-- Decomposer uses the original 24x16 progress-arrow element plus original 16x42 FE and matter meters, driven by current live values.
-- Replicator uses the same original progress/FE/matter elements, driven by current replication/network state.
-- Matter Analyzer uses the original progress/FE elements while retaining modern analysis data and controls.
-- Other current machine screens inherit the original scalable shell immediately; machine-specific legacy widgets/background composition will be migrated incrementally where it maps cleanly to the modern menus.
+Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching Access permission and matching Remove clearing are implemented across Matter Overdrive block entities. Wrench dismantling uses the same server security path.
 
-## Source-faithful visuals
+## GUI / source-faithful presentation
 
-Restored machine/display models include Holo Sign, Android Station, Weapon Station, Star Map, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage, Replicator, Charging Station, Space-Time Accelerator, Solar Panel, Tritanium Crates and Inscriber.
+The port reuses the original scalable machine shell and original slot/progress/FE/matter assets while retaining current 1.20.1 menus and server state. Decomposer, Replicator, Analyzer, Inscriber, Transporter, Charging Station, Accelerator, Reactor, Android Station and Weapon Station have received dedicated legacy-inspired operator passes. The design rule is to never hide a real container slot behind a page and never add a legacy button without a real server-side handler.
 
-Further restored/fixed:
-- Matter Pipe, Heavy Energy Cable and Network Pipe centre-plus-directional-arm models/states.
-- Original source texture assignments for Reactor Coil, Controller, IO, Gravitational Stabilizer and several decorative blocks.
-- Pattern Drive empty/partial/full icons and Matter Scanner offline/online icons.
-- Pattern Monitor, Space-Time Accelerator and Pattern Storage are non-occluding so adjacent block faces remain visible.
-- Holo Sign text is anchored to the physical screen on its readable side.
-- Pylon model is within valid modern model-bake bounds.
-- Industrial Glass suppresses shared internal faces, restoring the core 1.7 ForceGlass behaviour.
-- Star Map has mouse-wheel zoom and click-drag pan as the first restored astronomical-UI layer.
+Restored/fixed visual systems also include directional Matter/Network/Heavy Energy pipe arms, Reactor component face assignments, Pattern Drive fill states, Matter Scanner linked state, non-occluding Pattern Monitor/Storage/Accelerator, readable Holo Sign face, valid Pylon model bounds, Industrial Glass shared-face suppression and active/inactive Network Switch presentation.
 
 ## Major remaining parity gaps
 
-1. Cocktail of Ascension, Mutant Scientist and deeper quest/dialog framework.
-2. Ranged Rogue Androids, drones and richer entity AI/team/equipment systems.
-3. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining world events.
-4. Full 1.7/1.12 Star Map galaxy/star/planet data model, selection, travel and events.
-5. Generic legacy machine redstone modes (`none/high/low`) and additional machine configuration controls.
-6. Machine-specific legacy GUI pages/widgets such as the original Analyzer waveform, task/configuration pages and upgrade-page presentation, while retaining current server logic.
-7. Exact legacy Pylon multi-block/animated overlay and other renderer-specific glow layers.
-8. Full weapon module meshes, recoil, zoom and remaining hand animations.
-9. Additional legacy network dispatcher/broadcaster depth and optional old-mod integrations where modern equivalents are appropriate.
+1. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining legacy world structures/events.
+2. Actual Star Map travel/event backend and richer legacy astronomical data/events.
+3. Android Spawner patrol paths, teleport-drive destinations, team/color configuration and richer Android squad AI.
+4. Broader Drone ownership/team/command behaviour and remaining entity equipment/AI details.
+5. Generic legacy machine redstone/configuration modes where current machines still lack server-side equivalents.
+6. Remaining machine-specific legacy GUI elements/pages that map to real current backend state.
+7. Exact legacy Pylon multiblock/animated overlay and renderer-specific glow layers.
+8. Full weapon module meshes, recoil, zoom and remaining first-person hand animations.
+9. Deeper legacy network dispatcher/broadcaster concepts where they can be mapped without replacing the working modern Forge item-routing core.
+10. Broader legacy dialog/quest framework beyond Puny Humans and Cocktail of Ascension.
 
 See the in-game **M2 Testing Checklist** for the current runtime pass.
