@@ -56,79 +56,55 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Non-commanders cannot issue effective travel/economy/dispatch/combat packets through someone else's console.
 
 ## Star Map legacy capacity parity
-This is the newest high-priority test set.
+Recovered 1.7 base capacities are **building / fleet**: Normal **6/6**, Gas Giant **2/8**, Dwarf **4/4**, Homeworld override **8/10**. Base adds +2 building, Residential +4 building and Ship Hangar +2 fleet. Terrestrial/Oceanic map to legacy Normal.
 
-Recovered 1.7 base capacities are **building / fleet**:
-- Normal: **6 / 6**.
-- Gas Giant: **2 / 8**.
-- Dwarf: **4 / 4**.
-- Homeworld override: **8 / 10**.
-
-Modifiers:
-- Base: **+2 building capacity**.
-- Residential: **+4 building capacity** each.
-- Ship Hangar: **+2 fleet capacity** each.
-
-Port mapping: Terrestrial/Oceanic -> legacy Normal; Gas Giant -> Gas Giant; Dwarf -> Dwarf.
-
-- [ ] Fresh homeworld reports effective **B capacity 10** before Residential and **fleet capacity 10** before Hangars.
-- [ ] Fresh homeworld receives one stationed Scout, matching the 1.7 homeworld setup.
-- [ ] Current compatibility bridge still includes the starting Ship Factory and does not break existing progression.
-- [ ] Existing pre-capacity homeworld save at bootstrap planet upgrades to homeworld 8/10 base capacities without deleting buildings/ships.
-- [ ] Normal/Oceanic colony with Base reports **8 building capacity / 6 fleet capacity** before Residential/Hangars.
-- [ ] Gas Giant colony with Base reports **4 / 8**.
-- [ ] Dwarf colony with Base reports **6 / 4**.
-- [ ] One Residential increases displayed building capacity by exactly 4.
-- [ ] One Hangar increases displayed fleet capacity by exactly 2.
-- [ ] Building construction is rejected when `completed buildings + queued building jobs` reaches building capacity.
-- [ ] Ship construction is rejected when stationed ships + queued Scout/Colonizer jobs reaches fleet capacity.
-- [ ] A queued Residential itself occupies one building space until completion; it cannot be used to escape an already-full legacy building cap.
-- [ ] Four construction slots remain the independent queue limit even when building/fleet capacity is larger than four.
-- [ ] Capacity values survive save/reload and do not reset after moving the command fleet.
-
-Legacy basis: 1.7 `Planet.canBuild(IBuilding...)` checks `buildings.size < getBuildingSpaces`, requires a Base, then delegates to the building. Planet generators supply Normal 6/6, Gas Giant 2/8 and Dwarf 4/4; `GalaxyServer.buildHomeworld` overrides to 8/10. Base adds +2 BUILDINGS_SIZE, Residential +4 BUILDINGS_SIZE, and Ship Hangar +2 FLEET_SIZE.
+- [ ] Fresh homeworld reports effective B capacity 10 and fleet capacity 10 before Residential/Hangars.
+- [ ] Fresh homeworld receives one stationed Scout.
+- [ ] Current compatibility bridge still includes starting Ship Factory.
+- [ ] Existing pre-capacity homeworld upgrades to homeworld capacities without deleting state.
+- [ ] Normal/Oceanic colony with Base reports 8 building / 6 fleet.
+- [ ] Gas Giant colony with Base reports 4 / 8.
+- [ ] Dwarf colony with Base reports 6 / 4.
+- [ ] Residential increases building capacity by 4; Hangar increases fleet capacity by 2.
+- [ ] Completed + queued building jobs cannot exceed building capacity.
+- [ ] Stationed + queued ship jobs cannot exceed fleet capacity.
+- [ ] Queued Residential cannot escape an already-full building cap.
+- [ ] Four construction slots remain the queue limit even when capacity is larger.
+- [ ] Capacity values survive save/reload and command-fleet movement.
 
 ## Star Map colony economy / four-slot construction
 - [ ] Planet ownership/buildings survive breaking/replacing Star Map because they live in world SavedData.
-- [ ] `SCOUT` build = 3,600 ticks.
-- [ ] `COLONIZER` build = 5,000 ticks.
-- [ ] `FACTORY` build = 8,000 ticks and is required before ship construction.
-- [ ] `HANGAR` build = 4,800 ticks and adds exactly 2 fleet spaces.
-- [ ] Matter Extractor = 14,400 ticks and changes totals by +10 matter / -6 energy.
-- [ ] Power Generator = 14,400 ticks and changes totals by +8 energy / -2 matter.
-- [ ] Residential = 6,000 ticks and adds +10,000 population / -4 energy / -2 matter / +4 building capacity.
+- [ ] SCOUT 3,600t; COLONIZER 5,000t; FACTORY 8,000t; HANGAR 4,800t.
+- [ ] Matter Extractor 14,400t = +10 matter/-6 energy.
+- [ ] Power Generator 14,400t = +8 energy/-2 matter.
+- [ ] Residential 6,000t = +10,000 population/-4 energy/-2 matter/+4 building capacity.
 - [ ] E/M/P/H/B telemetry updates immediately after completion.
-- [ ] Planet GUI shows `Q 0/4` through `Q 4/4` for restored construction slots.
-- [ ] Up to four valid jobs can run concurrently on same planet.
-- [ ] Fifth job rejects while all four slots occupied.
-- [ ] Starting construction does not block whole-command-fleet departure; active planet builds continue while console travels.
+- [ ] Q 0/4 through Q 4/4 reports restored construction slots.
+- [ ] Up to four valid jobs run concurrently; fifth rejects.
+- [ ] Construction continues while command fleet travels.
 - [ ] Build queues survive GUI close, chunk unload, save/reload and Star Map replacement.
-- [ ] Returning after finish time resolves completed project even if original console was not continuously loaded.
-- [ ] Duplicate queued Ship Factory construction rejects.
-- [ ] Existing worlds with one active console-local build migrate that job once into target planet queue.
+- [ ] Elapsed jobs settle later from absolute finish times.
+- [ ] Duplicate queued Ship Factory rejects.
+- [ ] Previous console-local active build migrates once.
 
 ## Planet-local Scout / Colonizer fleets
-- [ ] Completed Scout/Colonizer production adds ship to planet where it was built.
-- [ ] Planet GUI S/C counts describe currently visited planet's stationed fleet only.
-- [ ] Moving command fleet to another owned planet shows that planet's independent counts.
-- [ ] Building ships on Colony A does not increase Colony B count.
-- [ ] Old console-local ship counters migrate once without duplication.
-- [ ] Physical Scout/Colonizer token can appear for local completion and carries owner/type/planet metadata.
+- [ ] Completed ships belong to build planet.
+- [ ] Planet GUI S/C counts are local to current planet.
+- [ ] Colony A/B counts remain independent.
+- [ ] Old console-local counters migrate once.
+- [ ] Physical local-completion tokens carry owner/type/planet metadata.
 
 ## Independent ship transfer
-- [ ] Non-current Planet page SEND S / SEND C dispatches ship while command fleet stays where it is.
-- [ ] Dispatch removes exactly one stationed ship from source planet.
-- [ ] Matching carried physical token is consumed when present, but remote stationed ship is still dispatchable without token.
-- [ ] Multiple independent dispatches coexist without replacing each other or command-fleet journey.
-- [ ] TRANSIT S# C# survives save/reload.
-- [ ] Travel time uses same legacy-derived AU/LY calculation as normal Star Map travel.
-- [ ] Source Star Map may be broken/replaced while ship is in transit; another commander-owned loaded Star Map can settle arrival.
-- [ ] Scout arriving at owned friendly colony with room stations there.
-- [ ] Scout unable to berth returns to origin and grants no invented scouting reward.
-- [ ] Colonizer arriving at unowned planet is consumed, assigns ownership and creates Base.
-- [ ] Colonizer arriving at friendly colony with room stations there instead of being consumed.
-- [ ] Colonizer unable to claim/berth returns to origin.
-- [ ] Same-planet, invalid, foreign-source, forged-menu and out-of-range dispatch attempts reject cleanly.
+- [ ] SEND S / SEND C dispatch while command fleet remains stationary.
+- [ ] Dispatch removes exactly one stationed source ship.
+- [ ] Remote stationed ships remain commandable without physical token.
+- [ ] Multiple dispatches coexist with command-fleet journey.
+- [ ] TRANSIT S# C# persists.
+- [ ] AU/LY timing matches normal Star Map travel calculation.
+- [ ] Another owned loaded Star Map can settle arrivals if source block is gone.
+- [ ] Scout friendly arrival stations; failed berth returns to origin without invented reward.
+- [ ] Colonizer unowned arrival creates ownership + Base; friendly arrival stations; failed arrival returns.
+- [ ] Invalid/foreign/forged/out-of-range dispatch rejects.
 
 ## Matter / network / transporter regression
 - [ ] Decomposer -> Matter Pipe -> Replicator/Fusion IO works through multi-pipe chains.
@@ -147,17 +123,38 @@ Legacy basis: 1.7 `Planet.canBuild(IBuilding...)` checks `buildings.size < getBu
 - [ ] Equalizer protects wearer from anomaly pull/event-horizon damage.
 - [ ] Overlay persists and reports real block positions.
 
-## Weapons regression
+## Weapons parity / regression
+This is a high-priority test set for the current pass.
 - [ ] Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun cannot fire without valid FE.
-- [ ] One weapon does not drain unrelated weapons.
+- [ ] One energy weapon never drains another energy weapon as a reload source.
+- [ ] Only explicit Energy Packs and Weapon Battery/HC Battery items are consumed for reload; installed weapon battery/capacity remains coherent.
 - [ ] Batteries/HC Batteries remain rechargeable after draining.
 - [ ] Heat, overheat and reload work in Survival and Creative.
+- [ ] Ion Sniper aiming visibly applies the recovered legacy 0.40 base FOV multiplier.
+- [ ] Installing Sniper Scope changes aiming to the recovered 0.85 scope override on supported weapons.
+- [ ] Scope range/accuracy effects agree with the Weapon Station STATS page.
+- [ ] Firing produces a brief decaying camera recoil instead of constant held-weapon camera wobble.
+- [ ] Ion Sniper recoil is stronger unzoomed than zoomed, matching the recovered legacy 4/3 reference behavior.
+- [ ] Recoil does not continue after the shot impulse decays or while merely holding the weapon.
+- [ ] Weapon Station HOME reports current weapon type, energy, heat/overheat, module count and sight state.
+- [ ] Weapon Station MODULES reports the six role slots correctly and all seven real station slots stay usable on every page.
+- [ ] Weapon Station STATS updates immediately when modules change.
 - [ ] Weapon Station slots/modules persist and dismantling returns contents.
+- [ ] No weapon becomes backwards/invisible in first or third person after the client-effects change.
+
+## Machine GUI parity / persistence
+- [ ] Decomposer uses HOME/TASKS/UPGRADES side pages while input/output/battery and all four real upgrade slots remain visible and clickable.
+- [ ] Decomposer TASKS reports real progress, input matter yield and FE demand; no value is decorative/faked.
+- [ ] Replicator HOME/TASKS/CONFIG/UPGRADES pages retain visible physical slots and accurate queue/pattern telemetry.
+- [ ] Transporter HOME/TASKS/LOCATIONS/UPGRADES retains real saved-destination controls and visible physical slots.
+- [ ] Weapon Station HOME/MODULES/STATS retains all physical slots as above.
+- [ ] Fusion Reactor direct controls remain real RUN/SCRAM/redstone/debug controls and its upgrade slots/dual resource telemetry remain visible.
+- [ ] Major GUIs keep aligned slot hitboxes at GUI scales 2, 3 and Auto where practical.
+- [ ] Switching pages never moves/hides a real inventory slot or causes ghost-clicks.
 
 ## GUI / persistence / release sanity
-- [ ] Major GUIs keep visible physical slots and aligned hitboxes at multiple GUI scales.
 - [ ] System Guide index opens correct sections and remembers last page.
 - [ ] Current Feature Reference matches this build.
 - [ ] M2 Testing Checklist matches this file.
 - [ ] Save/reload preserves machine inventories, FE, matter, upgrades, contracts, patrol drives, Android state, colony state, planet construction/capacities and ship travel state.
-- [ ] No missing-texture purple/black models appear for new ship items or restored world content.
+- [ ] No missing-texture purple/black models appear for weapon optics, ship items or restored world content.
