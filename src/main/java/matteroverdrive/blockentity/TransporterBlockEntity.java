@@ -40,7 +40,7 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
     public static final int SLOT_COUNT = 2;
     public static final int UPGRADE_SLOT_COUNT = 5;
 
-    public static final int ENERGY_CAPACITY = 1_024_000;
+    public static final int ENERGY_CAPACITY = 1024000;
     public static final int ENERGY_PER_BLOCK = 16;
     public static final int TRANSPORT_TIME = 70;
     public static final int TRANSPORT_DELAY = 80;
