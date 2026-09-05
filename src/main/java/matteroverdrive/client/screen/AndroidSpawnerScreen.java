@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawnerMenu> {
     public AndroidSpawnerScreen(AndroidSpawnerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
+        imageWidth = 260;
         imageHeight = 207;
         inventoryLabelY = 86;
     }
@@ -18,11 +18,11 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.literal("KILL ALL"), button -> {
+        addRenderableWidget(Button.builder(Component.literal("KILL OWNED"), button -> {
             if (minecraft != null && minecraft.gameMode != null) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
             }
-        }).bounds(leftPos + 101, topPos + 69, 58, 17).build());
+        }).bounds(leftPos + 179, topPos + 68, 69, 18).build());
     }
 
     @Override
@@ -37,8 +37,12 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight,
                 inventoryLabelY, MachineScreenStyle.PURPLE);
         MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 27, 142, 59);
+        MachineScreenStyle.drawSection(graphics, leftPos + 171, topPos + 27, 77, 59);
         MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 24, topPos + 39, 126, 5,
                 menu.energy(), menu.capacity(), MachineScreenStyle.PURPLE);
+        for (int slot = 0; slot < 6; slot++) {
+            MachineScreenStyle.drawSlot(graphics, leftPos + 34 + slot * 18, topPos + 68);
+        }
     }
 
     @Override
@@ -51,9 +55,13 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
                         ? MachineScreenStyle.AMBER : MachineScreenStyle.TEXT, false);
         String next = menu.spawned() >= menu.maxSpawned()
                 ? "Population full"
-                : String.format(java.util.Locale.ROOT, "Next spawn: %.1f s", menu.ticksUntilSpawn() / 20.0D);
-        graphics.drawString(font, next, 24, 61, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Mix 30/70", 24, 74, MachineScreenStyle.CYAN, false);
+                : String.format(java.util.Locale.ROOT, "Next: %.1f s", menu.ticksUntilSpawn() / 20.0D);
+        graphics.drawString(font, next, 24, 59, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Patrol drives", 35, 78, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Targets", 181, 33, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, Integer.toString(menu.patrolTargets()), 181, 44,
+                menu.patrolTargets() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.AMBER, false);
+        graphics.drawString(font, "Mix 30/70", 181, 55, MachineScreenStyle.CYAN, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
     }
