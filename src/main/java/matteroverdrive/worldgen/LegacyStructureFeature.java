@@ -67,7 +67,14 @@ public final class LegacyStructureFeature extends Feature<NoneFeatureConfigurati
         BlockState hull=ModBlocks.get("decorative.tritanium_plate").get().defaultBlockState();
         BlockState glass=ModBlocks.get("industrial_glass").get().defaultBlockState();
         BlockState floor=ModBlocks.get("decorative.floor_tiles").get().defaultBlockState();
-        for(int x=-r;x<=r;x++)for(int z=-r;z<=r;z++){double d=Math.sqrt(x*x+z*z);if(d<=r-1)set(level,c.offset(x,0,z),floor);if(d>=r-1.2D&&d<=r+.2D)for(int y=1;y<=4;y++)set(level,c.offset(x,y,z),y==2?glass:hull);}
+        for(int x=-r;x<=r;x++) for(int z=-r;z<=r;z++) {
+            double d=Math.sqrt(x*x+z*z);
+            if(d<=r-1) {
+                set(level,c.offset(x,0,z),floor);
+                for(int y=1;y<=4;y++) set(level,c.offset(x,y,z),Blocks.AIR.defaultBlockState());
+            }
+            if(d>=r-1.2D&&d<=r+.2D) for(int y=1;y<=4;y++) set(level,c.offset(x,y,z),y==2?glass:hull);
+        }
         for(int x=-6;x<=6;x++)for(int z=-6;z<=6;z++)if(x*x+z*z<=38)set(level,c.offset(x,5,z),x*x+z*z>24?glass:hull);
         set(level,c.offset(0,1,0),ModBlocks.get("matter_analyzer").get().defaultBlockState());
         set(level,c.offset(3,1,0),ModBlocks.get("tritanium_crate_blue").get().defaultBlockState());
