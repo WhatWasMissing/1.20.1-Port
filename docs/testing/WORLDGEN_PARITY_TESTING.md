@@ -6,6 +6,8 @@ Legacy authorities:
 
 The legacy world structures were primarily MOImageGen PNG-template structures. This pass translates their recovered logical envelopes and known machine/block roles into the 1.20.1 feature system; it does not claim byte-for-byte PNG placement parity.
 
+The port intentionally uses **legacy identity + modern execution**. Recovered footprints, offsets, machine roles, loot themes and occupants are preserved, while 1.20.1 placement is allowed to reject clearly unsuitable terrain and keep entrances usable rather than blindly stamping a legacy template.
+
 ## Recovered geometry targets
 
 - Android House: 21 x 21, legacy yOffset -2.
@@ -14,6 +16,18 @@ The legacy world structures were primarily MOImageGen PNG-template structures. T
 - Cargo Ship: 58 x 23.
 - Underwater Base: 43 x 43.
 - Mad Scientist House: approximately 9 x 9 x 6 village-piece envelope.
+
+## Modern placement layer
+
+- [ ] Android House rejects severe terrain height changes instead of spanning cliffs/large ravines.
+- [ ] Mad Scientist House rejects severe local terrain height changes.
+- [ ] Crashed Ship and Cargo Ship tolerate natural terrain variation but reject obviously unsupported sites.
+- [ ] Terrain checks do not prevent normal generation on ordinary plains/rolling terrain.
+- [ ] Android House front doorway and two-block approach remain clear after placement.
+- [ ] Mad Scientist House front doorway and two-block approach remain clear after placement.
+- [ ] Entrance cleanup never removes Bedrock.
+- [ ] Underwater Base remains governed by its deep-water requirement rather than generic land checks.
+- [ ] Sand Pit remains governed by its recovered sand-site/corner leeway checks rather than generic land checks.
 
 ## Android House
 
