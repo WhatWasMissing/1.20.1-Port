@@ -40,7 +40,7 @@ Status: PARTIAL means a useful implementation exists but legacy parity is not co
 25. Star Map colony economy
 26. Star Map planet-local ships and transfers
 27. Restored structures and salvage
-28. Playtester troubleshooting
+28. Troubleshooting routes
 
 # 1. First steps and world exploration
 Status: PLAYABLE / TESTING world content.
@@ -346,7 +346,7 @@ Sand Pit: lower-tier tritanium/matter salvage with an Android guardian and possi
 
 Generated structure Androids are deliberately not Android-Spawner-owned, and generated Drones begin unowned/hostile.
 
-# 28. Playtester troubleshooting
+# 28. Troubleshooting routes
 
 ## No FE transfer
 Confirm you are using Heavy Energy Cable, not Matter Pipe/Network Pipe. Test a one-cable path first.
