@@ -11,8 +11,8 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
     public AndroidSpawnerScreen(AndroidSpawnerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
-        imageHeight = 197;
-        inventoryLabelY = 84;
+        imageHeight = 207;
+        inventoryLabelY = 94;
     }
 
     @Override
@@ -22,7 +22,7 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
             if (minecraft != null && minecraft.gameMode != null) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
             }
-        }).bounds(leftPos + 101, topPos + 61, 58, 18).build());
+        }).bounds(leftPos + 101, topPos + 70, 58, 18).build());
     }
 
     @Override
@@ -36,7 +36,7 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight,
                 inventoryLabelY, MachineScreenStyle.PURPLE);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 27, 142, 52);
+        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 27, 142, 61);
         MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 24, topPos + 39, 126, 5,
                 menu.energy(), menu.capacity(), MachineScreenStyle.PURPLE);
     }
@@ -52,9 +52,8 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
         String next = menu.spawned() >= menu.maxSpawned()
                 ? "Population full"
                 : String.format(java.util.Locale.ROOT, "Next spawn: %.1f s", menu.ticksUntilSpawn() / 20.0D);
-        graphics.drawString(font, next, 24, 62, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Legacy mix: 30% melee / 70% ranged",
-                18, 76, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, next, 24, 61, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "30% melee / 70% ranged", 24, 76, MachineScreenStyle.CYAN, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
     }
