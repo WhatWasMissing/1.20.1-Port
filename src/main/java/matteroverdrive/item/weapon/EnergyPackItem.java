@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 public class EnergyPackItem extends Item {
-    public static final int ENERGY_AMOUNT = 32_000;
+    public static final int ENERGY_AMOUNT = 128_000;
 
     public EnergyPackItem(Properties properties) {
         super(properties);
