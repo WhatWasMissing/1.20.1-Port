@@ -31,19 +31,26 @@ public final class StarMapShipTravelData extends SavedData {
         return true;
     }
 
-    public int countInTransit(UUID owner, long consolePos, int shipType) {
+    public int countInTransit(UUID owner, int shipType) {
         int count = 0;
-        for (TravelEvent event : events) if (event.owner.equals(owner) && event.consolePos == consolePos && event.shipType == shipType) count++;
+        for (TravelEvent event : events) if (event.owner.equals(owner) && event.shipType == shipType) count++;
         return count;
     }
 
-    public List<Arrival> collectArrivals(ServerLevel level, UUID owner, long consolePos, long now) {
+    public int countDeparting(UUID owner, int q, int s, int p, int shipType) {
+        int count = 0;
+        for (TravelEvent event : events) if (event.owner.equals(owner) && event.shipType == shipType && event.fromQ == q && event.fromS == s && event.fromP == p) count++;
+        return count;
+    }
+
+    /** Any loaded console owned by the player may settle due arrivals; the ship no longer belongs to one console after launch. */
+    public List<Arrival> collectArrivals(UUID owner, long now) {
         List<Arrival> result = new ArrayList<>();
         Iterator<TravelEvent> it = events.iterator();
         while (it.hasNext()) {
             TravelEvent event = it.next();
-            if (!event.owner.equals(owner) || event.consolePos != consolePos || now < event.start + event.duration) continue;
-            result.add(new Arrival(event.shipType, event.toQ, event.toS, event.toP));
+            if (!event.owner.equals(owner) || now < event.start + event.duration) continue;
+            result.add(new Arrival(event.shipType, event.fromQ, event.fromS, event.fromP, event.toQ, event.toS, event.toP));
             it.remove();
             setDirty();
         }
@@ -78,5 +85,5 @@ public final class StarMapShipTravelData extends SavedData {
 
     private record TravelEvent(UUID owner, long consolePos, int shipType, int fromQ, int fromS, int fromP,
                                int toQ, int toS, int toP, long start, int duration) {}
-    public record Arrival(int shipType, int q, int s, int p) {}
+    public record Arrival(int shipType, int fromQ, int fromS, int fromP, int q, int s, int p) {}
 }
