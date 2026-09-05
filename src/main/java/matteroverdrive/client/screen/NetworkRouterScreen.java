@@ -11,7 +11,7 @@ public class NetworkRouterScreen extends AbstractContainerScreen<NetworkRouterMe
         super(menu, inventory, title);
         imageWidth = 176;
         imageHeight = 213;
-        inventoryLabelY = 100;
+        inventoryLabelY = 102;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class NetworkRouterScreen extends AbstractContainerScreen<NetworkRouterMe
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight,
                 inventoryLabelY, MachineScreenStyle.CYAN);
         MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 25, 142, 61);
-        MachineScreenStyle.drawDebugPanel(graphics, leftPos + 17, topPos + 88, 142, 12);
+        MachineScreenStyle.drawDebugPanel(graphics, leftPos + 17, topPos + 87, 142, 14);
         MachineScreenStyle.drawSlot(graphics, leftPos + 79, topPos + 40);
         for (int slot = 0; slot < 4; slot++) {
             MachineScreenStyle.drawSlot(graphics, leftPos + 52 + slot * 18, topPos + 64);
@@ -44,12 +44,10 @@ public class NetworkRouterScreen extends AbstractContainerScreen<NetworkRouterMe
                 20, 57, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, "Speed upgrades | budget " + menu.itemBudget() + " items/t",
                 20, 78, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Endpoints " + menu.endpoints() + " | Nodes " + menu.nodes()
-                        + " | Pylons " + menu.pylons(),
-                20, 90, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "FE " + menu.energy(), 20, 92, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Moved " + menu.lastMoved() + "/t",
-                112, 92, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "E " + menu.endpoints() + " | N " + menu.nodes()
+                        + " | P " + menu.pylons(), 20, 89, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "FE " + menu.energy(), 84, 89, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Moved " + menu.lastMoved(), 121, 89, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
     }
