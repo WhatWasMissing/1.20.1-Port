@@ -20,76 +20,116 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 ## Android Spawner / Drone
 - [ ] Spawner caps at six owned Androids with the intended 30% melee / 70% ranged mix and ignores unrelated Androids.
-- [ ] Patrol drives, COLOR, PATROL/GUARD/HOLD/ESCORT, commander assignment, formation and coordinated targets persist.
-- [ ] Same-Spawner Androids remain allies and protect commander/team allies.
-- [ ] Drone linking and FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE persist; owned Drones do not attack owner/allies and unowned Drones remain hostile.
+- [ ] Six Transport Flash Drive patrol slots work and persist.
+- [ ] COLOR and PATROL/GUARD/HOLD/ESCORT persist through save/reload and level-up.
+- [ ] ESCORT formation follows the commander without stacking all Androids in one position.
+- [ ] Same-Spawner Androids coordinate targets and remain allied to one another and the commander/team.
+- [ ] Drone linking works; another player cannot silently steal a linked Drone.
+- [ ] FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE modes persist and owned Drones never attack owner/allies.
 
 ## Legacy world structures / population
 - [ ] Explore newly generated chunks; old chunks are not retroactively populated.
-- [ ] Crashed ships, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits generate with their expected shapes/rarity/terrain filters.
+- [ ] Crashed ships, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits generate.
 - [ ] Generated Tritanium Crates contain structure-specific persisted salvage.
-- [ ] Crashed/cargo/Android/Sand-Pit sites receive persistent unowned Android/Drone defenders; Scientist houses get a real Mad Scientist and possible Failed animal; underwater bases get hostile occupants.
-- [ ] Structure Androids do not count toward any Android Spawner six-unit cap and structure Drones remain unowned.
-- [ ] Occupants do not duplicate on chunk reload and placement does not embed them in walls/machines.
-- [ ] Underwater-base interiors remain dry and structure generation does not cause severe stalls/cascades.
+- [ ] Crashed/cargo/Android/Sand-Pit sites receive persistent unowned Android/Drone defenders.
+- [ ] Mad Scientist houses get a real Mad Scientist and possible Failed animal; underwater bases get hostile occupants.
+- [ ] Structure Androids do not count toward Android Spawner ownership/cap and structure Drones begin unowned.
+- [ ] Occupants do not duplicate on chunk reload and are not embedded in structure walls/machines.
+- [ ] Underwater-base interiors remain dry.
+- [ ] Note geometry is still approximate versus authoritative old templates: Android House should ultimately be 21x21/yOffset -2 and Sand Pit 24x24/yOffset -9.
 
 ## Natural gravitational anomalies
 - [ ] New Overworld chunks can generate natural anomalies at the conservative ~1/200 candidate rate.
-- [ ] Generated anomaly starting mass is 2,048-10,240 and immediately uses real pull, event-horizon consumption, mass growth and block effects.
-- [ ] Block/fluid-obstructed candidates reject cleanly; anomalies persist after save/reload.
-- [ ] Reactor/Stabilizer/Equalizer behavior remains unaffected.
+- [ ] Starting mass is within 2,048-10,240.
+- [ ] Pull, event horizon, mass growth and block/fluid effects activate normally.
+- [ ] Block/fluid-obstructed candidates reject cleanly and generated anomalies persist after save/reload.
+- [ ] Reactor/Stabilizer/Equalizer behavior is unaffected by natural-generation support.
 
-## Star Map navigation / journey
+## Star Map navigation / command fleet
 - [ ] Galaxy -> Quadrant -> Star -> Planet retains wheel zoom, drag pan and RMB back.
-- [ ] Planet properties remain deterministic and TRAVEL remains server-authoritative.
-- [ ] Same-star AU and interstellar LY timing, ETA, persistence and encounter scheduling still work.
-- [ ] Asteroid, Slingshot, Android Intercept, Signal Echo and Hostile Fleet encounters still resolve correctly.
+- [ ] Planet properties remain deterministic.
+- [ ] Whole-fleet `TRAVEL` remains server-authoritative and survives close/reload/chunk unload.
+- [ ] Same-star AU and interstellar LY timing remain correct.
+- [ ] Asteroid, Slingshot, Android Intercept, Signal Echo and Hostile Fleet encounters still resolve.
+- [ ] Hostile Fleet pauses arrival until combat resolves.
+- [ ] Fleet baseline remains Hull 100 / Shield 60 / Firepower 20.
+- [ ] FIRE/RECHARGE uses the 20-tick cooldown; return fire drains shield before hull.
+- [ ] Victory resumes preserved travel time; defeat returns navigation to the previous safe planet at 35 hull / 0 shield.
+- [ ] Non-commanders cannot issue effective travel/economy/dispatch/combat packets through someone else's console.
 
-## Star Map colony / shipyard economy
-- [ ] The first commander action binds the console fleet and establishes the starting planet as its persistent homeworld with **Base + Ship Factory** bootstrap state.
-- [ ] Planet ownership/buildings are stored in server-global Star Map SavedData, not only in the Star Map block entity; save/reload preserves them.
-- [ ] Current-planet GUI exposes real economy controls only while the fleet is stationary.
-- [ ] `SCOUT` starts a single server-authoritative **3,600 tick** build and adds one Scout only when complete.
-- [ ] `COLONIZER` starts a **5,000 tick** build and adds one Colonizer only when complete.
-- [ ] Completed Scout/Colonizer construction spawns a real non-stacking physical ship token carrying owner/type/console/planet metadata.
-- [ ] A colony without Ship Factory cannot build ships; `FACTORY` takes **8,000 ticks**.
-- [ ] `HANGAR` takes **4,800 ticks** and each completed Hangar adds **2 fleet berths**.
-- [ ] Base fleet capacity is 2; available Scout + Colonizer count cannot exceed current colony capacity.
-- [ ] `EX` / Matter Extractor takes **14,400 ticks** and completion changes synchronized colony totals by **+10 matter / -6 energy**.
-- [ ] `GN` / Power Generator takes **14,400 ticks** and completion changes totals by **+8 energy / -2 matter**.
-- [ ] `RS` / Residential takes **6,000 ticks** and completion adds **10,000 population**, **-4 energy**, **-2 matter** and **+4 building capacity**.
-- [ ] Current-planet telemetry updates immediately after completion: net **E**, net **M**, population **P**, happiness **H**, and building count/capacity **B**.
-- [ ] Multiple Extractors/Generators/Residential buildings stack their legacy stat changes and persist across save/reload.
-- [ ] A second build cannot replace an active build and whole-fleet travel is blocked while construction is active.
-- [ ] Build action, target planet, finish time, Scout count and Colonizer count survive save/reload/chunk unload.
-- [ ] On an unowned current planet, `CLAIM`/colonize requires both an available Colonizer count and its physical token, consumes exactly one, assigns ownership and establishes the Base transactionally.
-- [ ] Colonizing an already-owned planet fails without consuming a Colonizer.
+## Star Map colony economy
+- [ ] First commander binding creates a persistent homeworld with Base + Ship Factory.
+- [ ] Planet ownership/buildings survive breaking/replacing the Star Map because they live in world SavedData.
+- [ ] `SCOUT` build = 3,600 ticks.
+- [ ] `COLONIZER` build = 5,000 ticks.
+- [ ] `FACTORY` build = 8,000 ticks and is required before ship construction.
+- [ ] `HANGAR` build = 4,800 ticks and adds exactly 2 fleet berths.
+- [ ] Base fleet capacity is 2 before Hangars.
+- [ ] Matter Extractor = 14,400 ticks and changes totals by +10 matter / -6 energy.
+- [ ] Power Generator = 14,400 ticks and changes totals by +8 energy / -2 matter.
+- [ ] Residential = 6,000 ticks and adds +10,000 population / -4 energy / -2 matter / +4 building capacity.
+- [ ] E/M/P/H/B telemetry updates immediately after construction.
+- [ ] Only one colony construction job runs per console and whole-fleet departure is blocked while it builds.
+- [ ] Construction target/action/finish time survives save/reload.
 
-## Star Map independent ship travel
-- [ ] On a non-current Planet page, `SEND S` and `SEND C` appear while the console fleet is stationary.
-- [ ] Dispatch requires the matching physical ship token in the commander's inventory; missing token or zero available ship count rejects cleanly.
-- [ ] Successful dispatch consumes exactly one physical token and removes exactly one available Scout/Colonizer count.
-- [ ] Multiple independent ship dispatches can coexist and do not start or replace the console fleet's normal TRAVEL journey.
-- [ ] Transit telemetry `TRANSIT S# C#` updates after dispatch and survives save/reload.
-- [ ] Independent travel time uses the same legacy-derived AU/LY timing calculation as normal Star Map travel.
-- [ ] A Scout arrival produces no invented scouting reward, restores one available Scout and rematerializes its physical token.
-- [ ] A Colonizer arrival on an unowned planet consumes the ship, assigns the commander as owner and establishes a Base without moving the console fleet there.
-- [ ] A Colonizer arriving at a planet that cannot be claimed is not silently lost: its available count and physical token return.
-- [ ] Independent dispatch rejects same-planet destinations, invalid positions, non-commanders, forged menu positions and out-of-range packet attempts.
-- [ ] Ship events preserve owner, console, ship type, origin, destination, start and duration in world SavedData.
+## Planet-local Scout / Colonizer fleets
+This is the newest high-priority test set.
 
-Legacy basis: 1.7 `TravelEvent` persists one ship, from/to positions, start and travel length; `GalaxyServer.createTravelEvent` removes the dispatched ship from the source fleet before adding the event. Scout `onTravel` is empty. Colonizer `onTravel` consumes itself only when it can establish a Base and set planet ownership. The modern console remains the owner anchor while independent ship events restore that per-ship behavior.
+- [ ] Completed Scout/Colonizer production adds the ship to the **planet where it was built**, not to a global console counter.
+- [ ] Planet GUI `S` and `C` counts describe the currently visited planet's stationed fleet only.
+- [ ] Moving the command console fleet to a different owned planet shows that planet's own independent ship counts.
+- [ ] Each planet enforces its own Base + Hangar fleet capacity.
+- [ ] Building ships on Colony A does not increase Colony B's ship count.
+- [ ] Existing worlds from the previous build migrate old console-local Scout/Colonizer counts once into the bound console's current planet; reloading again does not duplicate the migration.
+- [ ] A physical Scout/Colonizer item token still appears after construction and carries owner/type/planet metadata.
 
-Current limitation: independent ship travel is associated with the originating Star Map console rather than a fully restored planet-local fleet inventory. Fighter/Battlecruiser/Mothership enum values exist in the old API, but they are not being treated as implemented ships without corresponding source-backed item behavior.
+## Independent ship transfer
+- [ ] On a non-current Planet page, `SEND S` / `SEND C` can dispatch a ship while the command fleet stays where it is.
+- [ ] Dispatch removes exactly one stationed ship from the current source planet.
+- [ ] A carried matching physical token is consumed when present, but a remote stationed ship is still dispatchable without requiring an item token in the player's inventory.
+- [ ] Multiple independent dispatches coexist without replacing each other or the main command-fleet journey.
+- [ ] `TRANSIT S# C#` tracks the commander's active independent travel events and survives save/reload.
+- [ ] Travel time uses the same legacy-derived AU/LY calculation as normal Star Map travel.
+- [ ] The exact source Star Map block may be broken/replaced while a ship is in transit; arrival can be settled by another loaded Star Map owned by the same commander.
+- [ ] Scout arriving at an owned friendly colony with room becomes stationed there.
+- [ ] Scout arriving where it cannot berth returns to its origin colony instead of disappearing.
+- [ ] Scout travel grants no invented reward; the 1.7 Scout travel hook is empty.
+- [ ] Colonizer arriving at an unowned planet is consumed, assigns ownership and creates a Base.
+- [ ] Colonizer arriving at an existing friendly colony with room stations there instead of being consumed.
+- [ ] Colonizer unable to claim or berth returns to its origin colony.
+- [ ] Same-planet, invalid, foreign-source, forged-menu and out-of-range dispatch attempts reject cleanly.
+- [ ] Breaking/replacing a Star Map does not delete stationed planet fleets or completed colonies.
 
-## Star Map fleet combat
-- [ ] Fleet header remains Hull / Shield / Firepower / Victories, baseline 100 / 60 / 20.
-- [ ] Hostile Fleet pauses arrival; FIRE/RECHARGE uses the 20-tick cooldown and return fire drains shield before hull.
-- [ ] Victory resumes preserved travel time and defeat retreats to the last safe Star Map planet at 35 hull / 0 shield.
-- [ ] Combat state survives save/reload and non-commanders cannot forge effective fleet-fire requests.
-- [ ] Scout/Colonizer composition, independent ship events and colony production totals do not silently alter combat firepower until explicitly supported by legacy behavior.
+Legacy basis: 1.7 `TravelEvent` stores one ship, source, destination, start and duration; dispatch removes the ship from the source fleet. Scout `onTravel` is empty. Colonizer arrival establishes a Base and planet ownership when allowed. This port now stores stationed ship counts on persistent planets while retaining the modern command-fleet travel/combat layer separately.
 
-## Machine GUI / persistence
-- [ ] Major machine GUIs keep visible physical slots and aligned hitboxes across GUI scales.
-- [ ] Charging Station, Space-Time Accelerator, Transporter, Reactor, Android systems and Weapon Station retain their current working state/persistence.
-- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, destinations and relevant Star Map/Android state after save/reload.
+## Matter / network / transporter regression
+- [ ] Decomposer -> Matter Pipe -> Replicator/Fusion IO remains functional through multi-pipe chains.
+- [ ] Pattern Analyzer/Storage/Monitor/Replicator networking still discovers and queues patterns correctly.
+- [ ] Router ordinary filter and Network Flash Drive destination filter work.
+- [ ] Speed/Hyper-Speed router upgrades persist and do not exceed the 10 FE/item execution rule.
+- [ ] Switch enabled state persists and actually affects graph routing.
+- [ ] Transporter exact-required-FE succeeds and chained infrastructure does not create duplicate transport.
+
+## Reactor / anomaly regression
+- [ ] Ring structure validation still detects missing/wrong blocks correctly.
+- [ ] IO shares controller FE/matter and exports through Heavy Energy Cable chains.
+- [ ] RUN/SCRAM and redstone modes persist.
+- [ ] Shared ring power and stabilizer-from-reactor behavior remain functional where configured.
+- [ ] Event-horizon living-entity deaths add mass once.
+- [ ] Equalizer still protects the wearer from anomaly pull/event-horizon damage.
+- [ ] Overlay persists and reports real block positions.
+
+## Weapons regression
+- [ ] Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun cannot fire without valid FE.
+- [ ] One weapon does not drain unrelated weapons as an energy source.
+- [ ] Batteries/HC Batteries remain rechargeable after draining.
+- [ ] Heat, overheat and reload behavior work in Survival and Creative.
+- [ ] Weapon Station slots/modules persist and dismantling returns contents.
+
+## GUI / persistence / release sanity
+- [ ] Major machine GUIs keep visible physical slots and aligned hitboxes at multiple GUI scales.
+- [ ] In-game System Guide index opens the correct sections and remembers the last page when closed/reopened.
+- [ ] Current Feature Reference matches this build's implemented systems.
+- [ ] M2 Testing Checklist matches this file.
+- [ ] Save/reload preserves machine inventories, FE, matter, upgrades, contracts, patrol drives, Android state, colony state and ship travel state.
+- [ ] No missing-texture purple/black models appear for newly added ship items or restored world content.
