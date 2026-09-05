@@ -37,28 +37,30 @@ Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with determinis
 A persistent fleet layer restores useful 1.7 travel-event/attack concepts: commander ownership, 100 hull / 60 shield / 20 firepower baseline, deterministic hostile fleets, validated FIRE/RECHARGE combat, shield-before-hull damage, victory count, preserved travel pause and emergency retreat. Combat state persists in Star Map NBT and menu sync.
 
 ## Star Map colony / shipyard economy
-A first substantial 1.7-style planetary economy layer is now implemented with real server state rather than GUI-only counters.
+A substantial 1.7-style planetary economy layer is implemented with real server state rather than GUI-only counters.
 
 - Planet ownership and colony buildings are stored in **server-global `SavedData`** keyed by deterministic quadrant/star/planet identity, so ownership survives save/reload and is not tied to one Star Map block.
-- The first commander-bound starting planet is bootstrapped as the fleet's homeworld with a **Base + Ship Factory**, providing an entry point into the legacy loop without the old galaxy-homeworld generator.
-- A colonized planet begins with a **Base**. Normal colony construction requires ownership/Base state.
-- **Scout Ship** production uses the recovered 1.7 build length of **3,600 ticks**.
-- **Colonizer Ship** production uses **5,000 ticks**.
+- The first commander-bound starting planet is bootstrapped as the fleet's homeworld with a **Base + Ship Factory**. A colonized planet begins with a **Base** and normal colony construction requires ownership/Base state.
+- **Scout Ship** production uses the recovered 1.7 build length of **3,600 ticks**; **Colonizer Ship** uses **5,000 ticks**.
 - **Ship Factory** construction uses **8,000 ticks** and is required before Scout/Colonizer production.
 - **Ship Hangar** construction uses **4,800 ticks**; each Hangar adds the recovered **+2 fleet-space** effect. The current bridge gives a colonized Base two baseline berths.
+- **Matter Extractor** uses the recovered **14,400 tick** build time and exact legacy stat effects: **+10 matter production / -6 energy production** per building.
+- **Power Generator** uses **14,400 ticks** and exact legacy effects: **+8 energy production / -2 matter production** per building.
+- **Residential** uses **6,000 ticks** and exact legacy effects: **+10,000 population / -4 energy / -2 matter / +4 building capacity** per building.
+- Residential happiness follows the recovered legacy rule: each Residential contributes **+0.5** when net colony energy is non-negative or **-0.4** when negative, plus **+0.5** when net matter is non-negative or **-0.6** when negative. The GUI synchronizes the resulting colony happiness value.
 - Only one construction project can run on a Star Map fleet at a time. Queue action, finish time, target planet and Scout/Colonizer composition persist in block-entity NBT; departure is blocked during active construction.
 - On an unowned current planet, deploying a completed Colonizer consumes exactly one Colonizer, establishes the Base and assigns ownership transactionally. Already-owned planets reject colonization without consuming the ship.
-- The current-planet Star Map GUI exposes SCOUT, COLONIZER and contextual COLONIZE / BUILD FACTORY / HANGAR controls with real server-side validation and synchronized queue/ship/capacity telemetry.
-- Economy requests use a dedicated validated C2S packet and enforce open-menu, block-position, range and commander checks.
+- The current-planet GUI exposes Scout/Colonizer/colony-management controls plus **Extractor / Generator / Residential** controls and real synchronized **energy, matter, population, happiness, building count/capacity** telemetry.
+- Economy requests use the validated Star Map economy C2S path and enforce open-menu, block-position, range and commander checks.
 
-This restores the core 1.7 Base -> Factory/Hangar -> Scout/Colonizer -> new Base gameplay dependency while keeping the later navigation/fleet systems intact. Scout/Colonizer composition is currently persistent fleet state rather than restored physical legacy item stacks, and it does not yet alter fleet-combat firepower because the reference material does not justify inventing class combat stats.
+This restores the core 1.7 Base -> production/building -> Factory/Hangar -> Scout/Colonizer -> new Base loop while keeping the later navigation/fleet systems intact. Scout/Colonizer composition is currently persistent fleet state rather than restored physical legacy item stacks, and it does not yet alter fleet-combat firepower because the references do not justify invented class combat values. Current per-building count guards are modern safety limits, not claimed legacy constants.
 
 ## Security / GUI
 Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across major machines, with real slots remaining visible and controls only shown when they have genuine server-side behavior.
 
 ## Major remaining parity gaps
 1. Exact legacy world-structure templates and deeper structure-specific scripted objectives/events.
-2. Star Map Matter Extractor/Power Generator/Residential production effects, physical ship items, multiple independently travelling fleets, richer star/planet events and physical arrival/dimensions.
+2. Star Map physical ship items, multiple independently travelling fleets, richer building types/economic consequences, richer star/planet events and physical arrival/dimensions.
 3. Drone flying navigation/renderer/equipment parity and richer owner-management presentation.
 4. Generic legacy machine redstone/configuration modes where backend equivalents are absent.
 5. Remaining machine-specific GUI pages that map to real backend state.
