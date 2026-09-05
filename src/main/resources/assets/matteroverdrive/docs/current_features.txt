@@ -60,10 +60,13 @@ Persistent conversion, FE/HUD, HEAD/CHEST/ARMS/LEGS part state, part/level-gated
 - Ranged Rogue Android entity is implemented and uses Phaser Rifle / Ion Sniper equipment with ranged attacks.
 - Android Spawner is FE-powered and restores the 1.7 population model: maximum 6 owned Androids and a 30% melee / 70% ranged spawn mix.
 - Spawned Rogue Androids persist their originating spawner position so unrelated/natural Androids do not block a machine’s population cap.
-- The six legacy Transport Flash Drive slots are real again. Bound same-dimension drives become patrol waypoints; newly spawned Androids inherit and persist the waypoint list and patrol it only while they have no combat target.
-- Android Spawner operator screen reports FE, owned population, max population, next-spawn timing and active patrol target count. `KILL OWNED` removes only Androids owned by that spawner.
+- The six legacy Transport Flash Drive slots are real. Bound same-dimension drives become patrol waypoints; spawned Androids inherit and persist those waypoints.
+- The Spawner now has real persistent squad configuration rather than withheld placeholder controls. Eight squad colors and three command modes are implemented: PATROL, GUARD and HOLD.
+- PATROL uses the installed waypoint loop when idle; GUARD sends idle units back toward their originating Spawner when they stray beyond roughly eight blocks; HOLD suppresses idle movement. Combat continues to take priority.
+- Squad color/mode changes propagate to loaded owned Androids and are inherited by future spawns. Both settings persist on the Spawner and on the Android entities themselves.
+- Androids from the same originating Spawner explicitly treat one another as allies, preventing same-squad friendly targeting.
+- Android Spawner operator screen reports FE, owned population, max population, next-spawn timing, patrol target count, squad color and squad mode. `COLOR`, `MODE` and `KILL OWNED` controls all have real server-side handlers.
 - Dismantling the Spawner returns installed patrol drives.
-- Legacy team/color configuration remains withheld until equivalent modern squad/team state exists; no fake controls are shown.
 
 ## Legacy entities / quests
 
@@ -73,17 +76,20 @@ Persistent conversion, FE/HUD, HEAD/CHEST/ARMS/LEGS part state, part/level-gated
 - Cocktail of Ascension is implemented: 5 Creepers killed with a shovel, 5 gunpowder and 5 red mushrooms, followed by Junkie Scientist transformation.
 - Cocktail completion is transactional: ingredients and completion state are committed only after the Mutant Scientist successfully spawns.
 - Mutant Scientist is implemented with 256 HP, 0.25 speed, 4 base damage, restored 1.0 x 2.3 dimensions and broad legacy-style hostility toward living entities except other Mutant Scientists.
-- Drone entity is implemented. Owner UUID persists; owned drones do not attack their owner and same-owner drones are allied. Broader owner/team command systems remain incomplete.
+- Drone entity retains the port's ranged hostile behavior when unowned. Owner UUID persists and same-owner Drones are allied.
+- The 1.12 legacy `EntityAIFollowCreator` behavior is restored for owned Drones: a loaded owner is followed when the Drone strays beyond about five blocks and the Drone settles within about three blocks.
+- Owned Drones inherit the owner's ally/team relationships and do not automatically target other players as generic hostiles. Unowned Drones remain hostile ranged mobs.
+- Richer Drone command modes, explicit owner-management UI and remaining legacy flight/render details are still incomplete.
 
 ## Star Map / contracts
 
 Contract Market and contract counting are present. Star Map navigation reaches **Galaxy -> Quadrant -> Star -> Planet**, with deterministic planet type, orbit, habitability, temperature, gravity, moons and atmosphere data plus wheel zoom, drag pan and right-click back navigation.
 
-A real server-authoritative Star Map journey layer is implemented. Each Star Map machine persists its current galactic position, requested destination, active-travel flag, start/end times and total duration. The Planet page exposes real `TRAVEL`, `EN ROUTE` and `CURRENT LOCATION` states backed by synchronized server data rather than a decorative action. Travel requests are validated server-side against the player's currently open Star Map menu, the actual block position, interaction distance and catalog destination before state can change.
+A real server-authoritative Star Map journey layer is implemented. Each Star Map machine persists its current galactic position, requested destination, active-travel flag, start/end times and total duration. The Planet page exposes real `TRAVEL`, `EN ROUTE` and `CURRENT LOCATION` states backed by synchronized server data. Travel requests are validated server-side against the player's open Star Map menu, block position, interaction distance and catalog destination.
 
-Travel timing preserves the useful legacy concept found in 1.7: interstellar travel is based on 8 time units per LY and same-system travel on 10 per AU. Because the modern deterministic catalog does not contain the original generated galaxy save format, star coordinates and planet orbit numbers act as stable LY/AU stand-ins for those multipliers. The 1.12 Star Map itself had no machine-energy capacity, so no invented FE travel charge has been added.
+Travel timing preserves the useful legacy concept found in 1.7: interstellar travel is based on 8 time units per LY and same-system travel on 10 per AU. The deterministic modern catalog uses stable star coordinates and planet orbit numbers as LY/AU stand-ins. The 1.12 Star Map had no machine-energy capacity, so no invented FE travel charge has been added.
 
-A persistent mid-journey encounter layer is now present for journeys of at least 80 ticks. Each route deterministically schedules one encounter near its midpoint. Asteroid Fields add 100 ticks, Gravitational Slingshots reduce the remaining route without allowing instant completion, Signal Echoes add 40 ticks, and Rogue Android Intercepts add 120 ticks and spawn a real boarding party of two melee plus one ranged Rogue Android around the Star Map. Encounter schedule/result state is saved with the machine and synchronized through its menu data. Announcements are local to players within 32 blocks.
+A persistent mid-journey encounter layer is present for journeys of at least 80 ticks. Each route deterministically schedules one encounter near its midpoint. Asteroid Fields add 100 ticks, Gravitational Slingshots reduce the remaining route without allowing instant completion, Signal Echoes add 40 ticks, and Rogue Android Intercepts add 120 ticks and spawn a real boarding party of two melee plus one ranged Rogue Android around the Star Map. Encounter schedule/result state is saved with the machine and synchronized through its menu data; the pending event countdown is visible in the travel control. Announcements are local to players within 32 blocks.
 
 This is still not full legacy fleet combat. The restored encounter layer deliberately reuses gameplay systems that exist in the port instead of inventing invisible ships, fleet statistics or planet dimensions. Full legacy ship/fleet ownership and combat, richer planet/star event gameplay, dimension/planet arrival gameplay and the original generated astronomical backend remain incomplete.
 
@@ -101,8 +107,8 @@ Restored/fixed visual systems also include directional Matter/Network/Heavy Ener
 
 1. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining legacy world structures/events.
 2. Full Star Map planet/star event gameplay, legacy ship/fleet ownership and travel combat, and richer generated astronomical data beyond the restored server-authoritative journey and encounter state.
-3. Android Spawner team/color configuration and richer Android squad/path behaviours beyond the restored waypoint patrol loop.
-4. Broader Drone ownership/team/command behaviour and remaining entity equipment/AI details.
+3. Deeper Android squad behavior such as follow-player/escort orders, formation/coordinated target behavior and richer path editing beyond PATROL/GUARD/HOLD.
+4. Broader Drone owner-management/command modes plus remaining legacy flight/render/equipment details.
 5. Generic legacy machine redstone/configuration modes where current machines still lack server-side equivalents.
 6. Remaining machine-specific legacy GUI elements/pages that map to real current backend state.
 7. Exact legacy Pylon multiblock/animated overlay and renderer-specific glow layers.
