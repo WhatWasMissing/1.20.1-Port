@@ -1,7 +1,10 @@
 package matteroverdrive.entity;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,12 +29,17 @@ import java.util.EnumSet;
 import java.util.UUID;
 
 public class DroneEntity extends Monster implements RangedAttackMob {
+    public static final byte MODE_FOLLOW = 0;
+    public static final byte MODE_DEFENSIVE = 1;
+    public static final byte MODE_PASSIVE = 2;
+    public static final byte MODE_AGGRESSIVE = 3;
+
     private byte droneType;
     @Nullable private UUID ownerUuid;
+    private byte commandMode = MODE_FOLLOW;
+    private int defensivePoll;
 
-    public DroneEntity(EntityType<? extends DroneEntity> type, Level level) {
-        super(type, level);
-    }
+    public DroneEntity(EntityType<? extends DroneEntity> type, Level level) { super(type, level); }
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
@@ -50,8 +58,25 @@ public class DroneEntity extends Monster implements RangedAttackMob {
         goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8F));
         goalSelector.addGoal(8, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                player -> ownerUuid == null));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, player -> ownerUuid == null));
+        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Monster.class, 10, true, false,
+                mob -> ownerUuid != null && commandMode == MODE_AGGRESSIVE && mob != this && canAttack(mob)));
+    }
+
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        if (level().isClientSide || ownerUuid == null) return;
+        if (commandMode == MODE_FOLLOW || commandMode == MODE_PASSIVE) {
+            if (getTarget() != null) setTarget(null);
+            return;
+        }
+        if (--defensivePoll > 0) return;
+        defensivePoll = 10;
+        LivingEntity owner = getOwner();
+        if (owner == null) return;
+        LivingEntity attacker = owner.getLastHurtByMob();
+        if (attacker != null && attacker.isAlive() && canAttack(attacker)) setTarget(attacker);
     }
 
     @Nullable
@@ -63,10 +88,11 @@ public class DroneEntity extends Monster implements RangedAttackMob {
     @Override
     public boolean canAttack(LivingEntity target) {
         if (ownerUuid != null) {
+            if (commandMode == MODE_FOLLOW || commandMode == MODE_PASSIVE) return false;
             if (ownerUuid.equals(target.getUUID())) return false;
-            if (target instanceof Player) return false;
             LivingEntity owner = getOwner();
             if (owner != null && owner.isAlliedTo(target)) return false;
+            if (target instanceof Player) return false;
         }
         return super.canAttack(target);
     }
@@ -78,6 +104,34 @@ public class DroneEntity extends Monster implements RangedAttackMob {
         LivingEntity owner = getOwner();
         if (owner != null && owner.isAlliedTo(entity)) return true;
         return super.isAlliedTo(entity);
+    }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
+        if (level().isClientSide) return InteractionResult.SUCCESS;
+        if (ownerUuid == null) {
+            setOwnerUuid(player.getUUID());
+            commandMode = MODE_FOLLOW;
+            player.displayClientMessage(Component.literal("Drone linked. Mode: FOLLOW"), true);
+            return InteractionResult.CONSUME;
+        }
+        if (!ownerUuid.equals(player.getUUID())) {
+            player.displayClientMessage(Component.literal("Drone is linked to another operator"), true);
+            return InteractionResult.CONSUME;
+        }
+        if (player.isShiftKeyDown()) {
+            ownerUuid = null;
+            commandMode = MODE_FOLLOW;
+            setTarget(null);
+            getNavigation().stop();
+            player.displayClientMessage(Component.literal("Drone link released"), true);
+            return InteractionResult.CONSUME;
+        }
+        commandMode = (byte) ((commandMode + 1) % 4);
+        setTarget(null);
+        player.displayClientMessage(Component.literal("Drone mode: " + commandModeName()), true);
+        return InteractionResult.CONSUME;
     }
 
     @Override
@@ -97,6 +151,15 @@ public class DroneEntity extends Monster implements RangedAttackMob {
     public byte getDroneType() { return droneType; }
     public void setDroneType(byte type) { droneType = type; }
     @Nullable public UUID getOwnerUuid() { return ownerUuid; }
+    public byte getCommandMode() { return commandMode; }
+    public String commandModeName() {
+        return switch (commandMode) {
+            case MODE_DEFENSIVE -> "DEFENSIVE";
+            case MODE_PASSIVE -> "PASSIVE";
+            case MODE_AGGRESSIVE -> "AGGRESSIVE";
+            default -> "FOLLOW";
+        };
+    }
     public void setOwnerUuid(@Nullable UUID ownerUuid) {
         this.ownerUuid = ownerUuid;
         if (ownerUuid != null) setTarget(null);
@@ -106,6 +169,7 @@ public class DroneEntity extends Monster implements RangedAttackMob {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putByte("DroneType", droneType);
+        tag.putByte("CommandMode", commandMode);
         if (ownerUuid != null) tag.putUUID("OwnerUUID", ownerUuid);
     }
 
@@ -114,44 +178,24 @@ public class DroneEntity extends Monster implements RangedAttackMob {
         super.readAdditionalSaveData(tag);
         droneType = tag.getByte("DroneType");
         ownerUuid = tag.hasUUID("OwnerUUID") ? tag.getUUID("OwnerUUID") : null;
+        commandMode = tag.contains("CommandMode") ? (byte) Math.max(MODE_FOLLOW, Math.min(MODE_AGGRESSIVE, tag.getByte("CommandMode"))) : MODE_FOLLOW;
     }
 
     private static final class FollowOwnerGoal extends Goal {
         private final DroneEntity drone;
         @Nullable private LivingEntity owner;
-
-        private FollowOwnerGoal(DroneEntity drone) {
-            this.drone = drone;
-            setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
-        }
-
-        @Override
-        public boolean canUse() {
+        private FollowOwnerGoal(DroneEntity drone) { this.drone = drone; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
+        @Override public boolean canUse() {
             owner = drone.getOwner();
             return owner != null && !owner.isSpectator() && drone.distanceToSqr(owner) > 25D;
         }
-
-        @Override
-        public boolean canContinueToUse() {
-            return owner != null && owner.isAlive() && drone.distanceToSqr(owner) > 9D;
-        }
-
-        @Override
-        public void start() {
-            if (owner != null) drone.getNavigation().moveTo(owner, 1.15D);
-        }
-
-        @Override
-        public void tick() {
+        @Override public boolean canContinueToUse() { return owner != null && owner.isAlive() && drone.distanceToSqr(owner) > 9D; }
+        @Override public void start() { if (owner != null) drone.getNavigation().moveTo(owner, 1.15D); }
+        @Override public void tick() {
             if (owner == null) return;
             drone.getLookControl().setLookAt(owner, 10F, drone.getMaxHeadXRot());
             if (drone.getNavigation().isDone()) drone.getNavigation().moveTo(owner, 1.15D);
         }
-
-        @Override
-        public void stop() {
-            owner = null;
-            drone.getNavigation().stop();
-        }
+        @Override public void stop() { owner = null; drone.getNavigation().stop(); }
     }
 }
