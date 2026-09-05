@@ -33,10 +33,13 @@ public class StarMapMenu extends AbstractContainerMenu {
         this.data = data;
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 78 + row * 18));
+                addSlot(new Slot(inventory, column + row * 9 + 9,
+                        8 + column * 18, 124 + row * 18));
             }
         }
-        for (int column = 0; column < 9; column++) addSlot(new Slot(inventory, column, 8 + column * 18, 136));
+        for (int column = 0; column < 9; column++) {
+            addSlot(new Slot(inventory, column, 8 + column * 18, 182));
+        }
         addDataSlots(data);
     }
 
@@ -46,10 +49,17 @@ public class StarMapMenu extends AbstractContainerMenu {
                 ? map : new StarMapBlockEntity(pos, ModBlocks.get("star_map").get().defaultBlockState());
     }
 
-    @Override public boolean stillValid(Player player) {
-        return stillValid(ContainerLevelAccess.create(player.level(), map.getBlockPos()), player, ModBlocks.get("star_map").get());
+    @Override
+    public boolean stillValid(Player player) {
+        return stillValid(ContainerLevelAccess.create(player.level(), map.getBlockPos()),
+                player, ModBlocks.get("star_map").get());
     }
-    @Override public ItemStack quickMoveStack(Player player, int index) { return ItemStack.EMPTY; }
+
+    @Override
+    public ItemStack quickMoveStack(Player player, int index) {
+        return ItemStack.EMPTY;
+    }
+
     public int active() { return data.get(0); }
     public int complete() { return data.get(1); }
 }
