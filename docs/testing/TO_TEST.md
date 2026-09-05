@@ -4,6 +4,7 @@ Branch: `testing/main`
 Legacy references:
 - Original Matter Overdrive 1.7.10 source branch `simeonradivoev/MatterOverdrive@1.7.10` (`0.4.2`).
 - Matter Overdrive 1.12.2 `0.7.1.0` jar and recovered source/resources.
+- Matter Overdrive `0.8.0.0-alpha.4.1` legacy jar.
 Build identity: `Alpha Version 3`, made by MVQ1303
 
 This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions compilation is not a substitute for runtime verification.
@@ -21,11 +22,25 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Open Decomposer, Replicator and Matter Analyzer. They should use the original Matter Overdrive scalable machine shell rather than the synthetic dark rectangular frame.
 - [ ] Decomposer: original FE meter, matter meter and arrow artwork should update from the current live FE/matter/progress values.
 - [ ] Replicator: original FE/matter/arrow elements should update while replication, network tasks, cycle timing and failure telemetry remain correct.
-- [ ] Matter Analyzer: original FE/arrow elements should update while current analysis progress/pattern values remain correct.
+- [ ] Matter Analyzer: original FE/arrow elements and waveform should update while current analysis progress/pattern values remain correct.
 - [ ] Open the other current machine GUIs. They should inherit the original scalable shell while retaining their current menus, slots and controls.
 - [ ] Original small-slot artwork must remain aligned with every clickable slot.
 - [ ] INF FE/debug controls and all current FE/matter text remain usable and readable.
 - [ ] Resize the game window/UI scale and reopen several machines; the legacy shell must scale cleanly without gaps, seams or stretched slot hitboxes.
+
+## Priority 1A - new front-facing Android/Reactor parity
+
+- [ ] Android Station opens without clipped controls or overlapping inventory labels.
+- [ ] `CYCLE` changes to the next unlocked Android ability and never selects an ability whose required part/level is unavailable.
+- [ ] The selected ability name updates after cycling and reports `LOCKED`, `READY`, or `ACTIVE` correctly.
+- [ ] Android online/offline state, FE, installed-part state, level, XP and perk points update without reopening the GUI.
+- [ ] `SKILL TREE` opens the existing selectable perk tree directly from the Android Station.
+- [ ] Select/refund a perk, return to the station and confirm level/perk-point state remains synchronized and persists through save/reload.
+- [ ] Fusion Reactor shows the restored dual circular energy/matter presentation; each side must move independently with its live storage value.
+- [ ] Reactor structure lamp/text changes between valid and the correct current fault reason.
+- [ ] RUN/SCRAM and redstone mode controls still work and the front-page status updates immediately.
+- [ ] Efficiency, generated FE/t, connected demand, ring power, matter drain, IO/stabilizer count and anomaly/hazard telemetry update while the GUI remains open.
+- [ ] The reactor screen remains readable at multiple GUI scales and does not cover the four upgrade slots or player inventory.
 
 ## Priority 2 - Network Flash Drive restored from 1.7
 
@@ -65,8 +80,8 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 ## Next parity targets not claimed yet
 
-- Generic per-machine redstone modes (`none/high/low`) beyond reactor-specific controls.
-- Machine-specific original GUI widgets/pages, especially Analyzer waveform, task/configuration pages and upgrade-page presentation.
+- Generic per-machine redstone modes (`none/high/low`) beyond currently wired machines.
+- Machine-specific original GUI tabs/pages, especially task/configuration and upgrade-page presentation where matching 1.20.1 functionality exists.
 - Full Star Map galaxy/star/planet data model, selection, travel and events.
 - Cocktail of Ascension / Mutant Scientist and deeper quest/dialog framework.
 - Ranged Androids, drones and richer entity AI.
@@ -75,4 +90,4 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 ## Pass criteria
 
-Pass this build when the original GUI shell/elements render cleanly without altering current machine logic, Network Flash Drive destination filtering works and persists, the prior 1.7 visual/wrench/Star Map fixes still pass, and the existing core systems remain functional.
+Pass this build when the original GUI shell/elements render cleanly without altering current machine logic, Android and reactor front-facing controls remain synchronized with their existing backend systems, Network Flash Drive destination filtering works and persists, the prior 1.7 visual/wrench/Star Map fixes still pass, and the existing core systems remain functional.
