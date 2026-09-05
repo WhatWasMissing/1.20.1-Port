@@ -67,15 +67,15 @@ public class WeaponModuleItem extends Item {
 
     private String description() {
         return switch (effect) {
-            case DAMAGE -> "+50% damage, -50% energy use";
-            case FIRE -> "Ignites targets, -25% damage";
-            case EXPLOSION -> "Explosive impacts, much faster fire cycle";
-            case HEAL -> "Converts shots into healing energy";
-            case DOOMSDAY -> "Large explosive impacts";
-            case BLOCK -> "Breaks vulnerable blocks instead of damaging entities";
-            case HOLO_SIGHTS -> "Improves aimed and hip-fire accuracy";
-            case SNIPER_SCOPE -> "+50% range and improved aimed accuracy";
-            case RICOCHET -> "Shots rebound once from solid blocks";
+            case DAMAGE -> "+50% damage | 50% energy cost";
+            case FIRE -> "Ignites targets | -25% damage | 50% energy cost";
+            case EXPLOSION -> "Explosive impacts | 20% energy cost | 15% fire cycle";
+            case HEAL -> "Converts shots into healing | 50% energy cost";
+            case DOOMSDAY -> "Large explosive impacts | 20% energy cost | 10% fire cycle";
+            case BLOCK -> "Breaks vulnerable blocks | 50% energy cost";
+            case HOLO_SIGHTS -> "Spread: 60% aimed / 80% hip-fire";
+            case SNIPER_SCOPE -> "+50% range | spread: 40% aimed / 180% hip-fire";
+            case RICOCHET -> "Shots rebound once from solid blocks at reduced damage";
             case COLOR -> String.format("Beam colour: #%06X", color & 0xFFFFFF);
         };
     }
