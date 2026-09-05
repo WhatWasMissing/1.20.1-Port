@@ -36,4 +36,13 @@ public class AndroidSpawnerBlock extends BaseEntityBlock {
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
+
+    @Override
+    public void onRemove(BlockState oldState, Level level, BlockPos pos, BlockState newState, boolean moving) {
+        if (!oldState.is(newState.getBlock())) {
+            BlockEntity entity = level.getBlockEntity(pos);
+            if (entity instanceof AndroidSpawnerBlockEntity spawner) spawner.dropContents();
+        }
+        super.onRemove(oldState, level, pos, newState, moving);
+    }
 }
