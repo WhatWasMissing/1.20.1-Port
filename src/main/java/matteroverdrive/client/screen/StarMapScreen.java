@@ -31,8 +31,8 @@ public class StarMapScreen extends AbstractContainerScreen<StarMapMenu> {
     public StarMapScreen(StarMapMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 280;
-        imageHeight = 224;
-        inventoryLabelY = 113;
+        imageHeight = 248;
+        inventoryLabelY = 137;
     }
 
     @Override
