@@ -38,6 +38,7 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
     public static final int ENERGY_PER_ITEM = 10;
     public static final int BASE_ITEM_BUDGET = 64;
     public static final int UPGRADE_SLOT_COUNT = 4;
+    private static final int MAX_MOVES_PER_TICK = 64;
 
     private final MachineEnergyStorage energy =
             new MachineEnergyStorage(CAPACITY, TRANSFER, 0, this::setChanged);
@@ -121,20 +122,28 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         stateOwner.pruneRouteSinks(scan);
         if (!isRoutingExecutor(scan)) return;
 
-        int max = Math.min(itemBudget(), energy.getEnergyStored() / ENERGY_PER_ITEM);
-        ItemNetworkUtil.MoveResult result = ItemNetworkUtil.moveOneStack(
-                level, scan.endpoints(), filter.getStackInSlot(0), max,
-                stateOwner.routeCursor++, stateOwner.routeSinks);
-        if (result.count() <= 0) {
-            stateOwner.setChanged();
-            return;
+        int remainingBudget = Math.min(itemBudget(), energy.getEnergyStored() / ENERGY_PER_ITEM);
+        int movedTotal = 0;
+        int attempts = 0;
+        while (remainingBudget > 0 && attempts++ < MAX_MOVES_PER_TICK) {
+            ItemNetworkUtil.MoveResult result = ItemNetworkUtil.moveOneStack(
+                    level, scan.endpoints(), filter.getStackInSlot(0), remainingBudget,
+                    stateOwner.routeCursor++, stateOwner.routeSinks);
+            if (result.count() <= 0) break;
+
+            int moved = Math.min(result.count(), remainingBudget);
+            movedTotal += moved;
+            remainingBudget -= moved;
+            stateOwner.routeSinks.add(result.destination().immutable());
+            energy.consumeEnergy(moved * ENERGY_PER_ITEM, level.getGameTime());
+
+            if (energy.getEnergyStored() < ENERGY_PER_ITEM) break;
+            remainingBudget = Math.min(remainingBudget, energy.getEnergyStored() / ENERGY_PER_ITEM);
         }
 
-        lastMoved = result.count();
-        stateOwner.lastMoved = result.count();
-        stateOwner.routeSinks.add(result.destination().immutable());
+        lastMoved = movedTotal;
+        stateOwner.lastMoved = movedTotal;
         stateOwner.setChanged();
-        energy.consumeEnergy(result.count() * ENERGY_PER_ITEM, level.getGameTime());
     }
 
     public int itemBudget() {
