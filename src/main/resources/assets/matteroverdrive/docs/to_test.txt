@@ -33,7 +33,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 ## Android Spawner legacy parity
 
-- [ ] Right-click Android Spawner opens the widened operator screen with live FE, owned Android count, maximum population, next-spawn time and patrol-target count.
+- [ ] Right-click Android Spawner opens the widened operator screen with live FE, owned Android count, maximum population, next-spawn time, patrol-target count, squad color and squad mode.
 - [ ] Powered spawner reaches up to 6 Androids rather than stopping after the first nearby Android.
 - [ ] Over repeated spawns, both melee and ranged Rogue Androids appear; intended legacy mix is 30% melee / 70% ranged.
 - [ ] A naturally spawned/unrelated Rogue Android beside the machine does not consume one of that spawner's six owned slots.
@@ -41,8 +41,12 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] `KILL OWNED` removes only Androids belonging to the current spawner and does not delete natural Androids or Androids from a different spawner.
 - [ ] Destroy/rebuild one spawner near another and verify ownership is not mixed between their populations.
 - [ ] The six patrol slots accept Transport Flash Drives and reject unrelated items.
-- [ ] Bind two or more patrol drives in the current dimension, install them, then spawn an Android. With no combat target it should navigate through those waypoints in sequence.
+- [ ] Bind two or more patrol drives in the current dimension, install them, then spawn an Android. In PATROL mode with no combat target it should navigate through those waypoints in sequence.
 - [ ] Aggro a patrolling Android. Combat goals should override patrol; after combat/navigation settles it should resume its waypoint loop.
+- [ ] COLOR cycles through eight persisted squad colors and immediately updates existing owned Androids as well as newly spawned units.
+- [ ] MODE cycles PATROL -> GUARD -> HOLD. GUARD returns idle units toward the Spawner when they stray beyond roughly eight blocks; HOLD stops idle squad movement; combat still takes priority.
+- [ ] Androids from the same Spawner explicitly treat one another as allies and do not attack one another.
+- [ ] Change color/mode, save/reload the world, and verify the Spawner and its already-spawned Androids retain the same squad state.
 - [ ] Save/reload a spawned Android and confirm its patrol points persist even if the source drives are later removed from the Spawner.
 - [ ] Drives bound to another dimension do not contribute to the current patrol-target count.
 - [ ] Dismantling the Spawner returns all installed patrol drives exactly once.
@@ -54,7 +58,10 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Mutant Scientist has the restored approximately 1.0 x 2.3 collision dimensions, 256 base health, 0.25 movement speed and 4 base attack damage.
 - [ ] Mutant Scientist attacks nearby living entities but does not target another Mutant Scientist.
 - [ ] Owned Drone does not attack its owner; two Drones with the same owner treat each other as allies.
-- [ ] Unowned hostile Drone continues to attack players normally.
+- [ ] Owned Drone follows its loaded owner when farther than about five blocks and settles within about three blocks instead of wandering away.
+- [ ] Owned Drone inherits the owner's team/allies and does not automatically acquire other players as generic hostile targets.
+- [ ] Unowned hostile Drone continues to acquire players and use its ranged attack normally.
+- [ ] Drone owner UUID and follow/alliance behaviour survive save/reload.
 - [ ] Cocktail of Ascension tracks 5 shovel Creeper kills plus 5 gunpowder and 5 red mushrooms.
 - [ ] Completing Cocktail successfully spawns the Mutant Scientist, then consumes ingredients and marks the quest complete.
 - [ ] If the Mutant Scientist cannot be created/spawned, Cocktail must leave ingredients and quest state intact instead of silently completing.
@@ -104,6 +111,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] On journeys of at least 80 ticks, exactly one route-derived travel encounter is scheduled around the midpoint and survives save/reload.
 - [ ] Asteroid Field adds 100 ticks to ETA; Gravitational Slingshot shortens ETA without allowing instant completion; Signal Echo adds 40 ticks.
 - [ ] Rogue Android Intercept adds 120 ticks and spawns two melee plus one ranged Rogue Android boarding party around the Star Map.
+- [ ] Pending encounter countdown is visible on the Planet travel control before it resolves.
 - [ ] Encounter announcements only go to players within 32 blocks of the Star Map and do not globally spam the server.
 - [ ] After an encounter resolves, its last-event code remains synchronized through the menu while the journey continues.
 - [ ] After arrival the destination becomes the machine's current location and requesting that same planet again is rejected.
@@ -115,7 +123,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Empty installed Network Flash Drive permits no destinations.
 - [ ] Pylon-linked network sections obey matching channel and destination filters.
 - [ ] Matter Pipe, Heavy Energy Cable and Network Pipe arms update in all six directions without breaking transfer.
-- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, saved locations, Star Map current/destination/travel/encounter state and ownership after save/reload.
+- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, saved locations, Star Map current/destination/travel/encounter state, Android squad state and ownership after save/reload.
 
 ## Core gameplay regression
 
