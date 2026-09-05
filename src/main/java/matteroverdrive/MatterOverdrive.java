@@ -7,6 +7,7 @@ import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModCreativeTabs;
 import matteroverdrive.registry.ModEntities;
 import matteroverdrive.registry.ModExtraBlockEntities;
+import matteroverdrive.registry.ModFeatures;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
 import matteroverdrive.network.ModNetwork;
@@ -26,7 +27,6 @@ public final class MatterOverdrive {
 
     public MatterOverdrive() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
-
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModCreativeTabs.CREATIVE_TABS.register(modBus);
@@ -35,21 +35,14 @@ public final class MatterOverdrive {
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModExtraBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModMenus.MENUS.register(modBus);
+        ModFeatures.FEATURES.register(modBus);
         modBus.addListener(ModCapabilities::register);
         modBus.addListener(this::commonSetup);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(ModNetwork::register);
-        LOGGER.info(
-                "M1 VERIFY: Matter Overdrive registry shell initialized - blocks={}, blockItems={}, standaloneItems={}, sounds={}",
-                ModBlocks.all().size(),
-                ModItems.BLOCK_ITEMS.size(),
-                ModItems.STANDALONE_ITEMS.size(),
-                ModSounds.all().size()
-        );
-        LOGGER.info(
-                "M2 VERIFY: machine foundation initialized - blockEntities=18, menus=15, gunSystem=enabled, weaponStation=enabled, energyPipe=enabled, fusionReactor=enabled, transporter=enabled, inscriber=enabled, decomposer=enabled, recycler=enabled, microwave=enabled, spacetimeAccelerator=enabled, handheldMatterTools=enabled, androidAbilities=enabled, documentationItems=enabled, systemGuide=enabled, analyzer=enabled, replicator=enabled, patternStorage=enabled, patternMonitor=enabled, solarPanel=enabled, tritaniumCrate=enabled, networkPipe=enabled, matterPipe=enabled, creativeBattery=enabled, legacyEntities=enabled, holoSign=enabled, securityProtocol=enabled"
-        );
+        LOGGER.info("M1 VERIFY: Matter Overdrive registry shell initialized - blocks={}, blockItems={}, standaloneItems={}, sounds={}", ModBlocks.all().size(), ModItems.BLOCK_ITEMS.size(), ModItems.STANDALONE_ITEMS.size(), ModSounds.all().size());
+        LOGGER.info("M2 VERIFY: machine foundation initialized - blockEntities=18, menus=15, gunSystem=enabled, weaponStation=enabled, energyPipe=enabled, fusionReactor=enabled, transporter=enabled, inscriber=enabled, decomposer=enabled, recycler=enabled, microwave=enabled, spacetimeAccelerator=enabled, handheldMatterTools=enabled, androidAbilities=enabled, documentationItems=enabled, systemGuide=enabled, analyzer=enabled, replicator=enabled, patternStorage=enabled, patternMonitor=enabled, solarPanel=enabled, tritaniumCrate=enabled, networkPipe=enabled, matterPipe=enabled, creativeBattery=enabled, legacyEntities=enabled, holoSign=enabled, securityProtocol=enabled, legacyWorldFeatures=enabled");
     }
 }
