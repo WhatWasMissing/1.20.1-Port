@@ -3,6 +3,7 @@ package matteroverdrive.client.screen;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.menu.AndroidStationMenu;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -10,36 +11,93 @@ import net.minecraft.world.entity.player.Inventory;
 public class AndroidStationScreen extends AbstractContainerScreen<AndroidStationMenu> {
     public AndroidStationScreen(AndroidStationMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176; imageHeight = 232; inventoryLabelY = 120;
+        imageWidth = 176;
+        imageHeight = 232;
+        inventoryLabelY = 120;
     }
-    @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics); super.render(graphics, mouseX, mouseY, partialTick); renderTooltip(graphics, mouseX, mouseY);
+
+    @Override
+    protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("CYCLE"), button -> {
+            if (minecraft != null && minecraft.gameMode != null) {
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+            }
+        }).bounds(leftPos + 18, topPos + 91, 54, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("SKILL TREE"), button -> {
+            if (minecraft != null) minecraft.setScreen(new AndroidSkillTreeScreen());
+        }).bounds(leftPos + 75, topPos + 91, 83, 18).build());
     }
-    @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 29, 142, 85);
-        MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 25, topPos + 56, 126, 5, menu.androidEnergy(), menu.androidCapacity(), MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawDebugPanel(graphics, leftPos + 17, topPos + 116, 142, 13);
+        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 29, 142, 58);
+        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 111, 142, 18);
+        MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 25, topPos + 51, 126, 5,
+                menu.androidEnergy(), menu.androidCapacity(), MachineScreenStyle.CYAN);
+
+        int partX = leftPos + 22;
+        int partY = topPos + 63;
+        drawPartIndicator(graphics, partX, partY, AndroidData.Part.HEAD);
+        drawPartIndicator(graphics, partX + 34, partY, AndroidData.Part.CHEST);
+        drawPartIndicator(graphics, partX + 68, partY, AndroidData.Part.ARMS);
+        drawPartIndicator(graphics, partX + 102, partY, AndroidData.Part.LEGS);
     }
-    @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        if (!menu.androidActive()) graphics.drawString(font, "Use a blue Android Pill to convert", 21, 34, MachineScreenStyle.MUTED, false);
-        else {
-            graphics.drawString(font, "ANDROID ONLINE", 52, 34, MachineScreenStyle.CYAN, false);
-            graphics.drawString(font, menu.androidEnergy() + " / " + menu.androidCapacity() + " FE", 34, 45, MachineScreenStyle.TEXT, false);
-            String parts = installed(AndroidData.Part.HEAD, "HEAD") + "  " + installed(AndroidData.Part.CHEST, "CHEST") + "  "
-                    + installed(AndroidData.Part.ARMS, "ARMS") + "  " + installed(AndroidData.Part.LEGS, "LEGS");
-            graphics.drawString(font, parts, 19, 67, MachineScreenStyle.MUTED, false);
+        if (!menu.androidActive()) {
+            graphics.drawString(font, "ANDROID OFFLINE", 47, 33, MachineScreenStyle.DANGER, false);
+            graphics.drawString(font, "Use a blue Android Pill to convert", 18, 45, MachineScreenStyle.MUTED, false);
+        } else {
+            graphics.drawString(font, "ANDROID ONLINE", 49, 33, MachineScreenStyle.CYAN, false);
+            graphics.drawString(font, menu.androidEnergy() + " / " + menu.androidCapacity() + " FE", 33, 43, MachineScreenStyle.TEXT, false);
         }
-        graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel(), 22, 86, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Perk choices: " + menu.availableSkillPoints(), 22, 98, MachineScreenStyle.CYAN, false);
+
         AndroidData.Ability[] abilities = AndroidData.Ability.values();
         int selected = Math.max(0, Math.min(menu.selectedAbilityOrdinal(), abilities.length - 1));
-        graphics.drawString(font, "Selected: " + abilities[selected].displayName, 22, 108, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Station " + menu.stationEnergy() + " FE", 20, 118, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, menu.lastTransfer() + " FE/t", 111, 118, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Hold a bionic part and right-click to install", 16, 76, MachineScreenStyle.MUTED, false);
+        AndroidData.Ability ability = abilities[selected];
+        boolean unlocked = menu.androidLevel() >= ability.requiredLevel && (menu.parts() & ability.requiredPart.bit) != 0;
+        boolean active = switch (ability) {
+            case CLOAK -> (menu.activeAbilityFlags() & 1) != 0;
+            case FORCE_FIELD -> (menu.activeAbilityFlags() & 2) != 0;
+            default -> false;
+        };
+
+        graphics.drawString(font, "Selected: " + ability.displayName, 20, 76,
+                unlocked ? MachineScreenStyle.TEXT : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, unlocked ? (active ? "ACTIVE" : "READY") : "LOCKED - needs "
+                        + ability.requiredPart.name() + " / Lv " + ability.requiredLevel,
+                20, 84, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+
+        graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel(),
+                20, 113, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Perk points " + menu.availableSkillPoints(), 104, 113, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Station " + menu.stationEnergy() + " FE", 20, 121, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "+" + menu.lastTransfer() + " FE/t", 108, 121, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
     }
-    private String installed(AndroidData.Part part, String name) { return (menu.parts() & part.bit) != 0 ? name : "--"; }
+
+    private void drawPartIndicator(GuiGraphics graphics, int x, int y, AndroidData.Part part) {
+        boolean installed = (menu.parts() & part.bit) != 0;
+        int color = installed ? MachineScreenStyle.CYAN : 0x39454D;
+        graphics.fill(x, y, x + 28, y + 8, 0xFF000000 | color);
+        String label = switch (part) {
+            case HEAD -> "H";
+            case CHEST -> "C";
+            case ARMS -> "A";
+            case LEGS -> "L";
+        };
+        graphics.drawString(font, label, x + 11 - leftPos, y + 1 - topPos,
+                installed ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
+    }
 }
