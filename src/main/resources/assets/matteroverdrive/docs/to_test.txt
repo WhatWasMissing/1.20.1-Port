@@ -22,13 +22,23 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 ## Android Spawner / Drone
 - [ ] Spawner reaches six owned Androids with the intended 30% melee / 70% ranged mix and does not count unrelated Androids.
-- [ ] Ownership survives save/reload and chunk unload; `KILL OWNED` removes only that Spawner's Androids.
+- [ ] Ownership survives save/reload and chunk unload; `KILL` removes only that Spawner's Androids.
 - [ ] Six Transport Flash Drive slots provide same-dimension patrol waypoints; combat overrides patrol.
 - [ ] COLOR cycles eight persisted squad colors and updates existing plus future spawned units.
-- [ ] MODE cycles PATROL -> GUARD -> HOLD. PATROL follows waypoints, GUARD returns idle units toward the Spawner, HOLD suppresses idle movement.
-- [ ] Same-Spawner Androids are allies and do not friendly-fire one another.
-- [ ] Owned Drone follows its owner, inherits owner team/allies, and does not automatically acquire unrelated players.
-- [ ] Unowned Drone remains a hostile ranged mob; Drone owner UUID persists.
+- [ ] MODE cycles PATROL -> GUARD -> HOLD -> ESCORT. PATROL follows waypoints, GUARD returns idle units toward the Spawner, HOLD suppresses idle movement and ESCORT follows the assigned commander.
+- [ ] Entering ESCORT automatically binds the player pressing MODE as commander; COMMAND can explicitly reassign commander without changing the current mode.
+- [ ] ESCORT Androids spread into deterministic positions around the commander instead of stacking directly inside the player, and resume formation after combat.
+- [ ] If one Spawner-owned Android acquires a valid target, nearby Androids from the same Spawner with no target coordinate onto it; unrelated Androids are not recruited.
+- [ ] Same-Spawner Androids remain allies and do not friendly-fire one another or the assigned commander/team allies.
+- [ ] Android squad color, mode, commander UUID, owned UUID set and patrol data survive save/reload.
+- [ ] Right-clicking an unowned Drone links it to that player and starts in FOLLOW mode; another player cannot silently steal an already-linked Drone.
+- [ ] Owner right-click cycles Drone FOLLOW -> DEFENSIVE -> PASSIVE -> AGGRESSIVE; owner shift-right-click releases the link.
+- [ ] FOLLOW stays near the owner without acquiring combat targets.
+- [ ] DEFENSIVE follows the owner and attacks a valid mob that recently hurt the owner.
+- [ ] PASSIVE continues following but clears combat targets and cannot attack.
+- [ ] AGGRESSIVE follows the owner, defends the owner and proactively attacks valid nearby hostile mobs while respecting owner/team/same-owner Drone allies.
+- [ ] Owned Drones never attack their owner or unrelated players; unowned Drones remain hostile ranged mobs.
+- [ ] Drone owner UUID and command mode persist after save/reload.
 
 ## Legacy world structures - expanded pass
 - [ ] Explore **newly generated chunks** in a fresh/new area; existing explored chunks are not expected to gain structures retroactively.
