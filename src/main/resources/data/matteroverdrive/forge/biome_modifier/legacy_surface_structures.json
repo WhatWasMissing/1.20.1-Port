@@ -1,6 +1,6 @@
 {
   "type":"forge:add_features",
   "biomes":"#minecraft:is_overworld",
-  "features":["matteroverdrive:crashed_ship","matteroverdrive:cargo_ship","matteroverdrive:mad_scientist_house"],
+  "features":["matteroverdrive:crashed_ship","matteroverdrive:cargo_ship","matteroverdrive:mad_scientist_house","matteroverdrive:android_house","matteroverdrive:sand_pit"],
   "step":"surface_structures"
 }
