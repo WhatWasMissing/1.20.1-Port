@@ -22,14 +22,14 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
                 .bounds(leftPos + 170, topPos + 49, 46, 18).build());
         addRenderableWidget(Button.builder(Component.literal("MODE"), button -> click(3))
                 .bounds(leftPos + 219, topPos + 49, 46, 18).build());
-        addRenderableWidget(Button.builder(Component.literal("KILL OWNED"), button -> click(1))
-                .bounds(leftPos + 170, topPos + 69, 95, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("COMMAND"), button -> click(4))
+                .bounds(leftPos + 170, topPos + 69, 46, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("KILL"), button -> click(1))
+                .bounds(leftPos + 219, topPos + 69, 46, 18).build());
     }
 
     private void click(int id) {
-        if (minecraft != null && minecraft.gameMode != null) {
-            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
-        }
+        if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
     }
 
     @Override
@@ -41,28 +41,20 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight,
-                inventoryLabelY, MachineScreenStyle.PURPLE);
+        MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.PURPLE);
         MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 27, 142, 59);
         MachineScreenStyle.drawSection(graphics, leftPos + 166, topPos + 27, 102, 61);
-        MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 24, topPos + 39, 126, 5,
-                menu.energy(), menu.capacity(), MachineScreenStyle.PURPLE);
-        for (int slot = 0; slot < 6; slot++) {
-            MachineScreenStyle.drawSlot(graphics, leftPos + 34 + slot * 18, topPos + 68);
-        }
+        MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 24, topPos + 39, 126, 5, menu.energy(), menu.capacity(), MachineScreenStyle.PURPLE);
+        for (int slot = 0; slot < 6; slot++) MachineScreenStyle.drawSlot(graphics, leftPos + 34 + slot * 18, topPos + 68);
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, menu.energy() + " / " + menu.capacity() + " FE",
-                24, 29, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Spawned: " + menu.spawned() + " / " + menu.maxSpawned(),
-                24, 50, menu.spawned() >= menu.maxSpawned()
-                        ? MachineScreenStyle.AMBER : MachineScreenStyle.TEXT, false);
-        String next = menu.spawned() >= menu.maxSpawned()
-                ? "Population full"
-                : String.format(java.util.Locale.ROOT, "Next: %.1f s", menu.ticksUntilSpawn() / 20.0D);
+        graphics.drawString(font, menu.energy() + " / " + menu.capacity() + " FE", 24, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Spawned: " + menu.spawned() + " / " + menu.maxSpawned(), 24, 50,
+                menu.spawned() >= menu.maxSpawned() ? MachineScreenStyle.AMBER : MachineScreenStyle.TEXT, false);
+        String next = menu.spawned() >= menu.maxSpawned() ? "Population full" : String.format(java.util.Locale.ROOT, "Next: %.1f s", menu.ticksUntilSpawn() / 20.0D);
         graphics.drawString(font, next, 24, 59, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, "Targets " + menu.patrolTargets(), 171, 32,
                 menu.patrolTargets() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.AMBER, false);
