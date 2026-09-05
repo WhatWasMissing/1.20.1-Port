@@ -6,9 +6,17 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class AndroidStationScreen extends AbstractContainerScreen<AndroidStationMenu> {
+    private static final ResourceLocation HEAD = tex("android_slot_head.png");
+    private static final ResourceLocation CHEST = tex("android_slot_chest.png");
+    private static final ResourceLocation ARMS = tex("android_slot_arms.png");
+    private static final ResourceLocation LEGS = tex("android_slot_legs.png");
+    private static final ResourceLocation FEATURE = tex("android_feature_icon_bg.png");
+    private static final ResourceLocation FEATURE_ACTIVE = tex("android_feature_icon_bg_active.png");
+
     public AndroidStationScreen(AndroidStationMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
@@ -16,13 +24,15 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
         inventoryLabelY = 120;
     }
 
+    private static ResourceLocation tex(String name) {
+        return new ResourceLocation("matteroverdrive", "textures/gui/items/" + name);
+    }
+
     @Override
     protected void init() {
         super.init();
         addRenderableWidget(Button.builder(Component.literal("CYCLE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-            }
+            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
         }).bounds(leftPos + 18, topPos + 91, 54, 18).build());
         addRenderableWidget(Button.builder(Component.literal("SKILL TREE"), button -> {
             if (minecraft != null) minecraft.setScreen(new AndroidSkillTreeScreen());
@@ -44,12 +54,22 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
         MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 25, topPos + 51, 126, 5,
                 menu.androidEnergy(), menu.androidCapacity(), MachineScreenStyle.CYAN);
 
-        int partX = leftPos + 22;
-        int partY = topPos + 63;
-        drawPartIndicator(graphics, partX, partY, AndroidData.Part.HEAD);
-        drawPartIndicator(graphics, partX + 34, partY, AndroidData.Part.CHEST);
-        drawPartIndicator(graphics, partX + 68, partY, AndroidData.Part.ARMS);
-        drawPartIndicator(graphics, partX + 102, partY, AndroidData.Part.LEGS);
+        drawPart(graphics, leftPos + 25, topPos + 62, AndroidData.Part.HEAD, HEAD);
+        drawPart(graphics, leftPos + 57, topPos + 62, AndroidData.Part.CHEST, CHEST);
+        drawPart(graphics, leftPos + 89, topPos + 62, AndroidData.Part.ARMS, ARMS);
+        drawPart(graphics, leftPos + 121, topPos + 62, AndroidData.Part.LEGS, LEGS);
+
+        AndroidData.Ability[] abilities = AndroidData.Ability.values();
+        int selected = Math.max(0, Math.min(menu.selectedAbilityOrdinal(), abilities.length - 1));
+        AndroidData.Ability ability = abilities[selected];
+        boolean unlocked = menu.androidLevel() >= ability.requiredLevel && (menu.parts() & ability.requiredPart.bit) != 0;
+        boolean active = switch (ability) {
+            case CLOAK -> (menu.activeAbilityFlags() & 1) != 0;
+            case FORCE_FIELD -> (menu.activeAbilityFlags() & 2) != 0;
+            default -> false;
+        };
+        graphics.blit(active ? FEATURE_ACTIVE : FEATURE, leftPos + 19, topPos + 75, 0, 0, 22, 22, 22, 22);
+        if (!unlocked) graphics.fill(leftPos + 22, topPos + 78, leftPos + 38, topPos + 94, 0x88000000);
     }
 
     @Override
@@ -57,7 +77,7 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         if (!menu.androidActive()) {
             graphics.drawString(font, "ANDROID OFFLINE", 47, 33, MachineScreenStyle.DANGER, false);
-            graphics.drawString(font, "Use a blue Android Pill to convert", 18, 45, MachineScreenStyle.MUTED, false);
+            graphics.drawString(font, "Use a blue Android Pill to convert", 18, 43, MachineScreenStyle.MUTED, false);
         } else {
             graphics.drawString(font, "ANDROID ONLINE", 49, 33, MachineScreenStyle.CYAN, false);
             graphics.drawString(font, menu.androidEnergy() + " / " + menu.androidCapacity() + " FE", 33, 43, MachineScreenStyle.TEXT, false);
@@ -72,30 +92,21 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
             case FORCE_FIELD -> (menu.activeAbilityFlags() & 2) != 0;
             default -> false;
         };
-
-        graphics.drawString(font, "Selected: " + ability.displayName, 20, 76,
-                unlocked ? MachineScreenStyle.TEXT : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, unlocked ? (active ? "ACTIVE" : "READY") : "LOCKED - needs "
-                        + ability.requiredPart.name() + " / Lv " + ability.requiredLevel,
-                20, 84, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-
+        graphics.drawString(font, ability.displayName, 44, 77, unlocked ? MachineScreenStyle.TEXT : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, unlocked ? (active ? "ACTIVE" : "READY") : "LOCKED - " + ability.requiredPart.name() + " Lv " + ability.requiredLevel,
+                44, 85, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
         graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel()
-                        + "  P " + menu.availableSkillPoints(),
-                20, 113, MachineScreenStyle.TEXT, false);
+                        + "  P " + menu.availableSkillPoints(), 20, 113, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
     }
 
-    private void drawPartIndicator(GuiGraphics graphics, int x, int y, AndroidData.Part part) {
+    private void drawPart(GuiGraphics graphics, int x, int y, AndroidData.Part part, ResourceLocation icon) {
         boolean installed = (menu.parts() & part.bit) != 0;
-        int color = installed ? MachineScreenStyle.CYAN : 0x39454D;
-        graphics.fill(x, y, x + 28, y + 8, 0xFF000000 | color);
-        String label = switch (part) {
-            case HEAD -> "H";
-            case CHEST -> "C";
-            case ARMS -> "A";
-            case LEGS -> "L";
-        };
-        graphics.drawString(font, label, x + 11, y + 1,
-                installed ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
+        graphics.blit(icon, x, y, 0, 0, 16, 16, 16, 16);
+        if (!installed) graphics.fill(x, y, x + 16, y + 16, 0x99000000);
+        else {
+            graphics.fill(x, y + 15, x + 16, y + 16, 0xFF00D8FF);
+            graphics.fill(x + 15, y, x + 16, y + 16, 0xFF00D8FF);
+        }
     }
 }
