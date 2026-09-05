@@ -1,827 +1,376 @@
-# Matter Overdrive Alpha 0.2 — Complete System Guide
+# Matter Overdrive Alpha Version 3 - Complete System Guide
 
 Made by MVQ1303
+Branch: testing/main
 
-This guide explains how to use every currently working gameplay system on testing/main. Each system has a simplified version for getting started and a detailed version for setup, limits and useful combinations.
+This guide explains the current playable systems in the 1.20.1 port. Use the index to jump to a system. The guide remembers the last page you had open.
 
 Status labels:
-
-- PLAYABLE: the described 1.20.1 system works as a usable gameplay loop.
-- PARTIAL: the described slice works, but some original 1.12.2 features are not restored.
-- TESTING: implemented and compiled, but the latest changes still require an in-world pass.
-- PLACEHOLDER: registered content with no restored gameplay is not presented as a working system.
+- PLAYABLE: usable gameplay loop is implemented.
+- TESTING: implemented and build-verified, but needs in-world verification.
+- PARTIAL: useful implementation exists but legacy parity is not complete.
 
 # Contents
+1. First steps and world exploration
+2. FE power and batteries
+3. Matter Decomposer and Recycler
+4. Matter Analyzer and Pattern Drives
+5. Pattern Storage / Monitor / Replicator
+6. Matter Scanner and Portable Decomposer
+7. Matter Containers and Pipes
+8. Molecular Inscriber
+9. Solar Panel and Charging Station
+10. Microwave
+11. Space-Time Accelerator
+12. Transporter
+13. Tritanium Crates
+14. Matter Network Router / Switch / Pylons
+15. Fusion Reactor
+16. Gravitational Anomalies and Stabilizers
+17. Energy weapons and Weapon Station
+18. Android conversion / HUD / skill tree
+19. Rogue Android Spawner squads
+20. Drones
+21. Scientists / Failed creatures / Cocktail of Ascension
+22. Security and Tritanium Wrench
+23. Star Map navigation and encounters
+24. Star Map fleet combat
+25. Star Map colony economy
+26. Star Map planet-local ships and transfers
+27. Restored structures and salvage
+28. Playtester troubleshooting
 
-1. Survival resources and first steps
-2. FE power, Batteries and cables
-3. Matter Decomposer
-4. Matter Recycler
-5. Matter Analyzer and Pattern Drives
-6. Pattern Storage
-7. Pattern Monitor and Matter Replicator
-8. Matter Scanner
-9. Portable Decomposer
-10. Matter Containers and Matter Pipes
-11. Molecular Inscriber
-12. Solar Panel and Charging Station
-13. Microwave
-14. Space-Time Accelerator
-15. Transporter
-16. Tritanium Crates
-17. Matter Network item logistics
-18. Fusion Reactor
-19. Gravitational Anomaly and Stabilizers
-20. Energy weapons and Weapon Station
-21. Android conversion, parts and abilities
-22. Rogue Android Spawner
-23. Contracts and Star Map
-24. Tritanium tools and armour
-25. Data Pad
-26. Documentation and testing utilities
-27. Decorative and visual content
-28. Troubleshooting routes
-
-# 1. Survival resources and first steps
-
-Status: PLAYABLE world-resource foundation. PARTIAL original progression because the Mad Scientist quest route is not restored.
+# 1. First steps and world exploration
+Status: PLAYABLE / TESTING world content.
 
 ## Simplified
-
-- Explore fresh Overworld chunks for Tritanium Ore and Dilithium Ore.
-- Smelt or blast the ores into Tritanium Ingots and Dilithium Crystals.
-- Use these resources for machines, tools, armour and the temporary Android Pill recipes.
+- Mine Tritanium and Dilithium.
+- Build basic FE and matter machines.
+- Explore fresh chunks for Matter Overdrive structures and natural anomalies.
+- Salvage crates and fight structure defenders for faster progression.
 
 ## Detailed
+Tritanium and Dilithium remain the core machine/material progression. Fresh chunks can also contain crashed ships, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. These structures contain persisted Tritanium Crate salvage and persistent inhabitants such as Rogue Androids, Ranged Rogue Androids, Drones, Mad Scientists and Failed animals.
 
-- Tritanium Ore generates from Y -32 through 64, with up to six ore blocks per vein and ten placement attempts per chunk.
-- Dilithium Ore generates from Y -64 through 16, with up to five ore blocks per vein and six placement attempts per chunk.
-- Only fresh chunks receive newly generated ores. Existing explored chunks are not retroactively changed.
-- Furnace and Blast Furnace recipes turn both ores into their intended resources.
-- Blue, Red and Yellow Android Pills are craftable as a temporary survival bridge.
+Natural Gravitational Anomalies can generate in fresh Overworld chunks at the conservative 1.7-style candidate frequency of roughly 1/200 chunks. Their starting mass is 2,048-10,240 and they immediately use the same pull/event-horizon/mass-growth backend as reactor anomalies.
 
-## Limitations
+## Important limits
+- Old explored chunks are not retroactively populated.
+- Current structure layouts are modern translations and are not yet exact copies of every legacy PNG template.
+- Android House and Sand Pit geometry are known parity targets still needing exact reconstruction.
 
-- Crashed ships, underwater bases, Android houses, anomaly events and the original wider mob-spawn layer are not yet generated.
-- Android Pills will eventually return to a quest/NPC progression route.
-
-# 2. FE power, Batteries and Heavy Energy Cables
-
+# 2. FE power and batteries
 Status: PLAYABLE.
 
 ## Simplified
-
-- Generate FE with a Solar Panel or Fusion Reactor.
-- Connect machines with Heavy Energy Cable.
-- Charge normal and HC Batteries in a Charging Station and carry them to machines or weapons.
+- Generate FE with Solar Panels or a Fusion Reactor.
+- Move FE with Heavy Energy Cable.
+- Recharge Batteries/HC Batteries in the Charging Station.
 
 ## Detailed
+Heavy Energy Cable is the FE transport path. Matter Pipe carries matter, and Network Pipe carries network item/pattern traffic. Normal and HC Batteries store real FE and remain rechargeable after being drained. Energy Packs are consumable emergency weapon energy. Creative Batteries are testing-only unlimited sources.
 
-- Heavy Energy Cable uses the legacy heavy_matter_pipe block ID but carries FE only.
-- Connect the producing block or Reactor IO to one or more cables, then connect the final cable to a compatible machine.
-- Cable chains, corners and rebuilt links should resume automatically.
-- Normal and HC Batteries store actual FE. When used by weapons or an Android, they remain as drained rechargeable items.
-- Energy Packs provide 32,000 FE to weapons and are consumed.
-- Creative Batteries are testing items with effectively unlimited FE.
-- Matter Pipe does not carry FE, and Network Pipe does not carry FE.
+Cable chains and corners should automatically resume after rebuilding. If a machine is not receiving FE, test a producer -> one cable -> machine path first, then extend the chain.
 
-## Limitations
-
-- The old all-purpose Heavy Matter Pipe behavior was deliberately separated. Use the pipe that matches the resource: Heavy Energy Cable for FE, Matter Pipe for matter, Network Pipe for items and pattern data.
-
-# 3. Matter Decomposer
-
+# 3. Matter Decomposer and Recycler
 Status: PLAYABLE.
 
 ## Simplified
-
-- Power the Decomposer.
-- Insert an item with a matter value.
-- Collect or pipe the generated matter into another matter-capable machine.
+- Put matter-valued items in the Decomposer to create matter.
+- Use the Recycler to recover/refine Matter Dust.
 
 ## Detailed
+The Decomposer consumes FE and matter-valued items into its internal matter buffer. Matter Pipe can move that matter into Replicators, Reactor IO and compatible receivers. The intended failure path can create Matter Dust.
 
-- Place the Matter Decomposer and provide FE by cable or a compatible charged energy item.
-- Insert a supported item into its input slot. Dirt is the easiest test and produces 1 kM.
-- The machine converts items into its internal matter buffer.
-- Connect a Matter Pipe to transfer matter into a Replicator, Fusion Reactor IO or another compatible receiver.
-- The machine supports upgrades and shows effective values in its debug information.
-- Decomposition includes its intended failure behavior. Use the GUI/debug state to compare input, FE, matter and failure results.
-- Inventory, FE, matter and upgrades persist across save/reload and return safely when the block is broken.
+The Recycler processes Matter Dust into refined form while preserving represented matter. Both machines persist inventories, energy, matter and upgrades.
 
-## Limitations
-
-- Matter values are defined by the current port data. Items without a matter value cannot be decomposed.
-
-# 4. Matter Recycler
-
+# 4. Matter Analyzer and Pattern Drives
 Status: PLAYABLE.
 
 ## Simplified
-
-- Power the Recycler.
-- Insert raw Matter Dust.
-- Collect the refined output.
+- Put a Pattern Drive in the Analyzer.
+- Analyze matching items until the pattern reaches 100%.
 
 ## Detailed
+Normal Pattern Drives store two distinct patterns. Analyzer cycles add progress to a matching pattern; completed patterns record the item identity and matter cost used by replication. Pattern Drives retain data when removed.
 
-- Place and power the Matter Recycler.
-- Insert Matter Dust carrying a stored matter value.
-- The Recycler spends FE and processing time to create refined Matter Dust while preserving the represented matter amount.
-- Higher-value dust takes longer according to the current legacy-derived processing formula.
-- Upgrades affect supported machine values and persist with the machine.
-- Use the Recycler when a failed or other process produces raw Matter Dust that you want to recover into the production loop.
+The Analyzer can write directly to its local drive or use Pattern Storage over the working Network Pipe graph.
 
-## Limitations
-
-- The Recycler is focused on the current Matter Dust recovery workflow rather than every old cross-mod recycling integration.
-
-# 5. Matter Analyzer and Pattern Drives
-
+# 5. Pattern Storage / Monitor / Replicator
 Status: PLAYABLE.
 
 ## Simplified
-
-- Power the Analyzer.
-- Insert a Pattern Drive and five matching items.
-- Wait for the pattern to reach 100%.
+- Put Pattern Drives in powered Pattern Storage.
+- Connect Storage, Monitor and Replicator with Network Pipe.
+- Choose a completed pattern in Pattern Monitor.
+- Supply the Replicator with FE and matter.
 
 ## Detailed
+Pattern Storage exposes patterns across enabled network paths. Pattern Monitor queues replication requests. Replicator consumes real FE and matter and outputs the requested item. Normal analyzed patterns retain their current failure behavior; failures can produce matter-bearing dust.
 
-- A normal Pattern Drive stores two distinct patterns.
-- Insert a charged energy item or cable power, a Pattern Drive and the item to analyze.
-- Each completed Analyzer cycle adds 20% progress for the matching item, so five items complete a normal pattern.
-- A Creative Pattern Drive is useful for testing.
-- The Analyzer can write directly to its inserted drive.
-- For a network setup, leave the Analyzer drive slot empty and connect it by Network Pipe to powered Pattern Storage containing a drive.
-- Completed patterns store the item identity and matter cost used by the Replicator.
+Keep resource paths separate: Network Pipe for pattern/network traffic, Matter Pipe for matter, Heavy Energy Cable for FE.
 
-## Limitations
-
-- The broader original scan/research presentation is simplified. Pattern acquisition itself is functional.
-
-# 6. Pattern Storage
-
+# 6. Matter Scanner and Portable Decomposer
 Status: PLAYABLE.
 
-## Simplified
+## Matter Scanner
+Sneak-use the Scanner on powered Pattern Storage to link it. Hold-use it on a supported block to add pattern progress. Invalid or unavailable linked storage causes the scan to fail safely instead of deleting the target.
 
-- Power Pattern Storage.
-- Insert Pattern Drives.
-- Connect it to Analyzer, Pattern Monitor and Replicator with Network Pipe.
+## Portable Decomposer
+The Portable Decomposer stores FE and matter. Add matter-valued items to its pickup filter, then matching pickups are converted instead of entering inventory when enough FE/capacity exists. Use it on compatible matter receivers to transfer its stored matter.
 
-## Detailed
-
-- Pattern Storage has six drive slots.
-- Each normal Pattern Drive holds two distinct patterns, giving twelve normal entries in a fully populated storage.
-- An Analyzer on the same enabled Network Pipe graph can add pattern progress.
-- A Matter Scanner can link directly to the storage if it has a drive and at least 128 FE.
-- Pattern Monitor discovers completed patterns through the network.
-- Removing a drive preserves its pattern data in the item.
-- Drive contents, storage inventory and power state persist through save/reload.
-
-## Limitations
-
-- Generic Flash Drive and Network Flash Drive configuration are not restored. Pattern Drives are the working pattern-storage items.
-
-# 7. Pattern Monitor and Matter Replicator
-
-Status: PLAYABLE core replication loop.
-
-## Simplified
-
-- Connect Pattern Storage, Pattern Monitor and Replicator with Network Pipe.
-- Open Pattern Monitor and select a completed pattern.
-- Give the Replicator FE and enough matter, then collect the output.
-
-## Detailed
-
-- The Pattern Monitor discovers completed patterns on the same enabled network.
-- Select a pattern to submit a replication request. The monitor supports a queue of up to eight requests.
-- A connected Replicator accepts the work and displays the selected network pattern.
-- Feed matter to the Replicator through Matter Pipe from a Decomposer or portable/machine source.
-- Supply FE separately by cable or battery.
-- When FE and matter are sufficient, the Replicator completes its cycle and places the requested item in its main output.
-- A normal fully analyzed pattern retains its small intended failure chance. A failure creates raw Matter Dust carrying the relevant matter value in the secondary output.
-- The Replicator can also read a locally inserted Pattern Drive as a fallback.
-- Accepted work, FE, matter, inventory and pattern state persist.
-
-## Limitations
-
-- Pattern data uses Network Pipe, matter uses Matter Pipe and FE uses Heavy Energy Cable. Combining the wrong pipe types will not work.
-
-# 8. Matter Scanner
-
-Status: PLAYABLE handheld pattern acquisition.
-
-## Simplified
-
-- Sneak-use the Scanner on powered Pattern Storage containing a Pattern Drive.
-- Hold-use it on a matter-valued block for three seconds.
-- Ten successful scans of the same block complete its pattern.
-
-## Detailed
-
-- Linking costs 128 FE from the Pattern Storage.
-- The Scanner remembers the storage dimension and coordinates.
-- Hold-use on a valid target for 60 ticks without moving out of range or changing the block.
-- A successful scan consumes the block and adds 10% pattern progress.
-- The target is not destroyed if the storage is missing, unloaded, unpowered, in another dimension, has no drive, is full or refuses the pattern.
-- Releasing early or replacing the target cancels safely.
-- Scanner-created patterns are usable by Pattern Monitor and Replicator.
-- The Scanner link and last status persist in item data.
-
-## Limitations
-
-- This is a direct storage-linked implementation rather than the full original scanner presentation.
-
-# 9. Portable Decomposer
-
-Status: PLAYABLE handheld matter collection.
-
-## Simplified
-
-- Charge the Portable Decomposer.
-- Sneak-use it with a matter-valued offhand item to add that item to its filter.
-- Pick up matching items to convert them automatically into stored matter.
-
-## Detailed
-
-- The item stores up to 128,000 FE and 512 kM.
-- Sneak-use in air with a supported item in the other hand to add or remove that item from the pickup filter.
-- A filtered pickup is intercepted before entering the inventory.
-- Each processed item spends FE equal to its base matter value and produces 10% of that value as stored matter.
-- Fractional matter is retained so low-value items cannot silently lose every fraction or create free matter.
-- Unmatched items, zero-matter items, pickups with insufficient FE and pickups while the matter buffer is full enter the inventory normally.
-- Use the Portable Decomposer on a compatible matter receiver to transfer stored matter directly.
-- FE, matter, filters and fractional remainder persist.
-
-## Limitations
-
-- The current loop is filter-driven and does not reproduce every old portable GUI behavior.
-
-# 10. Matter Containers and Matter Pipes
-
+# 7. Matter Containers and Pipes
 Status: PLAYABLE.
 
-## Simplified
+Matter Containers provide portable matter storage. Matter Pipe discovers compatible matter endpoints through connected runs and moves matter between them. Use Heavy Energy Cable for FE and Network Pipe for network traffic; they are intentionally separate systems.
 
-- Store matter in a Matter Container.
-- Use Matter Pipe between a matter source and receiver.
-- Use machine/container interactions to transfer exact matter amounts.
+A Debug Matter Container with very large capacity exists for controlled testing.
 
-## Detailed
-
-- Matter Containers are portable matter storage and transfer items.
-- Matter Pipe discovers compatible endpoints and moves matter through connected runs, corners and junctions.
-- Typical routes include Decomposer to Replicator and Decomposer to Reactor IO.
-- Matter does not travel through Heavy Energy Cable or ordinary Network Pipe.
-- Machine matter buffers and container contents persist.
-- The Debug Matter Container stores up to 1,000,000 kM for controlled testing.
-
-## Limitations
-
-- Visual moving-fluid presentation is not the focus of the current implementation; transfers may appear immediate.
-
-# 11. Molecular Inscriber
-
+# 8. Molecular Inscriber
 Status: PLAYABLE.
 
-## Simplified
+Power the Inscriber and use the current circuit chain:
+- Mk1 + Gold -> Mk2
+- Mk2 + Diamond -> Mk3
+- Mk3 + Emerald -> Mk4
 
-- Power the Inscriber.
-- Combine Mk1 Circuit plus Gold for Mk2, Mk2 plus Diamond for Mk3, or Mk3 plus Emerald for Mk4.
-- Take the upgraded circuit from the output.
+The machine supports its battery slot, cable FE, upgrades, progress telemetry and persistent inventory/state.
 
-## Detailed
-
-- Insert the source Isolinear Circuit in the primary slot and the required material in the secondary slot.
-- Mk1 plus Gold produces Mk2.
-- Mk2 plus Diamond produces Mk3.
-- Mk3 plus Emerald produces Mk4.
-- The machine has a battery slot and accepts cable FE.
-- Speed, Power, Power Storage and Hyper Speed upgrades use the shared machine-upgrade system.
-- The GUI/debug information shows the selected recipe, progress, effective cycle duration, FE/t and total energy.
-- Automation uses recipe-aware inputs and an extraction-only output.
-- Old three-slot machine saves migrate safely to the newer battery-slot inventory.
-
-## Limitations
-
-- The currently registered upgrade set does not include the original separate Power Transfer upgrade.
-
-# 12. Solar Panel and Charging Station
-
+# 9. Solar Panel and Charging Station
 Status: PLAYABLE.
 
-## Simplified
+Solar Panels generate FE under valid daylight and export it to adjacent receivers/cables. Charging Stations accept FE and recharge compatible energy items. The Android Station is separate: it can provide wireless energy to converted Android players in range.
 
-- Put a Solar Panel under open daylight and cable it to a machine or Charging Station.
-- Insert a rechargeable FE item into the Charging Station.
-- Converted Androids can also stand within four blocks of a powered Android Station to charge.
-
-## Detailed
-
-- Solar Panels generate FE during suitable daylight, store it internally and export to adjacent compatible receivers.
-- Power Storage upgrades increase Solar Panel capacity.
-- The Charging Station buffers incoming FE and charges compatible energy items, including normal/HC Batteries and the Portable Decomposer.
-- A disconnected station stops once its buffer empties; it does not generate free FE.
-- The Android Station is a separate block. It accepts FE and shares up to 2,000 FE/t fairly between converted players within four blocks.
-- Converted Androids can also sneak while holding a charged normal or HC Battery in either hand. Up to 1,024 FE/t is transferred from real battery storage.
-
-## Limitations
-
-- Solar generation depends on normal world daylight conditions. The Android Station is for player-core charging; the Charging Station is for energy items.
-
-# 13. Microwave
-
+# 10. Microwave
 Status: PLAYABLE.
 
-## Simplified
+The Microwave is a powered food cooker. Give it FE and a food item with a valid smelting result. It waits if the output is blocked and supports relevant machine upgrades.
 
-- Power the Microwave.
-- Insert raw food that has a normal furnace recipe.
-- Collect the cooked food.
+# 11. Space-Time Accelerator
+Status: PLAYABLE / performance-sensitive.
 
-## Detailed
+The Accelerator consumes FE and matter to add extra ticks to eligible blocks/block entities in its horizontal area. Speed/Hyper Speed change pulse rate; Range changes radius; Power/Storage upgrades change resource behavior. Start with a small range because accelerated third-party machines can expose their own bugs or create server load.
 
-- The Microwave accepts food-only vanilla smelting recipes and rejects non-food inputs.
-- Base storage is 512,000 FE.
-- Nominal base cost is 1,000 FE per cook with a 10-tick base cook time.
-- It can receive cable FE or charge from a compatible battery item.
-- Speed, Power, Power Storage and Hyper Speed upgrades adjust the supported values shown in the GUI.
-- Processing waits safely if the output is blocked.
-- Inventory, energy, progress and upgrades persist and drop safely on break.
-
-## Limitations
-
-- It is intentionally a food cooker, not a general powered furnace.
-
-# 14. Space-Time Accelerator
-
-Status: PLAYABLE, but high-impact and still a performance-sensitive system.
-
-## Simplified
-
-- Supply both FE and matter.
-- Place crops or machines on the same Y level inside its range.
-- Keep redstone off to accelerate them; apply redstone to disable it.
-
-## Detailed
-
-- The Accelerator requires FE and matter at the same time.
-- At base settings it pulses every 40 ticks and adds extra ticks to eligible random-tick blocks and block entities.
-- Targets must be on the same Y level.
-- It does not accelerate itself or another Space-Time Accelerator.
-- Speed and Hyper Speed shorten the pulse interval.
-- Power modifies FE usage.
-- Power Storage and Matter Storage increase capacities.
-- Range expands the horizontal radius but is capped at twelve blocks and does not intentionally load unloaded chunks.
-- Ticker failures are isolated so one broken target should not crash the whole pulse.
-- FE, matter, fractional matter use, pulse progress and upgrades persist.
-
-## Limitations
-
-- Extra ticking can expose bugs in other blocks or increase server load. Start with a small radius and a few targets.
-
-# 15. Transporter
-
+# 12. Transporter
 Status: PLAYABLE same-dimension transport.
 
 ## Simplified
-
-- Sneak-use a Transport Flash Drive on the destination block.
-- Put the bound drive into a powered Transporter.
-- Stand on the Transporter and wait for the cycle.
+- Bind a Transport Flash Drive to a destination.
+- Insert it into a powered Transporter.
+- Stand on the pad and let the cycle complete.
 
 ## Detailed
+The Transporter validates destination, range, FE and cooldown before moving eligible entities. Legacy-derived behavior includes a 1,024,000 FE capacity, up to three entities per cycle, distance-scaled FE cost and Speed/Range/Power/Power Storage upgrade effects. Exact-required-FE transport should succeed.
 
-- The Transport Flash Drive stores the target dimension and block position.
-- The current Transporter moves eligible entities to a valid target in the same dimension.
-- Base range, cycle, delay and energy cost are shown in the machine debug information.
-- Speed, Range, Power and Power Storage upgrades are active.
-- Supply FE through cable or the battery slot.
-- The machine checks range, target validity, FE and cooldown before moving the entity.
-- Bound drive, inventory, energy, progress and upgrades persist.
-
-## Limitations
-
-- Cross-dimensional transport and richer legacy effects are not part of the current slice.
-
-# 16. Tritanium Crates
-
+# 13. Tritanium Crates
 Status: PLAYABLE.
 
-## Simplified
+Tritanium Crates and colour variants provide 54-slot storage. Their contents persist into the dropped crate item when safely dismantled/broken and restore when placed again. Automation uses the normal Forge item handler.
 
-- Place any Tritanium Crate colour.
-- Store items in its 54 slots.
-- Break and replace the dropped crate to retain its contents.
-
-## Detailed
-
-- The base crate and all sixteen colour variants share the same 54-slot storage behavior.
-- Shift-click and Forge item-handler automation are supported.
-- Contents are written to the dropped crate item and restored when it is placed again.
-- The GUI reports used slots and total stored item count.
-- Break handling returns the crate exactly once without duplicating its inventory.
-
-## Limitations
-
-- Always verify portable contents before moving irreplaceable items between mod versions.
-
-# 17. Matter Network item logistics
-
-Status: PLAYABLE. Pattern networking shares the same enabled graph rules.
-
-## Simplified
-
-- Connect inventories with Network Pipe.
-- Add and power one Network Router.
-- Use a Network Switch to disable a route and matching-channel Pylons to bridge nearby separate graphs.
-
-## Detailed
-
-- A powered Router moves items between connected inventory endpoints.
-- It consumes 10 FE per item actually moved.
-- Put an item in the Router filter slot to create a whitelist; remove it to allow any item.
-- A destination is remembered as a sink until it empties, preventing the same stack bouncing back and forth.
-- If multiple powered Routers share one graph, only one executes routing on a tick. Another can take over if the active Router loses power.
-- Right-click a Network Switch to enable or disable traffic and pattern discovery across that point.
-- Pylons use channels 0 through 15. Shift-use them until two pylons have the same channel.
-- Matching-channel pylons within 64 blocks bridge separated graphs wirelessly.
-- Pattern Storage, Monitor and Replicator discovery also follows enabled Pipe, Router and Switch paths.
-
-## Limitations
-
-- Pylons are a current local wireless bridge, not the full original interdimensional network-security system.
-- Network Flash Drive and security protocol configuration remain placeholders.
-
-# 18. Fusion Reactor
-
-Status: TESTING legacy-parity core with modern controls.
-
-## Simplified
-
-- Find or place a Gravitational Anomaly, then put the Reactor Controller five blocks from its horizontal centre.
-- Use the Reactor Assembly Guide on the controller and fill the overlay: hull in hull positions, three coils on each straight side, and coil or Reactor IO in IO-capable positions.
-- Feed matter through a formed Reactor IO. Extract FE from any face of a formed IO, directly or with Heavy Energy Cable.
-- Open the controller and leave it ENABLED. Use Ignored redstone mode for continuous operation.
-- Press RUN / SCRAM for an immediate persistent shutdown. RS MODE cycles Ignored, High and Low.
-
-## Detailed
-
-The controller checks its ring every 40 ticks. The anomaly is centred five blocks forward from the controller. At the base range, vertical offsets 0, 1, 2 and 3 produce 100%, 75%, 50% and 25% efficiency. Range upgrades permit farther vertical discovery, up to 16 blocks, and use that upgraded range for the extended efficiency curve.
-
-Legacy generation is calculated directly rather than patched after the tick:
-
-- Potential FE/t = 9,048 × efficiency × (unsuppressed real anomaly mass × 10) × Speed rate.
-- Matter drain = 1/80 kM/t × (unsuppressed real anomaly mass × 10) × Speed rate.
-- If the FE buffer has less room than the potential output, accepted FE and matter use are reduced proportionally.
-- Stabilizers reduce dangerous gravitational effects, not the reactor's unsuppressed-mass generation value.
-
-The controller stores 100,000,000 FE and 2,048 kM before upgrades. Power Storage and Matter Storage enlarge those buffers. Speed increases both FE generation and matter consumption. All formed IO blocks share the controller buffers. IO supports direct machine/cable extraction and matter networks. Compatible machines inside the ring receive a fair share from the internal bus.
-
-The GUI reports structure fault, ring direction, operating/redstone state, potential and actual FE/t, connected demand, efficiency, theoretical drain, whole matter consumed this tick, anomaly mass/suppression, pull/horizon/block ranges, affected/consumed entities, recent destroyed blocks, IO count and internal distribution.
-
-Comparator output is 0 for an invalid reactor, 1 for a valid paused/SCRAMMED reactor, and 1-15 for a running/available reactor according to stored FE. Reactor Remote opens the same controller remotely after linking.
-
-## Safety and troubleshooting
-
-- SCRAM stops new generation but does not remove the anomaly or its gravity.
-- If potential output is non-zero but generated output is zero, check RUN/SCRAM, redstone status, matter and FE-buffer room.
-- If structure is invalid, use the exact fault plus the placement overlay; allow two seconds after rebuilding.
-- If external power does not move, confirm the IO is part of the currently valid ring, then test one direct receiver before the cable network.
-- Do not stand near an unstabilized, high-mass anomaly. Block and fluid destruction is active.
-
-# 19. Gravitational Anomaly and Stabilizers
-
-Status: TESTING legacy-parity hazard and suppression loop.
-
-## Simplified
-
-- Dropped matter-valued items are pulled into the anomaly and permanently increase its mass.
-- Living entities are pulled and damaged inside the event horizon unless wearing a Space-Time Equalizer.
-- Greater mass means stronger pull, a wider hazard area, more reactor output and more matter drain.
-- Aim powered Gravitational Stabilizers directly at the anomaly with a clear line.
-- Use RS MODE on each stabilizer if you want lever-controlled safety.
-
-## Detailed
-
-The anomaly stores raw mass persistently. Its real mass uses the legacy logarithmic conversion. Pull range, block-break range, acceleration and event horizon derive from the suppressed real mass. Item stacks add their registered matter value. A living entity contributes mass once, only when event-horizon damage kills it.
-
-The restored environmental pass samples blocks and fluids within the calculated break range every ten ticks. Fluids can be removed; solid blocks are destroyed only when the anomaly's falloff-adjusted strength exceeds hardness. Unbreakable blocks are skipped, and the range/attempt count is capped for server safety. Drops can then be pulled back into the anomaly.
-
-Each Stabilizer searches up to 63 blocks from its front, stopping at the first solid obstruction. A lock consumes FE and refreshes a 20-tick multiplicative suppression. The base remaining-strength multiplier is 0.7; four base stabilizers therefore leave about 24.01% strength. Power upgrades strengthen suppression and increase required FE; Power Storage enlarges its buffer. A visible End Rod particle line confirms a live lock.
-
-Stabilizer redstone defaults to Ignored for existing-world compatibility. High runs only with a signal; Low runs only without one. A blocked, unpowered or redstone-paused stabilizer does not refresh suppression, so hazard strength returns as the last 20-tick registration expires.
-
-## Partial/external limits
-
-- The original ComputerCraft/OpenComputers integration is not part of the core port because those optional 1.12 APIs do not map directly to a dependency-free 1.20.1 build.
-- Rendering and destructive balance require in-world testing at low and high anomaly mass before this system should be treated as release-stable.
-
-
-# 20. Energy weapons and Weapon Station
-
-Status: PLAYABLE combat core. PARTIAL original visuals and random/enchantment ecosystem.
-
-## Simplified
-
-- Carry a Phaser, Phaser Rifle, Ion Sniper or Plasma Shotgun.
-- Carry a charged normal/HC Battery or Energy Pack.
-- Fire normally, watch the weapon HUD and stop when overheated.
-- Use the Weapon Station to install compatible modules.
-
-## Detailed
-
-- The server checks shot energy, heat, cooldown and installed modules.
-- If the weapon lacks internal energy, it can pull real FE from carried Batteries or consume an Energy Pack.
-- Empty Batteries cannot provide shots and remain as rechargeable items.
-- Non-Phaser weapons can be sneak-used to request a reload.
-- Sneak-use the Phaser to cycle its six power modes. It also reloads automatically when a shot needs energy and a valid source is carried.
-- Heat rises while firing and cools while the weapon is in inventory. An overheated weapon cannot fire until sufficiently cooled.
-- The lower-right HUD shows charge, heat and OVERHEATED state.
-- Weapon Station supports current barrel, sight, ricochet and colour modules and safely returns contents on break.
-- Barrel modules alter supported effects, sights change aiming behavior, ricochet changes projectile behavior and colour modules change presentation.
-
-## Limitations
-
-- Held transforms, recoil, beam/model polish, old enchantments, random weapons and richer Rogue Android weapon drops are incomplete.
-
-# 21. Android conversion, parts and abilities
-
-Status: PLAYABLE foundation and active-ability layer. PARTIAL original Android RPG tree.
-
-## Simplified
-
-- Use a Blue Android Pill.
-- Install Head, Chest, Arms and Legs parts by holding each part and right-clicking an Android Station.
-- Press V to cycle abilities and B to activate the selected ability.
-- Recharge at a powered Android Station, with a Yellow Pill, or by sneaking with a charged Battery.
-- Use a Red Pill to deactivate and recover installed parts.
-
-## Detailed
-
-- Blue Pill begins with 25,000 of 100,000 Android FE.
-- Head provides Night Vision and unlocks Cloak.
-- Chest provides Resistance and unlocks Force Field.
-- Arms adds three direct-melee damage for 80 FE and unlocks Sonic Shockwave.
-- Legs provide movement speed and unlock Ender Teleport.
-- Cloak costs 128 FE/t while enabled.
-- Force Field costs 32 FE/t idle and absorbs up to half of final post-armour/effect damage at 64 FE per absorbed damage point. Activation and impacts produce visible/audio feedback, and the HUD keeps showing FORCE FIELD ON after another ability is selected.
-- Sonic Shockwave costs exactly 4,096 FE, deals six damage, knocks back non-allied targets within five blocks and has a five-second cooldown.
-- Ender Teleport costs 4,096 FE, moves the player's full bounding box up to eight safe blocks along the eye-level view ray, provides portal feedback and has a three-second cooldown. Blocked attempts report why and spend no FE or cooldown.
-- FE spending is atomic: an action that cannot afford its complete cost leaves the remaining partial FE untouched.
-- At zero FE the HUD shows CORE OFFLINE and movement is reduced by 50% until recharge or deactivation.
-- The Android Station shares up to 2,000 FE/t fairly among converted players within four blocks.
-- Sneak-held normal/HC Battery charging transfers up to 1,024 FE/t from either hand.
-- Conversion, FE, installed parts, selected ability, toggles and cooldowns persist.
-- Red Pill clears Android state and safely returns installed parts.
-
-## Limitations
-
-- The full XP/stat unlock tree, multi-level progression, flash cooling, minimap/team UI and many original biotic stats are not restored.
-
-# 22. Rogue Android Spawner
-
-Status: TESTING simplified enemy source. PARTIAL original entity system.
-
-## Simplified
-
-- Power the Rogue Android Spawner.
-- Let it accumulate 20,000 FE.
-- Kill the named Rogue Android and collect one random bionic part.
-
-## Detailed
-
-- The current spawner creates a tagged hostile Husk named Rogue Android.
-- It searches several nearby collision-free positions and respects the world border.
-- FE is charged only after Minecraft accepts the spawned entity.
-- A blocked/rejected attempt costs no FE and retries after a delay.
-- The spawner will not create another tagged Rogue Android while one remains within its local area.
-- Killing the tagged enemy drops one random Head, Chest, Arms or Legs part.
-
-## Limitations
-
-- This is not a dedicated Rogue Android entity. Original levels, teams, melee/ranged variants, equipment, AI, sounds and weapon drops remain future work.
-
-# 23. Contracts and Star Map
-
-Status: PARTIAL progression slice.
-
-## Simplified
-
-- Open a Contract Market and take a collect or hunt Contract.
-- Keep the Contract in your inventory while collecting the target item or killing the target mob.
-- Return a completed Contract to the Market for its reward.
-- Open the Star Map to view active and completed Contract counts.
-
-## Detailed
-
-- The Market offers three Contracts.
-- Contract items store type, target, goal, progress and reward.
-- Collect progress uses the number of items actually picked up.
-- Hunt progress uses player kills of the exact target.
-- One action advances one matching Contract, so duplicate Contracts do not multiply progress.
-- A completed Contract glints and can be redeemed at the Market.
-- After the last offer is removed, the Market waits 1,200 ticks before creating a new set.
-- Offer data, refresh delay and Contract progress persist.
-- Star Map data is viewer-specific, so multiple players see their own active/completed status.
-
-## Limitations
-
-- Star Map is currently a Contract summary, not a galaxy simulation.
-- Generated galaxies, stars, planets, buildings, ships, ownership, travel and attack events are missing.
-- The full quest/dialog/Mad Scientist framework and quest XP are missing.
-
-# 24. Tritanium tools and armour
-
+# 14. Matter Network Router / Switch / Pylons
 Status: PLAYABLE.
 
-## Simplified
+## Router
+A powered Router moves items across its Network Pipe graph. It uses 10 FE per item actually moved. Speed and Hyper Speed upgrades increase the item budget across multiple transfers. Ordinary item filters and Network Flash Drive destination filtering are supported. Four persistent upgrade slots are available.
 
-- Craft and use the Tritanium sword, tools and armour.
-- Wear the full armour set for its configured full-set defensive bonus.
+## Switch
+Right-click to enable/disable a Network Switch. Disabled switches break routing/discovery across that point and their state persists.
 
-## Detailed
+## Pylons
+Matching-channel Pylons bridge nearby separate network graphs. The current implementation is a practical local wireless bridge; exact legacy multiblock/glow/interdimensional behavior is still incomplete.
 
-- Tritanium provides Sword, Pickaxe, Axe, Shovel, Hoe and Wrench equipment.
-- The armour set includes Helmet, Chestplate, Leggings and Boots.
-- Equipping every armour piece activates the current set bonus.
-- Equipped armour uses the restored Tritanium textures.
-- The Wrench is used by supported machine interactions where implemented.
-
-## Limitations
-
-- Check equipped rendering after resource-pack or shader changes. Final visual parity remains an ongoing polish area.
-
-# 25. Data Pad
-
-Status: PLAYABLE guide and scan-history tool. PARTIAL original quest integration.
+# 15. Fusion Reactor
+Status: TESTING late-game power system.
 
 ## Simplified
-
-- Use the Data Pad in air to open its seven-page guide.
-- Use it on blocks to record their registry ID and matter value.
-- Reopen it to review the newest scan history.
+- Place the controller/ring around a Gravitational Anomaly using the Reactor Assembly Guide/overlay.
+- Feed matter through a formed Reactor IO.
+- Extract FE through Reactor IO and Heavy Energy Cable.
+- Use RUN/SCRAM and RS MODE to control operation.
 
 ## Detailed
+The reactor validates its horizontal multiblock, links Controller/IO storage, scales output from anomaly mass and efficiency, consumes matter, supports upgrades, shares power around the ring and reports connected demand. The overlay persists and can show exact required block positions. Reactor Remote opens a linked controller remotely.
 
-- Pages cover Overview, Matter Replication, Power and Machines, Fusion Reactor, Android System, Survival Progression and Scan History.
-- Scan history stores up to sixteen unique blocks.
-- Scanning an existing entry moves it to newest rather than duplicating it.
-- Matter-valued and zero-matter blocks are both identified safely.
-- History persists in the Data Pad item.
+Stabilizers can suppress anomaly hazard while the reactor continues using the unsuppressed generation mass model implemented by the port. SCRAM stops generation but does not remove the anomaly.
 
-## Limitations
+# 16. Gravitational Anomalies and Stabilizers
+Status: TESTING hazard system.
 
-- Original quest pages and the complete NPC/dialog system are not connected yet.
-- For the most comprehensive current instructions, use the separate Matter Overdrive System Guide item.
+Anomalies pull entities/items, consume matter-valued drops to gain mass and can damage/consume living entities inside the event horizon. Living-entity event-horizon deaths add mass once. Higher mass increases hazard range/strength and reactor potential.
 
-# 26. Documentation and testing utilities
+A Space-Time Equalizer worn on the chest protects the wearer from anomaly pull/event-horizon damage. Powered Stabilizers aimed at the anomaly reduce its effective dangerous strength. Blocked, unpowered or incorrectly controlled stabilizers stop refreshing suppression.
 
-Status: PLAYABLE documentation/testing support.
+Natural anomalies in fresh chunks use this exact runtime backend.
+
+# 17. Energy weapons and Weapon Station
+Status: PLAYABLE combat core / PARTIAL visual parity.
+
+Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun require valid FE, generate heat and can overheat. Batteries/HC Batteries provide rechargeable FE; Energy Packs are consumable. Weapon Station exposes real Battery/Color/Barrel/Sights/Utility slots and current module effects.
+
+Known parity gaps include exact module meshes, recoil, zoom and some first-person holding/animation fidelity.
+
+# 18. Android conversion / HUD / skill tree
+Status: PLAYABLE / TESTING progression.
 
 ## Simplified
-
-- Right-click M2 Testing Checklist for everything requiring verification.
-- Right-click Current Feature Reference for the implemented-versus-missing matrix.
-- Right-click Matter Overdrive System Guide for player instructions.
+- Convert using the Android progression item/path available in the build.
+- Install HEAD/CHEST/ARMS/LEGS parts at an Android Station.
+- Press V to cycle installed abilities.
+- Press B to activate the selected ability.
+- Press K to open the skill tree.
 
 ## Detailed
+Android state stores FE, installed body parts, level/XP, selected ability and a persistent selectable perk tree. The HUD reports core energy and ability state. Skill choices persist and can be refunded/reset through the implemented system. Android Station provides management and charging.
 
-- All three documents are bundled inside the mod JAR and use a scrollable screen.
-- Mouse wheel, Page Up, Page Down, Home and End navigate long documents.
-- Done or Escape closes the screen.
-- Documentation identifies Alpha 0.2 and MVQ1303.
-- Debug Matter Container and Debug Matter Block provide controlled matter sources.
-- Machine debug views expose effective server-side values.
-- Infinite FE controls and Creative Battery are testing tools and should not be treated as survival balance.
+The current skill tree contains substantially more options than the original early port and is intended to be tested for persistence across level-up and relog.
 
-## Limitations
-
-- Documentation tracks testing/main. A locally older JAR contains the documentation from that older build.
-
-# 27. Decorative and visual content
-
-Status: PLAYABLE building resources; some presentation remains under visual testing.
+# 19. Rogue Android Spawner squads
+Status: TESTING full squad-management layer.
 
 ## Simplified
-
-- Use restored decorative blocks for sci-fi builds.
-- Industrial Glass, Bounding Block, Matter Plasma and Molten Tritanium are intended to render translucently.
+- Power the Android Spawner.
+- It maintains up to six owned Androids.
+- Use Transport Flash Drives as patrol points.
+- Use COLOR / MODE / COMMAND to configure the squad.
 
 ## Detailed
+The Spawner targets a six-unit owned population with roughly 30% melee / 70% ranged composition. Spawned Androids persist their origin Spawner and squad state. Unrelated/natural/structure Androids do not consume this cap.
 
-- Many legacy decorative block IDs, recipes, models and textures are registered.
-- Tritanium Crate colours, Inscriber faces, equipped armour and held weapons use restored resources.
-- Transparency requires the client render-layer setup included in the port.
+Six Transport Flash Drive slots define same-dimension patrol waypoints. Modes are PATROL, GUARD, HOLD and ESCORT. ESCORT can bind the player as commander and uses deterministic formation positions instead of stacking every unit on one spot. Same-Spawner Androids share targets, remain allied and protect the commander/team. KILL OWNED affects only that Spawner's owned squad.
 
-## Limitations
+# 20. Drones
+Status: PLAYABLE command layer / PARTIAL flying parity.
 
-- Shader packs and resource packs may expose sorting or transform issues.
-- A registered legacy block is not automatically a restored gameplay system. Holo Sign currently lacks programmable/security behavior.
+Right-click an unowned Drone to link it. Another player cannot silently steal a linked Drone. Owner right-click cycles FOLLOW -> DEFENSIVE -> PASSIVE -> AGGRESSIVE. Owner shift-right-click releases it.
 
-# 28. Troubleshooting routes
+FOLLOW stays near the owner without fighting. DEFENSIVE reacts to attackers of the owner. PASSIVE follows without combat. AGGRESSIVE proactively attacks valid nearby hostile monsters. Owned Drones reject owner/players/allies and same-owner drones as targets. Unowned Drones remain hostile.
 
-## A machine has no FE
+Legacy flying navigation/render/equipment parity is still incomplete.
 
-- Confirm you used Heavy Energy Cable rather than Matter Pipe or Network Pipe.
-- Inspect the source, every cable link and the machine energy/debug display.
-- Confirm the battery actually contains FE.
-- Break and replace only the suspected link, then recheck.
+# 21. Scientists / Failed creatures / Cocktail of Ascension
+Status: PLAYABLE restored entity slice.
 
-## Matter will not move
+Mad Scientists and Failed Cow/Pig/Sheep/Chicken variants exist and can appear in restored structures. The Mutant Scientist is the tougher transformed enemy.
 
-- Use Matter Pipe between matter-capable endpoints.
-- Check source matter, destination free capacity and side connection.
-- Heavy Energy Cable cannot transport matter.
+Cocktail of Ascension progression tracks the implemented ingredients/kill requirements and transforms the relevant Scientist only after the replacement Mutant can successfully spawn; ingredients are not committed before successful transformation.
 
-## A pattern is missing
+# 22. Security and Tritanium Wrench
+Status: PLAYABLE.
 
-- Confirm the Pattern Drive contains a completed pattern.
-- Power Pattern Storage and Replicator.
-- Check every Network Switch on the route.
-- Confirm Pattern Monitor, Storage and Replicator share one enabled Network Pipe graph.
+Security Protocols support Claim, Access and Remove behavior. Claimed machines enforce ownership/access rules. Tritanium Wrench dismantling is security-aware and returns supported machine contents/state safely instead of bypassing claims.
 
-## Replication is queued but idle
-
-- Supply both FE and enough matter for the selected pattern.
-- Check blocked output slots and failure output.
-- Verify the Replicator accepted the Monitor request.
-
-## Reactor is invalid
-
-- Use the Reactor Assembly Guide overlay.
-- Check the Controller-facing direction, every highlighted hull/coil position and anomaly centre.
-- Wait up to two seconds for validation.
-- Read the exact Controller fault text before moving blocks.
-
-## Android ability fails
-
-- Confirm conversion is active, the required body part is installed, the ability is selected, cooldown is zero and FE meets the full cost.
-- Recharge with Android Station, Yellow Pill or sneak-held Battery.
-- At zero FE, expect the CORE OFFLINE movement penalty.
-
-## Weapon will not fire
-
-- Check internal energy, carried charged Batteries/Energy Packs, heat and shot cooldown.
-- An empty Battery cannot provide a shot.
-- Allow an overheated weapon to cool.
-
-## A system is marked PARTIAL
-
-- The instructions above describe the working slice only.
-- Do not assume missing original UI, entities, progression or integrations are available because a related registry item exists.
-
-# End of Guide
-
-For verification rather than ordinary play, open the M2 Testing Checklist item. For the exact implemented/missing parity matrix, open the Current Feature Reference item.
-
-# Android selectable skill tree
-
-Status: TESTING expanded progression layer.
+# 23. Star Map navigation and encounters
+Status: TESTING strategic layer.
 
 ## Simplified
-
-- Convert into an Android and press K to open the skill tree.
-- Each Android level awards one perk point.
-- Choose one Assault, Utility or Survival / Mobility perk for that level.
-- Click a node and then Confirm Perk, which prevents accidental choices.
-- Use Reset Perks twice to confirm a full refund for 25,000 Android FE.
+- Open the Star Map.
+- Navigate Galaxy -> Quadrant -> Star -> Planet.
+- Mouse wheel zooms; drag pans; right-click goes back.
+- Select a planet and use TRAVEL to move the command fleet.
 
 ## Detailed
+Planet properties and positions are deterministic. Whole-fleet travel is server-authoritative and persists current/destination/timing state. Same-system timing follows the legacy AU-style factor; interstellar timing follows the legacy LY-style factor. No fake FE travel cost has been added.
 
-- Assault improves melee, Sonic Shockwave, movement and active-system efficiency.
-- Utility improves passive FE drain, charging, XP, cooldowns, repair, scanning and emergency protection.
-- Survival / Mobility improves damage resistance, Force Field efficiency and Ender Teleport.
-- Existing two-branch selections retain their original save bits after upgrading to the expanded tree.
-- Perks survive death, relog and Red Pill deactivation. Selection and resets are validated by the server.
-- Level 1: Efficient Core (-10% ability FE), Sustained Systems (-25% passive part FE), or Reinforced Frame (-5% damage).
-- Level 2: Ghost Protocol (-25% Cloak FE), Quick Charge (2x handheld charging), or Barrier Matrix (-25% Force Field FE).
-- Level 3: Resonant Pulse (+2 Shockwave damage), Learning Matrix (+25% future XP), or Phase Capacitor (+4 Teleport range).
-- Level 4: Wideband Pulse (+2 Shockwave radius), Cooldown Router (-10% active cooldowns), or Rapid Blink (-15% Teleport cooldown).
-- Level 5: Combat Servos (+2 melee damage), Reactive Plating (-5% damage), or Kinetic Plating (-10% damage).
-- Level 6: Shock Recycler (-25% Shockwave FE), Self Repair (powered healing), or Blink Recycler (-25% Teleport FE).
-- Level 7: Shock Momentum (stronger knockback), Silent Cloak (further -15% Cloak FE), or Phase Stabilizer (+4 Teleport range).
-- Level 8: Neural Accelerator (stronger leg speed), Tactical Scan (highlights nearby hostiles), or Adaptive Armor (-10% damage).
-- Level 9: Overcharged Pulse (+3 Shockwave damage), Emergency Protocol (powered low-health resistance), or Long-range Blink (+8 Teleport range).
-- Level 10: Apex Core (ability efficiency/cooldowns), Synthetic Perfection (ability efficiency/damage reduction), or Adamant Chassis (-15% damage).
+Routes long enough can trigger one deterministic encounter: Asteroid Field, Gravitational Slingshot, Android Intercept, Signal Echo or Hostile Fleet. Encounter state survives closing/reopening the GUI.
 
-## Quality-of-life features
+# 24. Star Map fleet combat
+Status: TESTING.
 
-- The HUD displays K plus the number of unspent perk points.
-- Hovering any node explains its effect.
-- Locked, available, pending and installed nodes have different colours.
-- Selection requires confirmation.
-- Click an installed node, then Confirm refund, to remove only that perk for 2,500 FE and recover its level point.
-- Resetting refunds every point, turns off Cloak and Force Field, and costs 25,000 FE.
+The command fleet starts at Hull 100 / Shield 60 / Firepower 20. A Hostile Fleet encounter pauses arrival. Press FIRE when recharged. Each surviving enemy volley drains shields first, then hull. Victory increments fleet victories and resumes travel without consuming the combat pause. Defeat ends travel and returns navigation to the last safe planet with 35 hull / 0 shields.
 
-## Limitations
+Scout/Colonizer ship counts do not automatically alter combat firepower because the reference code does not provide justified combat values for them.
 
-- Individual refunds and the full reset both require a second confirmation and are validated by the server.
-- Values remain subject to Alpha 0.2 balance testing.
+# 25. Star Map colony economy
+Status: TESTING late-game strategy.
 
-## Perk persistence safeguard
+The first bound commander receives a modern bootstrap homeworld containing Base + Ship Factory. Ownership/buildings are world-persistent planet data rather than properties of one Star Map block.
 
-Installed perk choices remain selected when Android XP crosses a level boundary. The server saves the perk mask atomically with XP and maintains a mirrored recovery value for worlds affected by the earlier level-up reset regression. Only the confirmed 25,000 FE Reset Perks action intentionally clears the tree.
+## Buildings and exact recovered effects
+- Ship Factory: 8,000 ticks; required for Scout/Colonizer production.
+- Ship Hangar: 4,800 ticks; +2 fleet berths.
+- Matter Extractor: 14,400 ticks; +10 matter production / -6 energy production.
+- Power Generator: 14,400 ticks; +8 energy production / -2 matter production.
+- Residential: 6,000 ticks; +10,000 population / -4 energy / -2 matter / +4 building capacity.
+
+Residential happiness follows the recovered sign-based energy/matter rule. Planet GUI shows E, M, P, H and B telemetry. A newly colonized world begins with a Base but must build its own Factory before constructing ships.
+
+# 26. Star Map planet-local ships and transfers
+Status: TESTING newest feature set.
+
+Scout and Colonizer ships now belong to **planets**, not to a Star Map console.
+
+## Building ships
+- Scout: 3,600 ticks.
+- Colonizer: 5,000 ticks.
+- Completion adds the ship to the planet where the build occurred.
+- A Base has two baseline berths; each Ship Hangar adds two more.
+- Physical non-stacking ship tokens also appear with owner/type/planet metadata, but persistent planet fleet data is authoritative.
+
+## Moving ships without moving the command fleet
+Open a non-current Planet page while the command fleet is stationary. `SEND S` dispatches a stationed Scout; `SEND C` dispatches a stationed Colonizer. Dispatch removes the ship from the current source planet and creates an independent persistent travel event. Multiple ships can be in transit at the same time.
+
+`TRANSIT S# C#` shows active independent ship events. These transfers do not replace the command fleet's separate TRAVEL journey.
+
+## Arrival behavior
+- Scout -> friendly colony with free berth: becomes stationed there.
+- Scout -> no friendly berth/capacity: returns to origin.
+- Scout travel has no invented reward because the authoritative 1.7 Scout `onTravel` hook is empty.
+- Colonizer -> unowned planet: ship is consumed, ownership is assigned and a Base is established.
+- Colonizer -> friendly colony with room: ship stations there.
+- Colonizer -> cannot claim/berth: returns to origin.
+
+A loaded Star Map owned by the same commander can settle completed arrivals, so the exact block that launched the ship is no longer required to survive. Existing saves from the immediately previous console-counter build migrate their Scout/Colonizer counts once to that console's current planet.
+
+## Recommended strategic loop
+1. Develop homeworld power/matter balance.
+2. Build Hangars for fleet capacity.
+3. Build Colonizer ships.
+4. Send a Colonizer to an unowned planet.
+5. Wait for independent travel arrival.
+6. New colony receives ownership + Base.
+7. Build Factory and economy buildings there.
+8. Build or transfer Scouts/Colonizers between friendly colonies.
+9. Expand again while the command fleet separately handles navigation/encounters/combat.
+
+# 27. Restored structures and salvage
+Status: TESTING exploration content.
+
+Crashed Ship: salvage plus 1-2 mixed Rogue Android defenders.
+Cargo Ship: larger salvage, 2-4 Android defenders and possible hostile Drone.
+Underwater Base: persisted salvage, hostile Drone and possible ranged Android; interior should remain dry.
+Mad Scientist House: circuitry/machine salvage, Mad Scientist and possible Failed animal.
+Android House: Android/battery/network salvage, several Android defenders and possible Drone.
+Sand Pit: lower-tier tritanium/matter salvage with an Android guardian and possible Drone.
+
+Generated structure Androids are deliberately not Android-Spawner-owned, and generated Drones begin unowned/hostile.
+
+# 28. Playtester troubleshooting
+
+## No FE transfer
+Confirm you are using Heavy Energy Cable, not Matter Pipe/Network Pipe. Test a one-cable path first.
+
+## No matter transfer
+Use Matter Pipe between compatible matter source/receiver. Reactor matter enters through formed Reactor IO.
+
+## Pattern not visible
+Confirm Pattern Storage/Monitor/Replicator share an enabled Network Pipe graph and the stored pattern is complete.
+
+## Android controls missing
+Verify Android conversion/state, installed parts/perks and key bindings for V/B/K. Relog once and report whether HUD/selection persisted.
+
+## Spawner exceeds six or attacks allies
+Record whether Androids came from this exact Spawner, a structure, or natural/debug spawning. Only owned units should count.
+
+## Star Map colony has the wrong ships
+Ship counts are planet-local. Check the current Planet page and `TRANSIT` counts. A ship in transit is removed from its source until arrival.
+
+## Star Map old save after updating
+The first loaded bound console migrates old console-local Scout/Colonizer counts into its current planet one time. If counts duplicate after a second reload, report it immediately.
+
+## Missing/purple textures
+Record the exact block/item and whether the problem is world model, inventory model or equipped model.
+
+## Reporting a bug
+Include: build commit/JAR name, singleplayer/server, steps to reproduce, expected result, actual result, screenshots if visual, and latest.log/debug.log for crashes or state desync.
+
+Use the separate **Current Feature Reference** for implementation details and **M2 Testing Checklist** for the formal verification list.
