@@ -21,7 +21,7 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
         super(menu, inventory, title);
         imageWidth = 176;
         imageHeight = 232;
-        inventoryLabelY = 122;
+        inventoryLabelY = 120;
     }
 
     private static ResourceLocation tex(String name) {
@@ -50,7 +50,6 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.CYAN);
         MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 29, 142, 68);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 119, 142, 9);
         MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 25, topPos + 51, 126, 5,
                 menu.androidEnergy(), menu.androidCapacity(), MachineScreenStyle.CYAN);
 
@@ -96,9 +95,7 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
         graphics.drawString(font, unlocked ? (active ? "ACTIVE" : "READY") : "LOCKED - " + ability.requiredPart.name() + " Lv " + ability.requiredLevel,
                 44, 87, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
         graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel()
-                        + "  P " + menu.availableSkillPoints(), 20, 121, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
-                MachineScreenStyle.MUTED, false);
+                        + "  P " + menu.availableSkillPoints(), 20, 120, MachineScreenStyle.TEXT, false);
     }
 
     private void drawPart(GuiGraphics graphics, int x, int y, AndroidData.Part part, ResourceLocation icon) {
