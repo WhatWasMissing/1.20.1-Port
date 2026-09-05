@@ -96,7 +96,13 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Accelerator Home/Tasks/Upgrades pages show FE, matter, pulse progress, interval, radius and last accelerated count.
 - [ ] Star Map reaches Galaxy -> Quadrant -> Star -> Planet and retains wheel zoom, drag pan and right-click back navigation.
 - [ ] Planet page shows deterministic type/orbit/habitability/temperature/gravity/moons/atmosphere values.
-- [ ] Planet page still clearly reports travel unavailable; no fake travel action occurs.
+- [ ] Select a planet other than the current location. A real `TRAVEL` control is present and starts a server-authoritative journey; the current planet instead reports `CURRENT LOCATION`.
+- [ ] During travel the control reports `EN ROUTE` with a decreasing ETA and a second travel request cannot replace the active destination.
+- [ ] Same-star travel uses the shorter orbit/AU timing path while travel between stars uses the interstellar timing path derived from the legacy 10-per-AU / 8-per-LY multipliers.
+- [ ] Close and reopen the Star Map while traveling; destination and remaining travel time are still server-synchronized.
+- [ ] Save/reload the world during a journey. Current location, destination and in-progress timing persist and the machine completes the journey when its server timer expires.
+- [ ] After arrival the destination becomes the machine's current location and requesting that same planet again is rejected.
+- [ ] Travel changes Star Map galactic state only; it must not unexpectedly teleport the player or claim that the still-unimplemented legacy ship/event backend exists.
 
 ## Network / persistence
 
@@ -104,7 +110,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Empty installed Network Flash Drive permits no destinations.
 - [ ] Pylon-linked network sections obey matching channel and destination filters.
 - [ ] Matter Pipe, Heavy Energy Cable and Network Pipe arms update in all six directions without breaking transfer.
-- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, saved locations and ownership after save/reload.
+- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, saved locations, Star Map current/destination/travel state and ownership after save/reload.
 
 ## Core gameplay regression
 
