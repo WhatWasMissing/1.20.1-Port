@@ -19,9 +19,9 @@ Fusion Reactor/gravity includes horizontal structure validation, Controller/IO s
 Network Pipe, Network Switch, Network Router and matching-channel Pylon routing are present. Switch state persists and changes routing/appearance. Router supports ordinary filtering, Network Flash Drive destination filtering, four Speed/Hyper-Speed slots, multi-stack item budgets and the 10 FE/item execution limit. There is no invented standalone Network Controller because the authoritative legacy implementations do not contain one matching that assumption.
 
 ## Androids / entities
-Android player conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent selectable perk tree are present. Android Spawner restores a six-unit 30% melee / 70% ranged population, persistent ownership, six Transport Flash Drive patrol slots and PATROL/GUARD/HOLD squad modes with eight colors. Same-Spawner Androids are allies and squad changes propagate to loaded/future units.
+Android player conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent selectable perk tree are present. Android Spawner restores a six-unit 30% melee / 70% ranged population, persistent ownership, six Transport Flash Drive patrol slots and four real squad orders: **PATROL / GUARD / HOLD / ESCORT**, plus eight persisted squad colors. ESCORT binds a persistent commander UUID, places idle squad members into deterministic formation positions around that player and resumes formation after combat. The Spawner GUI exposes COLOR, MODE, COMMAND and KILL controls backed by server state. Same-Spawner Androids are allies, commander/team allies are protected, and a valid target acquired by one squad member propagates to nearby idle squad members from the same Spawner for coordinated combat.
 
-Rogue Androids, Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Owned Drones persist owner UUID, follow their loaded owner, inherit owner team/allies and do not automatically target unrelated players; unowned Drones remain hostile ranged mobs. Puny Humans and Cocktail of Ascension are implemented, including transactional mutant transformation.
+Rogue Androids, Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Unowned Drones retain hostile ranged behavior. Right-clicking an unowned Drone now links it to the player; linked Drones persist owner UUID and a real command mode. Owner right-click cycles **FOLLOW / DEFENSIVE / PASSIVE / AGGRESSIVE**, while owner shift-right-click releases the link. FOLLOW stays with the owner without acquiring combat targets, DEFENSIVE retaliates against valid mobs that hurt the owner, PASSIVE clears combat state, and AGGRESSIVE proactively targets nearby valid hostile mobs while respecting owner/team/same-owner Drone allies. Puny Humans and Cocktail of Ascension are implemented, including transactional mutant transformation.
 
 ## Weapons
 Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station exposes real Battery/Color/Barrel/Sights/Utility slots and stat/loadout preview. Exact module meshes, recoil, zoom and remaining first-person animation parity remain incomplete.
@@ -73,13 +73,12 @@ Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are im
 ## Major remaining parity gaps
 1. Exact legacy world-structure templates, structure-specific mob/encounter population and remaining world events.
 2. Star Map ship production/build queues, Scout/Colonizer economy, multi-ship fleet composition, colonization/planet ownership, richer star/planet events and physical arrival gameplay.
-3. Deeper Android squad behavior such as follow-player/escort orders, formations and coordinated targeting.
-4. Richer Drone command/owner-management UI and remaining flight/render/equipment details.
-5. Generic legacy machine redstone/configuration modes where backend equivalents are still absent.
-6. Remaining machine-specific GUI pages that map to real backend state.
-7. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
-8. Full weapon module meshes, recoil, zoom and first-person animation parity.
-9. Deeper dispatcher/broadcaster network concepts where they can be mapped without replacing the working Forge routing core.
-10. Broader dialog/quest framework.
+3. Drone flying navigation/renderer/equipment parity and richer owner-management presentation beyond direct interaction commands.
+4. Generic legacy machine redstone/configuration modes where backend equivalents are still absent.
+5. Remaining machine-specific GUI pages that map to real backend state.
+6. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
+7. Full weapon module meshes, recoil, zoom and first-person animation parity.
+8. Deeper dispatcher/broadcaster network concepts where they can be mapped without replacing the working Forge routing core.
+9. Broader dialog/quest framework.
 
 See the in-game **M2 Testing Checklist** for runtime verification.
