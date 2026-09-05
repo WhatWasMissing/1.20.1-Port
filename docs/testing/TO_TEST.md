@@ -145,8 +145,16 @@ This is a high-priority test set for the current pass.
 ## Machine GUI parity / persistence
 - [ ] Decomposer uses HOME/TASKS/UPGRADES side pages while input/output/battery and all four real upgrade slots remain visible and clickable.
 - [ ] Decomposer TASKS reports real progress, input matter yield and FE demand; no value is decorative/faked.
+- [ ] Matter Recycler uses HOME/TASKS/UPGRADES while input/output/battery and all four upgrade slots remain visible and clickable.
+- [ ] Recycler TASKS progress/yield/FE demand matches the actual active recycle cycle.
+- [ ] Microwave uses HOME/TASKS/UPGRADES while its food input, energy item, output and four upgrade slots stay visible on every page.
+- [ ] Microwave TASKS progress/duration/FE demand follows the real food-only cooking cycle.
+- [ ] Solar Panel uses HOME/GEN/UPGRADES while both physical upgrade slots remain visible and clickable.
+- [ ] Solar GEN page matches live generation, sky access, light, daylight factor, buffer/output and per-side cap telemetry.
 - [ ] Replicator HOME/TASKS/CONFIG/UPGRADES pages retain visible physical slots and accurate queue/pattern telemetry.
 - [ ] Transporter HOME/TASKS/LOCATIONS/UPGRADES retains real saved-destination controls and visible physical slots.
+- [ ] Charging Station HOME/ANDROID/UPGRADES retains item/upgrade slots and real wireless charging telemetry.
+- [ ] Space-Time Accelerator HOME/TASKS/UPGRADES retains its four upgrade slots and live pulse/radius/resource state.
 - [ ] Weapon Station HOME/MODULES/STATS retains all physical slots as above.
 - [ ] Fusion Reactor direct controls remain real RUN/SCRAM/redstone/debug controls and its upgrade slots/dual resource telemetry remain visible.
 - [ ] Major GUIs keep aligned slot hitboxes at GUI scales 2, 3 and Auto where practical.
