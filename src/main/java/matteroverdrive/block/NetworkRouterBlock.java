@@ -16,17 +16,38 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
+
 import javax.annotation.Nullable;
 
 public class NetworkRouterBlock extends BaseEntityBlock {
-    public NetworkRouterBlock(Properties properties) { super(properties); }
-    @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
-    @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new NetworkRouterBlockEntity(pos, state); }
-    @Nullable @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide || type != ModBlockEntities.NETWORK_ROUTER.get()) return null;
-        return (tickLevel, tickPos, tickState, entity) -> NetworkRouterBlockEntity.serverTick(tickLevel, tickPos, tickState, (NetworkRouterBlockEntity) entity);
+    public NetworkRouterBlock(Properties properties) {
+        super(properties);
     }
-    @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new NetworkRouterBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(
+            Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide || type != ModBlockEntities.NETWORK_ROUTER.get()) return null;
+        return (tickLevel, tickPos, tickState, entity) ->
+                NetworkRouterBlockEntity.serverTick(tickLevel, tickPos, tickState,
+                        (NetworkRouterBlockEntity) entity);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
+                                 InteractionHand hand, BlockHitResult hit) {
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof NetworkRouterBlockEntity router) {
             NetworkHooks.openScreen(serverPlayer, router, pos);
@@ -35,10 +56,11 @@ public class NetworkRouterBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void onRemove(BlockState oldState, Level level, BlockPos pos, BlockState newState, boolean moving) {
+    public void onRemove(BlockState oldState, Level level, BlockPos pos,
+                         BlockState newState, boolean moving) {
         if (!oldState.is(newState.getBlock())) {
             BlockEntity entity = level.getBlockEntity(pos);
-            if (entity instanceof NetworkRouterBlockEntity router) router.dropFilter();
+            if (entity instanceof NetworkRouterBlockEntity router) router.dropContents();
         }
         super.onRemove(oldState, level, pos, newState, moving);
     }
