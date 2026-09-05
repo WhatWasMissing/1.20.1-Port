@@ -76,10 +76,6 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
     private LazyOptional<IItemHandler> itemCap = LazyOptional.of(() -> items);
     private LazyOptional<IEnergyStorage> energyCap = LazyOptional.of(() -> energy);
 
-    /**
-     * Legacy transporters kept a machine-side list of destinations. Modern flash drives
-     * remain compatible by acting as the import source for this list.
-     */
     private final List<Destination> destinations = new ArrayList<>();
     private int selectedDestination;
     private int progress;
@@ -149,7 +145,7 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
         }
 
         List<Entity> entities = entitiesOnPad();
-        if (!targetValid() || energy.getEnergyStored() <= energyCost() || entities.isEmpty()) {
+        if (!targetValid() || energy.getEnergyStored() < energyCost() || entities.isEmpty()) {
             progress = 0;
             running = false;
             return;
@@ -177,7 +173,7 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
         return level == null
                 ? List.of()
                 : level.getEntities((Entity) null,
-                        new AABB(worldPosition, worldPosition.offset(1, 2, 1)), entity -> true);
+                        new AABB(worldPosition, worldPosition.offset(1, 2, 1)), entity -> entity.isAlive());
     }
 
     private BlockPos selectedTarget() {
@@ -199,9 +195,6 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
     private boolean targetValid() {
         if (level == null || !hasTarget()) return false;
         BlockPos target = selectedTarget();
-
-        // 1.12 only rejects destinations in the same X/Z column when they are less
-        // than four vertical blocks away. It does not use a four-block sphere.
         boolean sameColumnTooClose = target.getX() == worldPosition.getX()
                 && target.getZ() == worldPosition.getZ()
                 && target.getY() < worldPosition.getY() + 4
@@ -305,8 +298,16 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
 
     public void dropContents() {
         if (level == null || level.isClientSide) return;
-        for (int i = 0; i < items.getSlots(); i++) drop(items.getStackInSlot(i));
-        for (int i = 0; i < upgrades.getSlots(); i++) drop(upgrades.getStackInSlot(i));
+        for (int i = 0; i < items.getSlots(); i++) {
+            ItemStack stack = items.getStackInSlot(i);
+            drop(stack);
+            items.setStackInSlot(i, ItemStack.EMPTY);
+        }
+        for (int i = 0; i < upgrades.getSlots(); i++) {
+            ItemStack stack = upgrades.getStackInSlot(i);
+            drop(stack);
+            upgrades.setStackInSlot(i, ItemStack.EMPTY);
+        }
     }
 
     private void drop(ItemStack stack) {
