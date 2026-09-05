@@ -1,6 +1,7 @@
 package matteroverdrive.menu;
 
 import matteroverdrive.blockentity.AndroidSpawnerBlockEntity;
+import matteroverdrive.entity.RogueAndroidEntity;
 import matteroverdrive.item.TransportFlashDriveItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
@@ -28,7 +29,7 @@ public class AndroidSpawnerMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public AndroidSpawnerMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(8));
+        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(10));
     }
 
     public AndroidSpawnerMenu(int id, Inventory inventory, AndroidSpawnerBlockEntity spawner) {
@@ -95,10 +96,22 @@ public class AndroidSpawnerMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        if (id != 1) return false;
-        int removed = spawner.removeSpawnedAndroids();
-        player.displayClientMessage(Component.literal("Android Spawner removed " + removed + " owned Android(s)"), true);
-        return true;
+        if (id == 1) {
+            int removed = spawner.removeSpawnedAndroids();
+            player.displayClientMessage(Component.literal("Android Spawner removed " + removed + " owned Android(s)"), true);
+            return true;
+        }
+        if (id == 2) {
+            spawner.cycleSquadColor();
+            player.displayClientMessage(Component.literal("Android squad color: " + squadColorName()), true);
+            return true;
+        }
+        if (id == 3) {
+            spawner.cycleSquadMode();
+            player.displayClientMessage(Component.literal("Android squad mode: " + squadModeName()), true);
+            return true;
+        }
+        return false;
     }
 
     public int energy() { return combine(0, 1); }
@@ -107,6 +120,29 @@ public class AndroidSpawnerMenu extends AbstractContainerMenu {
     public int maxSpawned() { return Math.max(1, data.get(5)); }
     public int ticksUntilSpawn() { return Math.max(0, data.get(6)); }
     public int patrolTargets() { return Math.max(0, data.get(7)); }
+    public int squadColor() { return Math.floorMod(data.get(8), 8); }
+    public int squadMode() { return Math.max(RogueAndroidEntity.MODE_PATROL, Math.min(RogueAndroidEntity.MODE_HOLD, data.get(9))); }
+
+    public String squadColorName() {
+        return switch (squadColor()) {
+            case 1 -> "RED";
+            case 2 -> "ORANGE";
+            case 3 -> "YELLOW";
+            case 4 -> "GREEN";
+            case 5 -> "CYAN";
+            case 6 -> "BLUE";
+            case 7 -> "PURPLE";
+            default -> "WHITE";
+        };
+    }
+
+    public String squadModeName() {
+        return switch (squadMode()) {
+            case RogueAndroidEntity.MODE_GUARD -> "GUARD";
+            case RogueAndroidEntity.MODE_HOLD -> "HOLD";
+            default -> "PATROL";
+        };
+    }
 
     private int combine(int lowIndex, int highIndex) {
         return (data.get(lowIndex) & 0xffff) | ((data.get(highIndex) & 0xffff) << 16);
