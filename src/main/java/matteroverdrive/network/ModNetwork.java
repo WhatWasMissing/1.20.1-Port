@@ -2,6 +2,7 @@ package matteroverdrive.network;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.android.AndroidData;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkRegistry;
@@ -36,6 +37,8 @@ public final class ModNetwork {
                 DocumentationOpenPacket::decode, DocumentationOpenPacket::handle);
         CHANNEL.registerMessage(nextId++, OmniToolFirePacket.class, OmniToolFirePacket::encode,
                 OmniToolFirePacket::decode, OmniToolFirePacket::handle);
+        CHANNEL.registerMessage(nextId++, StarMapTravelPacket.class, StarMapTravelPacket::encode,
+                StarMapTravelPacket::decode, StarMapTravelPacket::handle);
     }
 
     public static void openDataPad(ServerPlayer player, List<String> history) {
@@ -48,6 +51,10 @@ public final class ModNetwork {
 
     public static void fireOmniTool() {
         CHANNEL.sendToServer(new OmniToolFirePacket());
+    }
+
+    public static void requestStarMapTravel(BlockPos mapPos, int quadrant, int star, int planet) {
+        CHANNEL.sendToServer(new StarMapTravelPacket(mapPos, quadrant, star, planet));
     }
 
     public static void syncAndroidState(ServerPlayer player) {

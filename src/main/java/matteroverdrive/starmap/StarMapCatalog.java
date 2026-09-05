@@ -18,6 +18,51 @@ public final class StarMapCatalog {
         return QUADRANTS;
     }
 
+    public static boolean validPosition(int quadrant, int star, int planet) {
+        if (quadrant < 0 || quadrant >= QUADRANTS.size()) return false;
+        List<Star> stars = QUADRANTS.get(quadrant).stars();
+        return star >= 0 && star < stars.size()
+                && planet >= 0 && planet < stars.get(star).planets().size();
+    }
+
+    public static Planet planet(int quadrant, int star, int planet) {
+        return validPosition(quadrant, star, planet)
+                ? QUADRANTS.get(quadrant).stars().get(star).planets().get(planet) : null;
+    }
+
+    public static int quadrantIndex(Quadrant quadrant) {
+        return quadrant == null ? -1 : QUADRANTS.indexOf(quadrant);
+    }
+
+    public static int starIndex(Quadrant quadrant, Star star) {
+        return quadrant == null || star == null ? -1 : quadrant.stars().indexOf(star);
+    }
+
+    public static int planetIndex(Star star, Planet planet) {
+        return star == null || planet == null ? -1 : star.planets().indexOf(planet);
+    }
+
+    /**
+     * Legacy 1.7 travel used 8 time units per interstellar light-year and 10 per intra-system AU.
+     * The modern deterministic catalog has no legacy galaxy save, so its star coordinates and orbit
+     * numbers are used as stable LY/AU stand-ins while preserving those original multipliers.
+     */
+    public static int travelTicks(int fromQ, int fromS, int fromP, int toQ, int toS, int toP) {
+        if (!validPosition(fromQ, fromS, fromP) || !validPosition(toQ, toS, toP)) return 0;
+        if (fromQ == toQ && fromS == toS) {
+            int au = Math.abs(planet(fromQ, fromS, fromP).orbit() - planet(toQ, toS, toP).orbit());
+            return Math.max(20, au * 10);
+        }
+        Quadrant fromQuadrant = QUADRANTS.get(fromQ);
+        Quadrant toQuadrant = QUADRANTS.get(toQ);
+        Star fromStar = fromQuadrant.stars().get(fromS);
+        Star toStar = toQuadrant.stars().get(toS);
+        double dx = (fromQuadrant.x() + fromStar.x()) - (toQuadrant.x() + toStar.x());
+        double dy = (fromQuadrant.y() + fromStar.y()) - (toQuadrant.y() + toStar.y());
+        int ly = Math.max(1, (int) Math.ceil(Math.sqrt(dx * dx + dy * dy)));
+        return Math.max(20, ly * 8);
+    }
+
     private static List<Quadrant> build() {
         List<Quadrant> quadrants = new ArrayList<>();
         String[] qNames = {"Aquila", "Cygnus", "Orion", "Perseus"};
