@@ -50,15 +50,18 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
     private boolean fleetCombat;
     private int enemyHull, enemyMaxHull, enemyFirepower;
     private long fleetCombatStarted, lastFleetAttack;
-    private int scoutShips, colonizerShips, buildAction;
+    private int buildAction;
     private long buildEndTime;
     private int buildQuadrant, buildStar, buildPlanet;
+    private int legacyScoutShips, legacyColonizerShips;
+    private boolean planetFleetMigrated;
 
     public StarMapBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.STAR_MAP.get(), pos, state); }
 
     public static void tick(Level level, BlockPos pos, BlockState state, StarMapBlockEntity map) {
         if (level.isClientSide) return;
         long now = level.getGameTime();
+        map.migrateLegacyFleet();
         map.finishBuildIfDue(now);
         map.resolveShipArrivals(now);
         map.resolveEncounterIfDue(level, now);
@@ -84,7 +87,7 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
                     case 12 -> encounterResolved ? 0 : encounterRemainingTicks(); case 13 -> encounterResolved ? 1 : 0;
                     case 14 -> fleetHull; case 15 -> fleetShield; case 16 -> fleetFirepower; case 17 -> fleetCombat ? 1 : 0;
                     case 18 -> enemyHull; case 19 -> enemyMaxHull; case 20 -> fleetVictories; case 21 -> fleetAttackCooldown();
-                    case 22 -> scoutShips; case 23 -> colonizerShips; case 24 -> buildAction; case 25 -> buildRemainingTicks();
+                    case 22 -> ps.scoutShips(); case 23 -> ps.colonizerShips(); case 24 -> buildAction; case 25 -> buildRemainingTicks();
                     case 26 -> !ps.hasOwner() ? 0 : ps.isOwner(viewer.getUUID()) ? 1 : 2; case 27 -> ps.hasBase() ? 1 : 0;
                     case 28 -> ps.hasShipFactory() ? 1 : 0; case 29 -> ps.hangars(); case 30 -> ps.fleetCapacity();
                     case 31 -> ps.matterExtractors(); case 32 -> ps.powerGenerators(); case 33 -> ps.residential();
@@ -100,7 +103,7 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
 
     private int transitCount(int type) {
         if (!(level instanceof ServerLevel sl) || fleetOwner == null) return 0;
-        return StarMapShipTravelData.get(sl).countInTransit(fleetOwner, worldPosition.asLong(), type);
+        return StarMapShipTravelData.get(sl).countInTransit(fleetOwner, type);
     }
 
     private boolean bind(ServerPlayer player) {
@@ -110,7 +113,14 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
             StarMapGalaxyData.get(sl).ensureHomeworld(currentQuadrant, currentStar, currentPlanet, fleetOwner);
             setChanged();
         }
+        migrateLegacyFleet();
         return true;
+    }
+
+    private void migrateLegacyFleet() {
+        if (planetFleetMigrated || fleetOwner == null || !(level instanceof ServerLevel sl)) return;
+        StarMapGalaxyData.get(sl).migrateLegacyShips(currentQuadrant, currentStar, currentPlanet, fleetOwner, legacyScoutShips, legacyColonizerShips);
+        legacyScoutShips = 0; legacyColonizerShips = 0; planetFleetMigrated = true; setChanged();
     }
 
     public boolean requestShipDispatch(ServerPlayer player, int shipType, int q, int s, int p) {
@@ -118,43 +128,42 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
         if (!bind(player)) { msg(player, "Star Map fleet is bound to another commander.", ChatFormatting.RED); return false; }
         if (traveling || fleetCombat) { msg(player, "Independent ships can only depart while the console fleet is stationary.", ChatFormatting.YELLOW); return false; }
         if (q == currentQuadrant && s == currentStar && p == currentPlanet) { msg(player, "Dispatch destination must be another planet.", ChatFormatting.YELLOW); return false; }
-        String itemId;
-        if (shipType == StarMapShipTravelData.SHIP_SCOUT) {
-            if (scoutShips <= 0) { msg(player, "No Scout ship is available.", ChatFormatting.RED); return false; }
-            itemId = "scout_ship";
-        } else if (shipType == StarMapShipTravelData.SHIP_COLONIZER) {
-            if (colonizerShips <= 0) { msg(player, "No Colonizer ship is available.", ChatFormatting.RED); return false; }
-            itemId = "colonizer_ship";
-        } else return false;
-        if (!hasPhysicalShip(player, itemId)) { msg(player, "Carry the matching physical ship token to dispatch it.", ChatFormatting.RED); return false; }
+        StarMapGalaxyData data = StarMapGalaxyData.get(sl);
+        StarMapGalaxyData.PlanetState source = data.planet(currentQuadrant, currentStar, currentPlanet);
+        if (!source.isOwner(player.getUUID())) { msg(player, "Ships can only depart from one of your colonies.", ChatFormatting.RED); return false; }
+        int available = shipType == StarMapShipTravelData.SHIP_SCOUT ? source.scoutShips() : shipType == StarMapShipTravelData.SHIP_COLONIZER ? source.colonizerShips() : 0;
+        if (available <= 0) { msg(player, shipType == StarMapShipTravelData.SHIP_SCOUT ? "No Scout is stationed at this colony." : "No Colonizer is stationed at this colony.", ChatFormatting.RED); return false; }
         if (!StarMapShipTravelData.get(sl).dispatch(player.getUUID(), worldPosition.asLong(), shipType,
                 currentQuadrant, currentStar, currentPlanet, q, s, p, level.getGameTime())) return false;
-        consumePhysicalShip(player, itemId);
-        if (shipType == StarMapShipTravelData.SHIP_SCOUT) scoutShips--; else colonizerShips--;
-        setChanged();
+        if (!data.removeShip(currentQuadrant, currentStar, currentPlanet, player.getUUID(), shipType)) return false;
+        consumePhysicalShipIfPresent(player, shipType == StarMapShipTravelData.SHIP_SCOUT ? "scout_ship" : "colonizer_ship");
         int ticks = StarMapCatalog.travelTicks(currentQuadrant, currentStar, currentPlanet, q, s, p);
-        msg(player, (shipType == StarMapShipTravelData.SHIP_SCOUT ? "Scout" : "Colonizer") + " dispatched independently (" + Math.max(1, (ticks + 19) / 20) + "s).", ChatFormatting.AQUA);
+        msg(player, (shipType == StarMapShipTravelData.SHIP_SCOUT ? "Scout" : "Colonizer") + " departed " + StarMapCatalog.planet(currentQuadrant,currentStar,currentPlanet).name() + " for " + StarMapCatalog.planet(q,s,p).name() + " (" + Math.max(1, (ticks + 19) / 20) + "s).", ChatFormatting.AQUA);
         return true;
     }
 
     private void resolveShipArrivals(long now) {
         if (!(level instanceof ServerLevel sl) || fleetOwner == null) return;
-        for (var arrival : StarMapShipTravelData.get(sl).collectArrivals(sl, fleetOwner, worldPosition.asLong(), now)) {
+        StarMapGalaxyData data = StarMapGalaxyData.get(sl);
+        for (var arrival : StarMapShipTravelData.get(sl).collectArrivals(fleetOwner, now)) {
             if (arrival.shipType() == StarMapShipTravelData.SHIP_SCOUT) {
-                scoutShips++;
-                spawnShipItem(sl, "scout_ship", arrival.q(), arrival.s(), arrival.p());
-                announce(level, "Scout ship arrived at " + StarMapCatalog.planet(arrival.q(), arrival.s(), arrival.p()).name() + ".", ChatFormatting.GREEN);
+                if (!data.addArrivingShip(arrival.q(), arrival.s(), arrival.p(), fleetOwner, StarMapShipTravelData.SHIP_SCOUT)) {
+                    data.addArrivingShip(arrival.fromQ(), arrival.fromS(), arrival.fromP(), fleetOwner, StarMapShipTravelData.SHIP_SCOUT);
+                    announce(level, "Scout could not berth at " + StarMapCatalog.planet(arrival.q(), arrival.s(), arrival.p()).name() + "; it returned to its origin colony.", ChatFormatting.YELLOW);
+                } else {
+                    announce(level, "Scout arrived and is now stationed at " + StarMapCatalog.planet(arrival.q(), arrival.s(), arrival.p()).name() + ".", ChatFormatting.GREEN);
+                }
             } else {
-                boolean colonized = StarMapGalaxyData.get(sl).colonize(arrival.q(), arrival.s(), arrival.p(), fleetOwner);
+                boolean colonized = data.colonize(arrival.q(), arrival.s(), arrival.p(), fleetOwner);
                 if (colonized) {
                     announce(level, "Colonizer arrived at " + StarMapCatalog.planet(arrival.q(), arrival.s(), arrival.p()).name() + ": Base established and ownership secured.", ChatFormatting.GREEN);
+                } else if (data.addArrivingShip(arrival.q(), arrival.s(), arrival.p(), fleetOwner, StarMapShipTravelData.SHIP_COLONIZER)) {
+                    announce(level, "Colonizer arrived at an existing friendly colony and is now stationed there.", ChatFormatting.YELLOW);
                 } else {
-                    colonizerShips++;
-                    spawnShipItem(sl, "colonizer_ship", arrival.q(), arrival.s(), arrival.p());
-                    announce(level, "Colonizer arrived, but the destination could not be claimed; ship returned to fleet inventory.", ChatFormatting.YELLOW);
+                    data.addArrivingShip(arrival.fromQ(), arrival.fromS(), arrival.fromP(), fleetOwner, StarMapShipTravelData.SHIP_COLONIZER);
+                    announce(level, "Colonizer could not claim or berth at the destination; it returned to its origin colony.", ChatFormatting.YELLOW);
                 }
             }
-            setChanged();
         }
     }
 
@@ -178,15 +187,16 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
         if (!bind(player) || traveling || fleetCombat) return false;
         StarMapGalaxyData data = StarMapGalaxyData.get(sl); var ps = data.planet(currentQuadrant, currentStar, currentPlanet);
         if (action == ECON_COLONIZE) {
-            if (ps.hasOwner() || colonizerShips <= 0 || !hasPhysicalShip(player, "colonizer_ship")) return false;
+            if (ps.hasOwner() || ps.colonizerShips() <= 0) return false;
             if (!data.colonize(currentQuadrant, currentStar, currentPlanet, player.getUUID())) return false;
-            colonizerShips--; consumePhysicalShip(player, "colonizer_ship"); setChanged(); return true;
+            if (!data.removeShip(currentQuadrant, currentStar, currentPlanet, player.getUUID(), StarMapShipTravelData.SHIP_COLONIZER)) return false;
+            consumePhysicalShipIfPresent(player, "colonizer_ship"); return true;
         }
         if (!ps.isOwner(player.getUUID()) || !ps.hasBase() || buildAction != ECON_NONE) return false;
         int duration;
         switch (action) {
-            case ECON_SCOUT -> { if (!ps.hasShipFactory() || scoutShips + colonizerShips >= ps.fleetCapacity()) return false; duration = SCOUT_BUILD_TICKS; }
-            case ECON_COLONIZER -> { if (!ps.hasShipFactory() || scoutShips + colonizerShips >= ps.fleetCapacity()) return false; duration = COLONIZER_BUILD_TICKS; }
+            case ECON_SCOUT -> { if (!ps.hasShipFactory() || ps.shipCount() >= ps.fleetCapacity()) return false; duration = SCOUT_BUILD_TICKS; }
+            case ECON_COLONIZER -> { if (!ps.hasShipFactory() || ps.shipCount() >= ps.fleetCapacity()) return false; duration = COLONIZER_BUILD_TICKS; }
             case ECON_FACTORY -> { if (ps.hasShipFactory()) return false; duration = FACTORY_BUILD_TICKS; }
             case ECON_HANGAR -> { if (ps.hangars() >= 8) return false; duration = HANGAR_BUILD_TICKS; }
             case ECON_EXTRACTOR -> { if (ps.matterExtractors() >= 16) return false; duration = EXTRACTOR_BUILD_TICKS; }
@@ -204,13 +214,13 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
         StarMapGalaxyData data = StarMapGalaxyData.get(sl);
         boolean ok = fleetOwner != null && data.planet(buildQuadrant, buildStar, buildPlanet).isOwner(fleetOwner);
         if (ok) switch (action) {
-            case ECON_SCOUT -> { scoutShips++; spawnShipItem(sl, "scout_ship", buildQuadrant, buildStar, buildPlanet); }
-            case ECON_COLONIZER -> { colonizerShips++; spawnShipItem(sl, "colonizer_ship", buildQuadrant, buildStar, buildPlanet); }
-            case ECON_FACTORY -> data.addShipFactory(buildQuadrant, buildStar, buildPlanet, fleetOwner);
-            case ECON_HANGAR -> data.addHangar(buildQuadrant, buildStar, buildPlanet, fleetOwner);
-            case ECON_EXTRACTOR -> data.addMatterExtractor(buildQuadrant, buildStar, buildPlanet, fleetOwner);
-            case ECON_GENERATOR -> data.addPowerGenerator(buildQuadrant, buildStar, buildPlanet, fleetOwner);
-            case ECON_RESIDENTIAL -> data.addResidential(buildQuadrant, buildStar, buildPlanet, fleetOwner);
+            case ECON_SCOUT -> { ok = data.addShip(buildQuadrant, buildStar, buildPlanet, fleetOwner, StarMapShipTravelData.SHIP_SCOUT); if (ok) spawnShipItem(sl, "scout_ship", buildQuadrant, buildStar, buildPlanet); }
+            case ECON_COLONIZER -> { ok = data.addShip(buildQuadrant, buildStar, buildPlanet, fleetOwner, StarMapShipTravelData.SHIP_COLONIZER); if (ok) spawnShipItem(sl, "colonizer_ship", buildQuadrant, buildStar, buildPlanet); }
+            case ECON_FACTORY -> ok = data.addShipFactory(buildQuadrant, buildStar, buildPlanet, fleetOwner);
+            case ECON_HANGAR -> ok = data.addHangar(buildQuadrant, buildStar, buildPlanet, fleetOwner);
+            case ECON_EXTRACTOR -> ok = data.addMatterExtractor(buildQuadrant, buildStar, buildPlanet, fleetOwner);
+            case ECON_GENERATOR -> ok = data.addPowerGenerator(buildQuadrant, buildStar, buildPlanet, fleetOwner);
+            case ECON_RESIDENTIAL -> ok = data.addResidential(buildQuadrant, buildStar, buildPlanet, fleetOwner);
         }
         setChanged();
         if (ok) announce(level, "Star Map construction complete: " + economyName(action) + ".", ChatFormatting.GREEN);
@@ -226,11 +236,7 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
         entity.setDefaultPickUpDelay(); sl.addFreshEntity(entity);
     }
 
-    private boolean hasPhysicalShip(ServerPlayer player, String id) {
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) if (player.getInventory().getItem(i).is(ModItems.get(id).get())) return true;
-        return false;
-    }
-    private void consumePhysicalShip(ServerPlayer player, String id) {
+    private void consumePhysicalShipIfPresent(ServerPlayer player, String id) {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
             if (stack.is(ModItems.get(id).get())) { stack.shrink(1); return; }
@@ -307,11 +313,11 @@ public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
         tag.putInt("EncounterCode",encounterCode);tag.putInt("LastEncounterCode",lastEncounterCode);tag.putLong("EncounterTrigger",encounterTriggerTime);tag.putBoolean("EncounterResolved",encounterResolved);
         if(fleetOwner!=null)tag.putUUID("FleetOwner",fleetOwner);tag.putInt("FleetHull",fleetHull);tag.putInt("FleetShield",fleetShield);tag.putInt("FleetFirepower",fleetFirepower);tag.putInt("FleetVictories",fleetVictories);
         tag.putBoolean("FleetCombat",fleetCombat);tag.putInt("EnemyHull",enemyHull);tag.putInt("EnemyMaxHull",enemyMaxHull);tag.putInt("EnemyFirepower",enemyFirepower);tag.putLong("FleetCombatStarted",fleetCombatStarted);tag.putLong("LastFleetAttack",lastFleetAttack);
-        tag.putInt("ScoutShips",scoutShips);tag.putInt("ColonizerShips",colonizerShips);tag.putInt("BuildAction",buildAction);tag.putLong("BuildEnd",buildEndTime);tag.putInt("BuildQuadrant",buildQuadrant);tag.putInt("BuildStar",buildStar);tag.putInt("BuildPlanet",buildPlanet);
+        tag.putBoolean("PlanetFleetMigrated",planetFleetMigrated);tag.putInt("BuildAction",buildAction);tag.putLong("BuildEnd",buildEndTime);tag.putInt("BuildQuadrant",buildQuadrant);tag.putInt("BuildStar",buildStar);tag.putInt("BuildPlanet",buildPlanet);
     }
     @Override public void load(CompoundTag tag) {
         super.load(tag);
-        currentQuadrant=tag.getInt("CurrentQuadrant");currentStar=tag.getInt("CurrentStar");currentPlanet=tag.getInt("CurrentPlanet");destinationQuadrant=tag.getInt("DestinationQuadrant");destinationStar=tag.getInt("DestinationStar");destinationPlanet=tag.getInt("DestinationPlanet");traveling=tag.getBoolean("Traveling");travelStartTime=tag.getLong("TravelStart");travelEndTime=tag.getLong("TravelEnd");travelDuration=tag.getInt("TravelDuration");encounterCode=tag.getInt("EncounterCode");lastEncounterCode=tag.getInt("LastEncounterCode");encounterTriggerTime=tag.getLong("EncounterTrigger");encounterResolved=!tag.contains("EncounterResolved")||tag.getBoolean("EncounterResolved");fleetOwner=tag.hasUUID("FleetOwner")?tag.getUUID("FleetOwner"):null;fleetHull=tag.contains("FleetHull")?tag.getInt("FleetHull"):FLEET_MAX_HULL;fleetShield=tag.contains("FleetShield")?tag.getInt("FleetShield"):FLEET_MAX_SHIELD;fleetFirepower=tag.contains("FleetFirepower")?tag.getInt("FleetFirepower"):FLEET_BASE_FIREPOWER;fleetVictories=tag.getInt("FleetVictories");fleetCombat=tag.getBoolean("FleetCombat");enemyHull=tag.getInt("EnemyHull");enemyMaxHull=tag.getInt("EnemyMaxHull");enemyFirepower=tag.getInt("EnemyFirepower");fleetCombatStarted=tag.getLong("FleetCombatStarted");lastFleetAttack=tag.getLong("LastFleetAttack");scoutShips=Math.max(0,tag.getInt("ScoutShips"));colonizerShips=Math.max(0,tag.getInt("ColonizerShips"));buildAction=tag.getInt("BuildAction");buildEndTime=tag.getLong("BuildEnd");buildQuadrant=tag.getInt("BuildQuadrant");buildStar=tag.getInt("BuildStar");buildPlanet=tag.getInt("BuildPlanet");if(buildAction<ECON_NONE||buildAction>ECON_RESIDENTIAL){buildAction=ECON_NONE;buildEndTime=0;}
+        currentQuadrant=tag.getInt("CurrentQuadrant");currentStar=tag.getInt("CurrentStar");currentPlanet=tag.getInt("CurrentPlanet");destinationQuadrant=tag.getInt("DestinationQuadrant");destinationStar=tag.getInt("DestinationStar");destinationPlanet=tag.getInt("DestinationPlanet");traveling=tag.getBoolean("Traveling");travelStartTime=tag.getLong("TravelStart");travelEndTime=tag.getLong("TravelEnd");travelDuration=tag.getInt("TravelDuration");encounterCode=tag.getInt("EncounterCode");lastEncounterCode=tag.getInt("LastEncounterCode");encounterTriggerTime=tag.getLong("EncounterTrigger");encounterResolved=!tag.contains("EncounterResolved")||tag.getBoolean("EncounterResolved");fleetOwner=tag.hasUUID("FleetOwner")?tag.getUUID("FleetOwner"):null;fleetHull=tag.contains("FleetHull")?tag.getInt("FleetHull"):FLEET_MAX_HULL;fleetShield=tag.contains("FleetShield")?tag.getInt("FleetShield"):FLEET_MAX_SHIELD;fleetFirepower=tag.contains("FleetFirepower")?tag.getInt("FleetFirepower"):FLEET_BASE_FIREPOWER;fleetVictories=tag.getInt("FleetVictories");fleetCombat=tag.getBoolean("FleetCombat");enemyHull=tag.getInt("EnemyHull");enemyMaxHull=tag.getInt("EnemyMaxHull");enemyFirepower=tag.getInt("EnemyFirepower");fleetCombatStarted=tag.getLong("FleetCombatStarted");lastFleetAttack=tag.getLong("LastFleetAttack");planetFleetMigrated=tag.getBoolean("PlanetFleetMigrated");legacyScoutShips=planetFleetMigrated?0:Math.max(0,tag.getInt("ScoutShips"));legacyColonizerShips=planetFleetMigrated?0:Math.max(0,tag.getInt("ColonizerShips"));buildAction=tag.getInt("BuildAction");buildEndTime=tag.getLong("BuildEnd");buildQuadrant=tag.getInt("BuildQuadrant");buildStar=tag.getInt("BuildStar");buildPlanet=tag.getInt("BuildPlanet");if(buildAction<ECON_NONE||buildAction>ECON_RESIDENTIAL){buildAction=ECON_NONE;buildEndTime=0;}
     }
 
     @Override public Component getDisplayName(){return Component.translatable("block.matteroverdrive.star_map");}
