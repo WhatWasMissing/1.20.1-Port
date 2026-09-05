@@ -16,7 +16,7 @@ public class MatterAnalyzerScreen extends AbstractContainerScreen<MatterAnalyzer
 
     public MatterAnalyzerScreen(MatterAnalyzerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
+        imageWidth = 330;
         imageHeight = 196;
         inventoryLabelY = 103;
     }
@@ -34,16 +34,16 @@ public class MatterAnalyzerScreen extends AbstractContainerScreen<MatterAnalyzer
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 5 + i * 42, topPos + 5, 40, 15).build();
+            }).bounds(leftPos + 180 + i * 36, topPos + 29, 34, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
         if (page == 0) {
             addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> clickMenu(1))
-                    .bounds(leftPos + 117, topPos + 78, 52, 16).build());
+                    .bounds(leftPos + 217, topPos + 127, 56, 18).build());
         } else if (page == 2) {
             addRenderableWidget(Button.builder(Component.literal("CYCLE RS"), button -> clickMenu(2))
-                    .bounds(leftPos + 55, topPos + 59, 66, 18).build());
+                    .bounds(leftPos + 214, topPos + 91, 62, 18).build());
         }
     }
 
@@ -66,20 +66,18 @@ public class MatterAnalyzerScreen extends AbstractContainerScreen<MatterAnalyzer
         int y = topPos;
         MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.PURPLE);
         MachineScreenStyle.drawSection(graphics, x + 17, y + 27, 142, 69);
+        MachineScreenStyle.drawSection(graphics, x + 176, y + 25, 145, 137);
 
-        if (page == 0) {
-            graphics.blit(SCAN, x + 30, y + 28, 0, 0, 117, 47, 117, 47);
-            drawWave(graphics, x + 37, y + 36, menu.getProgress(), menu.getMaxProgress(), menu.getInputMatter());
-            MachineScreenStyle.drawSlot(graphics, x + 25, y + 43);
-            MachineScreenStyle.drawSlot(graphics, x + 79, y + 43);
-            MachineScreenStyle.drawSlot(graphics, x + 133, y + 43);
-            MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 30, 7, 40,
-                    menu.getEnergy(), menu.getEnergyCapacity(), MachineScreenStyle.RED);
-        } else if (page == 3) {
-            for (int slot = 0; slot < 4; slot++) {
-                MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 52);
-            }
+        graphics.blit(SCAN, x + 30, y + 28, 0, 0, 117, 47, 117, 47);
+        drawWave(graphics, x + 37, y + 36, menu.getProgress(), menu.getMaxProgress(), menu.getInputMatter());
+        MachineScreenStyle.drawSlot(graphics, x + 25, y + 43);
+        MachineScreenStyle.drawSlot(graphics, x + 79, y + 43);
+        MachineScreenStyle.drawSlot(graphics, x + 133, y + 43);
+        for (int slot = 0; slot < 4; slot++) {
+            MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 79);
         }
+        MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 30, 7, 40,
+                menu.getEnergy(), menu.getEnergyCapacity(), MachineScreenStyle.RED);
     }
 
     private void drawWave(GuiGraphics graphics, int x, int y, int value, int max, int seed) {
@@ -103,8 +101,14 @@ public class MatterAnalyzerScreen extends AbstractContainerScreen<MatterAnalyzer
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, 8, 21, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 18, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Pattern " + menu.getPatternProgress() + "%", 93, 76, MachineScreenStyle.PURPLE, false);
+        if (menu.getInputMatter() > 0) {
+            graphics.drawString(font, menu.getInputMatter() + " kM | " + menu.getEnergyPerTick() + " FE/t",
+                    18, 87, MachineScreenStyle.TEXT, false);
+        }
 
         switch (page) {
             case 1 -> renderTasks(graphics);
@@ -115,22 +119,22 @@ public class MatterAnalyzerScreen extends AbstractContainerScreen<MatterAnalyzer
     }
 
     private void renderHome(GuiGraphics graphics) {
-        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 18, 29, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Pattern " + menu.getPatternProgress() + "%", 93, 76, MachineScreenStyle.PURPLE, false);
-        if (menu.getInputMatter() > 0) {
-            graphics.drawString(font, menu.getInputMatter() + " kM | " + menu.getEnergyPerTick() + " FE/t",
-                    18, 87, MachineScreenStyle.TEXT, false);
-        }
+        graphics.drawString(font, "ANALYZER STATUS", 205, 52, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, menu.getInputMatter() > 0 ? "Material loaded" : "Waiting for material", 194, 70,
+                menu.getInputMatter() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Pattern knowledge " + menu.getPatternProgress() + "%", 190, 84, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Demand " + menu.getEnergyPerTick() + " FE/t", 190, 98, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Use Tasks for live scan details.", 186, 116, MachineScreenStyle.MUTED, false);
     }
 
     private void renderTasks(GuiGraphics graphics) {
         int progress = menu.getMaxProgress() <= 0 ? 0 : Math.min(100, menu.getProgress() * 100 / menu.getMaxProgress());
-        graphics.drawString(font, "ANALYSIS TASK", 49, 34, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, menu.getInputMatter() > 0 ? "Active material: " + menu.getInputMatter() + " kM" : "No material queued",
-                25, 49, menu.getInputMatter() > 0 ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Scan progress: " + progress + "%", 25, 61, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Pattern learned: " + menu.getPatternProgress() + "%", 25, 73, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Demand: " + menu.getEnergyPerTick() + " FE/t", 25, 85, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "ANALYSIS TASK", 207, 52, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, menu.getInputMatter() > 0 ? "Active: " + menu.getInputMatter() + " kM" : "No material queued",
+                190, 70, menu.getInputMatter() > 0 ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Scan " + progress + "%", 190, 84, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Pattern " + menu.getPatternProgress() + "%", 190, 98, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Demand " + menu.getEnergyPerTick() + " FE/t", 190, 112, MachineScreenStyle.MUTED, false);
     }
 
     private void renderConfig(GuiGraphics graphics) {
@@ -139,16 +143,16 @@ public class MatterAnalyzerScreen extends AbstractContainerScreen<MatterAnalyzer
             case 1 -> "HIGH";
             default -> "NONE";
         };
-        graphics.drawString(font, "MACHINE CONFIGURATION", 28, 34, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Redstone mode: " + redstone, 35, 48, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Cycle how this analyzer responds", 22, 81, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "to a redstone signal.", 39, 91, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "CONFIGURATION", 208, 52, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Redstone: " + redstone, 190, 72, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Controls when analysis", 190, 116, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "is allowed to run.", 190, 128, MachineScreenStyle.MUTED, false);
     }
 
     private void renderUpgrades(GuiGraphics graphics) {
-        graphics.drawString(font, "MACHINE UPGRADES", 43, 34, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "4 installed upgrade slots", 29, 74, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Speed / efficiency upgrades affect", 20, 85, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "the live analyzer backend.", 31, 94, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "UPGRADES", 218, 52, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, "4 physical slots shown left", 190, 72, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Installed speed/efficiency", 190, 90, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "effects are applied live.", 190, 102, MachineScreenStyle.MUTED, false);
     }
 }
