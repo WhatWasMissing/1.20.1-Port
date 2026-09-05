@@ -33,14 +33,20 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 ## Android Spawner legacy parity
 
-- [ ] Right-click Android Spawner opens the operator screen with live FE, owned Android count, maximum population and next-spawn time.
+- [ ] Right-click Android Spawner opens the widened operator screen with live FE, owned Android count, maximum population, next-spawn time and patrol-target count.
 - [ ] Powered spawner reaches up to 6 Androids rather than stopping after the first nearby Android.
 - [ ] Over repeated spawns, both melee and ranged Rogue Androids appear; intended legacy mix is 30% melee / 70% ranged.
 - [ ] A naturally spawned/unrelated Rogue Android beside the machine does not consume one of that spawner's six owned slots.
 - [ ] Spawned melee and ranged Androids retain their originating spawner identity through save/reload.
-- [ ] `KILL ALL` removes only Androids belonging to the current spawner and does not delete natural Androids or Androids from a different spawner.
+- [ ] `KILL OWNED` removes only Androids belonging to the current spawner and does not delete natural Androids or Androids from a different spawner.
 - [ ] Destroy/rebuild one spawner near another and verify ownership is not mixed between their populations.
-- [ ] Android Spawner GUI has no text/button/inventory overlap at several GUI scales.
+- [ ] The six patrol slots accept Transport Flash Drives and reject unrelated items.
+- [ ] Bind two or more patrol drives in the current dimension, install them, then spawn an Android. With no combat target it should navigate through those waypoints in sequence.
+- [ ] Aggro a patrolling Android. Combat goals should override patrol; after combat/navigation settles it should resume its waypoint loop.
+- [ ] Save/reload a spawned Android and confirm its patrol points persist even if the source drives are later removed from the Spawner.
+- [ ] Drives bound to another dimension do not contribute to the current patrol-target count.
+- [ ] Dismantling the Spawner returns all installed patrol drives exactly once.
+- [ ] Android Spawner GUI has no drive-slot/text/button/player-inventory overlap at several GUI scales.
 
 ## Legacy entities / quest regression
 
