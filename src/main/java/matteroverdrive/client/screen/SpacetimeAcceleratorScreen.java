@@ -7,10 +7,15 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
+import java.util.Locale;
+
 public class SpacetimeAcceleratorScreen extends AbstractContainerScreen<SpacetimeAcceleratorMenu> {
+    private static final String[] PAGES = {"HOME", "TASKS", "UPGRADES"};
+    private int page;
+
     public SpacetimeAcceleratorScreen(SpacetimeAcceleratorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
+        imageWidth = 330;
         imageHeight = 184;
         inventoryLabelY = 91;
     }
@@ -18,16 +23,32 @@ public class SpacetimeAcceleratorScreen extends AbstractContainerScreen<Spacetim
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-            }
-        }).bounds(leftPos + 119, topPos + 5, 52, 16).build());
-        addRenderableWidget(Button.builder(Component.literal("MAT+"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 2);
-            }
-        }).bounds(leftPos + 120, topPos + 66, 47, 16).build());
+        rebuildButtons();
+    }
+
+    private void rebuildButtons() {
+        clearWidgets();
+        for (int i = 0; i < PAGES.length; i++) {
+            final int target = i;
+            Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
+                page = target;
+                rebuildButtons();
+            }).bounds(leftPos + 183 + i * 45, topPos + 29, 43, 15).build();
+            tab.active = page != i;
+            addRenderableWidget(tab);
+        }
+        if (page == 0) {
+            addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> clickMenu(1))
+                    .bounds(leftPos + 188, topPos + 70, 55, 16).build());
+            addRenderableWidget(Button.builder(Component.literal("MAT+"), button -> clickMenu(2))
+                    .bounds(leftPos + 248, topPos + 70, 55, 16).build());
+        }
+    }
+
+    private void clickMenu(int id) {
+        if (minecraft != null && minecraft.gameMode != null) {
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+        }
     }
 
     @Override
@@ -44,6 +65,7 @@ public class SpacetimeAcceleratorScreen extends AbstractContainerScreen<Spacetim
         MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
                 MachineScreenStyle.PURPLE);
         MachineScreenStyle.drawSection(graphics, x + 18, y + 31, 149, 54);
+        MachineScreenStyle.drawSection(graphics, x + 176, y + 25, 145, 65);
 
         MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 31, 7, 40,
                 menu.getEnergy(), menu.getEnergyCapacity(), MachineScreenStyle.BLUE);
@@ -84,5 +106,39 @@ public class SpacetimeAcceleratorScreen extends AbstractContainerScreen<Spacetim
             statusColor = MachineScreenStyle.AMBER;
         }
         graphics.drawString(font, status, 28, 62, statusColor, false);
+
+        switch (page) {
+            case 1 -> renderTasks(graphics);
+            case 2 -> renderUpgrades(graphics);
+            default -> renderHome(graphics);
+        }
+    }
+
+    private void renderHome(GuiGraphics graphics) {
+        graphics.drawString(font, "SPACE-TIME FIELD", 201, 51, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, menu.isActive() ? "FIELD ACTIVE" : "FIELD IDLE", 188, 62,
+                menu.isActive() ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "2r x 2r legacy footprint", 188, 86,
+                MachineScreenStyle.MUTED, false);
+    }
+
+    private void renderTasks(GuiGraphics graphics) {
+        int interval = Math.max(1, menu.getPulseInterval());
+        int timer = Math.min(interval, Math.max(0, menu.getPulseTimer()));
+        int percent = timer * 100 / interval;
+        graphics.drawString(font, "ACCELERATION TASK", 194, 51, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, "Next pulse " + percent + "%", 188, 64, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Interval " + interval + " t / "
+                        + String.format(Locale.ROOT, "%.2f", interval / 20.0D) + " s",
+                188, 75, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Last targets " + menu.getLastAcceleratedTargets(), 188, 86,
+                MachineScreenStyle.CYAN, false);
+    }
+
+    private void renderUpgrades(GuiGraphics graphics) {
+        graphics.drawString(font, "1.12 UPGRADE EFFECTS", 188, 51, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, "Speed: pulse interval", 188, 63, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Range: radius (x6 max)", 188, 74, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Power/Storage/Matter affect cost", 188, 85, MachineScreenStyle.MUTED, false);
     }
 }
