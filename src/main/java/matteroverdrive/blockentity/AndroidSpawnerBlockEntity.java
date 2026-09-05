@@ -67,6 +67,8 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> patrolDrives);
     private long lastSpawn;
     private long lastOwnershipMigration;
+    private int squadColor;
+    private int squadMode = RogueAndroidEntity.MODE_PATROL;
 
     private final ContainerData data = new ContainerData() {
         @Override public int get(int index) {
@@ -79,11 +81,13 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
                 case 5 -> MAX_SPAWN_AMOUNT;
                 case 6 -> ticksUntilNextSpawn();
                 case 7 -> patrolTargets().size();
+                case 8 -> squadColor;
+                case 9 -> squadMode;
                 default -> 0;
             };
         }
         @Override public void set(int index, int value) {}
-        @Override public int getCount() { return 8; }
+        @Override public int getCount() { return 10; }
     };
 
     public AndroidSpawnerBlockEntity(BlockPos pos, BlockState state) {
@@ -133,6 +137,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
             android.finalizeSpawn(level, level.getCurrentDifficultyAt(candidate), MobSpawnType.SPAWNER, null, null);
             android.setSpawnerPosition(spawnerPos);
             android.setPatrolPoints(patrol);
+            android.setSquad(squadColor, squadMode);
             if (level.addFreshEntity(android)) {
                 registerOwnedAndroid(android.getUUID());
                 return true;
@@ -161,6 +166,9 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         for (RogueAndroidEntity android : level.getEntitiesOfClass(RogueAndroidEntity.class, area,
                 candidate -> candidate.wasSpawnedFrom(worldPosition))) {
             changed |= ownedAndroids.add(android.getUUID());
+            if (android.getSquadColor() != squadColor || android.getSquadMode() != squadMode) {
+                android.setSquad(squadColor, squadMode);
+            }
         }
         if (changed) setChanged();
     }
@@ -190,6 +198,29 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         }
         if (removed > 0) setChanged();
         return removed;
+    }
+
+    public void cycleSquadColor() {
+        squadColor = (squadColor + 1) % 8;
+        propagateSquadState();
+        setChanged();
+    }
+
+    public void cycleSquadMode() {
+        squadMode = (squadMode + 1) % 3;
+        propagateSquadState();
+        setChanged();
+    }
+
+    private void propagateSquadState() {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        discoverNearbyOwnedAndroids();
+        for (UUID uuid : List.copyOf(ownedAndroids)) {
+            Entity entity = serverLevel.getEntity(uuid);
+            if (entity instanceof RogueAndroidEntity android && android.wasSpawnedFrom(worldPosition)) {
+                android.setSquad(squadColor, squadMode);
+            }
+        }
     }
 
     private int ticksUntilNextSpawn() {
@@ -229,6 +260,8 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         tag.putInt("Energy", energy.getEnergyStored());
         tag.putLong("LastSpawn", lastSpawn);
         tag.put("PatrolDrives", patrolDrives.serializeNBT());
+        tag.putInt("SquadColor", squadColor);
+        tag.putInt("SquadMode", squadMode);
         ListTag owners = new ListTag();
         for (UUID uuid : ownedAndroids) owners.add(NbtUtils.createUUID(uuid));
         tag.put("OwnedAndroids", owners);
@@ -239,6 +272,8 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         energy.setEnergyStored(tag.getInt("Energy"));
         lastSpawn = tag.getLong("LastSpawn");
         if (tag.contains("PatrolDrives")) patrolDrives.deserializeNBT(tag.getCompound("PatrolDrives"));
+        squadColor = Math.floorMod(tag.getInt("SquadColor"), 8);
+        squadMode = tag.contains("SquadMode") ? Math.max(0, Math.min(2, tag.getInt("SquadMode"))) : RogueAndroidEntity.MODE_PATROL;
         ownedAndroids.clear();
         ListTag owners = tag.getList("OwnedAndroids", Tag.TAG_INT_ARRAY);
         for (Tag owner : owners) {
