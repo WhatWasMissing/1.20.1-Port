@@ -49,6 +49,21 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Efficiency, generated FE/t, connected demand, ring power, matter drain, IO/stabilizer count and anomaly/hazard telemetry update while open.
 - [ ] Reactor remains readable at multiple GUI scales and does not cover upgrade slots or player inventory.
 
+## Priority 1B - Charging Station legacy Android parity
+
+- [ ] Power a Charging Station and stand nearby as an Android; Android FE should increase automatically without inserting an item.
+- [ ] At close range, the station should deliver up to the legacy 512 FE/t baseline before upgrades; charge rate should fall off with distance and reach zero at the edge of range.
+- [ ] Base Android charging range should be 8 blocks.
+- [ ] Multiple Android players in range can be charged in the same tick while enough station FE remains; GUI reports Android count and total Android FE/t.
+- [ ] A rechargeable FE item in the physical slot still charges after Android charging is processed; item charging remains a supported 1.20.1 extension.
+- [ ] Install a Range upgrade and confirm the Android charging radius increases. Range stacking must respect the legacy x8 multiplier cap.
+- [ ] Install a Power upgrade and confirm the maximum Android charge rate changes according to power-usage efficiency.
+- [ ] Install a Power Storage upgrade and confirm the internal FE capacity increases and persists after save/reload.
+- [ ] Only Range, Power and Power Storage upgrades are accepted by the four Charging Station upgrade slots.
+- [ ] Break/dismantle the Charging Station with an item and upgrades installed; all five contents must be returned rather than deleting upgrades.
+- [ ] HOME / ANDROID / UPGRADES pages switch without hiding or offsetting the real item/upgrade slot hitboxes.
+- [ ] INF FE remains functional and powers both Android and item charging for debug testing.
+
 ## Priority 2 - Network Flash Drive restored from 1.7
 
 - [ ] Hold a Network Flash Drive and right-click an inventory-capability block connected to the item network. Chat should report that destination was added.
