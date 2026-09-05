@@ -1,6 +1,7 @@
 package matteroverdrive.blockentity;
 
 import matteroverdrive.capability.MachineEnergyStorage;
+import matteroverdrive.item.NetworkFlashDriveItem;
 import matteroverdrive.menu.NetworkRouterMenu;
 import matteroverdrive.network.ItemNetworkUtil;
 import matteroverdrive.registry.ModBlockEntities;
@@ -23,24 +24,36 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.ItemStackHandler;
+
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvider {
-    public static final int CAPACITY = 10_000, TRANSFER = 1_000, ENERGY_PER_ITEM = 10;
-    private final MachineEnergyStorage energy = new MachineEnergyStorage(CAPACITY, TRANSFER, 0, this::setChanged);
+    public static final int CAPACITY = 10_000;
+    public static final int TRANSFER = 1_000;
+    public static final int ENERGY_PER_ITEM = 10;
+
+    private final MachineEnergyStorage energy =
+            new MachineEnergyStorage(CAPACITY, TRANSFER, 0, this::setChanged);
     private LazyOptional<IEnergyStorage> energyCap = LazyOptional.of(() -> energy);
     private final ItemStackHandler filter = new ItemStackHandler(1) {
         @Override public int getSlotLimit(int slot) { return 1; }
         @Override protected void onContentsChanged(int slot) { setChanged(); }
     };
     private final Set<BlockPos> routeSinks = new HashSet<>();
-    private int endpoints, nodes, pylons, lastMoved;
+    private int endpoints;
+    private int nodes;
+    private int pylons;
+    private int lastMoved;
     private long routeCursor;
+
     private final ContainerData data = new ContainerData() {
-        @Override public int get(int index) {
+        @Override
+        public int get(int index) {
+            ItemStack filterStack = filter.getStackInSlot(0);
+            boolean destinationDrive = NetworkFlashDriveItem.isNetworkFlashDrive(filterStack);
             return switch (index) {
                 case 0 -> energy.getEnergyStored() & 0xffff;
                 case 1 -> energy.getEnergyStored() >>> 16 & 0xffff;
@@ -48,15 +61,21 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
                 case 3 -> nodes;
                 case 4 -> pylons;
                 case 5 -> lastMoved;
-                case 6 -> filter.getStackInSlot(0).isEmpty() ? 0 : 1;
+                case 6 -> filterStack.isEmpty() ? 0 : 1;
+                case 7 -> destinationDrive ? NetworkFlashDriveItem.getConnections(filterStack).size() : 0;
+                case 8 -> filterStack.isEmpty() ? 0 : destinationDrive ? 2 : 1;
                 default -> 0;
             };
         }
+
         @Override public void set(int index, int value) {}
-        @Override public int getCount() { return 7; }
+        @Override public int getCount() { return 9; }
     };
 
-    public NetworkRouterBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.NETWORK_ROUTER.get(), pos, state); }
+    public NetworkRouterBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.NETWORK_ROUTER.get(), pos, state);
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, NetworkRouterBlockEntity router) {
         router.pullEnergy();
         router.route();
@@ -69,10 +88,13 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
             if (remaining <= 0) break;
             BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
             if (neighbor == null) continue;
-            IEnergyStorage source = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
+            IEnergyStorage source = neighbor.getCapability(
+                    ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
             if (source == null || !source.canExtract()) continue;
             int accepted = Math.min(source.extractEnergy(remaining, true), energy.receiveEnergy(remaining, true));
-            if (accepted > 0) remaining -= energy.receiveEnergy(source.extractEnergy(accepted, false), false);
+            if (accepted > 0) {
+                remaining -= energy.receiveEnergy(source.extractEnergy(accepted, false), false);
+            }
         }
     }
 
@@ -149,16 +171,28 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         }
     }
 
-    @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.network_router"); }
-    @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new NetworkRouterMenu(id, inventory, this); }
-    @Override protected void saveAdditional(CompoundTag tag) {
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("block.matteroverdrive.network_router");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new NetworkRouterMenu(id, inventory, this);
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Filter", filter.serializeNBT());
         tag.putInt("Energy", energy.getEnergyStored());
         tag.putLong("Cursor", routeCursor);
         tag.putLongArray("RouteSinks", routeSinks.stream().mapToLong(BlockPos::asLong).toArray());
     }
-    @Override public void load(CompoundTag tag) {
+
+    @Override
+    public void load(CompoundTag tag) {
         super.load(tag);
         filter.deserializeNBT(tag.getCompound("Filter"));
         energy.setEnergyStored(tag.getInt("Energy"));
@@ -166,7 +200,21 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         routeSinks.clear();
         for (long packed : tag.getLongArray("RouteSinks")) routeSinks.add(BlockPos.of(packed));
     }
-    @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) { return cap == ForgeCapabilities.ENERGY ? energyCap.cast() : super.getCapability(cap, side); }
-    @Override public void invalidateCaps() { super.invalidateCaps(); energyCap.invalidate(); }
-    @Override public void reviveCaps() { super.reviveCaps(); energyCap = LazyOptional.of(() -> energy); }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        return cap == ForgeCapabilities.ENERGY ? energyCap.cast() : super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        energyCap.invalidate();
+    }
+
+    @Override
+    public void reviveCaps() {
+        super.reviveCaps();
+        energyCap = LazyOptional.of(() -> energy);
+    }
 }
