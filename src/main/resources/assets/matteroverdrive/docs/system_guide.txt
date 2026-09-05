@@ -10,6 +10,8 @@ Status labels:
 - TESTING: implemented and build-verified, but needs in-world verification.
 - PARTIAL: useful implementation exists but legacy parity is not complete.
 
+Status: PARTIAL means a useful implementation exists but legacy parity is not complete.
+
 # Contents
 1. First steps and world exploration
 2. FE power and batteries
