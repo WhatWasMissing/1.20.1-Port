@@ -124,7 +124,6 @@ Recovered 1.7 base capacities are **building / fleet**: Normal **6/6**, Gas Gian
 - [ ] Overlay persists and reports real block positions.
 
 ## Weapons parity / regression
-This is a high-priority test set for the current pass.
 - [ ] Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun cannot fire without valid FE.
 - [ ] One energy weapon never drains another energy weapon as a reload source.
 - [ ] Only explicit Energy Packs and Weapon Battery/HC Battery items are consumed for reload; installed weapon battery/capacity remains coherent.
@@ -151,10 +150,20 @@ This is a high-priority test set for the current pass.
 - [ ] Microwave TASKS progress/duration/FE demand follows the real food-only cooking cycle.
 - [ ] Solar Panel uses HOME/GEN/UPGRADES while both physical upgrade slots remain visible and clickable.
 - [ ] Solar GEN page matches live generation, sky access, light, daylight factor, buffer/output and per-side cap telemetry.
+- [ ] Pattern Storage uses HOME/DRIVES/UPGRADES while its energy slot, six Pattern Drive slots and four upgrade slots remain visible/clickable on every page.
+- [ ] Pattern Storage HOME/DRIVES telemetry agrees with real pattern count, FE buffer and idle FE/t.
+- [ ] Pattern Monitor uses PATTERNS/QUEUE without moving or disabling any of its 12 ghost request slots.
+- [ ] Clicking a visible Pattern Monitor pattern still requests exactly one replication task after switching between pages.
+- [ ] Pattern Monitor QUEUE reports the actual synchronized queue size and does not fabricate per-task state that the backend does not expose.
+- [ ] Gravitational Stabilizer uses HOME/BEAM/UPGRADES while all four upgrade slots remain visible and RS MODE works from every page.
+- [ ] Stabilizer BEAM page correctly distinguishes anomaly lock, clear beam, blocked beam and blocked distance from synchronized server state.
+- [ ] Stabilizer HOME redstone mode/operation state changes immediately after RS MODE and survives reopen/reload.
+- [ ] Heavy Energy Pipe status reports real buffer percentage and last output; no fake routing/configuration controls appear.
 - [ ] Replicator HOME/TASKS/CONFIG/UPGRADES pages retain visible physical slots and accurate queue/pattern telemetry.
 - [ ] Transporter HOME/TASKS/LOCATIONS/UPGRADES retains real saved-destination controls and visible physical slots.
 - [ ] Charging Station HOME/ANDROID/UPGRADES retains item/upgrade slots and real wireless charging telemetry.
 - [ ] Space-Time Accelerator HOME/TASKS/UPGRADES retains its four upgrade slots and live pulse/radius/resource state.
+- [ ] Inscriber HOME/TASKS/UPGRADES retains its real ingredient/output/energy/upgrade slots and live tier/cycle telemetry.
 - [ ] Weapon Station HOME/MODULES/STATS retains all physical slots as above.
 - [ ] Fusion Reactor direct controls remain real RUN/SCRAM/redstone/debug controls and its upgrade slots/dual resource telemetry remain visible.
 - [ ] Major GUIs keep aligned slot hitboxes at GUI scales 2, 3 and Auto where practical.
