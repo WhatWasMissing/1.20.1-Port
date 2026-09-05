@@ -12,8 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
@@ -137,23 +135,31 @@ public class MadScientistEntity extends Villager {
             return InteractionResult.CONSUME;
         }
 
+        if (!(level() instanceof ServerLevel serverLevel)) return InteractionResult.CONSUME;
+        MutantScientistEntity mutant = ModEntities.MUTANT_SCIENTIST.get().create(serverLevel);
+        if (mutant == null) {
+            player.displayClientMessage(Component.literal("Cocktail transformation failed to initialize; ingredients were not consumed.")
+                    .withStyle(ChatFormatting.RED), false);
+            return InteractionResult.CONSUME;
+        }
+
+        mutant.moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
+        if (!serverLevel.addFreshEntity(mutant)) {
+            mutant.discard();
+            player.displayClientMessage(Component.literal("Cocktail transformation could not spawn safely; ingredients were not consumed.")
+                    .withStyle(ChatFormatting.RED), false);
+            return InteractionResult.CONSUME;
+        }
+
         removeItems(player, Items.GUNPOWDER, 5);
         removeItems(player, Items.RED_MUSHROOM, 5);
         data.putBoolean(CocktailQuestEvents.ACTIVE, false);
         data.putBoolean(CocktailQuestEvents.DONE, true);
         level().playSound(null, blockPosition(), ModSounds.get("failed_animal_die").get(),
                 net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 0.8F);
-        addEffect(new MobEffectInstance(MobEffects.WITHER, 1000, 0));
-        if (level() instanceof ServerLevel serverLevel) {
-            MutantScientistEntity mutant = ModEntities.MUTANT_SCIENTIST.get().create(serverLevel);
-            if (mutant != null) {
-                mutant.moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
-                serverLevel.addFreshEntity(mutant);
-                player.displayClientMessage(Component.literal("Cocktail of Ascension complete. Something went very wrong.")
-                        .withStyle(ChatFormatting.RED), false);
-                discard();
-            }
-        }
+        player.displayClientMessage(Component.literal("Cocktail of Ascension complete. Something went very wrong.")
+                .withStyle(ChatFormatting.RED), false);
+        discard();
         return InteractionResult.CONSUME;
     }
 
