@@ -19,52 +19,64 @@ Fusion Reactor/gravity includes horizontal structure validation, Controller/IO s
 Network Pipe, Network Switch, Network Router and matching-channel Pylon routing are present. Switch state persists and changes routing/appearance. Router supports ordinary filtering, Network Flash Drive destination filtering, four Speed/Hyper-Speed slots, multi-stack item budgets and the 10 FE/item execution limit. There is no invented standalone Network Controller because the authoritative legacy implementations do not contain one matching that assumption.
 
 ## Androids / entities
-Android conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent perk tree are present. Android Spawner restores the six-unit 30% melee / 70% ranged population, persistent ownership, six patrol drives, PATROL/GUARD/HOLD/ESCORT, commander formations, squad colors and coordinated targeting. Rogue/Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Linked Drones support FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE while unowned Drones remain hostile. Puny Humans and Cocktail of Ascension are implemented.
+Android conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent perk tree are present. Android Spawner restores the six-unit 30% melee / 70% ranged population, persistent ownership, six patrol drives, PATROL/GUARD/HOLD/ESCORT, commander formations, squad colors and coordinated targeting. Rogue and Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Linked Drones support FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE while unowned Drones remain hostile. Puny Humans and Cocktail of Ascension are implemented.
 
 ## Weapons
 Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station exposes real Battery/Color/Barrel/Sights/Utility slots and stat/loadout preview. Exact module meshes, recoil, zoom and remaining first-person animation parity remain incomplete.
 
 ## Restored legacy world structures
-Six legacy structure families use the native Forge 1.20.1 Feature -> configured feature -> placed feature -> biome modifier pipeline: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. They have terrain/rarity guards, persisted structure-specific Tritanium Crate salvage and one-time persistent inhabitants using real current-port Android/Drone/Scientist/Failed-animal entities. Structure Androids are deliberately unowned by Android Spawners and structure Drones begin unowned/hostile. Exact old PNG-template geometry and deeper site-specific scripted objectives remain incomplete.
+Six legacy structure families use the native Forge 1.20.1 Feature -> configured feature -> placed feature -> biome modifier pipeline: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. They have terrain/rarity guards, persisted structure-specific Tritanium Crate salvage and one-time persistent inhabitants using real current-port Android/Drone/Scientist/Failed-animal entities. Structure Androids are deliberately unowned by Android Spawners and structure Drones begin unowned/hostile. Exact old PNG-template geometry remains incomplete: the authoritative Android House is 21x21 with yOffset -2 and the Sand Pit is 24x24 with yOffset -9, while the current translations are still approximate.
 
 ## Natural gravitational anomalies
-Natural Gravitational Anomaly worldgen is restored through configured/placed features and a Forge biome modifier. It uses the conservative 1.7 default frequency (~1/200 candidate chunks) and the shared legacy 2,048-10,240 starting-mass range through the normal anomaly block entity. Generated anomalies immediately use the real attraction, event-horizon consumption, mass growth and block-effect systems. The 1.12 `DimensionalRifts` class inspected in the reference jar is a client-side seeded noise sampler rather than another physical structure generator, so it is not treated as missing world structure generation.
+Natural Gravitational Anomaly worldgen is restored through configured/placed features and a Forge biome modifier. It uses the conservative 1.7 default frequency (~1/200 candidate chunks) and the shared legacy 2,048-10,240 starting-mass range through the normal anomaly block entity. Generated anomalies immediately use the real attraction, event-horizon consumption, mass growth and block-effect systems. The 1.12 `DimensionalRifts` class is a client-side seeded noise sampler rather than another physical worldgen structure and is not treated as missing structure generation.
 
-## Star Map navigation / journey / encounters
-Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with deterministic planet properties, wheel zoom, drag and right-click back. Server-authoritative journeys persist current/destination galactic position and timing, validate requests and preserve the legacy 10-per-AU / 8-per-LY timing concepts without inventing FE cost. Longer routes schedule Asteroid Field, Gravitational Slingshot, Rogue Android Intercept, Signal Echo or Hostile Fleet encounters.
+## Star Map navigation / encounters
+Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with deterministic planet properties, wheel zoom, drag and right-click back. Server-authoritative console journeys persist current/destination galactic position and timing, validate requests and preserve the legacy 10-per-AU / 8-per-LY timing concepts without inventing FE cost. Longer routes schedule Asteroid Field, Gravitational Slingshot, Rogue Android Intercept, Signal Echo or Hostile Fleet encounters.
 
 ## Star Map fleet combat
-A persistent fleet layer restores useful 1.7 travel-event/attack concepts: commander ownership, 100 hull / 60 shield / 20 firepower baseline, deterministic hostile fleets, validated FIRE/RECHARGE combat, shield-before-hull damage, victory count, preserved travel pause and emergency retreat. Combat state persists in Star Map NBT and menu sync.
+A persistent command-fleet layer restores useful 1.7 travel-event/attack concepts: commander ownership, 100 hull / 60 shield / 20 firepower baseline, deterministic hostile fleets, validated FIRE/RECHARGE combat, shield-before-hull damage, victory count, preserved travel pause and emergency retreat. Combat state persists in Star Map NBT and menu sync. Scout/Colonizer counts do not silently change combat firepower because the legacy references do not provide justified class combat values.
 
 ## Star Map colony / shipyard economy
-A substantial 1.7-style planetary economy layer is implemented with real server state rather than GUI-only counters.
+The planetary economy is real server state rather than GUI-only counters.
 
-- Planet ownership and colony buildings are stored in **server-global `SavedData`** keyed by deterministic quadrant/star/planet identity, so ownership survives save/reload and is not tied to one Star Map block.
-- The first commander-bound starting planet is bootstrapped as the fleet's homeworld with a **Base + Ship Factory**. A colonized planet begins with a **Base** and normal colony construction requires ownership/Base state.
-- **Scout Ship** production uses the recovered 1.7 build length of **3,600 ticks**; **Colonizer Ship** uses **5,000 ticks**.
-- **Ship Factory** construction uses **8,000 ticks** and is required before Scout/Colonizer production.
-- **Ship Hangar** construction uses **4,800 ticks**; each Hangar adds the recovered **+2 fleet-space** effect. The current bridge gives a colonized Base two baseline berths.
-- **Matter Extractor** uses the recovered **14,400 tick** build time and exact legacy stat effects: **+10 matter production / -6 energy production** per building.
-- **Power Generator** uses **14,400 ticks** and exact legacy effects: **+8 energy production / -2 matter production** per building.
-- **Residential** uses **6,000 ticks** and exact legacy effects: **+10,000 population / -4 energy / -2 matter / +4 building capacity** per building.
-- Residential happiness follows the recovered legacy positive/negative power and matter rule, with the resulting colony value synchronized to the GUI.
-- Only one construction project can run on a Star Map fleet at a time. Queue action, finish time, target planet and Scout/Colonizer composition persist in block-entity NBT; departure is blocked during active construction.
-- Completed Scout and Colonizer production now creates **physical non-stacking ship tokens** carrying owner, ship type, fleet-console and planet metadata as well as the authoritative fleet count.
-- Non-current Planet pages expose **SEND S / SEND C**. Dispatch requires the matching physical token in the commander's inventory and removes that token plus the available fleet count transactionally.
-- Independent ship dispatches are stored as server-global persistent travel events containing one ship type, owner, console, origin, destination, start time and legacy-derived travel duration. Multiple dispatches can coexist without moving the main console fleet.
-- Scout arrival deliberately has no invented reward because the authoritative 1.7 `ItemScoutShip.onTravel` is empty. The Scout returns to available fleet composition and rematerializes its token on arrival.
-- Colonizer arrival follows the recovered 1.7 travel hook: an unowned destination gains ownership + Base and consumes the Colonizer; if the destination cannot be claimed, the Colonizer returns intact instead of being silently lost.
-- Transit counts for Scout/Colonizer ships are synchronized to the Planet GUI. The existing whole-fleet travel/encounter layer remains usable separately.
-- Economy and dispatch requests use dedicated validated C2S paths enforcing open-menu, block-position, range, commander and destination checks.
+- Planet ownership, Base, Ship Factory, Hangars, Matter Extractors, Power Generators, Residential buildings and **stationed Scout/Colonizer counts** are stored in server-global `StarMapGalaxyData`, keyed by deterministic quadrant/star/planet identity.
+- Breaking or replacing a Star Map does not delete planet ownership, buildings or stationed ships.
+- The first commander-bound starting planet is bootstrapped as a homeworld with **Base + Ship Factory** so the restored loop can begin without the removed legacy homeworld generator.
+- A newly colonized planet begins with a **Base** and no Ship Factory.
+- **Scout Ship** build time: **3,600 ticks**.
+- **Colonizer Ship** build time: **5,000 ticks**.
+- **Ship Factory** build time: **8,000 ticks** and is required for ship production.
+- **Ship Hangar** build time: **4,800 ticks**; each Hangar adds the recovered **+2 fleet-space** effect. The current bridge gives a Base two baseline berths.
+- **Matter Extractor**: **14,400 ticks**, **+10 matter / -6 energy**.
+- **Power Generator**: **14,400 ticks**, **+8 energy / -2 matter**.
+- **Residential**: **6,000 ticks**, **+10,000 population / -4 energy / -2 matter / +4 building capacity**.
+- Residential happiness follows the recovered positive/negative matter and energy production rule and is synchronized to the Planet GUI.
+- Only one colony construction project can run on a Star Map console at once; queue action, target and finish time persist in block-entity NBT and console departure is blocked while construction is active.
 
-This restores both the strategic colony loop and the old per-ship TravelEvent concept while preserving the newer console-fleet navigation/combat layer. Scout/Colonizer ships still do not alter combat firepower because the references do not justify invented combat values. Current per-building count guards are modern safety limits, not claimed legacy constants.
+### Planet-local ship fleets
+Scout and Colonizer ships now **live at planets**, not at the Star Map block that built them.
+
+- Completed ship production adds the ship to the build planet's persistent stationed fleet.
+- Planet GUI ship counts always describe the **current planet's stationed ships**.
+- Fleet capacity is checked against that planet's Base/Hangar capacity.
+- Non-current Planet pages expose **SEND S / SEND C** for independent transfer.
+- Dispatch removes one ship from the current planet and creates one server-global persistent per-ship travel event containing owner, source planet, destination planet, ship type, start time and legacy-derived travel duration.
+- Multiple independent ship transfers can coexist while the separate command-fleet journey system remains stationary.
+- In-transit counts are synchronized to the GUI across the commander's active ship travel events.
+- Any loaded Star Map console owned by that commander can settle due arrivals, so a dispatched ship no longer depends on the exact source console surviving.
+- A Scout arriving at a friendly colony becomes stationed at that destination. The authoritative 1.7 Scout travel hook is empty, so no fake scouting reward is invented. If there is no friendly berth/capacity, the Scout returns to its origin colony.
+- A Colonizer arriving at an unowned planet consumes itself and establishes ownership + Base, matching the recovered 1.7 arrival behavior. If the destination is already a friendly colony and has room, it stations there instead. If it cannot claim or berth, it returns to its origin colony.
+- Existing saves from the earlier console-local Scout/Colonizer counter implementation migrate those counts once into the console's current planet when the bound console loads.
+- Physical Scout/Colonizer item tokens still materialize on construction with owner/type/planet metadata as a tangible representation. Planet-local SavedData is now authoritative for residency; dispatch opportunistically consumes a matching carried token but does not depend on a token existing, preventing ships stationed on remote colonies from becoming unusable.
+
+This now supports the strategic loop **homeworld -> build ships -> send ships -> colonize/friendly transfer -> develop destination -> build/receive more ships** while keeping command-fleet navigation and hostile-fleet combat as a separate layer.
 
 ## Security / GUI
 Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across major machines, with real slots remaining visible and controls only shown when they have genuine server-side behavior.
 
 ## Major remaining parity gaps
 1. Exact legacy world-structure templates and deeper structure-specific scripted objectives/events.
-2. Star Map planet-local fleet inventories, additional ship classes where source-backed, richer economic consequences/events and physical planet arrival/dimensions.
+2. Star Map additional source-backed ship/building classes, richer economic consequences/events and physical planet dimensions/player arrival.
 3. Drone flying navigation/renderer/equipment parity and richer owner-management presentation.
 4. Generic legacy machine redstone/configuration modes where backend equivalents are absent.
 5. Remaining machine-specific GUI pages that map to real backend state.
