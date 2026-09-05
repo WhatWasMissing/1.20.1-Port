@@ -57,7 +57,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Victory resumes preserved travel time; defeat returns navigation to the previous safe planet at 35 hull / 0 shield.
 - [ ] Non-commanders cannot issue effective travel/economy/dispatch/combat packets through someone else's console.
 
-## Star Map colony economy
+## Star Map colony economy / four-slot construction
 - [ ] First commander binding creates a persistent homeworld with Base + Ship Factory.
 - [ ] Planet ownership/buildings survive breaking/replacing the Star Map because they live in world SavedData.
 - [ ] `SCOUT` build = 3,600 ticks.
@@ -69,11 +69,20 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Power Generator = 14,400 ticks and changes totals by +8 energy / -2 matter.
 - [ ] Residential = 6,000 ticks and adds +10,000 population / -4 energy / -2 matter / +4 building capacity.
 - [ ] E/M/P/H/B telemetry updates immediately after construction.
-- [ ] Only one colony construction job runs per console and whole-fleet departure is blocked while it builds.
-- [ ] Construction target/action/finish time survives save/reload.
+- [ ] Planet GUI shows `Q 0/4` through `Q 4/4` for the four restored construction slots.
+- [ ] Up to four different construction jobs can run concurrently on the same planet.
+- [ ] A fifth job is rejected while all four slots are occupied.
+- [ ] Starting construction no longer blocks whole-command-fleet departure; active planet builds continue while the console fleet travels elsewhere.
+- [ ] Build queues survive closing the GUI, chunk unload, save/reload and breaking/replacing the Star Map block.
+- [ ] Returning after a build's finish time resolves the completed project even if the original Star Map console was not loaded continuously.
+- [ ] Concurrent Scout/Colonizer jobs reserve future berth space and cannot overfill the colony when they complete.
+- [ ] Duplicate queued Ship Factory construction is rejected.
+- [ ] Existing worlds with one active console-local build migrate that job once into the target planet queue without duplication or loss.
+
+Legacy basis: the 1.7 `Planet` initializes a four-slot inventory and its server `update` loop processes all four slots as `IBuilding`/`IShip` construction entries. Construction and completed buildings/fleet belong to the Planet object rather than the Star Map machine.
 
 ## Planet-local Scout / Colonizer fleets
-This is the newest high-priority test set.
+This remains a high-priority test set.
 
 - [ ] Completed Scout/Colonizer production adds the ship to the **planet where it was built**, not to a global console counter.
 - [ ] Planet GUI `S` and `C` counts describe the currently visited planet's stationed fleet only.
@@ -81,7 +90,7 @@ This is the newest high-priority test set.
 - [ ] Each planet enforces its own Base + Hangar fleet capacity.
 - [ ] Building ships on Colony A does not increase Colony B's ship count.
 - [ ] Existing worlds from the previous build migrate old console-local Scout/Colonizer counts once into the bound console's current planet; reloading again does not duplicate the migration.
-- [ ] A physical Scout/Colonizer item token still appears after construction and carries owner/type/planet metadata.
+- [ ] A physical Scout/Colonizer item token can still appear for locally completed construction and carries owner/type/planet metadata.
 
 ## Independent ship transfer
 - [ ] On a non-current Planet page, `SEND S` / `SEND C` can dispatch a ship while the command fleet stays where it is.
@@ -100,7 +109,7 @@ This is the newest high-priority test set.
 - [ ] Same-planet, invalid, foreign-source, forged-menu and out-of-range dispatch attempts reject cleanly.
 - [ ] Breaking/replacing a Star Map does not delete stationed planet fleets or completed colonies.
 
-Legacy basis: 1.7 `TravelEvent` stores one ship, source, destination, start and duration; dispatch removes the ship from the source fleet. Scout `onTravel` is empty. Colonizer arrival establishes a Base and planet ownership when allowed. This port now stores stationed ship counts on persistent planets while retaining the modern command-fleet travel/combat layer separately.
+Legacy basis: 1.7 `TravelEvent` stores one ship, source, destination, start and duration; dispatch removes the ship from the source fleet. Scout `onTravel` is empty. Colonizer arrival establishes a Base and planet ownership when allowed. This port stores stationed ship counts on persistent planets while retaining the modern command-fleet travel/combat layer separately.
 
 ## Matter / network / transporter regression
 - [ ] Decomposer -> Matter Pipe -> Replicator/Fusion IO remains functional through multi-pipe chains.
@@ -131,5 +140,5 @@ Legacy basis: 1.7 `TravelEvent` stores one ship, source, destination, start and 
 - [ ] In-game System Guide index opens the correct sections and remembers the last page when closed/reopened.
 - [ ] Current Feature Reference matches this build's implemented systems.
 - [ ] M2 Testing Checklist matches this file.
-- [ ] Save/reload preserves machine inventories, FE, matter, upgrades, contracts, patrol drives, Android state, colony state and ship travel state.
+- [ ] Save/reload preserves machine inventories, FE, matter, upgrades, contracts, patrol drives, Android state, colony state, planet construction and ship travel state.
 - [ ] No missing-texture purple/black models appear for newly added ship items or restored world content.
