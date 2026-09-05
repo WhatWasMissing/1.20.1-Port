@@ -39,8 +39,8 @@ A persistent command-fleet layer restores useful 1.7 travel-event/attack concept
 ## Star Map colony / shipyard economy
 The planetary economy is real server state rather than GUI-only counters.
 
-- Planet ownership, Base, Ship Factory, Hangars, Matter Extractors, Power Generators, Residential buildings and **stationed Scout/Colonizer counts** are stored in server-global `StarMapGalaxyData`, keyed by deterministic quadrant/star/planet identity.
-- Breaking or replacing a Star Map does not delete planet ownership, buildings or stationed ships.
+- Planet ownership, Base, Ship Factory, Hangars, Matter Extractors, Power Generators, Residential buildings, **stationed Scout/Colonizer counts and construction queues** are stored in server-global `StarMapGalaxyData`, keyed by deterministic quadrant/star/planet identity.
+- Breaking or replacing a Star Map does not delete planet ownership, buildings, stationed ships or active planet construction.
 - The first commander-bound starting planet is bootstrapped as a homeworld with **Base + Ship Factory** so the restored loop can begin without the removed legacy homeworld generator.
 - A newly colonized planet begins with a **Base** and no Ship Factory.
 - **Scout Ship** build time: **3,600 ticks**.
@@ -51,7 +51,10 @@ The planetary economy is real server state rather than GUI-only counters.
 - **Power Generator**: **14,400 ticks**, **+8 energy / -2 matter**.
 - **Residential**: **6,000 ticks**, **+10,000 population / -4 energy / -2 matter / +4 building capacity**.
 - Residential happiness follows the recovered positive/negative matter and energy production rule and is synchronized to the Planet GUI.
-- Only one colony construction project can run on a Star Map console at once; queue action, target and finish time persist in block-entity NBT and console departure is blocked while construction is active.
+- The authoritative 1.7 `Planet` has a four-slot inventory used for building/ship construction. The port now mirrors that structure with **four independent persistent build slots per planet** rather than one console-local build timer.
+- Up to four projects can run concurrently on one colony. Queue state and finish times live with the planet and continue while the command fleet travels elsewhere; returning to the source planet is not required for time to elapse.
+- Queued Scout/Colonizer jobs reserve future berth capacity so the modern bridge cannot overfill a colony by starting several simultaneous ship jobs. Duplicate single-instance Factory jobs and configured safety caps are also rejected.
+- Saves from the previous single console-local build queue migrate that active project once into the target planet's construction slots.
 
 ### Planet-local ship fleets
 Scout and Colonizer ships now **live at planets**, not at the Star Map block that built them.
@@ -67,9 +70,9 @@ Scout and Colonizer ships now **live at planets**, not at the Star Map block tha
 - A Scout arriving at a friendly colony becomes stationed at that destination. The authoritative 1.7 Scout travel hook is empty, so no fake scouting reward is invented. If there is no friendly berth/capacity, the Scout returns to its origin colony.
 - A Colonizer arriving at an unowned planet consumes itself and establishes ownership + Base, matching the recovered 1.7 arrival behavior. If the destination is already a friendly colony and has room, it stations there instead. If it cannot claim or berth, it returns to its origin colony.
 - Existing saves from the earlier console-local Scout/Colonizer counter implementation migrate those counts once into the console's current planet when the bound console loads.
-- Physical Scout/Colonizer item tokens still materialize on construction with owner/type/planet metadata as a tangible representation. Planet-local SavedData is now authoritative for residency; dispatch opportunistically consumes a matching carried token but does not depend on a token existing, preventing ships stationed on remote colonies from becoming unusable.
+- Physical Scout/Colonizer item tokens can still materialize on local construction with owner/type/planet metadata as a tangible representation. Planet-local SavedData is authoritative for residency; dispatch does not depend on a token existing, preventing ships stationed on remote colonies from becoming unusable.
 
-This now supports the strategic loop **homeworld -> build ships -> send ships -> colonize/friendly transfer -> develop destination -> build/receive more ships** while keeping command-fleet navigation and hostile-fleet combat as a separate layer.
+This now supports the strategic loop **homeworld -> queue colony construction -> travel while industry continues -> build ships -> send ships -> colonize/friendly transfer -> develop destination -> build/receive more ships** while keeping command-fleet navigation and hostile-fleet combat as a separate layer.
 
 ## Security / GUI
 Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across major machines, with real slots remaining visible and controls only shown when they have genuine server-side behavior.
