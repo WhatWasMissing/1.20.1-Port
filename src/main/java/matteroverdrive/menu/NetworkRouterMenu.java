@@ -1,6 +1,7 @@
 package matteroverdrive.menu;
 
 import matteroverdrive.blockentity.NetworkRouterBlockEntity;
+import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
 import net.minecraft.core.BlockPos;
@@ -17,11 +18,16 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class NetworkRouterMenu extends AbstractContainerMenu {
+    private static final int MACHINE_SLOTS = 5;
+    private static final int PLAYER_START = 5;
+    private static final int PLAYER_END = 32;
+    private static final int HOTBAR_END = 41;
+
     private final NetworkRouterBlockEntity router;
     private final ContainerData data;
 
     public NetworkRouterMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(9));
+        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(10));
     }
 
     public NetworkRouterMenu(int id, Inventory inventory, NetworkRouterBlockEntity router) {
@@ -33,15 +39,19 @@ public class NetworkRouterMenu extends AbstractContainerMenu {
         super(ModMenus.NETWORK_ROUTER.get(), id);
         this.router = router;
         this.data = data;
+
         addSlot(new SlotItemHandler(router.getFilter(), 0, 80, 41));
+        for (int slot = 0; slot < NetworkRouterBlockEntity.UPGRADE_SLOT_COUNT; slot++) {
+            addSlot(new SlotItemHandler(router.getUpgrades(), slot, 53 + slot * 18, 65));
+        }
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(inventory, column + row * 9 + 9,
-                        8 + column * 18, 96 + row * 18));
+                        8 + column * 18, 112 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 154));
+            addSlot(new Slot(inventory, column, 8 + column * 18, 170));
         }
         addDataSlots(data);
     }
@@ -61,7 +71,33 @@ public class NetworkRouterMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        return ItemStack.EMPTY;
+        Slot slot = slots.get(index);
+        if (!slot.hasItem()) return ItemStack.EMPTY;
+        ItemStack source = slot.getItem();
+        ItemStack copy = source.copy();
+        boolean moved;
+
+        if (index < MACHINE_SLOTS) {
+            moved = moveItemStackTo(source, PLAYER_START, HOTBAR_END, true);
+        } else {
+            moved = false;
+            if (source.getItem() instanceof MachineUpgradeItem upgrade
+                    && (upgrade.getUpgrade() == MachineUpgradeItem.Upgrade.SPEED
+                    || upgrade.getUpgrade() == MachineUpgradeItem.Upgrade.HYPER_SPEED)) {
+                moved = moveItemStackTo(source, 1, MACHINE_SLOTS, false);
+            }
+            if (!moved) {
+                moved = index < PLAYER_END
+                        ? moveItemStackTo(source, PLAYER_END, HOTBAR_END, false)
+                        : moveItemStackTo(source, PLAYER_START, PLAYER_END, false);
+            }
+        }
+
+        if (!moved) return ItemStack.EMPTY;
+        if (source.isEmpty()) slot.set(ItemStack.EMPTY);
+        else slot.setChanged();
+        slot.onTake(player, source);
+        return copy;
     }
 
     public int energy() { return data.get(0) | data.get(1) << 16; }
@@ -72,6 +108,7 @@ public class NetworkRouterMenu extends AbstractContainerMenu {
     public boolean filtered() { return data.get(6) != 0; }
     public int destinationCount() { return Math.max(0, data.get(7)); }
     public int filterMode() { return data.get(8); }
+    public int itemBudget() { return Math.max(1, data.get(9)); }
 
     public String filterModeLabel() {
         return switch (filterMode()) {
