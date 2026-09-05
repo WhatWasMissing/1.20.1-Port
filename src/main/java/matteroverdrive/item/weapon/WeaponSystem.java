@@ -14,6 +14,7 @@ public final class WeaponSystem {
     public static final int MODULE_SLOT_COUNT = 6;
 
     private static final String MODULES_TAG = "MatterOverdriveWeaponModules";
+    private static final int BASE_CAPACITY_MULTIPLIER = 4;
 
     private WeaponSystem() {
     }
@@ -111,7 +112,9 @@ public final class WeaponSystem {
         if (battery.getItem() instanceof WeaponBatteryItem batteryItem) {
             return batteryItem.getCapacity();
         }
-        return fallback;
+        return fallback > Integer.MAX_VALUE / BASE_CAPACITY_MULTIPLIER
+                ? Integer.MAX_VALUE
+                : fallback * BASE_CAPACITY_MULTIPLIER;
     }
 
     public static float damageMultiplier(ItemStack weapon) {
