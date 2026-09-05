@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.client.screen.DecomposerScreen;
+import matteroverdrive.client.screen.AndroidSpawnerScreen;
 import matteroverdrive.client.screen.AndroidStationScreen;
 import matteroverdrive.client.screen.NetworkRouterScreen;
 import matteroverdrive.client.screen.ContractMarketScreen;
@@ -44,6 +45,7 @@ public final class ClientModEvents {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            MenuScreens.register(ModMenus.ANDROID_SPAWNER.get(), AndroidSpawnerScreen::new);
             MenuScreens.register(ModMenus.ANDROID_STATION.get(), AndroidStationScreen::new);
             MenuScreens.register(ModMenus.NETWORK_ROUTER.get(), NetworkRouterScreen::new);
             MenuScreens.register(ModMenus.CONTRACT_MARKET.get(), ContractMarketScreen::new);
