@@ -20,7 +20,7 @@ public class StarMapMenu extends AbstractContainerMenu {
     private final ContainerData data;
 
     public StarMapMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(11));
+        this(id, inventory, find(inventory, buffer.readBlockPos()), new SimpleContainerData(14));
     }
 
     public StarMapMenu(int id, Inventory inventory, StarMapBlockEntity map) {
@@ -71,5 +71,8 @@ public class StarMapMenu extends AbstractContainerMenu {
     public int travelRemaining() { return data.get(8); }
     public int travelDuration() { return data.get(9); }
     public boolean traveling() { return data.get(10) != 0; }
+    public int encounterCode() { return data.get(11); }
+    public int encounterRemaining() { return data.get(12); }
+    public boolean encounterResolved() { return data.get(13) != 0; }
     public BlockPos mapPos() { return map.getBlockPos(); }
 }
