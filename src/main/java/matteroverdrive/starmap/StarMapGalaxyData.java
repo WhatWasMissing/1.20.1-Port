@@ -101,6 +101,7 @@ public final class StarMapGalaxyData extends SavedData {
         private boolean base;
         private boolean shipFactory;
         private int hangars;
+        public PlanetState() {}
         @Nullable public UUID owner() { return owner; }
         public boolean hasOwner() { return owner != null; }
         public boolean isOwner(UUID uuid) { return owner != null && owner.equals(uuid); }
