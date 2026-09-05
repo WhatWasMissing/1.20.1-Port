@@ -77,7 +77,13 @@ Persistent conversion, FE/HUD, HEAD/CHEST/ARMS/LEGS part state, part/level-gated
 
 ## Star Map / contracts
 
-Contract Market and contract counting are present. Star Map navigation now reaches **Galaxy -> Quadrant -> Star -> Planet**, with deterministic planet type, orbit, habitability, temperature, gravity, moons and atmosphere data plus wheel zoom, drag pan and right-click back navigation. Actual server-side interplanetary travel/events are not restored yet, so the UI intentionally does not provide a fake working travel action.
+Contract Market and contract counting are present. Star Map navigation reaches **Galaxy -> Quadrant -> Star -> Planet**, with deterministic planet type, orbit, habitability, temperature, gravity, moons and atmosphere data plus wheel zoom, drag pan and right-click back navigation.
+
+A real server-authoritative Star Map journey layer is now implemented. Each Star Map machine persists its current galactic position, requested destination, active-travel flag, start/end times and total duration. The Planet page exposes real `TRAVEL`, `EN ROUTE` and `CURRENT LOCATION` states backed by synchronized server data rather than a decorative action. Travel requests are validated server-side against the player's currently open Star Map menu, the actual block position, interaction distance and catalog destination before state can change.
+
+Travel timing preserves the useful legacy concept found in 1.7: interstellar travel is based on 8 time units per LY and same-system travel on 10 per AU. Because the modern deterministic catalog does not contain the original generated galaxy save format, star coordinates and planet orbit numbers act as stable LY/AU stand-ins for those multipliers. The 1.12 Star Map itself had no machine-energy capacity, so no invented FE travel charge has been added.
+
+This restored journey state is intentionally not represented as physical player teleportation. Full legacy ship/fleet ownership, travel attacks, planet/star events, dimension/planet arrival gameplay and the richer generated astronomical/event backend remain incomplete. The 1.7-only `TravelEvent`/ship-attack machinery is therefore not being transplanted literally over the later 1.12 design.
 
 ## Security
 
@@ -92,7 +98,7 @@ Restored/fixed visual systems also include directional Matter/Network/Heavy Ener
 ## Major remaining parity gaps
 
 1. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining legacy world structures/events.
-2. Actual Star Map travel/event backend and richer legacy astronomical data/events.
+2. Star Map planet/star event gameplay, legacy ship/fleet travel combat and richer generated astronomical data beyond the restored server-authoritative journey state.
 3. Android Spawner team/color configuration and richer Android squad/path behaviours beyond the restored waypoint patrol loop.
 4. Broader Drone ownership/team/command behaviour and remaining entity equipment/AI details.
 5. Generic legacy machine redstone/configuration modes where current machines still lack server-side equivalents.
