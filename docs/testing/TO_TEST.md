@@ -30,18 +30,23 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Owned Drone follows its owner, inherits owner team/allies, and does not automatically acquire unrelated players.
 - [ ] Unowned Drone remains a hostile ranged mob; Drone owner UUID persists.
 
-## Legacy world structures - new pass
+## Legacy world structures - expanded pass
 - [ ] Explore **newly generated chunks** in a fresh/new area; existing explored chunks are not expected to gain structures retroactively.
 - [ ] Crashed spacecraft generate rarely on dry Overworld terrain. They have a damaged tritanium hull silhouette, striped hull sections, glass bridge detail, a crate and Holo Sign rather than appearing as solid cubes.
 - [ ] Cargo ships generate much more rarely than crashed ships and are visibly larger, with a long cargo hull, upper rails/windows, lamps and occasional crates.
 - [ ] Underwater bases generate only in ocean biomes at the ocean floor, remain submerged externally, and have a deliberately cleared/dry interior enclosed by tritanium and an Industrial Glass band/dome.
 - [ ] Underwater bases include Matter Analyzer / Tritanium Crate set dressing without flooding the interior after initial generation.
 - [ ] Mad Scientist houses generate on dry Overworld terrain as enclosed white laboratory structures with windows, beams and real Inscriber/Decomposer/Crate blocks inside.
+- [ ] Android Houses now generate as rare approximately 19 x 19 tritanium/white-plate shelters with an enclosed roof, glass bands, support beams, lamps, front opening, divided interior, Holo Sign, two crate types and machine set dressing.
+- [ ] Android House interiors are actually cleared rather than terrain remaining inside the shell, and their machines/block entities survive save/reload.
+- [ ] Sand Pits only commit when the sampled surface is sand, red sand or sandstone-family terrain; ordinary grass/forest terrain should reject the feature cleanly.
+- [ ] Sand Pits form a broad approximately 32 x 32 stepped depression with progressively deeper inner rings, sandstone floor, scattered erosion blocks and a small exposed tritanium wreck/cache at the bottom.
+- [ ] Sand Pit generation does not leave floating water columns or unexpectedly replace non-desert terrain after the terrain guard rejects a candidate.
 - [ ] Structure generation does not cascade uncontrollably, repeatedly generate on chunk reload, or cause severe world-generation stalls.
-- [ ] The observed rarity hierarchy is sensible: crashed ships are the most common restored ship structure, Mad Scientist houses remain uncommon, underwater bases are rare, cargo ships are exceptionally rare.
+- [ ] The observed rarity hierarchy is sensible: Sand Pit candidates are relatively common but terrain-filtered; crashed ships are the most common ship tier; Mad Scientist houses are uncommon; Android Houses rarer; underwater bases rare; cargo ships exceptionally rare.
 - [ ] Structure blocks and machine block entities survive save/reload after generation.
 
-Current limitation to verify rather than misread as a bug: these are modern 1.20.1 structural translations of the authoritative legacy generators. Pixel-exact reconstruction of every old image template, dedicated structure loot population, Android houses/sand pits and richer structure-specific encounters remain later work.
+Current limitation to verify rather than misread as a bug: these are modern 1.20.1 structural translations of the authoritative legacy generators. Android Houses and Sand Pits are now implemented, but pixel-exact reconstruction of every old image template, dedicated structure loot population and richer structure-specific mob encounters remain later work.
 
 ## Star Map navigation / journey
 - [ ] Galaxy -> Quadrant -> Star -> Planet navigation retains wheel zoom, drag pan and right-click back.

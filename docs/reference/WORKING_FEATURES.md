@@ -27,14 +27,16 @@ Rogue Androids, Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Sci
 Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station exposes real Battery/Color/Barrel/Sights/Utility slots and stat/loadout preview. Exact module meshes, recoil, zoom and remaining first-person animation parity remain incomplete.
 
 ## Restored legacy world structures
-Four legacy structure families are now registered through the native Forge 1.20.1 **Feature -> configured feature -> placed feature -> biome modifier** pipeline rather than obsolete chunk hooks.
+Six legacy structure families are now registered through the native Forge 1.20.1 **Feature -> configured feature -> placed feature -> biome modifier** pipeline rather than obsolete chunk hooks.
 
 - **Crashed spacecraft**: rare dry-Overworld wrecks with a damaged tritanium silhouette, striped hull details, bridge glass, crate and Holo Sign. The 1.12 reference used an 11 x 35 image-driven wreck and a 256-block separation concept; the modern placed feature preserves that as the comparatively common restored ship tier using a 1/256 placement rarity.
 - **Cargo ships**: much larger intact-ish cargo silhouettes with long deck/hull, upper window rails, lamps, Holo Sign and occasional crates. The legacy cargo generator was dramatically rarer and larger; the modern port retains the rarity hierarchy with a 1/4096 placement rarity.
 - **Underwater bases**: ocean-floor-only circular tritanium installations with an Industrial Glass band/dome, deliberately cleared dry interior, Matter Analyzer and blue Tritanium Crate. The legacy underwater base was a 43 x 43 deep-ocean structure with a 2048 separation concept; the modern feature uses ocean biomes, ocean-floor placement and 1/2048 rarity.
 - **Mad Scientist houses**: uncommon dry-Overworld white laboratory buildings with glass windows, support beams and real Inscriber, Decomposer and Tritanium Crate set dressing. They use a 1/768 modern placement rarity.
+- **Android houses**: restored as rare 19 x 19 machine-built shelters, matching the recovered legacy footprint scale. The modern translation uses a sealed tritanium/white-plate shell, Industrial Glass window bands, support beams, lamps, a divided interior, Holo Sign, blue/standard crates and functioning Matter Analyzer plus Inscriber/Decomposer set dressing. They use a 1/1536 placement rarity.
+- **Sand pits**: restored as roughly 32 x 32 desert excavation/crater features. Generation is self-filtering: the feature only commits on sand/red-sand/sandstone terrain, cuts a stepped bowl down to a sandstone floor and exposes a small damaged tritanium wreck with stripe detail, crate and Holo Sign at the bottom. They use a 1/384 candidate rarity before terrain rejection.
 
-These are source-faithful **modern structural translations**, not yet pixel-exact reproductions of every old image-worker template. Dedicated structure loot filling, encounter population, exact legacy image/NBT geometry, Android houses/sand pits and additional world events remain incomplete. Structure generation requires new chunks and is not retroactive to already-generated terrain.
+These are source-faithful **modern structural translations**, not yet pixel-exact reproductions of every old image-worker template. The Android House and Sand Pit families are no longer missing. Dedicated structure loot filling, structure-specific mob population, exact legacy image/NBT geometry and additional world events remain incomplete. Structure generation requires new chunks and is not retroactive to already-generated terrain.
 
 ## Star Map / journey / encounters
 Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with deterministic planet properties, wheel zoom, drag and right-click back. A server-authoritative journey layer persists current/destination galactic position and timing. Travel requests are validated against the open menu, machine position, player range and catalog destination. Same-system travel preserves the useful legacy 10-per-AU concept and interstellar travel the 8-per-LY concept without inventing FE cost that the later Star Map did not have.
@@ -60,7 +62,7 @@ This is now genuine fleet-combat gameplay, but it is not the complete old ship e
 Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across the major machines, with the rule that real slots remain visible and controls are only shown when they have genuine server-side behavior.
 
 ## Major remaining parity gaps
-1. Exact legacy world-structure templates, dedicated structure loot/encounter population, Android houses/sand pits and remaining world events.
+1. Exact legacy world-structure templates, dedicated structure loot/encounter population and remaining world events.
 2. Star Map ship production/build queues, Scout/Colonizer economy, multi-ship fleet composition, colonization/planet ownership, richer star/planet events and physical arrival gameplay.
 3. Deeper Android squad behavior such as follow-player/escort orders, formations and coordinated targeting.
 4. Richer Drone command/owner-management UI and remaining flight/render/equipment details.
