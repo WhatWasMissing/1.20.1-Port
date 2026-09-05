@@ -71,6 +71,7 @@ public class NetworkRouterMenu extends AbstractContainerMenu {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
+        if (index < 0 || index >= slots.size()) return ItemStack.EMPTY;
         Slot slot = slots.get(index);
         if (!slot.hasItem()) return ItemStack.EMPTY;
         ItemStack source = slot.getItem();
@@ -85,6 +86,9 @@ public class NetworkRouterMenu extends AbstractContainerMenu {
                     && (upgrade.getUpgrade() == MachineUpgradeItem.Upgrade.SPEED
                     || upgrade.getUpgrade() == MachineUpgradeItem.Upgrade.HYPER_SPEED)) {
                 moved = moveItemStackTo(source, 1, MACHINE_SLOTS, false);
+            }
+            if (!moved && router.getFilter().getStackInSlot(0).isEmpty()) {
+                moved = moveItemStackTo(source, 0, 1, false);
             }
             if (!moved) {
                 moved = index < PLAYER_END
