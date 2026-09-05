@@ -14,115 +14,96 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 - [x] Rogue Android combat and sounds.
 - [x] Failed Cow, Pig, Sheep and Chicken spawning/behaviour.
-- [x] Mad Scientist interaction and current Puny Humans quest.
-- [x] Holo Sign thin monitor geometry and renamed-item programming.
-- [x] Previous 1.7 parity baseline through Star Map navigation, wrench dismantle and visual fixes is GitHub-Actions build verified.
-- [x] Charging Station / Space-Time Accelerator / deeper Star Map code through commit `7fee056` is GitHub-Actions build verified.
+- [x] Mad Scientist interaction and Puny Humans quest.
+- [x] Holo Sign thin geometry and renamed-item programming.
+- [x] Earlier reactor/network/matter baseline through Star Map navigation and wrench fixes.
+- [x] Charging Station / Space-Time Accelerator / deeper Star Map code through `7fee056` was GitHub-Actions build verified.
 
-## Priority 1 - legacy GUI shell wired to current logic
+## Consolidation pass - highest priority regression
 
-- [ ] Open Decomposer, Replicator and Matter Analyzer and verify legacy presentation remains aligned with current live machine state.
+- [ ] Network Router with no upgrade moves normally and still honours item filters and Network Flash Drive destination filters.
+- [ ] Add Speed/Hyper Speed upgrades to the Router. The displayed item budget increases and the router can actually spend more than one stack of that budget in one tick when several source stacks/endpoints are available.
+- [ ] Router never moves more items than available FE can pay for at 10 FE/item.
+- [ ] Router four upgrade slots accept only Speed/Hyper Speed, persist after reload and return their contents when dismantled.
+- [ ] Network Switch toggling changes both routing connectivity and active/inactive block appearance; the state persists after reload.
+- [ ] Transporter operates when stored FE is exactly equal to the displayed transport cost, not only when FE is greater than cost.
+- [ ] Transporter still caps each completed cycle at 3 living entities and ignores dead/removed entities on the pad.
+- [ ] Dismantling a Transporter returns drive, energy item and all upgrades exactly once; no deleted contents and no duplicate drops.
+- [ ] Android Station selected-ability frame, ability text, CYCLE/SKILL TREE buttons and inventory no longer overlap at normal GUI scales.
+
+## Android Spawner legacy parity
+
+- [ ] Right-click Android Spawner opens the operator screen with live FE, owned Android count, maximum population and next-spawn time.
+- [ ] Powered spawner reaches up to 6 Androids rather than stopping after the first nearby Android.
+- [ ] Over repeated spawns, both melee and ranged Rogue Androids appear; intended legacy mix is 30% melee / 70% ranged.
+- [ ] A naturally spawned/unrelated Rogue Android beside the machine does not consume one of that spawner's six owned slots.
+- [ ] Spawned melee and ranged Androids retain their originating spawner identity through save/reload.
+- [ ] `KILL ALL` removes only Androids belonging to the current spawner and does not delete natural Androids or Androids from a different spawner.
+- [ ] Destroy/rebuild one spawner near another and verify ownership is not mixed between their populations.
+- [ ] Android Spawner GUI has no text/button/inventory overlap at several GUI scales.
+
+## Legacy entities / quest regression
+
+- [ ] Ranged Rogue Android carries a Phaser Rifle or Ion Sniper and performs ranged attacks normally.
+- [ ] Mutant Scientist has the restored approximately 1.0 x 2.3 collision dimensions, 256 base health, 0.25 movement speed and 4 base attack damage.
+- [ ] Mutant Scientist attacks nearby living entities but does not target another Mutant Scientist.
+- [ ] Owned Drone does not attack its owner; two Drones with the same owner treat each other as allies.
+- [ ] Unowned hostile Drone continues to attack players normally.
+- [ ] Cocktail of Ascension tracks 5 shovel Creeper kills plus 5 gunpowder and 5 red mushrooms.
+- [ ] Completing Cocktail successfully spawns the Mutant Scientist, then consumes ingredients and marks the quest complete.
+- [ ] If the Mutant Scientist cannot be created/spawned, Cocktail must leave ingredients and quest state intact instead of silently completing.
+
+## Machine GUI / operator parity
+
 - [ ] Decomposer FE, matter and progress presentation updates correctly.
-- [ ] Replicator Home/Tasks/Config/Upgrades pages retain replication, network queue, timing and failure telemetry.
-- [ ] Matter Analyzer Home/Tasks/Config/Upgrades pages retain scan waveform, pattern progress and server-side redstone cycling.
+- [ ] Replicator Home/Tasks/Config/Upgrades pages retain replication, queue, timing and failure telemetry.
+- [ ] Matter Analyzer Home/Tasks/Config/Upgrades pages retain waveform, pattern progress and server-side redstone cycling.
 - [ ] Inscriber Home/Tasks/Upgrades pages show recipe tier, running state, progress, FE/t and total cycle cost live.
-- [ ] Transporter Home/Tasks/Locations/Upgrades pages show destination, range, distance, cost, progress and cooldown live.
-- [ ] Original small-slot artwork remains aligned with every clickable slot.
-- [ ] INF FE/debug controls and all current FE/matter text remain usable and readable.
-- [ ] Resize the game window/UI scale and reopen several machines; no gaps, seams or displaced slot hitboxes.
+- [ ] Charging Station HOME/ANDROID/UPGRADES pages remain aligned with all physical slots.
+- [ ] Weapon Station LOADOUT reflects all six real module slots immediately; STATS previews current unpacked modules.
+- [ ] Fusion Reactor dual FE/matter rings, fault/status lamps, RUN/SCRAM, redstone mode and live demand/output telemetry remain functional.
+- [ ] Resize the game window/UI scale and reopen several machines; no displaced slot hitboxes or invisible clickable slots.
 
-## Priority 1A - Android / Reactor / Weapon Station front-facing parity
+## Charging Station Android parity
 
-- [ ] Android Station opens without clipped controls or overlapping inventory labels.
-- [ ] HEAD/CHEST/ARMS/LEGS use the restored original Android slot icons; missing parts are visibly darkened and installed parts highlighted.
-- [ ] Selected Android ability uses the original feature-icon frame and changes presentation between locked, ready and active.
-- [ ] `CYCLE` changes to the next unlocked Android ability and never selects an unavailable ability.
-- [ ] Android online/offline state, FE, installed-part state, level, XP and perk points update without reopening the GUI.
-- [ ] `SKILL TREE` opens the existing selectable perk tree directly from the Android Station.
-- [ ] Select/refund a perk, return to the station and confirm state remains synchronized and persists through save/reload.
-- [ ] Weapon Station shows the real six module roles: Battery, Color, Barrel, Sights and two Utility slots.
-- [ ] Weapon Station LOADOUT page updates immediately when modules are inserted/removed.
-- [ ] Weapon Station STATS page previews the current station modules and updates damage, energy, cooldown and range multipliers without requiring the weapon to be removed first.
-- [ ] Removing the weapon still packs all six modules into the weapon; reopening the station unpacks them correctly.
-- [ ] Fusion Reactor shows the restored dual circular energy/matter presentation; each side moves independently.
-- [ ] Reactor structure lamp/text changes between valid and the correct current fault reason.
-- [ ] RUN/SCRAM and redstone mode controls still work and the front-page status updates immediately.
-- [ ] Efficiency, generated FE/t, connected demand, ring power, matter drain, IO/stabilizer count and anomaly/hazard telemetry update while open.
-- [ ] Reactor remains readable at multiple GUI scales and does not cover upgrade slots or player inventory.
+- [ ] Nearby Android charges wirelessly without an inserted item.
+- [ ] Base wireless range is 8 blocks and close-range baseline can reach 512 FE/t before upgrades.
+- [ ] Charge rate falls with distance and multiple Android players can be charged in one tick when FE is available.
+- [ ] Rechargeable FE item in the physical slot still charges after Android processing.
+- [ ] Range, Power and Power Storage upgrades alter range/rate/capacity and persist.
+- [ ] Range stacking respects the legacy x8 cap.
 
-## Priority 1B - Charging Station legacy Android parity
+## Transporter destination parity
 
-- [ ] Power a Charging Station and stand nearby as an Android; Android FE should increase automatically without inserting an item.
-- [ ] At close range, the station should deliver up to the legacy 512 FE/t baseline before upgrades; charge rate should fall off with distance and reach zero at the edge of range.
-- [ ] Base Android charging range should be 8 blocks.
-- [ ] Multiple Android players in range can be charged in the same tick while enough station FE remains; GUI reports Android count and total Android FE/t.
-- [ ] A rechargeable FE item in the physical slot still charges after Android charging is processed; item charging remains a supported 1.20.1 extension.
-- [ ] Install a Range upgrade and confirm the Android charging radius increases. Range stacking must respect the legacy x8 multiplier cap.
-- [ ] Install a Power upgrade and confirm the maximum Android charge rate changes according to power-usage efficiency.
-- [ ] Install a Power Storage upgrade and confirm the internal FE capacity increases and persists after save/reload.
-- [ ] Only Range, Power and Power Storage upgrades are accepted by the four Charging Station upgrade slots.
-- [ ] Break/dismantle the Charging Station with an item and upgrades installed; all five contents must be returned rather than deleting upgrades.
-- [ ] HOME / ANDROID / UPGRADES pages switch without hiding or offsetting the real item/upgrade slot hitboxes.
-- [ ] INF FE remains functional and powers both Android and item charging for debug testing.
+- [ ] Bound Transport Flash Drive works directly without IMPORT.
+- [ ] IMPORT stores a persistent machine-side destination and duplicate coordinates select rather than duplicate it.
+- [ ] `<` and `>` cycle several saved destinations; REMOVE clamps selection safely.
+- [ ] Machine destinations and selected index persist without the source drive after save/reload.
+- [ ] A named Transport Flash Drive keeps its custom name when bound/imported.
+- [ ] Same-X/Z targets less than four vertical blocks away are rejected; nearby horizontal targets are not rejected by a fake four-block sphere.
+- [ ] Target exactly at current range is rejected because valid distance is strictly less than range.
+- [ ] Speed affects charge/cooldown, Power affects FE cost, Range affects max distance and Power Storage affects capacity.
 
-## Priority 1C - Transporter legacy destination parity
+## Space-Time Accelerator / Star Map
 
-- [ ] A bound Transport Flash Drive still works directly without first importing its target into the machine.
-- [ ] Insert a bound drive and press `IMPORT`; the machine destination count should increase and that imported destination becomes selected.
-- [ ] Import the same coordinates twice; it should select the existing entry rather than duplicate it.
-- [ ] Import two or more different destinations, then use `<` and `>` to cycle the selected machine-side destination.
-- [ ] Remove a selected destination; the remaining selection clamps correctly and transport continues to a remaining location.
-- [ ] Save/reload the world and confirm imported machine destinations plus selected index persist without the drive being present.
-- [ ] Destination validity matches 1.12: same X/Z destinations less than four vertical blocks away are rejected; a nearby horizontal target is not incorrectly rejected by a four-block sphere check.
-- [ ] A destination exactly at the upgraded range boundary is rejected; valid transport distance must be strictly less than current range.
-- [ ] Put four or more entities on the transporter pad. One completed cycle must teleport at most three entities, matching the 1.12 cap.
-- [ ] A following cycle can transport remaining entities after the normal cooldown.
-- [ ] Speed upgrades change both charge-up time and cooldown; Power changes FE cost; Range changes max distance; Power Storage changes FE capacity.
-- [ ] Home/Tasks/Locations/Upgrades pages remain aligned with the two item slots and five real upgrade slots at multiple GUI scales.
+- [ ] Accelerator uses the 1.12 `[-radius, radius)` footprint (`2r x 2r`, not `(2r+1) x (2r+1)`).
+- [ ] Accelerator Home/Tasks/Upgrades pages show FE, matter, pulse progress, interval, radius and last accelerated count.
+- [ ] Star Map reaches Galaxy -> Quadrant -> Star -> Planet and retains wheel zoom, drag pan and right-click back navigation.
+- [ ] Planet page shows deterministic type/orbit/habitability/temperature/gravity/moons/atmosphere values.
+- [ ] Planet page still clearly reports travel unavailable; no fake travel action occurs.
 
-## Priority 1D - Space-Time Accelerator / Star Map depth
+## Network / persistence
 
-- [ ] Space-Time Accelerator uses the 1.12 `[-radius, radius)` footprint, i.e. a `2r x 2r` horizontal target area rather than `(2r+1) x (2r+1)`.
-- [ ] Accelerator Home/Tasks/Upgrades pages show live FE, matter, pulse completion, interval, radius and last accelerated target count.
-- [ ] Speed, Hyper Speed, Power, Power Storage, Matter Storage and Range upgrade effects remain functional.
-- [ ] Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet.
-- [ ] Selecting a planet highlights it and shows type, orbit, habitability, temperature, gravity, moons and atmosphere values.
-- [ ] Mouse-wheel zoom, left-drag pan and right-click back navigation work at every Star Map level.
-- [ ] Player inventory stays below the planet information area and no Star Map text overlaps clickable inventory slots.
-- [ ] Planet page clearly reports that travel is unavailable until the server travel/event layer is restored; no fake travel action should occur.
-
-## Priority 2 - Network Flash Drive restored from 1.7
-
-- [ ] Hold a Network Flash Drive and right-click an inventory-capability block connected to the item network. Chat should report that destination was added.
-- [ ] Right-click the same endpoint again. It should be removed rather than duplicated.
-- [ ] Add two or more endpoints and confirm the tooltip lists their coordinates.
-- [ ] Put the programmed Network Flash Drive in the Network Router filter slot. Items may route only into positions stored on that drive.
-- [ ] Sources do not need to be listed on the drive; the drive filters destinations, matching the original 1.7 role.
-- [ ] Install an empty Network Flash Drive. The router should move no items until at least one destination is programmed.
-- [ ] Remove the drive and confirm ordinary item-filter routing still works exactly as before.
-- [ ] Save/reload with a programmed drive in inventory and in the Router. CONNECTIONS entries must persist.
-- [ ] Pylon-linked/remote network sections still obey the programmed destination list when reachable.
-
-## Priority 3 - previous 1.7-derived restorations
-
-- [ ] Holo Sign text is readable on the physical screen-facing side for north/east/south/west placement.
-- [ ] Pattern Storage, Pattern Monitor and Space-Time Accelerator do not hide faces of adjacent normal blocks.
-- [ ] Pylon renders normally with no purple/black missing model and channel routing still works.
-- [ ] Adjacent Industrial Glass suppresses shared internal faces and exposes faces immediately when a neighbour is broken.
-- [ ] Star Map mouse-wheel zoom and click-drag pan work while contract counts remain intact.
-- [ ] Tritanium Wrench normal-use rotates; sneak-use dismantles Matter Overdrive blocks through normal breaking.
-- [ ] A secured block cannot be sneak-wrench dismantled by a player lacking owner/matching Access permission.
-
-## Priority 4 - pipes / visuals / persistence
-
-- [ ] Matter Pipe, Heavy Energy Cable and Network Pipe arms connect/update in all six directions and keep transfer behaviour.
-- [ ] Reactor Coil, Controller, IO and Gravitational Stabilizer retain restored source face assignments/orientation.
-- [ ] Pattern Drive empty/partial/full and Matter Scanner offline/online item states still update.
-- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives and ownership after save/reload.
+- [ ] Network Flash Drive toggles inventory endpoints, persists CONNECTIONS and filters router destinations.
+- [ ] Empty installed Network Flash Drive permits no destinations.
+- [ ] Pylon-linked network sections obey matching channel and destination filters.
+- [ ] Matter Pipe, Heavy Energy Cable and Network Pipe arms update in all six directions without breaking transfer.
+- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, saved locations and ownership after save/reload.
 
 ## Core gameplay regression
 
-- [ ] Matter production/storage/replication works end-to-end.
-- [ ] Reactor ring, IO, anomaly mass, stabilizers, shared ring power, RUN/SCRAM, remote and overlay work.
-- [ ] Weapons require valid FE, heat/reload correctly and do not drain unrelated guns.
+- [ ] Matter production/storage/analysis/replication works end-to-end.
+- [ ] Reactor ring, IO, anomaly mass, stabilizers, shared ring power, remote and overlay remain functional.
+- [ ] Weapons require valid FE, heat/reload correctly and do not drain unrelated weapons.
 - [ ] Android HUD, V cycle, B activate, K tree and perk persistence/refunds work.
+- [ ] Security Claim/Access/Remove rules still gate normal interaction and wrench dismantling correctly.
