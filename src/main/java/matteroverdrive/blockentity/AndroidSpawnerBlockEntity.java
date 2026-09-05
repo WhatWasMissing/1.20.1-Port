@@ -69,6 +69,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     private long lastOwnershipMigration;
     private int squadColor;
     private int squadMode = RogueAndroidEntity.MODE_PATROL;
+    @Nullable private UUID commanderUuid;
 
     private final ContainerData data = new ContainerData() {
         @Override public int get(int index) {
@@ -90,9 +91,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         @Override public int getCount() { return 10; }
     };
 
-    public AndroidSpawnerBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.ANDROID_SPAWNER.get(), pos, state);
-    }
+    public AndroidSpawnerBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.ANDROID_SPAWNER.get(), pos, state); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, AndroidSpawnerBlockEntity spawner) {
         spawner.pullAdjacentEnergy();
@@ -102,16 +101,11 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
             spawner.discoverNearbyOwnedAndroids();
             spawner.lastOwnershipMigration = gameTime;
         }
-        if (gameTime - spawner.lastSpawn < SPAWN_INTERVAL
-                || spawner.energy.getEnergyStored() < SPAWN_COST
-                || spawner.ownedSpawnCount() >= MAX_SPAWN_AMOUNT) return;
-
+        if (gameTime - spawner.lastSpawn < SPAWN_INTERVAL || spawner.energy.getEnergyStored() < SPAWN_COST || spawner.ownedSpawnCount() >= MAX_SPAWN_AMOUNT) return;
         if (spawner.trySpawn((ServerLevel) level, pos)) {
             spawner.energy.consumeEnergy(SPAWN_COST, gameTime);
             spawner.lastSpawn = gameTime;
-        } else {
-            spawner.lastSpawn = gameTime - (SPAWN_INTERVAL - FAILED_RETRY_DELAY);
-        }
+        } else spawner.lastSpawn = gameTime - (SPAWN_INTERVAL - FAILED_RETRY_DELAY);
         spawner.setChanged();
     }
 
@@ -122,26 +116,15 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
             int[] offset = SPAWN_OFFSETS[(start + attempt) % SPAWN_OFFSETS.length];
             BlockPos candidate = spawnerPos.offset(offset[0], offset[1], offset[2]);
             if (!level.getWorldBorder().isWithinBounds(candidate)) continue;
-
-            RogueAndroidEntity android = level.random.nextInt(10) < 3
-                    ? ModEntities.ROGUE_ANDROID.get().create(level)
-                    : ModEntities.RANGED_ROGUE_ANDROID.get().create(level);
+            RogueAndroidEntity android = level.random.nextInt(10) < 3 ? ModEntities.ROGUE_ANDROID.get().create(level) : ModEntities.RANGED_ROGUE_ANDROID.get().create(level);
             if (android == null) return false;
-            android.moveTo(candidate.getX() + 0.5D, candidate.getY(), candidate.getZ() + 0.5D,
-                    level.random.nextFloat() * 360.0F, 0.0F);
-            if (!level.noCollision(android)) {
-                android.discard();
-                continue;
-            }
-
+            android.moveTo(candidate.getX() + 0.5D, candidate.getY(), candidate.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
+            if (!level.noCollision(android)) { android.discard(); continue; }
             android.finalizeSpawn(level, level.getCurrentDifficultyAt(candidate), MobSpawnType.SPAWNER, null, null);
             android.setSpawnerPosition(spawnerPos);
             android.setPatrolPoints(patrol);
-            android.setSquad(squadColor, squadMode);
-            if (level.addFreshEntity(android)) {
-                registerOwnedAndroid(android.getUUID());
-                return true;
-            }
+            android.setSquad(squadColor, squadMode, commanderUuid);
+            if (level.addFreshEntity(android)) { registerOwnedAndroid(android.getUUID()); return true; }
         }
         return false;
     }
@@ -163,27 +146,18 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         if (level == null) return;
         AABB area = new AABB(worldPosition).inflate(OWNERSHIP_MIGRATION_RANGE);
         boolean changed = false;
-        for (RogueAndroidEntity android : level.getEntitiesOfClass(RogueAndroidEntity.class, area,
-                candidate -> candidate.wasSpawnedFrom(worldPosition))) {
+        for (RogueAndroidEntity android : level.getEntitiesOfClass(RogueAndroidEntity.class, area, candidate -> candidate.wasSpawnedFrom(worldPosition))) {
             changed |= ownedAndroids.add(android.getUUID());
-            if (android.getSquadColor() != squadColor || android.getSquadMode() != squadMode) {
-                android.setSquad(squadColor, squadMode);
+            if (android.getSquadColor() != squadColor || android.getSquadMode() != squadMode || !java.util.Objects.equals(android.getCommanderUuid(), commanderUuid)) {
+                android.setSquad(squadColor, squadMode, commanderUuid);
             }
         }
         if (changed) setChanged();
     }
 
-    private int ownedSpawnCount() {
-        return ownedAndroids.size();
-    }
-
-    public void registerOwnedAndroid(UUID uuid) {
-        if (ownedAndroids.add(uuid)) setChanged();
-    }
-
-    public void unregisterOwnedAndroid(UUID uuid) {
-        if (ownedAndroids.remove(uuid)) setChanged();
-    }
+    private int ownedSpawnCount() { return ownedAndroids.size(); }
+    public void registerOwnedAndroid(UUID uuid) { if (ownedAndroids.add(uuid)) setChanged(); }
+    public void unregisterOwnedAndroid(UUID uuid) { if (ownedAndroids.remove(uuid)) setChanged(); }
 
     public int removeSpawnedAndroids() {
         if (!(level instanceof ServerLevel serverLevel)) return 0;
@@ -191,35 +165,28 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         int removed = 0;
         for (UUID uuid : List.copyOf(ownedAndroids)) {
             Entity entity = serverLevel.getEntity(uuid);
-            if (entity instanceof RogueAndroidEntity android && android.wasSpawnedFrom(worldPosition)) {
-                android.discard();
-                removed++;
-            }
+            if (entity instanceof RogueAndroidEntity android && android.wasSpawnedFrom(worldPosition)) { android.discard(); removed++; }
         }
         if (removed > 0) setChanged();
         return removed;
     }
 
-    public void cycleSquadColor() {
-        squadColor = (squadColor + 1) % 8;
+    public void cycleSquadColor() { squadColor = (squadColor + 1) % 8; propagateSquadState(); setChanged(); }
+    public void cycleSquadMode(Player player) {
+        squadMode = (squadMode + 1) % 4;
+        if (squadMode == RogueAndroidEntity.MODE_ESCORT) commanderUuid = player.getUUID();
         propagateSquadState();
         setChanged();
     }
-
-    public void cycleSquadMode() {
-        squadMode = (squadMode + 1) % 3;
-        propagateSquadState();
-        setChanged();
-    }
+    public void setCommander(Player player) { commanderUuid = player.getUUID(); propagateSquadState(); setChanged(); }
+    @Nullable public UUID getCommanderUuid() { return commanderUuid; }
 
     private void propagateSquadState() {
         if (!(level instanceof ServerLevel serverLevel)) return;
         discoverNearbyOwnedAndroids();
         for (UUID uuid : List.copyOf(ownedAndroids)) {
             Entity entity = serverLevel.getEntity(uuid);
-            if (entity instanceof RogueAndroidEntity android && android.wasSpawnedFrom(worldPosition)) {
-                android.setSquad(squadColor, squadMode);
-            }
+            if (entity instanceof RogueAndroidEntity android && android.wasSpawnedFrom(worldPosition)) android.setSquad(squadColor, squadMode, commanderUuid);
         }
     }
 
@@ -250,8 +217,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         if (level == null || level.isClientSide) return;
         for (int slot = 0; slot < patrolDrives.getSlots(); slot++) {
             ItemStack stack = patrolDrives.extractItem(slot, 1, false);
-            if (!stack.isEmpty()) Containers.dropItemStack(level, worldPosition.getX() + 0.5D,
-                    worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, stack);
+            if (!stack.isEmpty()) Containers.dropItemStack(level, worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, stack);
         }
     }
 
@@ -262,6 +228,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         tag.put("PatrolDrives", patrolDrives.serializeNBT());
         tag.putInt("SquadColor", squadColor);
         tag.putInt("SquadMode", squadMode);
+        if (commanderUuid != null) tag.putUUID("CommanderUUID", commanderUuid);
         ListTag owners = new ListTag();
         for (UUID uuid : ownedAndroids) owners.add(NbtUtils.createUUID(uuid));
         tag.put("OwnedAndroids", owners);
@@ -273,13 +240,11 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         lastSpawn = tag.getLong("LastSpawn");
         if (tag.contains("PatrolDrives")) patrolDrives.deserializeNBT(tag.getCompound("PatrolDrives"));
         squadColor = Math.floorMod(tag.getInt("SquadColor"), 8);
-        squadMode = tag.contains("SquadMode") ? Math.max(0, Math.min(2, tag.getInt("SquadMode"))) : RogueAndroidEntity.MODE_PATROL;
+        squadMode = tag.contains("SquadMode") ? Math.max(0, Math.min(RogueAndroidEntity.MODE_ESCORT, tag.getInt("SquadMode"))) : RogueAndroidEntity.MODE_PATROL;
+        commanderUuid = tag.hasUUID("CommanderUUID") ? tag.getUUID("CommanderUUID") : null;
         ownedAndroids.clear();
         ListTag owners = tag.getList("OwnedAndroids", Tag.TAG_INT_ARRAY);
-        for (Tag owner : owners) {
-            try { ownedAndroids.add(NbtUtils.loadUUID(owner)); }
-            catch (IllegalArgumentException ignored) {}
-        }
+        for (Tag owner : owners) { try { ownedAndroids.add(NbtUtils.loadUUID(owner)); } catch (IllegalArgumentException ignored) {} }
     }
 
     @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
@@ -287,21 +252,8 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         if (cap == ForgeCapabilities.ITEM_HANDLER) return itemCapability.cast();
         return super.getCapability(cap, side);
     }
-
-    @Override public void invalidateCaps() {
-        super.invalidateCaps();
-        energyCapability.invalidate();
-        itemCapability.invalidate();
-    }
-
-    @Override public void reviveCaps() {
-        super.reviveCaps();
-        energyCapability = LazyOptional.of(() -> energy);
-        itemCapability = LazyOptional.of(() -> patrolDrives);
-    }
-
+    @Override public void invalidateCaps() { super.invalidateCaps(); energyCapability.invalidate(); itemCapability.invalidate(); }
+    @Override public void reviveCaps() { super.reviveCaps(); energyCapability = LazyOptional.of(() -> energy); itemCapability = LazyOptional.of(() -> patrolDrives); }
     @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.android_spawner"); }
-    @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new AndroidSpawnerMenu(id, inventory, this);
-    }
+    @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new AndroidSpawnerMenu(id, inventory, this); }
 }
