@@ -2,6 +2,7 @@ package matteroverdrive.entity;
 
 import matteroverdrive.registry.ModSounds;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -30,6 +31,7 @@ public class RogueAndroidEntity extends Zombie {
 
     private int androidLevel;
     private boolean legendary;
+    @Nullable private BlockPos spawnerPosition;
 
     public RogueAndroidEntity(EntityType<? extends RogueAndroidEntity> type, Level level) {
         super(type, level);
@@ -97,6 +99,19 @@ public class RogueAndroidEntity extends Zombie {
         return legendary;
     }
 
+    public void setSpawnerPosition(@Nullable BlockPos position) {
+        spawnerPosition = position == null ? null : position.immutable();
+    }
+
+    @Nullable
+    public BlockPos getSpawnerPosition() {
+        return spawnerPosition;
+    }
+
+    public boolean wasSpawnedFrom(BlockPos position) {
+        return spawnerPosition != null && spawnerPosition.equals(position);
+    }
+
     @Override
     public boolean canBeAffected(MobEffectInstance effect) {
         return false;
@@ -122,6 +137,7 @@ public class RogueAndroidEntity extends Zombie {
         super.addAdditionalSaveData(tag);
         tag.putInt("AndroidLevel", androidLevel);
         tag.putBoolean("Legendary", legendary);
+        if (spawnerPosition != null) tag.putLong("SpawnerPosition", spawnerPosition.asLong());
     }
 
     @Override
@@ -129,6 +145,7 @@ public class RogueAndroidEntity extends Zombie {
         super.readAdditionalSaveData(tag);
         androidLevel = Mth.clamp(tag.getInt("AndroidLevel"), 0, 3);
         legendary = tag.getBoolean("Legendary");
+        spawnerPosition = tag.contains("SpawnerPosition") ? BlockPos.of(tag.getLong("SpawnerPosition")) : null;
         applyLegacyStats(false);
         updateLegacyName();
     }
