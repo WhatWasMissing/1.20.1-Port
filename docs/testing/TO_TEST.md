@@ -17,6 +17,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [x] Mad Scientist interaction and current Puny Humans quest.
 - [x] Holo Sign thin monitor geometry and renamed-item programming.
 - [x] Previous 1.7 parity baseline through Star Map navigation, wrench dismantle and visual fixes is GitHub-Actions build verified.
+- [x] Charging Station / Space-Time Accelerator / deeper Star Map code through commit `7fee056` is GitHub-Actions build verified.
 
 ## Priority 1 - legacy GUI shell wired to current logic
 
@@ -25,7 +26,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Replicator Home/Tasks/Config/Upgrades pages retain replication, network queue, timing and failure telemetry.
 - [ ] Matter Analyzer Home/Tasks/Config/Upgrades pages retain scan waveform, pattern progress and server-side redstone cycling.
 - [ ] Inscriber Home/Tasks/Upgrades pages show recipe tier, running state, progress, FE/t and total cycle cost live.
-- [ ] Transporter Home/Tasks/Upgrades pages show destination, range, distance, cost, progress and cooldown live.
+- [ ] Transporter Home/Tasks/Locations/Upgrades pages show destination, range, distance, cost, progress and cooldown live.
 - [ ] Original small-slot artwork remains aligned with every clickable slot.
 - [ ] INF FE/debug controls and all current FE/matter text remain usable and readable.
 - [ ] Resize the game window/UI scale and reopen several machines; no gaps, seams or displaced slot hitboxes.
@@ -63,6 +64,32 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Break/dismantle the Charging Station with an item and upgrades installed; all five contents must be returned rather than deleting upgrades.
 - [ ] HOME / ANDROID / UPGRADES pages switch without hiding or offsetting the real item/upgrade slot hitboxes.
 - [ ] INF FE remains functional and powers both Android and item charging for debug testing.
+
+## Priority 1C - Transporter legacy destination parity
+
+- [ ] A bound Transport Flash Drive still works directly without first importing its target into the machine.
+- [ ] Insert a bound drive and press `IMPORT`; the machine destination count should increase and that imported destination becomes selected.
+- [ ] Import the same coordinates twice; it should select the existing entry rather than duplicate it.
+- [ ] Import two or more different destinations, then use `<` and `>` to cycle the selected machine-side destination.
+- [ ] Remove a selected destination; the remaining selection clamps correctly and transport continues to a remaining location.
+- [ ] Save/reload the world and confirm imported machine destinations plus selected index persist without the drive being present.
+- [ ] Destination validity matches 1.12: same X/Z destinations less than four vertical blocks away are rejected; a nearby horizontal target is not incorrectly rejected by a four-block sphere check.
+- [ ] A destination exactly at the upgraded range boundary is rejected; valid transport distance must be strictly less than current range.
+- [ ] Put four or more entities on the transporter pad. One completed cycle must teleport at most three entities, matching the 1.12 cap.
+- [ ] A following cycle can transport remaining entities after the normal cooldown.
+- [ ] Speed upgrades change both charge-up time and cooldown; Power changes FE cost; Range changes max distance; Power Storage changes FE capacity.
+- [ ] Home/Tasks/Locations/Upgrades pages remain aligned with the two item slots and five real upgrade slots at multiple GUI scales.
+
+## Priority 1D - Space-Time Accelerator / Star Map depth
+
+- [ ] Space-Time Accelerator uses the 1.12 `[-radius, radius)` footprint, i.e. a `2r x 2r` horizontal target area rather than `(2r+1) x (2r+1)`.
+- [ ] Accelerator Home/Tasks/Upgrades pages show live FE, matter, pulse completion, interval, radius and last accelerated target count.
+- [ ] Speed, Hyper Speed, Power, Power Storage, Matter Storage and Range upgrade effects remain functional.
+- [ ] Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet.
+- [ ] Selecting a planet highlights it and shows type, orbit, habitability, temperature, gravity, moons and atmosphere values.
+- [ ] Mouse-wheel zoom, left-drag pan and right-click back navigation work at every Star Map level.
+- [ ] Player inventory stays below the planet information area and no Star Map text overlaps clickable inventory slots.
+- [ ] Planet page clearly reports that travel is unavailable until the server travel/event layer is restored; no fake travel action should occur.
 
 ## Priority 2 - Network Flash Drive restored from 1.7
 
