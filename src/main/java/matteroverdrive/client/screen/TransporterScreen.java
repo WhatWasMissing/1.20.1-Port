@@ -8,9 +8,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class TransporterScreen extends AbstractContainerScreen<TransporterMenu> {
+    private static final String[] PAGES = {"HOME", "TASKS", "UPGRADES"};
+    private int page;
+
     public TransporterScreen(TransporterMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
+        imageWidth = 330;
         imageHeight = 230;
         inventoryLabelY = 133;
     }
@@ -18,11 +21,30 @@ public class TransporterScreen extends AbstractContainerScreen<TransporterMenu> 
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-            }
-        }).bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
+        rebuildButtons();
+    }
+
+    private void rebuildButtons() {
+        clearWidgets();
+        for (int i = 0; i < PAGES.length; i++) {
+            final int target = i;
+            Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
+                page = target;
+                rebuildButtons();
+            }).bounds(leftPos + 180 + i * 46, topPos + 29, 44, 15).build();
+            tab.active = page != i;
+            addRenderableWidget(tab);
+        }
+        if (page == 0) {
+            addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> clickMenu(1))
+                    .bounds(leftPos + 217, topPos + 150, 56, 18).build());
+        }
+    }
+
+    private void clickMenu(int id) {
+        if (minecraft != null && minecraft.gameMode != null) {
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+        }
     }
 
     @Override
@@ -40,12 +62,17 @@ public class TransporterScreen extends AbstractContainerScreen<TransporterMenu> 
                 MachineScreenStyle.BLUE);
         MachineScreenStyle.drawSection(graphics, x + 17, y + 32, 142, 63);
         MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 98, 142, 29);
+        MachineScreenStyle.drawSection(graphics, x + 176, y + 25, 145, 157);
 
         MachineScreenStyle.drawSlot(graphics, x + 43, y + 43);
         MachineScreenStyle.drawSlot(graphics, x + 111, y + 43);
         for (int slot = 0; slot < 5; slot++) {
             MachineScreenStyle.drawSlot(graphics, x + 42 + slot * 18, y + 77);
         }
+        MachineScreenStyle.drawVerticalBar(graphics, x + 8, y + 30, 7, 40,
+                menu.e(), menu.cap(), MachineScreenStyle.RED);
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 67, y + 48, 31, 6,
+                menu.progress(), menu.cycle(), MachineScreenStyle.BLUE);
     }
 
     @Override
@@ -63,5 +90,56 @@ public class TransporterScreen extends AbstractContainerScreen<TransporterMenu> 
         graphics.drawString(font, "Cycle " + menu.cycle() + " t | "
                         + (menu.running() ? "running" : "idle") + " | delay " + menu.cooldown(),
                 20, 121, MachineScreenStyle.DEBUG, false);
+
+        switch (page) {
+            case 1 -> renderTasks(graphics);
+            case 2 -> renderUpgrades(graphics);
+            default -> renderHome(graphics);
+        }
+    }
+
+    private void renderHome(GuiGraphics graphics) {
+        graphics.drawString(font, "TRANSPORT STATUS", 204, 52, MachineScreenStyle.BLUE, false);
+        graphics.drawString(font, menu.target() ? "DESTINATION READY" : "NO DESTINATION", 190, 72,
+                menu.target() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "Range: " + menu.dist() + " / " + menu.range(),
+                190, 88, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Transfer cost: " + menu.cost() + " FE",
+                190, 104, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, menu.running() ? "Transport cycle active" : "Transporter idle",
+                190, 120, menu.running() ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Current port uses flash-drive", 190, 136,
+                MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "destination binding.", 190, 148,
+                MachineScreenStyle.MUTED, false);
+    }
+
+    private void renderTasks(GuiGraphics graphics) {
+        int progress = menu.cycle() <= 0 ? 0 : Math.min(100, menu.progress() * 100 / menu.cycle());
+        graphics.drawString(font, "TRANSPORT TASK", 207, 52, MachineScreenStyle.BLUE, false);
+        graphics.drawString(font, menu.target() ? "Destination acquired" : "Waiting for destination",
+                190, 72, menu.target() ? MachineScreenStyle.TEXT : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "Progress: " + progress + "%",
+                190, 88, menu.running() ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Elapsed: " + menu.progress() + " / " + menu.cycle() + " t",
+                190, 104, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Energy cost: " + menu.cost() + " FE",
+                190, 120, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Cooldown: " + menu.cooldown() + " t",
+                190, 136, MachineScreenStyle.MUTED, false);
+    }
+
+    private void renderUpgrades(GuiGraphics graphics) {
+        graphics.drawString(font, "UPGRADES", 218, 52, MachineScreenStyle.BLUE, false);
+        graphics.drawString(font, "5 physical slots shown left", 190, 72,
+                MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Range and operation values", 190, 90,
+                MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "update from installed upgrades.", 190, 102,
+                MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Legacy saved-location editor", 190, 124,
+                MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "is not yet backed by port data.", 190, 136,
+                MachineScreenStyle.MUTED, false);
     }
 }
