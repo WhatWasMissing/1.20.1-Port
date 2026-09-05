@@ -58,10 +58,12 @@ Persistent conversion, FE/HUD, HEAD/CHEST/ARMS/LEGS part state, part/level-gated
 
 - Melee Rogue Androids have levels, legendary state, legacy-scaled health/damage, sounds and drops.
 - Ranged Rogue Android entity is implemented and uses Phaser Rifle / Ion Sniper equipment with ranged attacks.
-- Android Spawner is FE-powered and now restores the 1.7 population model: maximum 6 owned Androids and a 30% melee / 70% ranged spawn mix.
+- Android Spawner is FE-powered and restores the 1.7 population model: maximum 6 owned Androids and a 30% melee / 70% ranged spawn mix.
 - Spawned Rogue Androids persist their originating spawner position so unrelated/natural Androids do not block a machine’s population cap.
-- Android Spawner operator screen reports FE, owned population, max population and next-spawn timing. `KILL ALL` removes only Androids owned by that spawner.
-- Legacy path/team/teleport-drive configuration from the old spawner is not exposed until equivalent modern AI state exists; no fake controls are shown.
+- The six legacy Transport Flash Drive slots are real again. Bound same-dimension drives become patrol waypoints; newly spawned Androids inherit and persist the waypoint list and patrol it only while they have no combat target.
+- Android Spawner operator screen reports FE, owned population, max population, next-spawn timing and active patrol target count. `KILL OWNED` removes only Androids owned by that spawner.
+- Dismantling the Spawner returns installed patrol drives.
+- Legacy team/color configuration remains withheld until equivalent modern squad/team state exists; no fake controls are shown.
 
 ## Legacy entities / quests
 
@@ -83,7 +85,7 @@ Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching 
 
 ## GUI / source-faithful presentation
 
-The port reuses the original scalable machine shell and original slot/progress/FE/matter assets while retaining current 1.20.1 menus and server state. Decomposer, Replicator, Analyzer, Inscriber, Transporter, Charging Station, Accelerator, Reactor, Android Station and Weapon Station have received dedicated legacy-inspired operator passes. The design rule is to never hide a real container slot behind a page and never add a legacy button without a real server-side handler.
+The port reuses the original scalable machine shell and original slot/progress/FE/matter assets while retaining current 1.20.1 menus and server state. Decomposer, Replicator, Analyzer, Inscriber, Transporter, Charging Station, Accelerator, Reactor, Android Station, Android Spawner and Weapon Station have dedicated legacy-inspired operator passes. The design rule is to never hide a real container slot behind a page and never add a legacy button without a real server-side handler.
 
 Restored/fixed visual systems also include directional Matter/Network/Heavy Energy pipe arms, Reactor component face assignments, Pattern Drive fill states, Matter Scanner linked state, non-occluding Pattern Monitor/Storage/Accelerator, readable Holo Sign face, valid Pylon model bounds, Industrial Glass shared-face suppression and active/inactive Network Switch presentation.
 
@@ -91,7 +93,7 @@ Restored/fixed visual systems also include directional Matter/Network/Heavy Ener
 
 1. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining legacy world structures/events.
 2. Actual Star Map travel/event backend and richer legacy astronomical data/events.
-3. Android Spawner patrol paths, teleport-drive destinations, team/color configuration and richer Android squad AI.
+3. Android Spawner team/color configuration and richer Android squad/path behaviours beyond the restored waypoint patrol loop.
 4. Broader Drone ownership/team/command behaviour and remaining entity equipment/AI details.
 5. Generic legacy machine redstone/configuration modes where current machines still lack server-side equivalents.
 6. Remaining machine-specific legacy GUI elements/pages that map to real current backend state.
