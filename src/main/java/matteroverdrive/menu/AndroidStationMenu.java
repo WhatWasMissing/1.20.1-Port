@@ -1,5 +1,6 @@
 package matteroverdrive.menu;
 
+import matteroverdrive.android.AndroidData;
 import matteroverdrive.blockentity.AndroidStationBlockEntity;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
@@ -41,6 +42,16 @@ public class AndroidStationMenu extends AbstractContainerMenu {
     }
     @Override public boolean stillValid(Player player) { return stillValid(ContainerLevelAccess.create(player.level(), station.getBlockPos()), player, ModBlocks.get("android_station").get()); }
     @Override public ItemStack quickMoveStack(Player player, int index) { return ItemStack.EMPTY; }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        if (id == 1 && AndroidData.isAndroid(player)) {
+            AndroidData.cycleAbility(player);
+            return true;
+        }
+        return false;
+    }
+
     public boolean androidActive() { return data.get(0) != 0; }
     public int parts() { return data.get(1); }
     public int androidEnergy() { return data.get(2) | data.get(3) << 16; }
