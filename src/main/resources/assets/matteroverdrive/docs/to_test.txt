@@ -32,21 +32,28 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 
 ## Legacy world structures - expanded pass
 - [ ] Explore **newly generated chunks** in a fresh/new area; existing explored chunks are not expected to gain structures retroactively.
-- [ ] Crashed spacecraft generate rarely on dry Overworld terrain. They have a damaged tritanium hull silhouette, striped hull sections, glass bridge detail, a crate and Holo Sign rather than appearing as solid cubes.
-- [ ] Cargo ships generate much more rarely than crashed ships and are visibly larger, with a long cargo hull, upper rails/windows, lamps and occasional crates.
-- [ ] Underwater bases generate only in ocean biomes at the ocean floor, remain submerged externally, and have a deliberately cleared/dry interior enclosed by tritanium and an Industrial Glass band/dome.
-- [ ] Underwater bases include Matter Analyzer / Tritanium Crate set dressing without flooding the interior after initial generation.
-- [ ] Mad Scientist houses generate on dry Overworld terrain as enclosed white laboratory structures with windows, beams and real Inscriber/Decomposer/Crate blocks inside.
-- [ ] Android Houses now generate as rare approximately 19 x 19 tritanium/white-plate shelters with an enclosed roof, glass bands, support beams, lamps, front opening, divided interior, Holo Sign, two crate types and machine set dressing.
-- [ ] Android House interiors are actually cleared rather than terrain remaining inside the shell, and their machines/block entities survive save/reload.
-- [ ] Sand Pits only commit when the sampled surface is sand, red sand or sandstone-family terrain; ordinary grass/forest terrain should reject the feature cleanly.
-- [ ] Sand Pits form a broad approximately 32 x 32 stepped depression with progressively deeper inner rings, sandstone floor, scattered erosion blocks and a small exposed tritanium wreck/cache at the bottom.
-- [ ] Sand Pit generation does not leave floating water columns or unexpectedly replace non-desert terrain after the terrain guard rejects a candidate.
-- [ ] Structure generation does not cascade uncontrollably, repeatedly generate on chunk reload, or cause severe world-generation stalls.
-- [ ] The observed rarity hierarchy is sensible: Sand Pit candidates are relatively common but terrain-filtered; crashed ships are the most common ship tier; Mad Scientist houses are uncommon; Android Houses rarer; underwater bases rare; cargo ships exceptionally rare.
-- [ ] Structure blocks and machine block entities survive save/reload after generation.
+- [ ] Crashed spacecraft generate rarely on dry Overworld terrain with damaged tritanium hull, stripe/glass details, a Holo Sign and a real salvage crate.
+- [ ] Cargo ships generate much more rarely and visibly larger, with long cargo hull, upper rails/windows, lamps and multiple possible salvage crates.
+- [ ] Underwater bases generate only in ocean biomes at the ocean floor, remain submerged externally, and have a deliberately cleared/dry tritanium/Industrial Glass interior.
+- [ ] Mad Scientist houses generate on dry Overworld terrain as enclosed white laboratories with real Inscriber, Decomposer and salvage crate inside.
+- [ ] Android Houses generate as rare approximately 19 x 19 tritanium/white-plate shelters with glass bands, supports, lamps, divided cleared interior, two crate types and functioning machine set dressing.
+- [ ] Sand Pits only commit on sand/red-sand/sandstone-family terrain and form a broad approximately 32 x 32 stepped depression with a small exposed tritanium wreck/cache at the bottom.
+- [ ] Sand Pit terrain rejection does not alter ordinary grass/forest terrain or leave floating water columns.
+- [ ] Structure generation does not cascade, regenerate on chunk reload, or cause severe world-generation stalls.
+- [ ] The rarity hierarchy remains sensible: terrain-filtered Sand Pit candidates; crashed ships commonest ship tier; Mad Scientist houses uncommon; Android Houses rarer; underwater bases rare; cargo ships exceptionally rare.
 
-Current limitation to verify rather than misread as a bug: these are modern 1.20.1 structural translations of the authoritative legacy generators. Android Houses and Sand Pits are now implemented, but pixel-exact reconstruction of every old image template, dedicated structure loot population and richer structure-specific mob encounters remain later work.
+### Structure salvage population
+- [ ] Generated Tritanium Crates are not empty placeholders: contents are inserted directly into the existing 54-slot persistent crate inventory and survive save/reload.
+- [ ] Crashed-ship salvage contains tritanium plate + matter dust, with possible battery / Mk1 circuit.
+- [ ] Cargo-ship salvage contains larger tritanium/dilithium stores, with possible machine casing / upgrade base.
+- [ ] Underwater-base salvage contains refined matter, dilithium and Mk2 circuitry, with possible integration matrix / pattern drive.
+- [ ] Mad Scientist lab salvage contains circuitry, machine casing and refined matter, with possible integration matrix / artifact.
+- [ ] Android House salvage contains battery/circuitry plus an Android body part, with possible blue Android pill / Network Flash Drive.
+- [ ] Sand Pit salvage contains tritanium nuggets/ingots and matter dust, with possible dilithium / rare artifact.
+- [ ] Loot stacks occupy actual random crate slots and persist through breaking/replacing the crate using its existing inventory serialization behavior.
+- [ ] Structure blocks, machine block entities and populated crate block entities survive save/reload after generation.
+
+Current limitation: these are modern 1.20.1 structural translations of the authoritative legacy generators. Android Houses, Sand Pits and dedicated persisted salvage are implemented, but pixel-exact reconstruction of every old image template and richer structure-specific mob encounters remain later work.
 
 ## Star Map navigation / journey
 - [ ] Galaxy -> Quadrant -> Star -> Planet navigation retains wheel zoom, drag pan and right-click back.
@@ -56,20 +63,20 @@ Current limitation to verify rather than misread as a bug: these are modern 1.20
 - [ ] Longer journeys schedule exactly one route-derived event. Asteroid Field adds 100 ticks, Slingshot reduces ETA, Signal Echo adds 40 ticks, and Rogue Android Intercept adds 120 ticks plus two melee and one ranged Rogue Android.
 - [ ] Pending encounter countdown is visible in the Planet travel control and nearby event announcements are limited to 32 blocks.
 
-## Star Map fleet combat - new pass
+## Star Map fleet combat
 - [ ] The first player to successfully launch from a Star Map becomes that machine fleet's persistent commander; another player cannot commandeer that fleet by starting travel.
 - [ ] Star Map header synchronizes fleet **Hull / Shield / Firepower / Victories**. Baseline is 100 hull, 60 shield and 20 firepower.
-- [ ] Find a route that rolls the new **Hostile Fleet** encounter. Arrival is paused while combat is active rather than silently completing behind the fight.
+- [ ] Find a route that rolls **Hostile Fleet**. Arrival is paused while combat is active rather than silently completing behind the fight.
 - [ ] During hostile-fleet combat the Planet control becomes `FIRE`; after firing it becomes `RECHARGE` for the 20-tick attack cooldown.
-- [ ] Each player volley removes the synchronized fleet firepower value from enemy hull; enemy return fire consumes shield before hull.
-- [ ] Enemy threat varies deterministically by destination, producing enemy hull/firepower tiers rather than every battle being identical.
-- [ ] Winning increments the victory counter, clears combat and resumes the journey while preserving the route time that was paused by combat.
-- [ ] Losing cancels the journey back to the last safe Star Map planet and leaves the fleet damaged at 35 hull / 0 shield rather than teleporting the physical player.
+- [ ] Each player volley removes synchronized fleet firepower from enemy hull; enemy return fire consumes shield before hull.
+- [ ] Enemy threat varies deterministically by destination.
+- [ ] Winning increments victories, clears combat and resumes journey while preserving paused route time.
+- [ ] Losing cancels journey back to the last safe Star Map planet and leaves fleet at 35 hull / 0 shield without physically teleporting the player.
 - [ ] Beginning a later journey restores shields; successful arrival repairs some hull and restores shields.
-- [ ] Save/reload during hostile-fleet combat preserves commander, player hull/shield/firepower/victories, enemy hull and active battle state.
+- [ ] Save/reload during hostile-fleet combat preserves commander, fleet stats, enemy hull and active battle state.
 - [ ] Non-commanders cannot send a forged/GUI fleet-fire request that changes battle state.
 
-Current limitation to verify: fleet combat is now real Star Map gameplay, but the old Scout/Colonizer ship item production queue, multi-ship fleet composition, colony/planet ownership, physical planet dimensions and player teleportation are not yet implemented and must not be claimed by the GUI.
+Current limitation: fleet combat is real Star Map gameplay, but Scout/Colonizer production, multi-ship fleet composition, colony/planet ownership, physical planet dimensions and player teleportation are not yet implemented.
 
 ## Machine GUI / persistence
 - [ ] Decomposer, Replicator, Analyzer, Inscriber, Charging Station, Weapon Station, Fusion Reactor, Android Station/Spawner and Star Map retain visible physical slots and aligned hitboxes across GUI scales.
