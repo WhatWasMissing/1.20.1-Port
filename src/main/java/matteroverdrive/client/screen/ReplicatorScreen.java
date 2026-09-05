@@ -13,7 +13,7 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
 
     public ReplicatorScreen(ReplicatorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
+        imageWidth = 330;
         imageHeight = 218;
         inventoryLabelY = 125;
     }
@@ -31,7 +31,7 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 5 + i * 42, topPos + 5, 40, 15).build();
+            }).bounds(leftPos + 180 + i * 36, topPos + 29, 34, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -40,7 +40,7 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
                 if (minecraft != null && minecraft.gameMode != null) {
                     minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
                 }
-            }).bounds(leftPos + 117, topPos + 102, 52, 16).build());
+            }).bounds(leftPos + 217, topPos + 132, 56, 18).build());
         }
     }
 
@@ -56,42 +56,28 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         int x = leftPos;
         int y = topPos;
         MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawSection(graphics, x + 17, y + 27, 142, 88);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 27, 142, 91);
+        MachineScreenStyle.drawSection(graphics, x + 176, y + 25, 145, 158);
 
-        if (page == 0) {
-            int[][] slots = {{19, 43}, {61, 43}, {115, 34}, {139, 52}};
-            for (int[] slot : slots) {
-                MachineScreenStyle.drawSlot(graphics, x + slot[0], y + slot[1]);
-            }
-            MachineScreenStyle.drawLegacyProgressArrow(graphics, x + 83, y + 43,
-                    menu.getProgress(), menu.getMaxProgress());
-            MachineScreenStyle.drawLegacyEnergyMeter(graphics, x + 6, y + 30,
-                    menu.getEnergy(), menu.getEnergyCapacity());
-            MachineScreenStyle.drawLegacyMatterMeter(graphics, x + 154, y + 30,
-                    menu.getMatter(), menu.getMatterCapacity());
-        } else if (page == 3) {
-            for (int slot = 0; slot < 4; slot++) {
-                MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 57);
-            }
+        int[][] slots = {{19, 43}, {61, 43}, {115, 34}, {139, 52}};
+        for (int[] slot : slots) {
+            MachineScreenStyle.drawSlot(graphics, x + slot[0], y + slot[1]);
         }
+        for (int slot = 0; slot < 4; slot++) {
+            MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 101);
+        }
+        MachineScreenStyle.drawLegacyProgressArrow(graphics, x + 83, y + 43,
+                menu.getProgress(), menu.getMaxProgress());
+        MachineScreenStyle.drawLegacyEnergyMeter(graphics, x + 6, y + 30,
+                menu.getEnergy(), menu.getEnergyCapacity());
+        MachineScreenStyle.drawLegacyMatterMeter(graphics, x + 154, y + 30,
+                menu.getMatter(), menu.getMatterCapacity());
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, 8, 21, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
-        switch (page) {
-            case 1 -> renderTasks(graphics);
-            case 2 -> renderConfig(graphics);
-            case 3 -> renderUpgrades(graphics);
-            default -> renderHome(graphics);
-        }
-    }
-
-    private void renderHome(GuiGraphics graphics) {
-        if (menu.getNetworkTaskAmount() > 0) {
-            graphics.drawString(font, "Network x" + menu.getNetworkTaskAmount(), 93, 21, MachineScreenStyle.CYAN, false);
-        }
         graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 18, 29, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, menu.getMatter() + " / " + menu.getMatterCapacity() + " kM", 18, 39, MachineScreenStyle.MUTED, false);
         if (menu.getPatternMatter() > 0) {
@@ -101,34 +87,53 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         }
         graphics.drawString(font, cycleText(), 18, 94, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, failureText(), 18, 105, MachineScreenStyle.DANGER, false);
+
+        switch (page) {
+            case 1 -> renderTasks(graphics);
+            case 2 -> renderConfig(graphics);
+            case 3 -> renderUpgrades(graphics);
+            default -> renderHome(graphics);
+        }
+    }
+
+    private void renderHome(GuiGraphics graphics) {
+        graphics.drawString(font, "REPLICATOR STATUS", 201, 52, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, menu.getPatternMatter() > 0 ? "Pattern loaded" : "Waiting for pattern", 190, 72,
+                menu.getPatternMatter() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Network queue " + menu.getNetworkTaskAmount(), 190, 88,
+                menu.getNetworkTaskAmount() > 0 ? MachineScreenStyle.CYAN : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Demand " + menu.getEnergyPerTick() + " FE/t", 190, 104, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Matter cost " + menu.getPatternMatter() + " kM", 190, 120, MachineScreenStyle.MUTED, false);
     }
 
     private void renderTasks(GuiGraphics graphics) {
         int progress = menu.getMaxProgress() <= 0 ? 0 : Math.min(100, menu.getProgress() * 100 / menu.getMaxProgress());
-        graphics.drawString(font, "REPLICATION TASKS", 38, 35, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, menu.getPatternMatter() > 0 ? "Local replication active" : "No local replication queued",
-                24, 50, menu.getPatternMatter() > 0 ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Local progress: " + progress + "%", 24, 63, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Pattern learned: " + menu.getPatternProgress() + "%", 24, 75, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "Network queue: " + menu.getNetworkTaskAmount(), 24, 87,
+        graphics.drawString(font, "REPLICATION TASKS", 198, 52, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, menu.getPatternMatter() > 0 ? "Local task active" : "No local task", 190, 72,
+                menu.getPatternMatter() > 0 ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Local progress " + progress + "%", 190, 88, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Pattern " + menu.getPatternProgress() + "%", 190, 104, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, "Network queue " + menu.getNetworkTaskAmount(), 190, 120,
                 menu.getNetworkTaskAmount() > 0 ? MachineScreenStyle.CYAN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, cycleText(), 24, 99, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, cycleText(), 190, 136, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, failureText(), 190, 152, MachineScreenStyle.DANGER, false);
     }
 
     private void renderConfig(GuiGraphics graphics) {
-        graphics.drawString(font, "MACHINE CONFIGURATION", 28, 35, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Network task intake is automatic", 21, 52, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "when the current item network can", 20, 65, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "supply a valid learned pattern.", 25, 76, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Pattern drive and battery slots", 24, 92, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "remain on the Home page.", 36, 103, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "CONFIGURATION", 208, 52, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Pattern drive", 190, 72, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Battery / FE input", 190, 88, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Network task intake", 190, 104, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Current network dispatch is", 190, 126, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "automatic when a valid learned", 190, 138, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "pattern can be supplied.", 190, 150, MachineScreenStyle.MUTED, false);
     }
 
     private void renderUpgrades(GuiGraphics graphics) {
-        graphics.drawString(font, "MACHINE UPGRADES", 43, 35, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "4 installed upgrade slots", 29, 81, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Upgrade effects are applied by", 24, 94, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "the live replication backend.", 29, 105, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "UPGRADES", 218, 52, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, "4 physical slots shown left", 190, 72, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Installed upgrades affect live", 190, 94, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "cycle timing / machine demand.", 190, 106, MachineScreenStyle.MUTED, false);
     }
 
     private String cycleText() {
