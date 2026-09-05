@@ -8,112 +8,67 @@ Legacy references:
 The 0.8 alpha jar is not a parity authority.
 Build identity: `Alpha Version 3`, made by MVQ1303
 
-This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**. “Implemented” does not mean runtime-confirmed; use the M2 Testing Checklist for verification status.
+This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**. Implemented does not mean runtime-confirmed; use the M2 Testing Checklist for verification status.
 
-## Runtime-confirmed baseline
+## Matter / power / machines
+Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe are implemented. Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench are functional. Legacy-inspired Home/Tasks/Config/Upgrades presentation is exposed where real server state exists and physical slots remain visible.
 
-- Rogue Android combat and sounds.
-- Failed Cow, Pig, Sheep and Chicken spawning/behaviour.
-- Mad Scientist interaction and Puny Humans quest baseline.
-- Holo Sign thin geometry and renamed-item programming.
-- Earlier matter/reactor/network/wrench/Star Map baseline and the Charging Station / Accelerator / deeper Star Map code through `7fee056` were GitHub-Actions build verified.
+Fusion Reactor/gravity includes horizontal structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behavior, Reactor Remote, persistent overlay, Gravitational Anomaly mass/pull/event horizon, Equalizer and powered Stabilizers.
 
-## Matter / replication
+## Network
+Network Pipe, Network Switch, Network Router and matching-channel Pylon routing are present. Switch state persists and changes routing/appearance. Router supports ordinary filtering, Network Flash Drive destination filtering, four Speed/Hyper-Speed slots, multi-stack item budgets and the 10 FE/item execution limit. There is no invented standalone Network Controller because the authoritative legacy implementations do not contain one matching that assumption.
 
-Implemented Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe integration. Legacy-inspired Home/Tasks/Config/Upgrades presentation is wired where real server-side state exists; real container slots remain visible on every page.
+## Androids / entities
+Android player conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent selectable perk tree are present. Android Spawner restores a six-unit 30% melee / 70% ranged population, persistent ownership, six Transport Flash Drive patrol slots and PATROL/GUARD/HOLD squad modes with eight colors. Same-Spawner Androids are allies and squad changes propagate to loaded/future units.
 
-## Power / machines / logistics
-
-- Solar Panel, Heavy Energy Cable, Microwave and Space-Time Accelerator.
-- Charging Station restores legacy nearby-Android wireless charging while retaining modern FE-item charging. Base Android range/rate and Range/Power/Power Storage upgrades are implemented.
-- Space-Time Accelerator uses the 1.12 `[-radius, radius)` footprint and exposes live task/upgrade telemetry.
-- Transporter supports direct Transport Flash Drive use plus persistent machine-side imported destinations, selection/removal, named drive imports, legacy range validity and the 3-entity-per-cycle cap.
-- Tritanium Crates and Weapon Station are functional.
-- Tritanium Wrench rotates normally and sneak-dismantles through the normal security-aware server break path.
-
-## Item network
-
-- Network Pipe, Network Switch, Network Router and matching-channel Pylon links.
-- Network Switch persists enabled state and visibly changes between inactive/active legacy textures.
-- Network Router supports ordinary item filtering and 1.7-style Network Flash Drive destination filtering.
-- Network Flash Drive stores a persistent `CONNECTIONS` endpoint set; an installed empty drive allows no destinations.
-- Router has four real Speed/Hyper-Speed upgrade slots. Speed upgrades increase the per-tick item budget and the executor can spend that budget across multiple stack moves rather than only changing a display number.
-- Router telemetry exposes FE, endpoints, nodes, pylons, routing mode, destination count, current item budget and last moved amount.
-
-There is no standalone legacy Network Controller machine in the authoritative 1.7/1.12 implementations; `network_controller.png` is not being treated as evidence for a fake block.
-
-## Fusion Reactor / gravity
-
-Implemented horizontal structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, connected demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behaviour, Reactor Remote and persistent placement/debug overlay. Gravitational Anomaly mass/pull/event horizon, living-entity mass contribution, Space-Time Equalizer and powered Gravitational Stabilizers are present. Reactor GUI exposes legacy-inspired dual FE/matter rings plus current fault/output/hazard telemetry.
+Rogue Androids, Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Owned Drones persist owner UUID, follow their loaded owner, inherit owner team/allies and do not automatically target unrelated players; unowned Drones remain hostile ranged mobs. Puny Humans and Cocktail of Ascension are implemented, including transactional mutant transformation.
 
 ## Weapons
+Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station exposes real Battery/Color/Barrel/Sights/Utility slots and stat/loadout preview. Exact module meshes, recoil, zoom and remaining first-person animation parity remain incomplete.
 
-Playable Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload, Battery/HC Battery/Energy Pack support and current module effects. Weapon Station exposes the real Battery, Color, Barrel, Sights and two Utility module roles plus live loadout/stat preview. Full legacy module meshes, recoil, zoom and remaining first-person animation parity are still incomplete.
+## Restored legacy world structures
+Four legacy structure families are now registered through the native Forge 1.20.1 **Feature -> configured feature -> placed feature -> biome modifier** pipeline rather than obsolete chunk hooks.
 
-## Android player system
+- **Crashed spacecraft**: rare dry-Overworld wrecks with a damaged tritanium silhouette, striped hull details, bridge glass, crate and Holo Sign. The 1.12 reference used an 11 x 35 image-driven wreck and a 256-block separation concept; the modern placed feature preserves that as the comparatively common restored ship tier using a 1/256 placement rarity.
+- **Cargo ships**: much larger intact-ish cargo silhouettes with long deck/hull, upper window rails, lamps, Holo Sign and occasional crates. The legacy cargo generator was dramatically rarer and larger; the modern port retains the rarity hierarchy with a 1/4096 placement rarity.
+- **Underwater bases**: ocean-floor-only circular tritanium installations with an Industrial Glass band/dome, deliberately cleared dry interior, Matter Analyzer and blue Tritanium Crate. The legacy underwater base was a 43 x 43 deep-ocean structure with a 2048 separation concept; the modern feature uses ocean biomes, ocean-floor placement and 1/2048 rarity.
+- **Mad Scientist houses**: uncommon dry-Overworld white laboratory buildings with glass windows, support beams and real Inscriber, Decomposer and Tritanium Crate set dressing. They use a 1/768 modern placement rarity.
 
-Persistent conversion, FE/HUD, HEAD/CHEST/ARMS/LEGS part state, part/level-gated abilities, V cycle, B activate, K skill tree and a selectable 30-perk tree with persistence/refund flows. Android Station has server-authoritative ability cycling, direct skill-tree access and restored legacy bionic/feature icon presentation.
+These are source-faithful **modern structural translations**, not yet pixel-exact reproductions of every old image-worker template. Dedicated structure loot filling, encounter population, exact legacy image/NBT geometry, Android houses/sand pits and additional world events remain incomplete. Structure generation requires new chunks and is not retroactive to already-generated terrain.
 
-## Android Spawner / Rogue Androids
+## Star Map / journey / encounters
+Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with deterministic planet properties, wheel zoom, drag and right-click back. A server-authoritative journey layer persists current/destination galactic position and timing. Travel requests are validated against the open menu, machine position, player range and catalog destination. Same-system travel preserves the useful legacy 10-per-AU concept and interstellar travel the 8-per-LY concept without inventing FE cost that the later Star Map did not have.
 
-- Melee Rogue Androids have levels, legendary state, legacy-scaled health/damage, sounds and drops.
-- Ranged Rogue Android entity is implemented and uses Phaser Rifle / Ion Sniper equipment with ranged attacks.
-- Android Spawner is FE-powered and restores the 1.7 population model: maximum 6 owned Androids and a 30% melee / 70% ranged spawn mix.
-- Spawned Rogue Androids persist their originating spawner position so unrelated/natural Androids do not block a machine’s population cap.
-- The six legacy Transport Flash Drive slots are real. Bound same-dimension drives become patrol waypoints; spawned Androids inherit and persist those waypoints.
-- The Spawner now has real persistent squad configuration rather than withheld placeholder controls. Eight squad colors and three command modes are implemented: PATROL, GUARD and HOLD.
-- PATROL uses the installed waypoint loop when idle; GUARD sends idle units back toward their originating Spawner when they stray beyond roughly eight blocks; HOLD suppresses idle movement. Combat continues to take priority.
-- Squad color/mode changes propagate to loaded owned Androids and are inherited by future spawns. Both settings persist on the Spawner and on the Android entities themselves.
-- Androids from the same originating Spawner explicitly treat one another as allies, preventing same-squad friendly targeting.
-- Android Spawner operator screen reports FE, owned population, max population, next-spawn timing, patrol target count, squad color and squad mode. `COLOR`, `MODE` and `KILL OWNED` controls all have real server-side handlers.
-- Dismantling the Spawner returns installed patrol drives.
+Longer routes schedule one deterministic event: Asteroid Field, Gravitational Slingshot, Rogue Android Intercept, Signal Echo, or the newly restored **Hostile Fleet** encounter. Existing route modifiers and Android boarding parties remain functional.
 
-## Legacy entities / quests
+## Star Map fleet combat
+A persistent fleet layer now restores the useful 1.7 concepts that travel events carried a ship state and had a dedicated server attack action, without pretending the removed legacy item/build framework already exists.
 
-- Real Failed Cow/Pig/Sheep/Chicken.
-- Mad Scientist normal/Junkie state persists.
-- Puny Humans quest and one-time Battery + Blue Pill + five Yellow Pill reward.
-- Cocktail of Ascension is implemented: 5 Creepers killed with a shovel, 5 gunpowder and 5 red mushrooms, followed by Junkie Scientist transformation.
-- Cocktail completion is transactional: ingredients and completion state are committed only after the Mutant Scientist successfully spawns.
-- Mutant Scientist is implemented with 256 HP, 0.25 speed, 4 base damage, restored 1.0 x 2.3 dimensions and broad legacy-style hostility toward living entities except other Mutant Scientists.
-- Drone entity retains the port's ranged hostile behavior when unowned. Owner UUID persists and same-owner Drones are allied.
-- The 1.12 legacy `EntityAIFollowCreator` behavior is restored for owned Drones: a loaded owner is followed when the Drone strays beyond about five blocks and the Drone settles within about three blocks.
-- Owned Drones inherit the owner's ally/team relationships and do not automatically target other players as generic hostiles. Unowned Drones remain hostile ranged mobs.
-- Richer Drone command modes, explicit owner-management UI and remaining legacy flight/render details are still incomplete.
+- The first player to successfully launch from a Star Map binds that machine's persistent fleet commander UUID; another player cannot take over travel or fire the fleet.
+- Baseline fleet state is **100 hull / 60 shields / 20 firepower** plus a persistent victory count.
+- Hostile Fleet is a real fifth route encounter. It pauses arrival and generates a destination-derived enemy threat with 60-120 hull and 8-17 firepower.
+- The Planet travel control becomes a real `FIRE` / `RECHARGE` combat control backed by a validated C2S packet. Attack cadence is 20 ticks.
+- Player volleys damage enemy hull by fleet firepower. Enemy return fire drains shields first and then hull.
+- Victory increments the persistent counter and resumes travel while restoring the route time spent paused in combat.
+- Defeat performs an emergency Star Map retreat to the previous safe galactic location and leaves the fleet damaged at 35 hull / 0 shields; it does not physically teleport the player.
+- New journeys restore shields; successful arrivals repair some hull and restore shields.
+- Commander, fleet stats, enemy state and active combat persist in block-entity NBT and synchronize through the Star Map menu.
 
-## Star Map / contracts
+This is now genuine fleet-combat gameplay, but it is not the complete old ship economy. **Scout/Colonizer item production, ship factories/build queues, multiple ship classes in a composed fleet, Colonizer planet ownership/building creation, physical planet dimensions and player arrival/teleportation remain incomplete.**
 
-Contract Market and contract counting are present. Star Map navigation reaches **Galaxy -> Quadrant -> Star -> Planet**, with deterministic planet type, orbit, habitability, temperature, gravity, moons and atmosphere data plus wheel zoom, drag pan and right-click back navigation.
-
-A real server-authoritative Star Map journey layer is implemented. Each Star Map machine persists its current galactic position, requested destination, active-travel flag, start/end times and total duration. The Planet page exposes real `TRAVEL`, `EN ROUTE` and `CURRENT LOCATION` states backed by synchronized server data. Travel requests are validated server-side against the player's open Star Map menu, block position, interaction distance and catalog destination.
-
-Travel timing preserves the useful legacy concept found in 1.7: interstellar travel is based on 8 time units per LY and same-system travel on 10 per AU. The deterministic modern catalog uses stable star coordinates and planet orbit numbers as LY/AU stand-ins. The 1.12 Star Map had no machine-energy capacity, so no invented FE travel charge has been added.
-
-A persistent mid-journey encounter layer is present for journeys of at least 80 ticks. Each route deterministically schedules one encounter near its midpoint. Asteroid Fields add 100 ticks, Gravitational Slingshots reduce the remaining route without allowing instant completion, Signal Echoes add 40 ticks, and Rogue Android Intercepts add 120 ticks and spawn a real boarding party of two melee plus one ranged Rogue Android around the Star Map. Encounter schedule/result state is saved with the machine and synchronized through its menu data; the pending event countdown is visible in the travel control. Announcements are local to players within 32 blocks.
-
-This is still not full legacy fleet combat. The restored encounter layer deliberately reuses gameplay systems that exist in the port instead of inventing invisible ships, fleet statistics or planet dimensions. Full legacy ship/fleet ownership and combat, richer planet/star event gameplay, dimension/planet arrival gameplay and the original generated astronomical backend remain incomplete.
-
-## Security
-
-Empty/Claim/Access/Remove protocols, owner binding, machine ownership, matching Access permission and matching Remove clearing are implemented across Matter Overdrive block entities. Wrench dismantling uses the same server security path.
-
-## GUI / source-faithful presentation
-
-The port reuses the original scalable machine shell and original slot/progress/FE/matter assets while retaining current 1.20.1 menus and server state. Decomposer, Replicator, Analyzer, Inscriber, Transporter, Charging Station, Accelerator, Reactor, Android Station, Android Spawner and Weapon Station have dedicated legacy-inspired operator passes. The design rule is to never hide a real container slot behind a page and never add a legacy button without a real server-side handler.
-
-Restored/fixed visual systems also include directional Matter/Network/Heavy Energy pipe arms, Reactor component face assignments, Pattern Drive fill states, Matter Scanner linked state, non-occluding Pattern Monitor/Storage/Accelerator, readable Holo Sign face, valid Pylon model bounds, Industrial Glass shared-face suppression and active/inactive Network Switch presentation.
+## Security / GUI
+Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across the major machines, with the rule that real slots remain visible and controls are only shown when they have genuine server-side behavior.
 
 ## Major remaining parity gaps
+1. Exact legacy world-structure templates, dedicated structure loot/encounter population, Android houses/sand pits and remaining world events.
+2. Star Map ship production/build queues, Scout/Colonizer economy, multi-ship fleet composition, colonization/planet ownership, richer star/planet events and physical arrival gameplay.
+3. Deeper Android squad behavior such as follow-player/escort orders, formations and coordinated targeting.
+4. Richer Drone command/owner-management UI and remaining flight/render/equipment details.
+5. Generic legacy machine redstone/configuration modes where backend equivalents are still absent.
+6. Remaining machine-specific GUI pages that map to real backend state.
+7. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
+8. Full weapon module meshes, recoil, zoom and first-person animation parity.
+9. Deeper dispatcher/broadcaster network concepts where they can be mapped without replacing the working Forge routing core.
+10. Broader dialog/quest framework.
 
-1. Crashed/cargo ships, underwater bases, Mad Scientist houses and remaining legacy world structures/events.
-2. Full Star Map planet/star event gameplay, legacy ship/fleet ownership and travel combat, and richer generated astronomical data beyond the restored server-authoritative journey and encounter state.
-3. Deeper Android squad behavior such as follow-player/escort orders, formation/coordinated target behavior and richer path editing beyond PATROL/GUARD/HOLD.
-4. Broader Drone owner-management/command modes plus remaining legacy flight/render/equipment details.
-5. Generic legacy machine redstone/configuration modes where current machines still lack server-side equivalents.
-6. Remaining machine-specific legacy GUI elements/pages that map to real current backend state.
-7. Exact legacy Pylon multiblock/animated overlay and renderer-specific glow layers.
-8. Full weapon module meshes, recoil, zoom and remaining first-person hand animations.
-9. Deeper legacy network dispatcher/broadcaster concepts where they can be mapped without replacing the working modern Forge item-routing core.
-10. Broader legacy dialog/quest framework beyond Puny Humans and Cocktail of Ascension.
-
-See the in-game **M2 Testing Checklist** for the current runtime pass.
+See the in-game **M2 Testing Checklist** for runtime verification.
