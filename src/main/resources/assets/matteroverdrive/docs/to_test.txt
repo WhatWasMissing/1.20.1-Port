@@ -40,20 +40,25 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Owned Drones never attack their owner or unrelated players; unowned Drones remain hostile ranged mobs.
 - [ ] Drone owner UUID and command mode persist after save/reload.
 
-## Legacy world structures - expanded pass
+## Legacy world structures - population pass
 - [ ] Explore **newly generated chunks** in a fresh/new area; existing explored chunks are not expected to gain structures retroactively.
-- [ ] Crashed spacecraft generate rarely on dry Overworld terrain with damaged tritanium hull, stripe/glass details, a Holo Sign and a real salvage crate.
-- [ ] Cargo ships generate much more rarely and visibly larger, with long cargo hull, upper rails/windows, lamps and multiple possible salvage crates.
-- [ ] Underwater bases generate only in ocean biomes at the ocean floor, remain submerged externally, and have a deliberately cleared/dry tritanium/Industrial Glass interior.
-- [ ] Mad Scientist houses generate on dry Overworld terrain as enclosed white laboratories with real Inscriber, Decomposer and salvage crate inside.
-- [ ] Android Houses generate as rare approximately 19 x 19 tritanium/white-plate shelters with glass bands, supports, lamps, divided cleared interior, two crate types and functioning machine set dressing.
-- [ ] Sand Pits only commit on sand/red-sand/sandstone-family terrain and form a broad approximately 32 x 32 stepped depression with a small exposed tritanium wreck/cache at the bottom.
+- [ ] Crashed spacecraft generate rarely on dry Overworld terrain with damaged tritanium hull, stripe/glass details, Holo Sign, salvage crate and 1-2 persistent mixed Rogue Android defenders.
+- [ ] Cargo ships generate much more rarely and visibly larger, with long cargo hull, upper rails/windows, lamps, multiple possible salvage crates, 2-4 Android defenders and an occasional hostile Drone.
+- [ ] Underwater bases generate only in ocean biomes at the ocean floor, remain submerged externally, keep a dry interior, and contain a persistent hostile Drone plus an occasional ranged Rogue Android.
+- [ ] Mad Scientist houses generate as enclosed white laboratories with functioning machines, salvage, one persistent Mad Scientist and an occasional Failed animal experiment.
+- [ ] Android Houses generate as rare approximately 19 x 19 shelters with functioning machine set dressing, salvage, 3-4 persistent mixed Rogue Android defenders and an occasional hostile Drone.
+- [ ] Sand Pits only commit on sand/red-sand/sandstone-family terrain, form a broad stepped excavation and contain a persistent Android guardian plus an occasional Drone.
+- [ ] Structure-generated Rogue Androids are **not** registered to an Android Spawner and do not consume any Spawner's six-unit ownership cap.
+- [ ] Structure-generated Drones are unowned and retain normal hostile ranged behavior until explicitly linked by a player.
+- [ ] Structure occupants survive save/reload and normal distance-based despawn conditions because they are persistence-required.
+- [ ] Reloading a generated chunk does not duplicate the original structure occupants; population happens only during one-time feature placement.
+- [ ] Mob placement respects collision/world-border guards and does not embed occupants inside structure walls or machinery.
 - [ ] Sand Pit terrain rejection does not alter ordinary grass/forest terrain or leave floating water columns.
 - [ ] Structure generation does not cascade, regenerate on chunk reload, or cause severe world-generation stalls.
 - [ ] The rarity hierarchy remains sensible: terrain-filtered Sand Pit candidates; crashed ships commonest ship tier; Mad Scientist houses uncommon; Android Houses rarer; underwater bases rare; cargo ships exceptionally rare.
 
 ### Structure salvage population
-- [ ] Generated Tritanium Crates are not empty placeholders: contents are inserted directly into the existing 54-slot persistent crate inventory and survive save/reload.
+- [ ] Generated Tritanium Crates are populated through the existing 54-slot persistent crate inventory and survive save/reload.
 - [ ] Crashed-ship salvage contains tritanium plate + matter dust, with possible battery / Mk1 circuit.
 - [ ] Cargo-ship salvage contains larger tritanium/dilithium stores, with possible machine casing / upgrade base.
 - [ ] Underwater-base salvage contains refined matter, dilithium and Mk2 circuitry, with possible integration matrix / pattern drive.
@@ -61,9 +66,18 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Android House salvage contains battery/circuitry plus an Android body part, with possible blue Android pill / Network Flash Drive.
 - [ ] Sand Pit salvage contains tritanium nuggets/ingots and matter dust, with possible dilithium / rare artifact.
 - [ ] Loot stacks occupy actual random crate slots and persist through breaking/replacing the crate using its existing inventory serialization behavior.
-- [ ] Structure blocks, machine block entities and populated crate block entities survive save/reload after generation.
+- [ ] Structure blocks, machines, populated crates and persistent occupants survive save/reload after generation.
 
-Current limitation: these are modern 1.20.1 structural translations of the authoritative legacy generators. Android Houses, Sand Pits and dedicated persisted salvage are implemented, but pixel-exact reconstruction of every old image template and richer structure-specific mob encounters remain later work.
+Current limitation: these are modern 1.20.1 structural translations of the authoritative legacy generators. Structure-specific population and persisted salvage are now implemented, but pixel-exact reconstruction of every old image template and deeper structure-specific objectives/scripts remain later work.
+
+## Natural gravitational anomalies
+- [ ] In **new Overworld chunks**, natural Gravitational Anomalies can generate in open air roughly from sea level +4 through sea level +63.
+- [ ] Natural anomaly frequency is deliberately conservative at approximately 1/200 candidate chunks, matching the 1.7 default rather than the much more aggressive 1.12 1/20 default.
+- [ ] A generated anomaly initializes through the normal block-entity path with the shared legacy 2,048-10,240 starting mass range.
+- [ ] Generated anomalies immediately use the existing real pull, event-horizon consumption, mass growth and block-effect systems; they are not decorative markers.
+- [ ] Candidate positions containing blocks or fluids reject cleanly rather than deleting terrain to force an anomaly into place.
+- [ ] Natural anomalies persist after save/reload and do not regenerate repeatedly in the same already-generated chunk.
+- [ ] Existing Stabilizer / Equalizer / reactor-anomaly behavior is unaffected by the addition of natural worldgen anomalies.
 
 ## Star Map navigation / journey
 - [ ] Galaxy -> Quadrant -> Star -> Planet navigation retains wheel zoom, drag pan and right-click back.
