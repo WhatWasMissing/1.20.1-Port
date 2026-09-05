@@ -1,7 +1,10 @@
 {
   "variants": {
-    "": {
+    "active=false": {
       "model": "matteroverdrive:block/network_switch"
+    },
+    "active=true": {
+      "model": "matteroverdrive:block/network_switch_active"
     }
   }
 }
