@@ -1,6 +1,7 @@
 package matteroverdrive.entity;
 
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -12,11 +13,10 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-/** Source-faithful first port of the legacy hulking Mutant Scientist. */
+/** Source-faithful port of the legacy hulking Mutant Scientist. */
 public class MutantScientistEntity extends Monster {
     public MutantScientistEntity(EntityType<? extends MutantScientistEntity> type, Level level) {
         super(type, level);
@@ -35,11 +35,15 @@ public class MutantScientistEntity extends Monster {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(2, new LeapAtTargetGoal(this, 0.4F));
         goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0D, true));
-        goalSelector.addGoal(7, new RandomStrollGoal(this, 0.8D));
-        goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0D));
+        goalSelector.addGoal(8, new LookAtPlayerGoal(this, LivingEntity.class, 8.0F));
         goalSelector.addGoal(9, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Villager.class, true));
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true));
+    }
+
+    @Override
+    public boolean canAttack(LivingEntity target) {
+        return !(target instanceof MutantScientistEntity) && super.canAttack(target);
     }
 }
