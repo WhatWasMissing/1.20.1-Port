@@ -123,14 +123,20 @@ public class StarMapScreen extends AbstractContainerScreen<StarMapMenu> {
         graphics.drawString(font, "Gravity " + planet.gravityPercent() + "%  Moons " + planet.moons()
                         + "  Atmo " + (planet.atmosphere() ? "YES" : "NO"), 12, 124, MachineScreenStyle.CYAN, false);
 
-        int color = canTravelToSelected() ? MachineScreenStyle.CYAN : MachineScreenStyle.MUTED;
+        int color = menu.traveling() && !menu.encounterResolved()
+                ? MachineScreenStyle.AMBER
+                : canTravelToSelected() ? MachineScreenStyle.CYAN : MachineScreenStyle.MUTED;
         graphics.fill(TRAVEL_X, TRAVEL_Y, TRAVEL_X + TRAVEL_W, TRAVEL_Y + TRAVEL_H, 0xCC0C171D);
         graphics.renderOutline(TRAVEL_X, TRAVEL_Y, TRAVEL_W, TRAVEL_H, color);
         String top;
         String bottom;
         if (menu.traveling()) {
             top = "EN ROUTE";
-            bottom = Math.max(1, (menu.travelRemaining() + 19) / 20) + "s";
+            if (!menu.encounterResolved() && menu.encounterRemaining() > 0) {
+                bottom = "EVENT " + Math.max(1, (menu.encounterRemaining() + 19) / 20) + "s";
+            } else {
+                bottom = Math.max(1, (menu.travelRemaining() + 19) / 20) + "s";
+            }
         } else if (selectedIsCurrent()) {
             top = "CURRENT";
             bottom = "LOCATION";
