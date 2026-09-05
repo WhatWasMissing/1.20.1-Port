@@ -47,7 +47,7 @@ public class ChargingStationBlock extends BaseEntityBlock {
         return InteractionResult.PASS;
     }
     @Override public void onRemove(BlockState oldState, Level level, BlockPos pos, BlockState newState, boolean moving) {
-        if (!oldState.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof ChargingStationBlockEntity station) station.dropBattery();
+        if (!oldState.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof ChargingStationBlockEntity station) station.dropContents();
         super.onRemove(oldState, level, pos, newState, moving);
     }
 }
