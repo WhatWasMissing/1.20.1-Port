@@ -40,7 +40,7 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.CYAN);
         MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 29, 142, 58);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 111, 142, 18);
+        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 111, 142, 9);
         MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 25, topPos + 51, 126, 5,
                 menu.androidEnergy(), menu.androidCapacity(), MachineScreenStyle.CYAN);
 
@@ -79,11 +79,9 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
                         + ability.requiredPart.name() + " / Lv " + ability.requiredLevel,
                 20, 84, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel(),
+        graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel()
+                        + "  P " + menu.availableSkillPoints(),
                 20, 113, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Perk points " + menu.availableSkillPoints(), 104, 113, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Station " + menu.stationEnergy() + " FE", 20, 121, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "+" + menu.lastTransfer() + " FE/t", 108, 121, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
     }
 
@@ -97,7 +95,7 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
             case ARMS -> "A";
             case LEGS -> "L";
         };
-        graphics.drawString(font, label, x + 11 - leftPos, y + 1 - topPos,
+        graphics.drawString(font, label, x + 11, y + 1,
                 installed ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
     }
 }
