@@ -285,33 +285,45 @@ Scout/Colonizer ship counts do not automatically alter combat firepower because 
 # 25. Star Map colony economy
 Status: TESTING late-game strategy.
 
-The first bound commander receives a modern bootstrap homeworld containing Base + Ship Factory. Ownership/buildings are world-persistent planet data rather than properties of one Star Map block.
+The first bound commander receives a modern bootstrap homeworld containing Base + Ship Factory. Ownership, buildings, stationed ships and active construction are world-persistent **planet data**, not properties of one Star Map block.
 
-## Buildings and exact recovered effects
+## Simplified
+- Use the six economy controls on your current owned planet.
+- `Q n/4` shows how many of the four construction slots are occupied.
+- You can queue up to four projects at once, then leave with the command fleet; the colony keeps building.
+
+## Detailed
+The authoritative 1.7 `Planet` creates a four-slot inventory and its server update loop processes all four entries as ship/building construction. The port now mirrors that structure directly: every owned deterministic planet has four persistent construction slots in `StarMapGalaxyData`.
+
+Build times/effects:
 - Ship Factory: 8,000 ticks; required for Scout/Colonizer production.
 - Ship Hangar: 4,800 ticks; +2 fleet berths.
 - Matter Extractor: 14,400 ticks; +10 matter production / -6 energy production.
 - Power Generator: 14,400 ticks; +8 energy production / -2 matter production.
 - Residential: 6,000 ticks; +10,000 population / -4 energy / -2 matter / +4 building capacity.
+- Scout: 3,600 ticks.
+- Colonizer: 5,000 ticks.
 
-Residential happiness follows the recovered sign-based energy/matter rule. Planet GUI shows E, M, P, H and B telemetry. A newly colonized world begins with a Base but must build its own Factory before constructing ships.
+Construction no longer belongs to or locks the Star Map machine. Up to four jobs on one planet can finish independently while the command fleet travels elsewhere. The next time a commander-owned Star Map is loaded, elapsed projects settle from their absolute finish times. Queued ship jobs reserve future berth capacity to avoid modern overfill races, and duplicate Ship Factory queues are rejected.
+
+Residential happiness follows the recovered sign-based energy/matter rule. Planet GUI shows E, M, P, H, B and queue `Q` telemetry. A newly colonized world begins with a Base but must build its own Factory before constructing ships.
+
+Existing saves from the immediately previous one-build-console implementation migrate that active job once into the planet it targeted.
 
 # 26. Star Map planet-local ships and transfers
 Status: TESTING newest feature set.
 
-Scout and Colonizer ships now belong to **planets**, not to a Star Map console.
+Scout and Colonizer ships belong to **planets**, not to a Star Map console.
 
 ## Building ships
-- Scout: 3,600 ticks.
-- Colonizer: 5,000 ticks.
 - Completion adds the ship to the planet where the build occurred.
 - A Base has two baseline berths; each Ship Hangar adds two more.
-- Physical non-stacking ship tokens also appear with owner/type/planet metadata, but persistent planet fleet data is authoritative.
+- Physical non-stacking ship tokens can appear for local completions with owner/type/planet metadata, but persistent planet fleet data is authoritative.
 
 ## Moving ships without moving the command fleet
 Open a non-current Planet page while the command fleet is stationary. `SEND S` dispatches a stationed Scout; `SEND C` dispatches a stationed Colonizer. Dispatch removes the ship from the current source planet and creates an independent persistent travel event. Multiple ships can be in transit at the same time.
 
-`TRANSIT S# C#` shows active independent ship events. These transfers do not replace the command fleet's separate TRAVEL journey.
+`TRANSIT S# C#` shows active independent ship events. These transfers do not replace the command fleet's separate TRAVEL journey and do not require a physical token to exist.
 
 ## Arrival behavior
 - Scout -> friendly colony with free berth: becomes stationed there.
@@ -321,14 +333,14 @@ Open a non-current Planet page while the command fleet is stationary. `SEND S` d
 - Colonizer -> friendly colony with room: ship stations there.
 - Colonizer -> cannot claim/berth: returns to origin.
 
-A loaded Star Map owned by the same commander can settle completed arrivals, so the exact block that launched the ship is no longer required to survive. Existing saves from the immediately previous console-counter build migrate their Scout/Colonizer counts once to that console's current planet.
+A loaded Star Map owned by the same commander can settle completed arrivals, so the exact block that launched the ship is no longer required to survive. Existing saves from the earlier console-counter build migrate their Scout/Colonizer counts once to that console's current planet.
 
 ## Recommended strategic loop
 1. Develop homeworld power/matter balance.
-2. Build Hangars for fleet capacity.
-3. Build Colonizer ships.
-4. Send a Colonizer to an unowned planet.
-5. Wait for independent travel arrival.
+2. Fill several construction slots with economy/fleet work.
+3. Leave while the colony continues building.
+4. Build Hangars for fleet capacity and Colonizers for expansion.
+5. Send a Colonizer to an unowned planet.
 6. New colony receives ownership + Base.
 7. Build Factory and economy buildings there.
 8. Build or transfer Scouts/Colonizers between friendly colonies.
@@ -366,8 +378,11 @@ Record whether Androids came from this exact Spawner, a structure, or natural/de
 ## Star Map colony has the wrong ships
 Ship counts are planet-local. Check the current Planet page and `TRANSIT` counts. A ship in transit is removed from its source until arrival.
 
+## Star Map build queue looks stuck
+`Q n/4` is planet-local. Construction time continues even while the command fleet is elsewhere. Reopen/load a commander-owned Star Map after the finish time so due projects settle. If a queue duplicates after save migration or a fifth project starts at `Q 4/4`, report it.
+
 ## Star Map old save after updating
-The first loaded bound console migrates old console-local Scout/Colonizer counts into its current planet one time. If counts duplicate after a second reload, report it immediately.
+The first loaded bound console migrates old console-local Scout/Colonizer counts and the prior single active build into planet-owned state one time. If either duplicates after a second reload, report it immediately.
 
 ## Missing/purple textures
 Record the exact block/item and whether the problem is world model, inventory model or equipped model.
