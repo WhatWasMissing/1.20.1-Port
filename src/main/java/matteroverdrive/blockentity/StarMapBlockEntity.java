@@ -20,252 +20,34 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class StarMapBlockEntity extends BlockEntity implements MenuProvider {
-    public static final int ENCOUNTER_NONE = 0;
-    public static final int ENCOUNTER_ASTEROIDS = 1;
-    public static final int ENCOUNTER_SLINGSHOT = 2;
-    public static final int ENCOUNTER_ANDROID_INTERCEPT = 3;
-    public static final int ENCOUNTER_SIGNAL_ECHO = 4;
+    public static final int ENCOUNTER_NONE=0, ENCOUNTER_ASTEROIDS=1, ENCOUNTER_SLINGSHOT=2, ENCOUNTER_ANDROID_INTERCEPT=3, ENCOUNTER_SIGNAL_ECHO=4, ENCOUNTER_HOSTILE_FLEET=5;
+    private static final int FLEET_MAX_HULL=100,FLEET_MAX_SHIELD=60,FLEET_BASE_FIREPOWER=20,FLEET_ATTACK_COOLDOWN=20;
+    private int currentQuadrant,currentStar,currentPlanet,destinationQuadrant,destinationStar,destinationPlanet;
+    private boolean traveling; private long travelStartTime,travelEndTime; private int travelDuration;
+    private int encounterCode,lastEncounterCode; private long encounterTriggerTime; private boolean encounterResolved=true;
+    @Nullable private UUID fleetOwner; private int fleetHull=FLEET_MAX_HULL,fleetShield=FLEET_MAX_SHIELD,fleetFirepower=FLEET_BASE_FIREPOWER,fleetVictories;
+    private boolean fleetCombat; private int enemyHull,enemyMaxHull,enemyFirepower; private long fleetCombatStarted,lastFleetAttack;
 
-    private int currentQuadrant;
-    private int currentStar;
-    private int currentPlanet;
-    private int destinationQuadrant;
-    private int destinationStar;
-    private int destinationPlanet;
-    private boolean traveling;
-    private long travelStartTime;
-    private long travelEndTime;
-    private int travelDuration;
-    private int encounterCode;
-    private int lastEncounterCode;
-    private long encounterTriggerTime;
-    private boolean encounterResolved = true;
+    public StarMapBlockEntity(BlockPos pos,BlockState state){super(ModBlockEntities.STAR_MAP.get(),pos,state);}
+    public static void tick(Level level,BlockPos pos,BlockState state,StarMapBlockEntity map){if(level.isClientSide)return;long t=level.getGameTime();map.resolveEncounterIfDue(level,t);map.finishTravelIfDue(t);}
+    public ContainerData dataFor(Player viewer){return new ContainerData(){@Override public int get(int i){int a=0,d=0;for(var s:viewer.getInventory().items)if(s.getItem() instanceof ContractItem){a++;if(ContractItem.complete(s))d++;}return switch(i){case 0->a;case 1->d;case 2->currentQuadrant;case 3->currentStar;case 4->currentPlanet;case 5->destinationQuadrant;case 6->destinationStar;case 7->destinationPlanet;case 8->remainingTicks();case 9->travelDuration;case 10->traveling?1:0;case 11->encounterResolved?lastEncounterCode:encounterCode;case 12->encounterResolved?0:encounterRemainingTicks();case 13->encounterResolved?1:0;case 14->fleetHull;case 15->fleetShield;case 16->fleetFirepower;case 17->fleetCombat?1:0;case 18->enemyHull;case 19->enemyMaxHull;case 20->fleetVictories;case 21->fleetAttackCooldown();default->0;};}@Override public void set(int i,int v){}@Override public int getCount(){return 22;}};}
 
-    public StarMapBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.STAR_MAP.get(), pos, state);
-    }
-
-    public static void tick(Level level, BlockPos pos, BlockState state, StarMapBlockEntity map) {
-        if (level.isClientSide) return;
-        long gameTime = level.getGameTime();
-        map.resolveEncounterIfDue(level, gameTime);
-        map.finishTravelIfDue(gameTime);
-    }
-
-    public ContainerData dataFor(Player viewer) {
-        return new ContainerData() {
-            @Override public int get(int index) {
-                int active = 0;
-                int done = 0;
-                for (var stack : viewer.getInventory().items) {
-                    if (stack.getItem() instanceof ContractItem) {
-                        active++;
-                        if (ContractItem.complete(stack)) done++;
-                    }
-                }
-                return switch (index) {
-                    case 0 -> active;
-                    case 1 -> done;
-                    case 2 -> currentQuadrant;
-                    case 3 -> currentStar;
-                    case 4 -> currentPlanet;
-                    case 5 -> destinationQuadrant;
-                    case 6 -> destinationStar;
-                    case 7 -> destinationPlanet;
-                    case 8 -> remainingTicks();
-                    case 9 -> travelDuration;
-                    case 10 -> traveling ? 1 : 0;
-                    case 11 -> encounterResolved ? lastEncounterCode : encounterCode;
-                    case 12 -> encounterResolved ? 0 : encounterRemainingTicks();
-                    case 13 -> encounterResolved ? 1 : 0;
-                    default -> 0;
-                };
-            }
-            @Override public void set(int index, int value) {}
-            @Override public int getCount() { return 14; }
-        };
-    }
-
-    public boolean requestTravel(ServerPlayer player, int quadrant, int star, int planet) {
-        if (level == null || level.isClientSide || !StarMapCatalog.validPosition(quadrant, star, planet)) return false;
-        finishTravelIfDue(level.getGameTime());
-        if (traveling) {
-            player.displayClientMessage(Component.literal("Star Map: a journey is already in progress.")
-                    .withStyle(ChatFormatting.YELLOW), true);
-            return false;
-        }
-        if (quadrant == currentQuadrant && star == currentStar && planet == currentPlanet) {
-            player.displayClientMessage(Component.literal("Star Map: already at that destination.")
-                    .withStyle(ChatFormatting.YELLOW), true);
-            return false;
-        }
-        int duration = StarMapCatalog.travelTicks(currentQuadrant, currentStar, currentPlanet,
-                quadrant, star, planet);
-        if (duration <= 0) return false;
-        destinationQuadrant = quadrant;
-        destinationStar = star;
-        destinationPlanet = planet;
-        traveling = true;
-        travelDuration = duration;
-        travelStartTime = level.getGameTime();
-        travelEndTime = travelStartTime + duration;
-        scheduleEncounter(duration);
-        setChanged();
-        StarMapCatalog.Planet target = StarMapCatalog.planet(quadrant, star, planet);
-        player.displayClientMessage(Component.literal("Star Map journey started: " + target.name()
-                        + " (" + Math.max(1, duration / 20) + "s)")
-                .withStyle(ChatFormatting.AQUA), true);
-        return true;
-    }
-
-    private void scheduleEncounter(int duration) {
-        encounterCode = ENCOUNTER_NONE;
-        encounterTriggerTime = 0L;
-        encounterResolved = true;
-        lastEncounterCode = ENCOUNTER_NONE;
-        if (duration < 80) return;
-        int routeHash = Math.floorMod(currentQuadrant * 97 + currentStar * 53 + currentPlanet * 31
-                + destinationQuadrant * 211 + destinationStar * 127 + destinationPlanet * 71 + duration, 4);
-        encounterCode = routeHash + 1;
-        encounterTriggerTime = travelStartTime + Math.max(30L, duration / 2L);
-        encounterResolved = false;
-    }
-
-    private void resolveEncounterIfDue(Level level, long gameTime) {
-        if (!traveling || encounterResolved || encounterCode == ENCOUNTER_NONE || gameTime < encounterTriggerTime) return;
-        switch (encounterCode) {
-            case ENCOUNTER_ASTEROIDS -> {
-                travelEndTime += 100L;
-                announce(level, "Star Map encounter: asteroid field. Route slowed by 5 seconds.", ChatFormatting.YELLOW);
-            }
-            case ENCOUNTER_SLINGSHOT -> {
-                long reduction = Math.min(80L, Math.max(20L, travelDuration / 6L));
-                travelEndTime = Math.max(gameTime + 20L, travelEndTime - reduction);
-                announce(level, "Star Map encounter: gravitational slingshot. ETA reduced.", ChatFormatting.GREEN);
-            }
-            case ENCOUNTER_ANDROID_INTERCEPT -> {
-                travelEndTime += 120L;
-                spawnBoardingParty(level);
-                announce(level, "Star Map encounter: Rogue Android intercept. Boarding party detected!", ChatFormatting.RED);
-            }
-            case ENCOUNTER_SIGNAL_ECHO -> {
-                travelEndTime += 40L;
-                announce(level, "Star Map encounter: anomalous signal echo. Navigation recalibration required.", ChatFormatting.AQUA);
-            }
-            default -> { }
-        }
-        lastEncounterCode = encounterCode;
-        encounterResolved = true;
-        encounterTriggerTime = 0L;
-        travelDuration = (int) Math.max(1L, Math.min(Integer.MAX_VALUE, travelEndTime - travelStartTime));
-        setChanged();
-    }
-
-    private void spawnBoardingParty(Level level) {
-        if (!(level instanceof ServerLevel serverLevel)) return;
-        for (int i = 0; i < 3; i++) {
-            Mob android = (i == 2 ? ModEntities.RANGED_ROGUE_ANDROID.get() : ModEntities.ROGUE_ANDROID.get()).create(serverLevel);
-            if (android == null) continue;
-            double ox = i == 0 ? 2.5D : i == 1 ? -2.5D : 0.5D;
-            double oz = i == 2 ? 2.5D : -1.5D;
-            android.moveTo(worldPosition.getX() + 0.5D + ox, worldPosition.getY() + 1.0D,
-                    worldPosition.getZ() + 0.5D + oz, serverLevel.random.nextFloat() * 360F, 0F);
-            serverLevel.addFreshEntity(android);
-        }
-    }
-
-    private void announce(Level level, String message, ChatFormatting color) {
-        if (!(level instanceof ServerLevel serverLevel)) return;
-        double cx = worldPosition.getX() + 0.5D;
-        double cy = worldPosition.getY() + 0.5D;
-        double cz = worldPosition.getZ() + 0.5D;
-        Component text = Component.literal(message).withStyle(color);
-        for (ServerPlayer player : serverLevel.players()) {
-            if (player.distanceToSqr(cx, cy, cz) <= 1024D) player.displayClientMessage(text, false);
-        }
-    }
-
-    private int remainingTicks() {
-        if (!traveling || level == null) return 0;
-        return (int) Math.max(0L, Math.min(Integer.MAX_VALUE, travelEndTime - level.getGameTime()));
-    }
-
-    private int encounterRemainingTicks() {
-        if (encounterResolved || level == null) return 0;
-        return (int) Math.max(0L, Math.min(Integer.MAX_VALUE, encounterTriggerTime - level.getGameTime()));
-    }
-
-    private void finishTravelIfDue(long gameTime) {
-        if (!traveling || gameTime < travelEndTime) return;
-        currentQuadrant = destinationQuadrant;
-        currentStar = destinationStar;
-        currentPlanet = destinationPlanet;
-        traveling = false;
-        travelStartTime = 0L;
-        travelEndTime = 0L;
-        encounterTriggerTime = 0L;
-        encounterResolved = true;
-        setChanged();
-    }
-
-    @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.putInt("CurrentQuadrant", currentQuadrant);
-        tag.putInt("CurrentStar", currentStar);
-        tag.putInt("CurrentPlanet", currentPlanet);
-        tag.putInt("DestinationQuadrant", destinationQuadrant);
-        tag.putInt("DestinationStar", destinationStar);
-        tag.putInt("DestinationPlanet", destinationPlanet);
-        tag.putBoolean("Traveling", traveling);
-        tag.putLong("TravelStart", travelStartTime);
-        tag.putLong("TravelEnd", travelEndTime);
-        tag.putInt("TravelDuration", travelDuration);
-        tag.putInt("EncounterCode", encounterCode);
-        tag.putInt("LastEncounterCode", lastEncounterCode);
-        tag.putLong("EncounterTrigger", encounterTriggerTime);
-        tag.putBoolean("EncounterResolved", encounterResolved);
-    }
-
-    @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        currentQuadrant = tag.getInt("CurrentQuadrant");
-        currentStar = tag.getInt("CurrentStar");
-        currentPlanet = tag.getInt("CurrentPlanet");
-        destinationQuadrant = tag.getInt("DestinationQuadrant");
-        destinationStar = tag.getInt("DestinationStar");
-        destinationPlanet = tag.getInt("DestinationPlanet");
-        traveling = tag.getBoolean("Traveling");
-        travelStartTime = tag.getLong("TravelStart");
-        travelEndTime = tag.getLong("TravelEnd");
-        travelDuration = tag.getInt("TravelDuration");
-        encounterCode = tag.getInt("EncounterCode");
-        lastEncounterCode = tag.getInt("LastEncounterCode");
-        encounterTriggerTime = tag.getLong("EncounterTrigger");
-        encounterResolved = !tag.contains("EncounterResolved") || tag.getBoolean("EncounterResolved");
-        if (!StarMapCatalog.validPosition(currentQuadrant, currentStar, currentPlanet)) {
-            currentQuadrant = currentStar = currentPlanet = 0;
-        }
-        if (!StarMapCatalog.validPosition(destinationQuadrant, destinationStar, destinationPlanet)) {
-            destinationQuadrant = currentQuadrant;
-            destinationStar = currentStar;
-            destinationPlanet = currentPlanet;
-            traveling = false;
-        }
-        if (encounterCode < ENCOUNTER_NONE || encounterCode > ENCOUNTER_SIGNAL_ECHO) {
-            encounterCode = ENCOUNTER_NONE;
-            encounterResolved = true;
-            encounterTriggerTime = 0L;
-        }
-    }
-
-    @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.star_map"); }
-    @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
-        return new StarMapMenu(id, inventory, this);
-    }
+    public boolean requestTravel(ServerPlayer p,int q,int s,int pl){if(level==null||level.isClientSide||!StarMapCatalog.validPosition(q,s,pl))return false;finishTravelIfDue(level.getGameTime());if(fleetCombat){msg(p,"Star Map: hostile fleet engagement must be resolved first.",ChatFormatting.RED);return false;}if(fleetOwner!=null&&!fleetOwner.equals(p.getUUID())){msg(p,"Star Map fleet is bound to another commander.",ChatFormatting.RED);return false;}if(traveling){msg(p,"Star Map: a journey is already in progress.",ChatFormatting.YELLOW);return false;}if(q==currentQuadrant&&s==currentStar&&pl==currentPlanet){msg(p,"Star Map: already at that destination.",ChatFormatting.YELLOW);return false;}int duration=StarMapCatalog.travelTicks(currentQuadrant,currentStar,currentPlanet,q,s,pl);if(duration<=0)return false;if(fleetOwner==null)fleetOwner=p.getUUID();destinationQuadrant=q;destinationStar=s;destinationPlanet=pl;traveling=true;travelDuration=duration;travelStartTime=level.getGameTime();travelEndTime=travelStartTime+duration;fleetShield=FLEET_MAX_SHIELD;scheduleEncounter(duration);setChanged();var target=StarMapCatalog.planet(q,s,pl);msg(p,"Star Map journey started: "+target.name()+" ("+Math.max(1,duration/20)+"s)",ChatFormatting.AQUA);return true;}
+    public boolean requestFleetAttack(ServerPlayer p){if(level==null||level.isClientSide||!fleetCombat||!traveling)return false;if(fleetOwner==null||!fleetOwner.equals(p.getUUID())){msg(p,"Star Map: only the fleet commander can fire.",ChatFormatting.RED);return false;}long now=level.getGameTime();if(now-lastFleetAttack<FLEET_ATTACK_COOLDOWN)return false;lastFleetAttack=now;enemyHull=Math.max(0,enemyHull-fleetFirepower);if(enemyHull<=0){fleetVictories++;fleetCombat=false;travelEndTime+=Math.max(0L,now-fleetCombatStarted);fleetCombatStarted=0;msg(p,"Hostile fleet destroyed. Navigation resumed.",ChatFormatting.GREEN);setChanged();return true;}enemyVolley(p);setChanged();return true;}
+    private void enemyVolley(ServerPlayer p){int damage=enemyFirepower,shield=Math.min(fleetShield,damage);fleetShield-=shield;damage-=shield;if(damage>0)fleetHull=Math.max(0,fleetHull-damage);if(fleetHull>0){msg(p,"Fleet exchange: enemy hull "+enemyHull+"/"+enemyMaxHull+", your hull "+fleetHull+"/"+FLEET_MAX_HULL,ChatFormatting.YELLOW);return;}fleetCombat=false;traveling=false;destinationQuadrant=currentQuadrant;destinationStar=currentStar;destinationPlanet=currentPlanet;travelStartTime=travelEndTime=encounterTriggerTime=0;encounterResolved=true;fleetHull=35;fleetShield=0;fleetCombatStarted=0;msg(p,"Fleet disabled. Emergency retreat returned navigation to the last safe planet.",ChatFormatting.RED);}
+    private void scheduleEncounter(int duration){encounterCode=ENCOUNTER_NONE;encounterTriggerTime=0;encounterResolved=true;lastEncounterCode=ENCOUNTER_NONE;if(duration<80)return;int h=Math.floorMod(currentQuadrant*97+currentStar*53+currentPlanet*31+destinationQuadrant*211+destinationStar*127+destinationPlanet*71+duration,5);encounterCode=h+1;encounterTriggerTime=travelStartTime+Math.max(30,duration/2L);encounterResolved=false;}
+    private void resolveEncounterIfDue(Level level,long t){if(!traveling||encounterResolved||encounterCode==0||t<encounterTriggerTime)return;switch(encounterCode){case ENCOUNTER_ASTEROIDS->{travelEndTime+=100;announce(level,"Star Map encounter: asteroid field. Route slowed by 5 seconds.",ChatFormatting.YELLOW);}case ENCOUNTER_SLINGSHOT->{long r=Math.min(80,Math.max(20,travelDuration/6L));travelEndTime=Math.max(t+20,travelEndTime-r);announce(level,"Star Map encounter: gravitational slingshot. ETA reduced.",ChatFormatting.GREEN);}case ENCOUNTER_ANDROID_INTERCEPT->{travelEndTime+=120;spawnBoardingParty(level);announce(level,"Star Map encounter: Rogue Android intercept. Boarding party detected!",ChatFormatting.RED);}case ENCOUNTER_SIGNAL_ECHO->{travelEndTime+=40;announce(level,"Star Map encounter: anomalous signal echo. Navigation recalibration required.",ChatFormatting.AQUA);}case ENCOUNTER_HOSTILE_FLEET->beginFleetCombat(level,t);default->{}}lastEncounterCode=encounterCode;encounterResolved=true;encounterTriggerTime=0;travelDuration=(int)Math.max(1,Math.min(Integer.MAX_VALUE,travelEndTime-travelStartTime));setChanged();}
+    private void beginFleetCombat(Level level,long t){int threat=Math.floorMod(destinationQuadrant*7+destinationStar*11+destinationPlanet*13,4);enemyMaxHull=60+threat*20;enemyHull=enemyMaxHull;enemyFirepower=8+threat*3;fleetCombat=true;fleetCombatStarted=t;lastFleetAttack=t-FLEET_ATTACK_COOLDOWN;announce(level,"Star Map encounter: hostile fleet contact. Navigation paused - engage from the Star Map console.",ChatFormatting.RED);}
+    private void spawnBoardingParty(Level level){if(!(level instanceof ServerLevel sl))return;for(int i=0;i<3;i++){Mob a=(i==2?ModEntities.RANGED_ROGUE_ANDROID.get():ModEntities.ROGUE_ANDROID.get()).create(sl);if(a==null)continue;double ox=i==0?2.5:i==1?-2.5:.5,oz=i==2?2.5:-1.5;a.moveTo(worldPosition.getX()+.5+ox,worldPosition.getY()+1,worldPosition.getZ()+.5+oz,sl.random.nextFloat()*360,0);sl.addFreshEntity(a);}}
+    private void announce(Level level,String text,ChatFormatting color){if(!(level instanceof ServerLevel sl))return;Component c=Component.literal(text).withStyle(color);for(ServerPlayer p:sl.players())if(p.distanceToSqr(worldPosition.getX()+.5,worldPosition.getY()+.5,worldPosition.getZ()+.5)<=1024)p.displayClientMessage(c,false);}
+    private static void msg(ServerPlayer p,String s,ChatFormatting c){p.displayClientMessage(Component.literal(s).withStyle(c),true);}
+    private int remainingTicks(){return !traveling||level==null?0:(int)Math.max(0,Math.min(Integer.MAX_VALUE,travelEndTime-level.getGameTime()));}private int encounterRemainingTicks(){return encounterResolved||level==null?0:(int)Math.max(0,Math.min(Integer.MAX_VALUE,encounterTriggerTime-level.getGameTime()));}private int fleetAttackCooldown(){return !fleetCombat||level==null?0:(int)Math.max(0,FLEET_ATTACK_COOLDOWN-(level.getGameTime()-lastFleetAttack));}
+    private void finishTravelIfDue(long t){if(!traveling||fleetCombat||t<travelEndTime)return;currentQuadrant=destinationQuadrant;currentStar=destinationStar;currentPlanet=destinationPlanet;traveling=false;travelStartTime=travelEndTime=encounterTriggerTime=0;encounterResolved=true;fleetHull=Math.min(FLEET_MAX_HULL,fleetHull+10);fleetShield=FLEET_MAX_SHIELD;setChanged();}
+    @Override protected void saveAdditional(CompoundTag tag){super.saveAdditional(tag);tag.putInt("CurrentQuadrant",currentQuadrant);tag.putInt("CurrentStar",currentStar);tag.putInt("CurrentPlanet",currentPlanet);tag.putInt("DestinationQuadrant",destinationQuadrant);tag.putInt("DestinationStar",destinationStar);tag.putInt("DestinationPlanet",destinationPlanet);tag.putBoolean("Traveling",traveling);tag.putLong("TravelStart",travelStartTime);tag.putLong("TravelEnd",travelEndTime);tag.putInt("TravelDuration",travelDuration);tag.putInt("EncounterCode",encounterCode);tag.putInt("LastEncounterCode",lastEncounterCode);tag.putLong("EncounterTrigger",encounterTriggerTime);tag.putBoolean("EncounterResolved",encounterResolved);if(fleetOwner!=null)tag.putUUID("FleetOwner",fleetOwner);tag.putInt("FleetHull",fleetHull);tag.putInt("FleetShield",fleetShield);tag.putInt("FleetFirepower",fleetFirepower);tag.putInt("FleetVictories",fleetVictories);tag.putBoolean("FleetCombat",fleetCombat);tag.putInt("EnemyHull",enemyHull);tag.putInt("EnemyMaxHull",enemyMaxHull);tag.putInt("EnemyFirepower",enemyFirepower);tag.putLong("FleetCombatStarted",fleetCombatStarted);tag.putLong("LastFleetAttack",lastFleetAttack);}
+    @Override public void load(CompoundTag tag){super.load(tag);currentQuadrant=tag.getInt("CurrentQuadrant");currentStar=tag.getInt("CurrentStar");currentPlanet=tag.getInt("CurrentPlanet");destinationQuadrant=tag.getInt("DestinationQuadrant");destinationStar=tag.getInt("DestinationStar");destinationPlanet=tag.getInt("DestinationPlanet");traveling=tag.getBoolean("Traveling");travelStartTime=tag.getLong("TravelStart");travelEndTime=tag.getLong("TravelEnd");travelDuration=tag.getInt("TravelDuration");encounterCode=tag.getInt("EncounterCode");lastEncounterCode=tag.getInt("LastEncounterCode");encounterTriggerTime=tag.getLong("EncounterTrigger");encounterResolved=!tag.contains("EncounterResolved")||tag.getBoolean("EncounterResolved");fleetOwner=tag.hasUUID("FleetOwner")?tag.getUUID("FleetOwner"):null;fleetHull=tag.contains("FleetHull")?tag.getInt("FleetHull"):FLEET_MAX_HULL;fleetShield=tag.contains("FleetShield")?tag.getInt("FleetShield"):FLEET_MAX_SHIELD;fleetFirepower=tag.contains("FleetFirepower")?tag.getInt("FleetFirepower"):FLEET_BASE_FIREPOWER;fleetVictories=tag.getInt("FleetVictories");fleetCombat=tag.getBoolean("FleetCombat");enemyHull=tag.getInt("EnemyHull");enemyMaxHull=tag.getInt("EnemyMaxHull");enemyFirepower=tag.getInt("EnemyFirepower");fleetCombatStarted=tag.getLong("FleetCombatStarted");lastFleetAttack=tag.getLong("LastFleetAttack");if(!StarMapCatalog.validPosition(currentQuadrant,currentStar,currentPlanet))currentQuadrant=currentStar=currentPlanet=0;if(!StarMapCatalog.validPosition(destinationQuadrant,destinationStar,destinationPlanet)){destinationQuadrant=currentQuadrant;destinationStar=currentStar;destinationPlanet=currentPlanet;traveling=false;fleetCombat=false;}if(encounterCode<0||encounterCode>ENCOUNTER_HOSTILE_FLEET){encounterCode=0;encounterResolved=true;encounterTriggerTime=0;}fleetHull=Math.max(0,Math.min(FLEET_MAX_HULL,fleetHull));fleetShield=Math.max(0,Math.min(FLEET_MAX_SHIELD,fleetShield));fleetFirepower=Math.max(1,fleetFirepower);if(!traveling)fleetCombat=false;}
+    @Override public Component getDisplayName(){return Component.translatable("block.matteroverdrive.star_map");}@Nullable @Override public AbstractContainerMenu createMenu(int id,Inventory inventory,Player player){return new StarMapMenu(id,inventory,this);}
 }
