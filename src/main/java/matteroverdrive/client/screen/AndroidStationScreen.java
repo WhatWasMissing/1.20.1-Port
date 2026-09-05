@@ -21,7 +21,7 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
         super(menu, inventory, title);
         imageWidth = 176;
         imageHeight = 232;
-        inventoryLabelY = 120;
+        inventoryLabelY = 122;
     }
 
     private static ResourceLocation tex(String name) {
@@ -33,10 +33,10 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
         super.init();
         addRenderableWidget(Button.builder(Component.literal("CYCLE"), button -> {
             if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-        }).bounds(leftPos + 18, topPos + 91, 54, 18).build());
+        }).bounds(leftPos + 18, topPos + 99, 54, 18).build());
         addRenderableWidget(Button.builder(Component.literal("SKILL TREE"), button -> {
             if (minecraft != null) minecraft.setScreen(new AndroidSkillTreeScreen());
-        }).bounds(leftPos + 75, topPos + 91, 83, 18).build());
+        }).bounds(leftPos + 75, topPos + 99, 83, 18).build());
     }
 
     @Override
@@ -49,8 +49,8 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 29, 142, 58);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 111, 142, 9);
+        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 29, 142, 68);
+        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 119, 142, 9);
         MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 25, topPos + 51, 126, 5,
                 menu.androidEnergy(), menu.androidCapacity(), MachineScreenStyle.CYAN);
 
@@ -68,8 +68,8 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
             case FORCE_FIELD -> (menu.activeAbilityFlags() & 2) != 0;
             default -> false;
         };
-        graphics.blit(active ? FEATURE_ACTIVE : FEATURE, leftPos + 19, topPos + 75, 0, 0, 22, 22, 22, 22);
-        if (!unlocked) graphics.fill(leftPos + 22, topPos + 78, leftPos + 38, topPos + 94, 0x88000000);
+        graphics.blit(active ? FEATURE_ACTIVE : FEATURE, leftPos + 19, topPos + 76, 0, 0, 22, 22, 22, 22);
+        if (!unlocked) graphics.fill(leftPos + 22, topPos + 79, leftPos + 38, topPos + 95, 0x88000000);
     }
 
     @Override
@@ -92,12 +92,13 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
             case FORCE_FIELD -> (menu.activeAbilityFlags() & 2) != 0;
             default -> false;
         };
-        graphics.drawString(font, ability.displayName, 44, 77, unlocked ? MachineScreenStyle.TEXT : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, ability.displayName, 44, 78, unlocked ? MachineScreenStyle.TEXT : MachineScreenStyle.DANGER, false);
         graphics.drawString(font, unlocked ? (active ? "ACTIVE" : "READY") : "LOCKED - " + ability.requiredPart.name() + " Lv " + ability.requiredLevel,
-                44, 85, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+                44, 87, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
         graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel()
-                        + "  P " + menu.availableSkillPoints(), 20, 113, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
+                        + "  P " + menu.availableSkillPoints(), 20, 121, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
+                MachineScreenStyle.MUTED, false);
     }
 
     private void drawPart(GuiGraphics graphics, int x, int y, AndroidData.Part part, ResourceLocation icon) {
