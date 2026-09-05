@@ -120,7 +120,8 @@ public class RogueAndroidEntity extends Zombie {
 
     @Override
     public void remove(Entity.RemovalReason reason) {
-        if (!level().isClientSide && spawnerPosition != null && level().hasChunkAt(spawnerPosition)
+        if (reason.shouldDestroy() && !level().isClientSide && spawnerPosition != null
+                && level().hasChunkAt(spawnerPosition)
                 && level().getBlockEntity(spawnerPosition) instanceof AndroidSpawnerBlockEntity spawner) {
             spawner.unregisterOwnedAndroid(getUUID());
         }
