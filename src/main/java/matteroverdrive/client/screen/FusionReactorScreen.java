@@ -52,19 +52,32 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         int y = topPos;
         MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
                 MachineScreenStyle.PURPLE);
-        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 326, 44);
-        MachineScreenStyle.drawSection(graphics, x + 17, y + 77, 326, 60);
-        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 141, 326, 43);
+
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 326, 43);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 76, 326, 75);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 155, 326, 29);
 
         MachineScreenStyle.drawHorizontalBar(graphics, x + 18, y + 43, 110, 5,
                 menu.energy(), menu.capacity(), MachineScreenStyle.RED);
         MachineScreenStyle.drawHorizontalBar(graphics, x + 232, y + 43, 110, 5,
                 menu.matter(), menu.matterCapacity(), MachineScreenStyle.BLUE);
+
         for (int slot = 0; slot < 4; slot++) {
             MachineScreenStyle.drawSlot(graphics,
                     x + SLOT_X_OFFSET + 51 + slot * 18,
                     y + 51);
         }
+
+        LegacyGuiPrimitives.drawDualRing(graphics, x + 180, y + 112, 31,
+                menu.energy(), menu.capacity(), menu.matter(), menu.matterCapacity());
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 88,
+                menu.valid(), MachineScreenStyle.GREEN);
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 101,
+                menu.reactorEnabled(), MachineScreenStyle.PURPLE);
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 114,
+                menu.redstoneAllowsOperation(), MachineScreenStyle.CYAN);
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 127,
+                menu.stabilizerCount() > 0, MachineScreenStyle.BLUE);
     }
 
     @Override
@@ -75,59 +88,62 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         graphics.drawString(font, "Matter " + menu.matter() + " / " + menu.matterCapacity() + " kM",
                 232, 31, MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "Structure " + (menu.valid() ? "VALID" : faultText())
-                        + " | ring " + menu.ringDirection().getName().toUpperCase(Locale.ROOT),
-                20, 80, menu.valid() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, "Reactor " + (menu.reactorEnabled() ? "ENABLED" : "SCRAMMED")
-                        + " | redstone " + redstoneText(),
-                20, 91, menu.reactorEnabled() && menu.redstoneAllowsOperation()
-                        ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, "Potential " + menu.output()
-                        + " FE/t | generated " + menu.generatedLastTick()
-                        + " FE/t | used " + menu.connectedUsage(),
-                20, 102, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Efficiency " + Math.round(menu.efficiency() * 100)
-                        + "% | drain " + format(menu.matterDrain())
-                        + " kM/t | consumed " + menu.matterConsumedLastTick(),
-                20, 113, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Anomaly offset " + menu.anomalyDistance()
-                        + " | mass " + format(menu.unsuppressedMass())
-                        + " | IO " + menu.ioCount() + " | stabilizers " + menu.stabilizerCount(),
-                20, 124, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "STRUCTURE", 40, 85,
+                menu.valid() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, menu.valid() ? "VALID" : faultText(), 40, 94,
+                menu.valid() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "REACTOR", 40, 107, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, menu.reactorEnabled() ? "RUNNING" : "SCRAMMED", 40, 116,
+                menu.reactorEnabled() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "REDSTONE " + redstoneText(), 40, 129,
+                menu.redstoneAllowsOperation() ? MachineScreenStyle.CYAN : MachineScreenStyle.DANGER, false);
 
-        graphics.drawString(font, "Gravity " + format(menu.anomalyRange())
-                        + " blocks | suppression " + Math.round((1.0D - menu.anomalySuppression()) * 100)
-                        + "% | affected " + menu.affectedEntityCount(),
-                20, 144, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Horizon " + format(menu.eventHorizon())
+        graphics.drawCenteredString(font, Math.round(menu.efficiency() * 100) + "%",
+                180, 104, MachineScreenStyle.TEXT);
+        graphics.drawCenteredString(font, "EFF", 180, 115, MachineScreenStyle.MUTED);
+        graphics.drawCenteredString(font, "+" + menu.generatedLastTick() + " FE/t",
+                180, 126, MachineScreenStyle.RED);
+
+        graphics.drawString(font, "OUTPUT", 247, 85, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Potential " + menu.output() + " FE/t", 247, 96, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Demand " + menu.connectedUsage() + " FE/t", 247, 107, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Ring " + menu.internalPowerLastTick() + " FE/t", 247, 118, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Drain " + format(menu.matterDrain()) + " kM/t", 247, 129, MachineScreenStyle.BLUE, false);
+        graphics.drawString(font, "IO " + menu.ioCount() + " | Stabilizers " + menu.stabilizerCount(),
+                247, 140, MachineScreenStyle.MUTED, false);
+
+        graphics.drawString(font, "ANOMALY  mass " + format(menu.unsuppressedMass())
+                        + " | gravity " + format(menu.anomalyRange())
+                        + " | horizon " + format(menu.eventHorizon()),
+                20, 158, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Suppression " + Math.round((1.0D - menu.anomalySuppression()) * 100)
+                        + "% | affected " + menu.affectedEntityCount()
                         + " | inside " + menu.horizonEntityCount()
-                        + " | last feed " + menu.lastConsumedMatter() + " kM / "
-                        + menu.lastConsumedEntityCount(),
-                20, 155, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Ring power " + menu.internalMachineCount()
-                        + " machines | sent " + menu.internalPowerLastTick() + " FE/t",
-                20, 166, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Block/fluid hazard ACTIVE | range "
-                        + format(menu.blockHazardRange()) + " | broken "
-                        + menu.destroyedBlocksLastCycle(),
-                20, 177, MachineScreenStyle.DANGER, false);
+                        + " | last feed " + menu.lastConsumedMatter() + " kM / " + menu.lastConsumedEntityCount(),
+                20, 169, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "Hazard range " + format(menu.blockHazardRange())
+                        + " | broken " + menu.destroyedBlocksLastCycle()
+                        + " | ring " + menu.ringDirection().getName().toUpperCase(Locale.ROOT)
+                        + " | anomaly offset " + menu.anomalyDistance(),
+                20, 180, MachineScreenStyle.DANGER, false);
+
         graphics.drawString(font, playerInventoryTitle,
                 SLOT_X_OFFSET + 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
     }
 
     private String faultText() {
         return switch (menu.fault()) {
-            case 3 -> "wrong coil/IO position";
-            case 4 -> "wrong hull position";
-            case 5 -> "no anomaly at ring centre";
+            case 3 -> "wrong coil/IO";
+            case 4 -> "wrong hull";
+            case 5 -> "no anomaly";
             case 6 -> "no matter";
-            case 7 -> "wrong controller-side position";
-            case 8 -> "structure area unloaded";
-            case 9 -> "anomaly data unavailable";
+            case 7 -> "wrong side";
+            case 8 -> "area unloaded";
+            case 9 -> "anomaly unavailable";
             case 10 -> "scrammed";
-            case 11 -> "waiting for redstone";
+            case 11 -> "waiting redstone";
             case 12 -> "redstone shutdown";
-            case 13 -> "energy storage full";
+            case 13 -> "energy full";
             default -> "checking";
         };
     }
@@ -142,6 +158,6 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
     }
 
     private static String format(double value) {
-        return String.format(Locale.ROOT, "%.4f", value);
+        return String.format(Locale.ROOT, "%.2f", value);
     }
 }
