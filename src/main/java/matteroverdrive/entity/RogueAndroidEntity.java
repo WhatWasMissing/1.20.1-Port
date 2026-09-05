@@ -5,6 +5,7 @@ import matteroverdrive.registry.ModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
@@ -18,13 +19,16 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.AABB;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.UUID;
 
 public class RogueAndroidEntity extends Zombie {
     public static final float NATURAL_SPAWN_CHANCE = 0.10F;
@@ -34,6 +38,7 @@ public class RogueAndroidEntity extends Zombie {
     public static final int MODE_PATROL = 0;
     public static final int MODE_GUARD = 1;
     public static final int MODE_HOLD = 2;
+    public static final int MODE_ESCORT = 3;
 
     private int androidLevel;
     private boolean legendary;
@@ -42,6 +47,8 @@ public class RogueAndroidEntity extends Zombie {
     private int patrolIndex;
     private int squadColor;
     private int squadMode = MODE_PATROL;
+    @Nullable private UUID commanderUuid;
+    private int targetShareCooldown;
 
     public RogueAndroidEntity(EntityType<? extends RogueAndroidEntity> type, Level level) {
         super(type, level);
@@ -51,8 +58,9 @@ public class RogueAndroidEntity extends Zombie {
     protected void registerGoals() {
         super.registerGoals();
         goalSelector.addGoal(4, new SquadHoldGoal(this));
-        goalSelector.addGoal(5, new SquadGuardGoal(this));
-        goalSelector.addGoal(6, new PatrolGoal(this));
+        goalSelector.addGoal(5, new EscortCommanderGoal(this));
+        goalSelector.addGoal(6, new SquadGuardGoal(this));
+        goalSelector.addGoal(7, new PatrolGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -79,6 +87,24 @@ public class RogueAndroidEntity extends Zombie {
         updateLegacyName();
         setBaby(false);
         return data;
+    }
+
+    @Override
+    public void aiStep() {
+        super.aiStep();
+        if (level().isClientSide || spawnerPosition == null) return;
+        if (targetShareCooldown > 0) {
+            targetShareCooldown--;
+            return;
+        }
+        targetShareCooldown = 10;
+        LivingEntity target = getTarget();
+        if (target == null || !target.isAlive() || !canAttack(target)) return;
+        AABB squadArea = getBoundingBox().inflate(24.0D);
+        for (RogueAndroidEntity ally : level().getEntitiesOfClass(RogueAndroidEntity.class, squadArea,
+                candidate -> candidate != this && candidate.wasSpawnedFrom(spawnerPosition))) {
+            if (ally.getTarget() == null && ally.canAttack(target)) ally.setTarget(target);
+        }
     }
 
     private void applyLegacyStats(boolean refillHealth) {
@@ -143,19 +169,34 @@ public class RogueAndroidEntity extends Zombie {
 
     public int getSquadColor() { return squadColor; }
     public int getSquadMode() { return squadMode; }
+    @Nullable public UUID getCommanderUuid() { return commanderUuid; }
 
     public void setSquad(int color, int mode) {
+        setSquad(color, mode, commanderUuid);
+    }
+
+    public void setSquad(int color, int mode, @Nullable UUID commander) {
         squadColor = Math.floorMod(color, 8);
-        squadMode = Mth.clamp(mode, MODE_PATROL, MODE_HOLD);
+        squadMode = Mth.clamp(mode, MODE_PATROL, MODE_ESCORT);
+        commanderUuid = commander;
         if (squadMode == MODE_HOLD) getNavigation().stop();
         updateLegacyName();
     }
 
+    @Nullable
+    private Player getCommander() {
+        if (commanderUuid == null || !(level() instanceof ServerLevel serverLevel)) return null;
+        return serverLevel.getPlayerByUUID(commanderUuid);
+    }
+
     @Override
     public boolean isAlliedTo(Entity entity) {
+        if (commanderUuid != null && commanderUuid.equals(entity.getUUID())) return true;
         if (entity instanceof RogueAndroidEntity other
                 && spawnerPosition != null && other.spawnerPosition != null
                 && spawnerPosition.equals(other.spawnerPosition)) return true;
+        Player commander = getCommander();
+        if (commander != null && commander.isAlliedTo(entity)) return true;
         return super.isAlliedTo(entity);
     }
 
@@ -190,6 +231,7 @@ public class RogueAndroidEntity extends Zombie {
         tag.putInt("PatrolIndex", patrolIndex);
         tag.putInt("SquadColor", squadColor);
         tag.putInt("SquadMode", squadMode);
+        if (commanderUuid != null) tag.putUUID("CommanderUUID", commanderUuid);
     }
 
     @Override
@@ -202,35 +244,18 @@ public class RogueAndroidEntity extends Zombie {
         for (long packed : tag.getLongArray("PatrolPoints")) patrolPoints.add(BlockPos.of(packed));
         patrolIndex = patrolPoints.isEmpty() ? 0 : Math.floorMod(tag.getInt("PatrolIndex"), patrolPoints.size());
         squadColor = Math.floorMod(tag.getInt("SquadColor"), 8);
-        squadMode = tag.contains("SquadMode") ? Mth.clamp(tag.getInt("SquadMode"), MODE_PATROL, MODE_HOLD) : MODE_PATROL;
+        squadMode = tag.contains("SquadMode") ? Mth.clamp(tag.getInt("SquadMode"), MODE_PATROL, MODE_ESCORT) : MODE_PATROL;
+        commanderUuid = tag.hasUUID("CommanderUUID") ? tag.getUUID("CommanderUUID") : null;
         applyLegacyStats(false);
         updateLegacyName();
     }
 
     private static final class PatrolGoal extends Goal {
         private final RogueAndroidEntity android;
-
-        private PatrolGoal(RogueAndroidEntity android) {
-            this.android = android;
-            setFlags(EnumSet.of(Flag.MOVE));
-        }
-
-        @Override
-        public boolean canUse() {
-            return android.squadMode == MODE_PATROL
-                    && android.getTarget() == null
-                    && !android.patrolPoints.isEmpty()
-                    && android.getNavigation().isDone();
-        }
-
-        @Override
-        public boolean canContinueToUse() {
-            return android.squadMode == MODE_PATROL
-                    && android.getTarget() == null && !android.getNavigation().isDone();
-        }
-
-        @Override
-        public void start() {
+        private PatrolGoal(RogueAndroidEntity android) { this.android = android; setFlags(EnumSet.of(Flag.MOVE)); }
+        @Override public boolean canUse() { return android.squadMode == MODE_PATROL && android.getTarget() == null && !android.patrolPoints.isEmpty() && android.getNavigation().isDone(); }
+        @Override public boolean canContinueToUse() { return android.squadMode == MODE_PATROL && android.getTarget() == null && !android.getNavigation().isDone(); }
+        @Override public void start() {
             if (android.patrolPoints.isEmpty()) return;
             BlockPos target = android.patrolPoints.get(android.patrolIndex);
             android.patrolIndex = (android.patrolIndex + 1) % android.patrolPoints.size();
@@ -240,27 +265,13 @@ public class RogueAndroidEntity extends Zombie {
 
     private static final class SquadGuardGoal extends Goal {
         private final RogueAndroidEntity android;
-
-        private SquadGuardGoal(RogueAndroidEntity android) {
-            this.android = android;
-            setFlags(EnumSet.of(Flag.MOVE));
-        }
-
-        @Override
-        public boolean canUse() {
+        private SquadGuardGoal(RogueAndroidEntity android) { this.android = android; setFlags(EnumSet.of(Flag.MOVE)); }
+        @Override public boolean canUse() {
             if (android.squadMode != MODE_GUARD || android.getTarget() != null || android.spawnerPosition == null) return false;
-            return android.distanceToSqr(android.spawnerPosition.getX() + 0.5D,
-                    android.spawnerPosition.getY() + 0.5D, android.spawnerPosition.getZ() + 0.5D) > 64D;
+            return android.distanceToSqr(android.spawnerPosition.getX() + 0.5D, android.spawnerPosition.getY() + 0.5D, android.spawnerPosition.getZ() + 0.5D) > 64D;
         }
-
-        @Override
-        public boolean canContinueToUse() {
-            return android.squadMode == MODE_GUARD && android.getTarget() == null
-                    && android.spawnerPosition != null && !android.getNavigation().isDone();
-        }
-
-        @Override
-        public void start() {
+        @Override public boolean canContinueToUse() { return android.squadMode == MODE_GUARD && android.getTarget() == null && android.spawnerPosition != null && !android.getNavigation().isDone(); }
+        @Override public void start() {
             BlockPos home = android.spawnerPosition;
             if (home != null) android.getNavigation().moveTo(home.getX() + 0.5D, home.getY() + 1D, home.getZ() + 0.5D, 1.1D);
         }
@@ -268,15 +279,33 @@ public class RogueAndroidEntity extends Zombie {
 
     private static final class SquadHoldGoal extends Goal {
         private final RogueAndroidEntity android;
-
-        private SquadHoldGoal(RogueAndroidEntity android) {
-            this.android = android;
-            setFlags(EnumSet.of(Flag.MOVE));
-        }
-
+        private SquadHoldGoal(RogueAndroidEntity android) { this.android = android; setFlags(EnumSet.of(Flag.MOVE)); }
         @Override public boolean canUse() { return android.squadMode == MODE_HOLD && android.getTarget() == null; }
         @Override public boolean canContinueToUse() { return canUse(); }
         @Override public void start() { android.getNavigation().stop(); }
         @Override public void tick() { android.getNavigation().stop(); }
+    }
+
+    private static final class EscortCommanderGoal extends Goal {
+        private final RogueAndroidEntity android;
+        @Nullable private Player commander;
+        private EscortCommanderGoal(RogueAndroidEntity android) { this.android = android; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
+        @Override public boolean canUse() {
+            commander = android.getCommander();
+            return android.squadMode == MODE_ESCORT && android.getTarget() == null && commander != null && !commander.isSpectator();
+        }
+        @Override public boolean canContinueToUse() { return android.squadMode == MODE_ESCORT && android.getTarget() == null && commander != null && commander.isAlive(); }
+        @Override public void tick() {
+            if (commander == null) return;
+            android.getLookControl().setLookAt(commander, 10F, android.getMaxHeadXRot());
+            int slot = Math.floorMod(android.getUUID().hashCode(), 6);
+            double angle = Math.toRadians(slot * 60.0D + commander.getYRot());
+            double radius = slot < 2 ? 2.25D : 3.25D;
+            double tx = commander.getX() - Math.sin(angle) * radius;
+            double tz = commander.getZ() + Math.cos(angle) * radius;
+            double d2 = android.distanceToSqr(tx, commander.getY(), tz);
+            if (d2 > 6.25D || android.getNavigation().isDone()) android.getNavigation().moveTo(tx, commander.getY(), tz, 1.18D);
+        }
+        @Override public void stop() { commander = null; android.getNavigation().stop(); }
     }
 }
