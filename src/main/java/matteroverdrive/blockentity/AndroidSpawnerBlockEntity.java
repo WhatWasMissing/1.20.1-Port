@@ -3,14 +3,21 @@ package matteroverdrive.blockentity;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.entity.RogueAndroidEntity;
 import matteroverdrive.event.AndroidEvents;
+import matteroverdrive.menu.AndroidSpawnerMenu;
 import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,14 +29,14 @@ import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
-public class AndroidSpawnerBlockEntity extends BlockEntity {
+public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvider {
     private static final int CAPACITY = 100_000;
     private static final int TRANSFER = 2_000;
     private static final int SPAWN_COST = 20_000;
     private static final int SPAWN_INTERVAL = 200;
     private static final int FAILED_RETRY_DELAY = 20;
     private static final int MAX_SPAWN_AMOUNT = 6;
-    private static final int SPAWN_CHECK_RANGE = 12;
+    private static final int SPAWN_CHECK_RANGE = 128;
     private static final int[][] SPAWN_OFFSETS = {
             {0, 1, 0}, {2, 1, 0}, {-2, 1, 0}, {0, 1, 2}, {0, 1, -2},
             {2, 1, 2}, {2, 1, -2}, {-2, 1, 2}, {-2, 1, -2},
@@ -40,6 +47,25 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
             new MachineEnergyStorage(CAPACITY, TRANSFER, 0, this::setChanged);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energy);
     private long lastSpawn;
+
+    private final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> energy.getEnergyStored() & 0xffff;
+                case 1 -> energy.getEnergyStored() >>> 16 & 0xffff;
+                case 2 -> energy.getMaxEnergyStored() & 0xffff;
+                case 3 -> energy.getMaxEnergyStored() >>> 16 & 0xffff;
+                case 4 -> ownedSpawnCount();
+                case 5 -> MAX_SPAWN_AMOUNT;
+                case 6 -> ticksUntilNextSpawn();
+                default -> 0;
+            };
+        }
+
+        @Override public void set(int index, int value) {}
+        @Override public int getCount() { return 7; }
+    };
 
     public AndroidSpawnerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ANDROID_SPAWNER.get(), pos, state);
@@ -57,11 +83,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
             return;
         }
 
-        AABB area = new AABB(pos).inflate(SPAWN_CHECK_RANGE);
-        int modernAndroids = level.getEntitiesOfClass(RogueAndroidEntity.class, area).size();
-        int legacyTaggedAndroids = level.getEntitiesOfClass(Husk.class, area,
-                entity -> entity.getPersistentData().getBoolean(AndroidEvents.ROGUE_ANDROID_TAG)).size();
-        if (modernAndroids + legacyTaggedAndroids >= MAX_SPAWN_AMOUNT) {
+        if (spawner.ownedSpawnCount() >= MAX_SPAWN_AMOUNT) {
             return;
         }
 
@@ -83,8 +105,6 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
                 continue;
             }
 
-            // Legacy 1.7 spawners chose melee Androids 30% of the time and ranged
-            // Androids 70% of the time. Preserve that population mix here.
             RogueAndroidEntity android = level.random.nextInt(10) < 3
                     ? ModEntities.ROGUE_ANDROID.get().create(level)
                     : ModEntities.RANGED_ROGUE_ANDROID.get().create(level);
@@ -100,6 +120,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
 
             android.finalizeSpawn(level, level.getCurrentDifficultyAt(candidate),
                     MobSpawnType.SPAWNER, null, null);
+            android.setSpawnerPosition(spawnerPos);
             if (level.addFreshEntity(android)) {
                 return true;
             }
@@ -107,21 +128,47 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
         return false;
     }
 
-    private void pullAdjacentEnergy() {
-        if (level == null) {
-            return;
+    private int ownedSpawnCount() {
+        if (level == null) return 0;
+        AABB area = new AABB(worldPosition).inflate(SPAWN_CHECK_RANGE);
+        int modern = level.getEntitiesOfClass(RogueAndroidEntity.class, area,
+                android -> android.wasSpawnedFrom(worldPosition)).size();
+        int legacy = level.getEntitiesOfClass(Husk.class, area,
+                entity -> entity.getPersistentData().getBoolean(AndroidEvents.ROGUE_ANDROID_TAG)
+                        && entity.getPersistentData().contains("SpawnerPosition")
+                        && BlockPos.of(entity.getPersistentData().getLong("SpawnerPosition")).equals(worldPosition)).size();
+        return modern + legacy;
+    }
+
+    public int removeSpawnedAndroids() {
+        if (level == null || level.isClientSide) return 0;
+        AABB area = new AABB(worldPosition).inflate(SPAWN_CHECK_RANGE);
+        int removed = 0;
+        for (RogueAndroidEntity android : level.getEntitiesOfClass(RogueAndroidEntity.class, area,
+                candidate -> candidate.wasSpawnedFrom(worldPosition))) {
+            android.discard();
+            removed++;
         }
+        if (removed > 0) setChanged();
+        return removed;
+    }
+
+    private int ticksUntilNextSpawn() {
+        if (level == null) return SPAWN_INTERVAL;
+        if (ownedSpawnCount() >= MAX_SPAWN_AMOUNT) return 0;
+        long elapsed = Math.max(0L, level.getGameTime() - lastSpawn);
+        return (int) Math.max(0L, SPAWN_INTERVAL - elapsed);
+    }
+
+    private void pullAdjacentEnergy() {
+        if (level == null) return;
         int remaining = Math.min(TRANSFER, energy.getMaxEnergyStored() - energy.getEnergyStored());
         for (Direction direction : Direction.values()) {
             BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
-            if (neighbor == null || remaining <= 0) {
-                continue;
-            }
+            if (neighbor == null || remaining <= 0) continue;
             IEnergyStorage source =
                     neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
-            if (source == null || !source.canExtract()) {
-                continue;
-            }
+            if (source == null || !source.canExtract()) continue;
             int amount = Math.min(source.extractEnergy(remaining, true),
                     energy.receiveEnergy(remaining, true));
             if (amount > 0) {
@@ -129,6 +176,8 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
             }
         }
     }
+
+    public ContainerData getData() { return data; }
 
     @Override
     protected void saveAdditional(CompoundTag tag) {
@@ -161,5 +210,16 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
     public void reviveCaps() {
         super.reviveCaps();
         energyCapability = LazyOptional.of(() -> energy);
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("block.matteroverdrive.android_spawner");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new AndroidSpawnerMenu(id, inventory, this);
     }
 }
