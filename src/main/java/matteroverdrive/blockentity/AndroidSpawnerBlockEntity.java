@@ -28,9 +28,12 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
     private static final int SPAWN_COST = 20_000;
     private static final int SPAWN_INTERVAL = 200;
     private static final int FAILED_RETRY_DELAY = 20;
+    private static final int MAX_SPAWN_AMOUNT = 6;
+    private static final int SPAWN_CHECK_RANGE = 12;
     private static final int[][] SPAWN_OFFSETS = {
             {0, 1, 0}, {2, 1, 0}, {-2, 1, 0}, {0, 1, 2}, {0, 1, -2},
-            {2, 1, 2}, {2, 1, -2}, {-2, 1, 2}, {-2, 1, -2}
+            {2, 1, 2}, {2, 1, -2}, {-2, 1, 2}, {-2, 1, -2},
+            {4, 1, 0}, {-4, 1, 0}, {0, 1, 4}, {0, 1, -4}
     };
 
     private final MachineEnergyStorage energy =
@@ -54,11 +57,11 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
             return;
         }
 
-        AABB area = new AABB(pos).inflate(12.0D);
-        boolean hasModernAndroid = !level.getEntitiesOfClass(RogueAndroidEntity.class, area).isEmpty();
-        boolean hasLegacyTaggedAndroid = !level.getEntitiesOfClass(Husk.class, area,
-                entity -> entity.getPersistentData().getBoolean(AndroidEvents.ROGUE_ANDROID_TAG)).isEmpty();
-        if (hasModernAndroid || hasLegacyTaggedAndroid) {
+        AABB area = new AABB(pos).inflate(SPAWN_CHECK_RANGE);
+        int modernAndroids = level.getEntitiesOfClass(RogueAndroidEntity.class, area).size();
+        int legacyTaggedAndroids = level.getEntitiesOfClass(Husk.class, area,
+                entity -> entity.getPersistentData().getBoolean(AndroidEvents.ROGUE_ANDROID_TAG)).size();
+        if (modernAndroids + legacyTaggedAndroids >= MAX_SPAWN_AMOUNT) {
             return;
         }
 
@@ -72,13 +75,19 @@ public class AndroidSpawnerBlockEntity extends BlockEntity {
     }
 
     private static boolean trySpawn(ServerLevel level, BlockPos spawnerPos) {
-        for (int[] offset : SPAWN_OFFSETS) {
+        int start = level.random.nextInt(SPAWN_OFFSETS.length);
+        for (int attempt = 0; attempt < SPAWN_OFFSETS.length; attempt++) {
+            int[] offset = SPAWN_OFFSETS[(start + attempt) % SPAWN_OFFSETS.length];
             BlockPos candidate = spawnerPos.offset(offset[0], offset[1], offset[2]);
             if (!level.getWorldBorder().isWithinBounds(candidate)) {
                 continue;
             }
 
-            RogueAndroidEntity android = ModEntities.ROGUE_ANDROID.get().create(level);
+            // Legacy 1.7 spawners chose melee Androids 30% of the time and ranged
+            // Androids 70% of the time. Preserve that population mix here.
+            RogueAndroidEntity android = level.random.nextInt(10) < 3
+                    ? ModEntities.ROGUE_ANDROID.get().create(level)
+                    : ModEntities.RANGED_ROGUE_ANDROID.get().create(level);
             if (android == null) {
                 return false;
             }
