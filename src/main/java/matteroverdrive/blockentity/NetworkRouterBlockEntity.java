@@ -1,6 +1,8 @@
 package matteroverdrive.blockentity;
 
 import matteroverdrive.capability.MachineEnergyStorage;
+import matteroverdrive.item.MachineUpgradeInventory;
+import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.NetworkFlashDriveItem;
 import matteroverdrive.menu.NetworkRouterMenu;
 import matteroverdrive.network.ItemNetworkUtil;
@@ -34,6 +36,8 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
     public static final int CAPACITY = 10_000;
     public static final int TRANSFER = 1_000;
     public static final int ENERGY_PER_ITEM = 10;
+    public static final int BASE_ITEM_BUDGET = 64;
+    public static final int UPGRADE_SLOT_COUNT = 4;
 
     private final MachineEnergyStorage energy =
             new MachineEnergyStorage(CAPACITY, TRANSFER, 0, this::setChanged);
@@ -42,6 +46,12 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         @Override public int getSlotLimit(int slot) { return 1; }
         @Override protected void onContentsChanged(int slot) { setChanged(); }
     };
+    private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
+            UPGRADE_SLOT_COUNT,
+            upgrade -> upgrade == MachineUpgradeItem.Upgrade.SPEED
+                    || upgrade == MachineUpgradeItem.Upgrade.HYPER_SPEED,
+            this::setChanged
+    );
     private final Set<BlockPos> routeSinks = new HashSet<>();
     private int endpoints;
     private int nodes;
@@ -64,12 +74,13 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
                 case 6 -> filterStack.isEmpty() ? 0 : 1;
                 case 7 -> destinationDrive ? NetworkFlashDriveItem.getConnections(filterStack).size() : 0;
                 case 8 -> filterStack.isEmpty() ? 0 : destinationDrive ? 2 : 1;
+                case 9 -> itemBudget();
                 default -> 0;
             };
         }
 
         @Override public void set(int index, int value) {}
-        @Override public int getCount() { return 9; }
+        @Override public int getCount() { return 10; }
     };
 
     public NetworkRouterBlockEntity(BlockPos pos, BlockState state) {
@@ -110,7 +121,7 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         stateOwner.pruneRouteSinks(scan);
         if (!isRoutingExecutor(scan)) return;
 
-        int max = Math.min(64, energy.getEnergyStored() / ENERGY_PER_ITEM);
+        int max = Math.min(itemBudget(), energy.getEnergyStored() / ENERGY_PER_ITEM);
         ItemNetworkUtil.MoveResult result = ItemNetworkUtil.moveOneStack(
                 level, scan.endpoints(), filter.getStackInSlot(0), max,
                 stateOwner.routeCursor++, stateOwner.routeSinks);
@@ -124,6 +135,13 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
         stateOwner.routeSinks.add(result.destination().immutable());
         stateOwner.setChanged();
         energy.consumeEnergy(result.count() * ENERGY_PER_ITEM, level.getGameTime());
+    }
+
+    public int itemBudget() {
+        double speedMultiplier = upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed);
+        if (speedMultiplier <= 0.0D) return BASE_ITEM_BUDGET;
+        return Math.max(1, Math.min(1024,
+                (int) Math.round(BASE_ITEM_BUDGET / speedMultiplier)));
     }
 
     private NetworkRouterBlockEntity routingStateOwner(ItemNetworkUtil.Scan scan) {
@@ -159,15 +177,24 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
     }
 
     public ItemStackHandler getFilter() { return filter; }
+    public MachineUpgradeInventory getUpgrades() { return upgrades; }
     public ContainerData getData() { return data; }
 
-    public void dropFilter() {
+    public void dropContents() {
         if (level == null || level.isClientSide) return;
         ItemStack stack = filter.getStackInSlot(0);
         if (!stack.isEmpty()) {
             Containers.dropItemStack(level, worldPosition.getX() + 0.5D,
                     worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, stack.copy());
             filter.setStackInSlot(0, ItemStack.EMPTY);
+        }
+        for (int slot = 0; slot < upgrades.getSlots(); slot++) {
+            ItemStack upgrade = upgrades.getStackInSlot(slot);
+            if (!upgrade.isEmpty()) {
+                Containers.dropItemStack(level, worldPosition.getX() + 0.5D,
+                        worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D, upgrade.copy());
+                upgrades.setStackInSlot(slot, ItemStack.EMPTY);
+            }
         }
     }
 
@@ -186,6 +213,7 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Filter", filter.serializeNBT());
+        tag.put("Upgrades", upgrades.serializeNBT());
         tag.putInt("Energy", energy.getEnergyStored());
         tag.putLong("Cursor", routeCursor);
         tag.putLongArray("RouteSinks", routeSinks.stream().mapToLong(BlockPos::asLong).toArray());
@@ -195,6 +223,7 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
     public void load(CompoundTag tag) {
         super.load(tag);
         filter.deserializeNBT(tag.getCompound("Filter"));
+        if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
         energy.setEnergyStored(tag.getInt("Energy"));
         routeCursor = tag.getLong("Cursor");
         routeSinks.clear();
