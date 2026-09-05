@@ -12,7 +12,7 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
         super(menu, inventory, title);
         imageWidth = 260;
         imageHeight = 207;
-        inventoryLabelY = 86;
+        inventoryLabelY = 88;
     }
 
     @Override
@@ -57,12 +57,9 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
                 ? "Population full"
                 : String.format(java.util.Locale.ROOT, "Next: %.1f s", menu.ticksUntilSpawn() / 20.0D);
         graphics.drawString(font, next, 24, 59, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Patrol drives", 35, 78, MachineScreenStyle.CYAN, false);
         graphics.drawString(font, "Targets", 181, 33, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, Integer.toString(menu.patrolTargets()), 181, 44,
                 menu.patrolTargets() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.AMBER, false);
         graphics.drawString(font, "Mix 30/70", 181, 55, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
-                MachineScreenStyle.MUTED, false);
     }
 }
