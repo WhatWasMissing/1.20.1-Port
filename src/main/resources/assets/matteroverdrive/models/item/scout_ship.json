@@ -1,4 +1,4 @@
 {
   "parent": "minecraft:item/generated",
-  "textures": { "layer0": "matteroverdrive:item/scout_ship" }
+  "textures": { "layer0": "matteroverdrive:item/quantum_fold_manipulator" }
 }
