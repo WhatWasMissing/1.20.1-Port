@@ -19,75 +19,52 @@ Fusion Reactor/gravity includes horizontal structure validation, Controller/IO s
 Network Pipe, Network Switch, Network Router and matching-channel Pylon routing are present. Switch state persists and changes routing/appearance. Router supports ordinary filtering, Network Flash Drive destination filtering, four Speed/Hyper-Speed slots, multi-stack item budgets and the 10 FE/item execution limit. There is no invented standalone Network Controller because the authoritative legacy implementations do not contain one matching that assumption.
 
 ## Androids / entities
-Android player conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent selectable perk tree are present. Android Spawner restores a six-unit 30% melee / 70% ranged population, persistent ownership, six Transport Flash Drive patrol slots and four real squad orders: **PATROL / GUARD / HOLD / ESCORT**, plus eight persisted squad colors. ESCORT binds a persistent commander UUID, places idle squad members into deterministic formation positions around that player and resumes formation after combat. The Spawner GUI exposes COLOR, MODE, COMMAND and KILL controls backed by server state. Same-Spawner Androids are allies, commander/team allies are protected, and a valid target acquired by one squad member propagates to nearby idle squad members from the same Spawner for coordinated combat.
-
-Rogue Androids, Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Unowned Drones retain hostile ranged behavior. Right-clicking an unowned Drone links it to the player; linked Drones persist owner UUID and a real command mode. Owner right-click cycles **FOLLOW / DEFENSIVE / PASSIVE / AGGRESSIVE**, while owner shift-right-click releases the link. FOLLOW stays with the owner without acquiring combat targets, DEFENSIVE retaliates against valid mobs that hurt the owner, PASSIVE clears combat state, and AGGRESSIVE proactively targets nearby valid hostile mobs while respecting owner/team/same-owner Drone allies. Puny Humans and Cocktail of Ascension are implemented, including transactional mutant transformation.
+Android conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent perk tree are present. Android Spawner restores the six-unit 30% melee / 70% ranged population, persistent ownership, six patrol drives, PATROL/GUARD/HOLD/ESCORT, commander formations, squad colors and coordinated targeting. Rogue/Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Linked Drones support FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE while unowned Drones remain hostile. Puny Humans and Cocktail of Ascension are implemented.
 
 ## Weapons
 Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station exposes real Battery/Color/Barrel/Sights/Utility slots and stat/loadout preview. Exact module meshes, recoil, zoom and remaining first-person animation parity remain incomplete.
 
 ## Restored legacy world structures
-Six legacy structure families are registered through the native Forge 1.20.1 **Feature -> configured feature -> placed feature -> biome modifier** pipeline rather than obsolete chunk hooks.
-
-- **Crashed spacecraft**: rare dry-Overworld damaged tritanium wrecks with stripe/glass detail, Holo Sign and salvage crate. Modern rarity 1/256.
-- **Cargo ships**: much larger long-deck cargo silhouettes with upper window rails, lamps, Holo Sign and multiple possible crates. Modern rarity 1/4096.
-- **Underwater bases**: ocean-floor-only circular tritanium installations with Industrial Glass band/dome, deliberately dry interior, Matter Analyzer and blue Tritanium Crate. Modern rarity 1/2048.
-- **Mad Scientist houses**: uncommon dry-Overworld white laboratories with glass windows, beams, functioning Inscriber/Decomposer and crate. Modern rarity 1/768.
-- **Android houses**: rare approximately 19 x 19 machine-built shelters with tritanium/white shell, glass bands, supports, lamps, divided interior, Holo Sign, blue/standard crates and functioning machine set dressing. Modern rarity 1/1536.
-- **Sand pits**: roughly 32 x 32 desert excavation/crater features that only commit on sand/red-sand/sandstone-family terrain and expose a damaged tritanium wreck/cache. Candidate rarity 1/384 before terrain rejection.
-
-### Persisted structure salvage
-Generated Tritanium Crates are populated directly through the real 54-slot `TritaniumCrateBlockEntity` inventory, so salvage follows the existing NBT/save and crate-item persistence path. Profiles remain structure-specific: crashed ships favor tritanium/matter/batteries/basic circuitry; cargo ships carry larger tritanium/dilithium/machine stores; underwater bases carry refined matter, Mk2 circuitry and occasional integration/pattern hardware; Scientist labs carry machinery/circuitry with rare artifacts; Android houses carry batteries/circuitry/Android parts with possible pills/network drives; Sand Pits carry tritanium/matter with rarer dilithium/artifacts.
-
-### Persistent structure occupants
-The six restored families now also populate real current-port entities during the one-time feature placement pass:
-- crashed ships: 1-2 mixed melee/ranged Rogue Android defenders;
-- cargo ships: 2-4 mixed Android defenders plus an occasional unowned hostile Drone;
-- underwater bases: a persistent unowned hostile Drone plus an occasional ranged Rogue Android inside the dry base;
-- Mad Scientist houses: one persistent Mad Scientist plus an occasional Failed animal experiment;
-- Android houses: 3-4 mixed Android defenders plus an occasional hostile Drone;
-- Sand Pits: one Android guardian plus an occasional hostile Drone.
-
-Worldgen occupants call the normal entity spawn/finalization path, receive persistence-required status, and are collision/world-border checked. Structure Rogue Androids deliberately receive no Android-Spawner origin, so they cannot consume a Spawner's six-unit owned population or be affected by `KILL`. Structure Drones deliberately remain unowned until a player explicitly links them.
-
-These remain source-faithful **modern structural translations**, not pixel-exact reproductions of every old image-worker template. Structure-specific population and persisted salvage are no longer missing. Exact legacy geometry and deeper structure-specific scripted objectives/events remain incomplete. Structure generation requires new chunks and is not retroactive.
+Six legacy structure families use the native Forge 1.20.1 Feature -> configured feature -> placed feature -> biome modifier pipeline: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. They have terrain/rarity guards, persisted structure-specific Tritanium Crate salvage and one-time persistent inhabitants using real current-port Android/Drone/Scientist/Failed-animal entities. Structure Androids are deliberately unowned by Android Spawners and structure Drones begin unowned/hostile. Exact old PNG-template geometry and deeper site-specific scripted objectives remain incomplete.
 
 ## Natural gravitational anomalies
-Natural Gravitational Anomaly worldgen is restored through the same proper configured/placed-feature + Forge biome-modifier pipeline. Both authoritative legacy versions used a 2,048-10,240 initial matter range; the current anomaly block entity already initializes in that exact range, so naturally placed anomalies use the normal existing runtime path rather than a second mass implementation.
+Natural Gravitational Anomaly worldgen is restored through configured/placed features and a Forge biome modifier. It uses the conservative 1.7 default frequency (~1/200 candidate chunks) and the shared legacy 2,048-10,240 starting-mass range through the normal anomaly block entity. Generated anomalies immediately use the real attraction, event-horizon consumption, mass growth and block-effect systems. The 1.12 `DimensionalRifts` class inspected in the reference jar is a client-side seeded noise sampler rather than another physical structure generator, so it is not treated as missing world structure generation.
 
-The references disagree substantially on default frequency: 1.7 used **0.005 per chunk (~1/200)** while 1.12 used **0.05 (~1/20)**. Because the current 1.20.1 anomaly has genuine attraction, event-horizon consumption, mass growth and block destruction, the port uses the conservative 1.7 rate. Candidate Y is sampled from roughly sea level +4 through sea level +63, following the later generator's sea-level-based vertical band. The feature only commits into open, fluid-free air and does not delete terrain to force placement.
-
-## Star Map / journey / encounters
-Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with deterministic planet properties, wheel zoom, drag and right-click back. A server-authoritative journey layer persists current/destination galactic position and timing. Travel requests are validated against the open menu, machine position, player range and catalog destination. Same-system travel preserves the useful legacy 10-per-AU concept and interstellar travel the 8-per-LY concept without inventing FE cost that the later Star Map did not have.
-
-Longer routes schedule one deterministic event: Asteroid Field, Gravitational Slingshot, Rogue Android Intercept, Signal Echo, or **Hostile Fleet**. Existing route modifiers and Android boarding parties remain functional.
+## Star Map navigation / journey / encounters
+Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with deterministic planet properties, wheel zoom, drag and right-click back. Server-authoritative journeys persist current/destination galactic position and timing, validate requests and preserve the legacy 10-per-AU / 8-per-LY timing concepts without inventing FE cost. Longer routes schedule Asteroid Field, Gravitational Slingshot, Rogue Android Intercept, Signal Echo or Hostile Fleet encounters.
 
 ## Star Map fleet combat
-A persistent fleet layer restores useful 1.7 travel-event/attack concepts without pretending the removed legacy item/build framework already exists.
+A persistent fleet layer restores useful 1.7 travel-event/attack concepts: commander ownership, 100 hull / 60 shield / 20 firepower baseline, deterministic hostile fleets, validated FIRE/RECHARGE combat, shield-before-hull damage, victory count, preserved travel pause and emergency retreat. Combat state persists in Star Map NBT and menu sync.
 
-- first successful launcher binds as persistent fleet commander;
-- baseline fleet: **100 hull / 60 shields / 20 firepower** plus victories;
-- Hostile Fleet pauses arrival and generates destination-derived 60-120 hull / 8-17 firepower opposition;
-- Planet control becomes validated server-side `FIRE` / `RECHARGE`, with 20-tick cadence;
-- volleys damage enemy hull, return fire drains shields before hull;
-- victory increments count and resumes preserved travel time;
-- defeat retreats Star Map state to previous safe galactic location at 35 hull / 0 shields without physically teleporting the player;
-- commander/fleet/enemy/combat state persists in block-entity NBT and menu sync.
+## Star Map colony / shipyard economy
+A first substantial 1.7-style planetary economy layer is now implemented with real server state rather than GUI-only counters.
 
-The old Scout/Colonizer production queue, multi-ship composed fleet, colonization/building economy, physical planet dimensions and player arrival/teleportation remain incomplete.
+- Planet ownership and colony buildings are stored in **server-global `SavedData`** keyed by deterministic quadrant/star/planet identity, so ownership survives save/reload and is not tied to one Star Map block.
+- The first commander-bound starting planet is bootstrapped as the fleet's homeworld with a **Base + Ship Factory**, providing an entry point into the legacy loop without the old galaxy-homeworld generator.
+- A colonized planet begins with a **Base**. Normal colony construction requires ownership/Base state.
+- **Scout Ship** production uses the recovered 1.7 build length of **3,600 ticks**.
+- **Colonizer Ship** production uses **5,000 ticks**.
+- **Ship Factory** construction uses **8,000 ticks** and is required before Scout/Colonizer production.
+- **Ship Hangar** construction uses **4,800 ticks**; each Hangar adds the recovered **+2 fleet-space** effect. The current bridge gives a colonized Base two baseline berths.
+- Only one construction project can run on a Star Map fleet at a time. Queue action, finish time, target planet and Scout/Colonizer composition persist in block-entity NBT; departure is blocked during active construction.
+- On an unowned current planet, deploying a completed Colonizer consumes exactly one Colonizer, establishes the Base and assigns ownership transactionally. Already-owned planets reject colonization without consuming the ship.
+- The current-planet Star Map GUI exposes SCOUT, COLONIZER and contextual COLONIZE / BUILD FACTORY / HANGAR controls with real server-side validation and synchronized queue/ship/capacity telemetry.
+- Economy requests use a dedicated validated C2S packet and enforce open-menu, block-position, range and commander checks.
+
+This restores the core 1.7 Base -> Factory/Hangar -> Scout/Colonizer -> new Base gameplay dependency while keeping the later navigation/fleet systems intact. Scout/Colonizer composition is currently persistent fleet state rather than restored physical legacy item stacks, and it does not yet alter fleet-combat firepower because the reference material does not justify inventing class combat stats.
 
 ## Security / GUI
 Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Dedicated legacy-inspired operator passes exist across major machines, with real slots remaining visible and controls only shown when they have genuine server-side behavior.
 
 ## Major remaining parity gaps
-1. Exact legacy world-structure templates and deeper structure-specific objectives/events; Dimensional Rifts and other remaining legacy world events still need restoration.
-2. Star Map ship production/build queues, Scout/Colonizer economy, multi-ship fleet composition, colonization/planet ownership, richer star/planet events and physical arrival gameplay.
-3. Drone flying navigation/renderer/equipment parity and richer owner-management presentation beyond direct interaction commands.
-4. Generic legacy machine redstone/configuration modes where backend equivalents are still absent.
+1. Exact legacy world-structure templates and deeper structure-specific scripted objectives/events.
+2. Star Map Matter Extractor/Power Generator/Residential production effects, physical ship items, multiple independently travelling fleets, richer star/planet events and physical arrival/dimensions.
+3. Drone flying navigation/renderer/equipment parity and richer owner-management presentation.
+4. Generic legacy machine redstone/configuration modes where backend equivalents are absent.
 5. Remaining machine-specific GUI pages that map to real backend state.
 6. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
 7. Full weapon module meshes, recoil, zoom and first-person animation parity.
-8. Deeper dispatcher/broadcaster network concepts where they can be mapped without replacing the working Forge routing core.
+8. Deeper dispatcher/broadcaster network concepts where cleanly mappable to the working Forge routing core.
 9. Broader dialog/quest framework.
 
 See the in-game **M2 Testing Checklist** for runtime verification.
