@@ -13,11 +13,15 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Real Rogue Android entity based on the 1.12.2 EntityRougeAndroidMob hierarchy.
@@ -32,9 +36,17 @@ public class RogueAndroidEntity extends Zombie {
     private int androidLevel;
     private boolean legendary;
     @Nullable private BlockPos spawnerPosition;
+    private final List<BlockPos> patrolPoints = new ArrayList<>();
+    private int patrolIndex;
 
     public RogueAndroidEntity(EntityType<? extends RogueAndroidEntity> type, Level level) {
         super(type, level);
+    }
+
+    @Override
+    protected void registerGoals() {
+        super.registerGoals();
+        goalSelector.addGoal(5, new PatrolGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -72,11 +84,8 @@ public class RogueAndroidEntity extends Zombie {
         if (getAttribute(Attributes.ATTACK_DAMAGE) != null) {
             getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(attack);
         }
-        if (refillHealth) {
-            setHealth((float) maxHealth);
-        } else if (getHealth() > maxHealth) {
-            setHealth((float) maxHealth);
-        }
+        if (refillHealth) setHealth((float) maxHealth);
+        else if (getHealth() > maxHealth) setHealth((float) maxHealth);
     }
 
     private void updateLegacyName() {
@@ -91,46 +100,32 @@ public class RogueAndroidEntity extends Zombie {
         setCustomNameVisible(false);
     }
 
-    public int getAndroidLevel() {
-        return androidLevel;
-    }
-
-    public boolean isLegendaryAndroid() {
-        return legendary;
-    }
+    public int getAndroidLevel() { return androidLevel; }
+    public boolean isLegendaryAndroid() { return legendary; }
 
     public void setSpawnerPosition(@Nullable BlockPos position) {
         spawnerPosition = position == null ? null : position.immutable();
     }
 
-    @Nullable
-    public BlockPos getSpawnerPosition() {
-        return spawnerPosition;
-    }
-
+    @Nullable public BlockPos getSpawnerPosition() { return spawnerPosition; }
     public boolean wasSpawnedFrom(BlockPos position) {
         return spawnerPosition != null && spawnerPosition.equals(position);
     }
 
-    @Override
-    public boolean canBeAffected(MobEffectInstance effect) {
-        return false;
+    public void setPatrolPoints(List<BlockPos> points) {
+        patrolPoints.clear();
+        for (BlockPos point : points) {
+            if (point != null && !patrolPoints.contains(point)) patrolPoints.add(point.immutable());
+        }
+        patrolIndex = patrolPoints.isEmpty() ? 0 : Math.floorMod(patrolIndex, patrolPoints.size());
     }
 
-    @Override
-    protected boolean isSunSensitive() {
-        return false;
-    }
+    public List<BlockPos> getPatrolPoints() { return List.copyOf(patrolPoints); }
 
-    @Override
-    protected SoundEvent getAmbientSound() {
-        return ModSounds.get("mobs.rogue_android_say").get();
-    }
-
-    @Override
-    protected SoundEvent getDeathSound() {
-        return ModSounds.get("mobs.rogue_android_death").get();
-    }
+    @Override public boolean canBeAffected(MobEffectInstance effect) { return false; }
+    @Override protected boolean isSunSensitive() { return false; }
+    @Override protected SoundEvent getAmbientSound() { return ModSounds.get("mobs.rogue_android_say").get(); }
+    @Override protected SoundEvent getDeathSound() { return ModSounds.get("mobs.rogue_android_death").get(); }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
@@ -138,6 +133,8 @@ public class RogueAndroidEntity extends Zombie {
         tag.putInt("AndroidLevel", androidLevel);
         tag.putBoolean("Legendary", legendary);
         if (spawnerPosition != null) tag.putLong("SpawnerPosition", spawnerPosition.asLong());
+        tag.putLongArray("PatrolPoints", patrolPoints.stream().mapToLong(BlockPos::asLong).toArray());
+        tag.putInt("PatrolIndex", patrolIndex);
     }
 
     @Override
@@ -146,7 +143,39 @@ public class RogueAndroidEntity extends Zombie {
         androidLevel = Mth.clamp(tag.getInt("AndroidLevel"), 0, 3);
         legendary = tag.getBoolean("Legendary");
         spawnerPosition = tag.contains("SpawnerPosition") ? BlockPos.of(tag.getLong("SpawnerPosition")) : null;
+        patrolPoints.clear();
+        for (long packed : tag.getLongArray("PatrolPoints")) patrolPoints.add(BlockPos.of(packed));
+        patrolIndex = patrolPoints.isEmpty() ? 0 : Math.floorMod(tag.getInt("PatrolIndex"), patrolPoints.size());
         applyLegacyStats(false);
         updateLegacyName();
+    }
+
+    private static final class PatrolGoal extends Goal {
+        private final RogueAndroidEntity android;
+
+        private PatrolGoal(RogueAndroidEntity android) {
+            this.android = android;
+            setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            return android.getTarget() == null
+                    && !android.patrolPoints.isEmpty()
+                    && android.getNavigation().isDone();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return android.getTarget() == null && !android.getNavigation().isDone();
+        }
+
+        @Override
+        public void start() {
+            if (android.patrolPoints.isEmpty()) return;
+            BlockPos target = android.patrolPoints.get(android.patrolIndex);
+            android.patrolIndex = (android.patrolIndex + 1) % android.patrolPoints.size();
+            android.getNavigation().moveTo(target.getX() + 0.5D, target.getY(), target.getZ() + 0.5D, 1.0D);
+        }
     }
 }
