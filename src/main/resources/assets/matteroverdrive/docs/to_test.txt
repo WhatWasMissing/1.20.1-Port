@@ -101,8 +101,13 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Same-star travel uses the shorter orbit/AU timing path while travel between stars uses the interstellar timing path derived from the legacy 10-per-AU / 8-per-LY multipliers.
 - [ ] Close and reopen the Star Map while traveling; destination and remaining travel time are still server-synchronized.
 - [ ] Save/reload the world during a journey. Current location, destination and in-progress timing persist and the machine completes the journey when its server timer expires.
+- [ ] On journeys of at least 80 ticks, exactly one route-derived travel encounter is scheduled around the midpoint and survives save/reload.
+- [ ] Asteroid Field adds 100 ticks to ETA; Gravitational Slingshot shortens ETA without allowing instant completion; Signal Echo adds 40 ticks.
+- [ ] Rogue Android Intercept adds 120 ticks and spawns two melee plus one ranged Rogue Android boarding party around the Star Map.
+- [ ] Encounter announcements only go to players within 32 blocks of the Star Map and do not globally spam the server.
+- [ ] After an encounter resolves, its last-event code remains synchronized through the menu while the journey continues.
 - [ ] After arrival the destination becomes the machine's current location and requesting that same planet again is rejected.
-- [ ] Travel changes Star Map galactic state only; it must not unexpectedly teleport the player or claim that the still-unimplemented legacy ship/event backend exists.
+- [ ] Travel changes Star Map galactic state only; it must not unexpectedly teleport the player or claim that full legacy ship/fleet combat or planet dimensions exist.
 
 ## Network / persistence
 
@@ -110,7 +115,7 @@ This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions com
 - [ ] Empty installed Network Flash Drive permits no destinations.
 - [ ] Pylon-linked network sections obey matching channel and destination filters.
 - [ ] Matter Pipe, Heavy Energy Cable and Network Pipe arms update in all six directions without breaking transfer.
-- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, saved locations, Star Map current/destination/travel state and ownership after save/reload.
+- [ ] Existing machines retain inventories, FE, matter, upgrades, contracts, drives, saved locations, Star Map current/destination/travel/encounter state and ownership after save/reload.
 
 ## Core gameplay regression
 
