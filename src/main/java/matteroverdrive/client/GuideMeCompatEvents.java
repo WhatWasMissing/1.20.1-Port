@@ -30,8 +30,18 @@ public final class GuideMeCompatEvents {
 
     private GuideMeCompatEvents() {}
 
+    /**
+     * Registers the static guide early enough for GuideME's first resource reload
+     * to discover and parse the packaged pages. Calling this again is harmless.
+     */
+    public static void bootstrap() {
+        if (isAvailable()) registerGuide();
+    }
+
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
+        // Fallback/re-resolution only. Primary registration is performed from the
+        // mod constructor before GuideME builds its initial resource page map.
         if (isAvailable()) event.enqueueWork(GuideMeCompatEvents::registerGuide);
     }
 
@@ -45,9 +55,8 @@ public final class GuideMeCompatEvents {
             Class<?> guideClass = Class.forName("guideme.Guide");
             Object builder = guideClass.getMethod("builder", ResourceLocation.class).invoke(null, GUIDE_ID);
 
-            // GuideBuilder 20.1.15 registers built guides by default. Its defaults
-            // already derive this folder from GUIDE_ID, but keep the contract
-            // explicit so resource moves fail loudly rather than opening an empty guide.
+            // GuideBuilder 20.1.15 defaults to guides/<namespace>/<guide-path>.
+            // Keep the exact packaged resource folder explicit.
             builder.getClass().getMethod("folder", String.class)
                     .invoke(builder, "guides/matteroverdrive/guide");
             builder.getClass().getMethod("defaultNamespace", String.class)
@@ -58,7 +67,7 @@ public final class GuideMeCompatEvents {
             guide = builder.getClass().getMethod("build").invoke(builder);
             guide = resolveGuideOrBuilt(guide);
             registered = guide != null;
-            if (registered) LOGGER.info("Registered Matter Overdrive GuideME manual {}", GUIDE_ID);
+            if (registered) LOGGER.info("Registered Matter Overdrive GuideME manual {} before resource loading", GUIDE_ID);
         } catch (ReflectiveOperationException | RuntimeException ex) {
             registered = false;
             guide = null;
