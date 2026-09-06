@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[" G ","RUR"," B "],
+  "key":{"B":{"item":"matteroverdrive:hc_battery"},"R":{"item":"minecraft:redstone"},"U":{"item":"matteroverdrive:upgrade_base"},"G":{"item":"minecraft:gold_ingot"}},
+  "result":{"item":"matteroverdrive:upgrade_power_storage"}
+}
