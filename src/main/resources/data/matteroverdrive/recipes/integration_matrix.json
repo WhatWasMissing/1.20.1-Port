@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[" M ","GPG","DED"],
+  "key":{"P":{"item":"matteroverdrive:isolinear_circuit_mk2"},"D":{"item":"matteroverdrive:dilithium_crystal"},"E":{"item":"minecraft:ender_pearl"},"G":{"item":"minecraft:glass"},"M":{"item":"matteroverdrive:machine_casing"}},
+  "result":{"item":"matteroverdrive:integration_matrix"}
+}
