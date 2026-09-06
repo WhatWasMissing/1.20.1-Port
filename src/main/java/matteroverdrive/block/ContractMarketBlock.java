@@ -55,15 +55,15 @@ public class ContractMarketBlock extends BaseEntityBlock {
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         ItemStack held = player.getItemInHand(hand);
         if (!level.isClientSide && held.getItem() instanceof ContractItem && ContractItem.complete(held)) {
-            for (ItemStack reward : ContractItem.rewardItems(held)) {
-                if (!player.getInventory().add(reward.copy())) player.drop(reward.copy(), false);
-            }
+            for (ItemStack reward : ContractItem.rewardItems(held)) give(player, reward);
+            for (ItemStack reward : LegacyStoryContracts.specialRewards(held)) give(player, reward);
+
             int xp = ContractItem.xp(held);
             if (xp > 0) player.giveExperiencePoints(xp);
             String title = ContractItem.title(held);
             ItemStack chained = LegacyStoryContracts.chainedFrom(held, level.random);
             held.shrink(1);
-            if (!chained.isEmpty() && !player.getInventory().add(chained)) player.drop(chained, false);
+            if (!chained.isEmpty()) give(player, chained);
             player.displayClientMessage(Component.literal("Contract redeemed: " + title + (xp > 0 ? " (" + xp + " XP)" : "")), true);
 
             SoundEvent completionSound = ForgeRegistries.SOUND_EVENTS.getValue(
@@ -85,5 +85,11 @@ public class ContractMarketBlock extends BaseEntityBlock {
         if (!level.isClientSide && player instanceof ServerPlayer server
                 && level.getBlockEntity(pos) instanceof ContractMarketBlockEntity market) NetworkHooks.openScreen(server, market, pos);
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    private static void give(Player player, ItemStack stack) {
+        if (stack.isEmpty()) return;
+        ItemStack copy = stack.copy();
+        if (!player.getInventory().add(copy)) player.drop(copy, false);
     }
 }
