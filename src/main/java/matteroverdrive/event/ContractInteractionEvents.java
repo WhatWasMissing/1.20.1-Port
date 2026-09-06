@@ -2,6 +2,7 @@ package matteroverdrive.event;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.ContractItem;
+import matteroverdrive.quest.ContractStageSupport;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -55,7 +56,7 @@ public final class ContractInteractionEvents {
             if (!(contract.getItem() instanceof ContractItem)
                     || ContractItem.complete(contract)
                     || !predicate.test(contract)) continue;
-            if (ContractItem.advanceAndCheck(contract, 1)) {
+            if (ContractStageSupport.advanceAndCheck(contract, 1)) {
                 completed = true;
                 latestTitle = ContractItem.title(contract);
             }
