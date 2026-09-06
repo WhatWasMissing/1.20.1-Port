@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:android_house",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
