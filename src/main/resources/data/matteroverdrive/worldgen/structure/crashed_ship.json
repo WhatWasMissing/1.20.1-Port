@@ -1,6 +1,6 @@
 {
   "type": "matteroverdrive:crashed_ship",
-  "biomes": "#matteroverdrive:has_structure/crashed_ship",
+  "biomes": "#minecraft:is_overworld",
   "step": "surface_structures",
   "spawn_overrides": {}
 }
