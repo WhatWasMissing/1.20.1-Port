@@ -37,8 +37,16 @@ This checklist covers the deeper quest-engine parity work layered on top of the 
 - [ ] `stem_bolts` accepts only the named Agreement Copy, not an ordinary Mk1 circuit.
 - [ ] `to_the_power_of` accepts the native Matter Overdrive Solar Panel, awards 120 XP, 5 Tritanium Ingots and 4 Tritanium Plates; obsolete BigReactors/ExtraUtilities alternatives are intentionally not hard dependencies in 1.20.1.
 - [ ] Trade Route, Stem Bolts and To the Power Of are not inserted into Contract Market generation.
-- [ ] Legacy cargo-ship acquisition is documented: a red Tritanium Crate is the captain chest containing the named `Trade Route Agreement`; a lime Tritanium Crate contains the quest contract and its first-stage position points at the red crate. Worldgen activation remains pending a dedicated structure patch.
-- [ ] Legacy Trade Route Failed Pig entity reward remains pending until quest-position storage/acquisition is restored, so it can spawn at the correct stored quest position rather than at an invented location.
+
+## Cargo ship Trade Route acquisition
+- [ ] Interacting with a red/lime Tritanium Crate in a restored cargo-ship layout identifies the ship only when the nearby structure also contains the expected Transporter + Network Switch signature.
+- [ ] The nearest red crate receives exactly one custom-named `Trade Route Agreement` Mk1 Isolinear Circuit.
+- [ ] The nearest lime crate receives exactly one `trade_route` Contract whose stored quest position points to that red captain crate.
+- [ ] Both crates persist their seeded marker and do not regenerate quest loot after the player removes it.
+- [ ] Already-generated cargo ships can self-heal their missing Trade Route loot on first valid interaction.
+- [ ] Ordinary red/lime Tritanium Crates outside a cargo-ship signature receive no quest loot.
+- [ ] Opening the seeded red captain crate advances stage 1 only for the contract bound to that exact red crate.
+- [ ] Legacy Trade Route Failed Pig entity reward remains pending; quest-position storage now exists, so this can be restored at the correct stored position rather than an invented location.
 
 ## Active quest presentation / management
 - [ ] Contract HUD still caps itself to three carried contracts and does not overlap normal hotbar/status UI at common GUI scales.
