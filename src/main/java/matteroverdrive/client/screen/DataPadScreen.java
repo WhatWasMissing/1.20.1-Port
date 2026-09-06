@@ -1,6 +1,7 @@
 package matteroverdrive.client.screen;
 
 import matteroverdrive.item.ContractItem;
+import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,6 +21,7 @@ public class DataPadScreen extends Screen {
     private static final int MUTED_COLOR = 0xFF9BB6C3;
     private static final int ACTIVE_CONTRACTS_PAGE = 6;
     private static final int HISTORY_PAGE = 7;
+    private static final int MAX_MANAGED_CONTRACTS = 4;
 
     private static final List<String> TITLES = List.of(
             "Overview",
@@ -60,13 +62,18 @@ public class DataPadScreen extends Screen {
     );
 
     private final List<String> history;
+    private final List<Button> abandonButtons = new ArrayList<>();
+    private final int[] managedSlots = new int[MAX_MANAGED_CONTRACTS];
     private int page;
+    private int armedAbandonSlot = -1;
+    private long abandonArmedUntil;
     private Button previousButton;
     private Button nextButton;
 
     public DataPadScreen(List<String> history) {
         super(Component.literal("Matter Overdrive Data Pad"));
         this.history = new ArrayList<>(history);
+        java.util.Arrays.fill(managedSlots, -1);
     }
 
     @Override
@@ -76,17 +83,72 @@ public class DataPadScreen extends Screen {
                 button -> setPage(page - 1)).bounds(width / 2 - 105, y, 96, 20).build());
         nextButton = addRenderableWidget(Button.builder(Component.literal("Next >"),
                 button -> setPage(page + 1)).bounds(width / 2 + 9, y, 96, 20).build());
+
+        int right = Math.min(width - 12, width / 2 + 190);
+        int top = 12;
+        for (int row = 0; row < MAX_MANAGED_CONTRACTS; row++) {
+            final int buttonIndex = row;
+            Button button = addRenderableWidget(Button.builder(Component.literal("ABANDON"),
+                    ignored -> abandon(buttonIndex))
+                    .bounds(right - 72, top + 48 + row * 42, 58, 16).build());
+            abandonButtons.add(button);
+        }
         setPage(page);
     }
 
     private void setPage(int nextPage) {
         page = Math.max(0, Math.min(TITLES.size() - 1, nextPage));
+        armedAbandonSlot = -1;
         if (previousButton != null) previousButton.active = page > 0;
         if (nextButton != null) nextButton.active = page < TITLES.size() - 1;
+        refreshContractButtons();
+    }
+
+    private void abandon(int buttonIndex) {
+        if (buttonIndex < 0 || buttonIndex >= managedSlots.length) return;
+        int slot = managedSlots[buttonIndex];
+        if (slot < 0) return;
+        long now = System.currentTimeMillis();
+        if (armedAbandonSlot == slot && now <= abandonArmedUntil) {
+            ModNetwork.requestContractAbandon(slot);
+            armedAbandonSlot = -1;
+            abandonArmedUntil = 0L;
+        } else {
+            armedAbandonSlot = slot;
+            abandonArmedUntil = now + 3000L;
+        }
+        refreshContractButtons();
+    }
+
+    private List<ContractRef> contractRefs() {
+        Minecraft minecraft = Minecraft.getInstance();
+        List<ContractRef> contracts = new ArrayList<>();
+        if (minecraft.player == null) return contracts;
+        for (int slot = 0; slot < minecraft.player.getInventory().items.size(); slot++) {
+            ItemStack stack = minecraft.player.getInventory().items.get(slot);
+            if (stack.getItem() instanceof ContractItem) contracts.add(new ContractRef(slot, stack));
+        }
+        return contracts;
+    }
+
+    private void refreshContractButtons() {
+        if (abandonButtons.isEmpty()) return;
+        List<ContractRef> refs = page == ACTIVE_CONTRACTS_PAGE ? contractRefs() : List.of();
+        long now = System.currentTimeMillis();
+        if (armedAbandonSlot >= 0 && now > abandonArmedUntil) armedAbandonSlot = -1;
+        for (int i = 0; i < abandonButtons.size(); i++) {
+            Button button = abandonButtons.get(i);
+            boolean visible = i < refs.size();
+            button.visible = visible;
+            button.active = visible;
+            managedSlots[i] = visible ? refs.get(i).slot() : -1;
+            button.setMessage(Component.literal(visible && managedSlots[i] == armedAbandonSlot ? "ABANDON?" : "ABANDON"));
+        }
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        refreshContractButtons();
         renderBackground(graphics);
         int left = Math.max(12, width / 2 - 190);
         int right = Math.min(width - 12, width / 2 + 190);
@@ -122,47 +184,40 @@ public class DataPadScreen extends Screen {
         }
 
         graphics.drawString(font, Component.literal(page == ACTIVE_CONTRACTS_PAGE
-                        ? "Completed contracts are redeemed at a Contract Market."
+                        ? "Completed contracts redeem at a Contract Market. Abandon requires two clicks."
                         : "Use on blocks to add scan-history entries."),
                 textX, bottom - 15, MUTED_COLOR, false);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     private void renderContracts(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) return;
-        List<ItemStack> contracts = new ArrayList<>();
-        for (ItemStack stack : minecraft.player.getInventory().items) {
-            if (stack.getItem() instanceof ContractItem) contracts.add(stack);
-        }
+        List<ContractRef> contracts = contractRefs();
         if (contracts.isEmpty()) {
             graphics.drawString(font, Component.literal("No active contracts in your inventory."), x, y, MUTED_COLOR, false);
             return;
         }
 
-        for (int i = 0; i < contracts.size(); i++) {
-            ItemStack contract = contracts.get(i);
+        int visible = Math.min(MAX_MANAGED_CONTRACTS, contracts.size());
+        for (int i = 0; i < visible; i++) {
+            ItemStack contract = contracts.get(i).stack();
             int titleColor = ContractItem.complete(contract) ? 0xFF57C47A : TEXT_COLOR;
             String stage = ContractStageSupport.stageLabel(contract);
-            graphics.drawString(font, Component.literal((i + 1) + ". " + ContractItem.title(contract)), x, y, titleColor, false);
-            y += 11;
+            graphics.drawString(font, Component.literal((i + 1) + ". " + trim(ContractItem.title(contract), 31)), x, y, titleColor, false);
             String objective = ContractItem.objectiveText(contract);
             if (!stage.isBlank()) objective = stage + " — " + objective;
-            for (FormattedCharSequence line : font.split(Component.literal(objective), maxWidth - 8)) {
-                graphics.drawString(font, line, x + 8, y, MUTED_COLOR, false);
-                y += 10;
-            }
+            graphics.drawString(font, Component.literal(trim(objective, 39)), x + 8, y + 11, MUTED_COLOR, false);
             String progress = ContractItem.complete(contract)
                     ? "READY TO REDEEM"
                     : "Progress " + ContractItem.progress(contract) + " / " + ContractItem.goal(contract);
             if (ContractItem.xp(contract) > 0) progress += "   XP " + ContractItem.xp(contract);
-            graphics.drawString(font, Component.literal(progress), x + 8, y,
+            graphics.drawString(font, Component.literal(trim(progress, 42)), x + 8, y + 22,
                     ContractItem.complete(contract) ? 0xFF57C47A : BORDER_COLOR, false);
-            y += 15;
-            if (y > bottom - 34) {
-                if (i < contracts.size() - 1) graphics.drawString(font, Component.literal("More contracts are carried; use the HUD or scroll inventory tooltips."), x, y, MUTED_COLOR, false);
-                break;
-            }
+            y += 42;
+            if (y > bottom - 45) break;
+        }
+        if (contracts.size() > visible && y <= bottom - 30) {
+            graphics.drawString(font, Component.literal("+ " + (contracts.size() - visible) + " more carried contract(s)"),
+                    x, y, MUTED_COLOR, false);
         }
     }
 
@@ -178,13 +233,21 @@ public class DataPadScreen extends Screen {
                 y += 10;
             }
             if (y > height - 70) {
-                graphics.drawString(font, Component.literal("More entries are stored; increase GUI height to view."), x, y, MUTED_COLOR, false);
+                graphics.drawString(font, Component.literal("More entries are stored; increase GUI height to view."),
+                        x, y, MUTED_COLOR, false);
                 break;
             }
         }
         return y;
     }
 
+    private static String trim(String text, int max) {
+        if (text == null) return "";
+        return text.length() <= max ? text : text.substring(0, Math.max(0, max - 1)) + "…";
+    }
+
     @Override
     public boolean isPauseScreen() { return false; }
+
+    private record ContractRef(int slot, ItemStack stack) {}
 }
