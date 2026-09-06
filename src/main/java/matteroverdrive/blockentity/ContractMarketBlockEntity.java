@@ -6,6 +6,7 @@ import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -15,18 +16,36 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.ItemStackHandler;
+
 import javax.annotation.Nullable;
 
+/**
+ * Contract Market inventory/generation state.
+ *
+ * The authoritative 1.12 market used 18 remove-only contract slots and generated
+ * a single weighted contract per cycle.  Its next-generation delay was
+ * 36,000 ticks + 6,000 ticks for each occupied market slot.  The current port
+ * keeps that market cadence while mapping the legacy weighted categories onto
+ * contract types that the 1.20.1 ContractItem backend actually supports.
+ */
 public class ContractMarketBlockEntity extends BlockEntity implements MenuProvider {
-    private static final long REFRESH_DELAY = 1_200L;
-    private boolean refreshing;
-    private long refreshAt;
-    private final ItemStackHandler offers = new ItemStackHandler(3) {
-        @Override public boolean isItemValid(int slot, ItemStack stack) { return false; }
-        @Override protected void onContentsChanged(int slot) {
-            setChanged();
-            if (!refreshing && level != null && !level.isClientSide && empty()) {
-                refreshAt = level.getGameTime() + REFRESH_DELAY;
+    public static final int OFFER_SLOTS = 18;
+    public static final int BASE_GENERATION_DELAY = 36_000;
+    public static final int OCCUPIED_SLOT_DELAY = 6_000;
+
+    private long nextGenerationTime;
+    private boolean loading;
+
+    private final ItemStackHandler offers = new ItemStackHandler(OFFER_SLOTS) {
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            return false;
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            if (!loading) {
+                setChanged();
             }
         }
     };
@@ -36,46 +55,121 @@ public class ContractMarketBlockEntity extends BlockEntity implements MenuProvid
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ContractMarketBlockEntity market) {
-        if (market.empty() && level.getGameTime() >= market.refreshAt) market.refresh();
-    }
-
-    private boolean empty() {
-        for (int i = 0; i < offers.getSlots(); i++) if (!offers.getStackInSlot(i).isEmpty()) return false;
-        return true;
-    }
-
-    public void refresh() {
-        refreshing = true;
-        try {
-            offers.setStackInSlot(0, ContractItem.collect("minecraft:iron_ingot", 16, "matteroverdrive:tritanium_dust", 8));
-            offers.setStackInSlot(1, ContractItem.hunt("minecraft:zombie", 6, "matteroverdrive:dilithium_crystal", 1));
-            offers.setStackInSlot(2, ContractItem.collect("minecraft:redstone", 32, "matteroverdrive:upgrade_base", 1));
-        } finally {
-            refreshing = false;
+        if (market.nextGenerationTime <= 0L) {
+            market.nextGenerationTime = level.getGameTime();
         }
-        refreshAt = level == null ? 0 : level.getGameTime() + REFRESH_DELAY;
+        if (level.getGameTime() >= market.nextGenerationTime) {
+            market.generateContract();
+        }
+    }
+
+    private void generateContract() {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+
+        int emptySlot = firstEmptySlot();
+        if (emptySlot >= 0) {
+            offers.setStackInSlot(emptySlot, createWeightedOffer(level.random));
+        }
+
+        scheduleNextGeneration(level.getGameTime());
         setChanged();
     }
 
-    public ItemStackHandler getOffers() { return offers; }
-    @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.contract_market"); }
-    @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-        if (empty() && level != null && level.getGameTime() >= refreshAt) refresh();
+    private ItemStack createWeightedOffer(RandomSource random) {
+        // Legacy MatterOverdriveQuests.contractGeneration weights were 100/80/60.
+        // Quest internals are intentionally mapped to real currently-supported
+        // collect/hunt contracts rather than exposing non-functional legacy quest UI.
+        int roll = random.nextInt(240);
+        if (roll < 100) {
+            return ContractItem.collect("minecraft:diamond", 2, "matteroverdrive:tritanium_dust", 8);
+        }
+        if (roll < 180) {
+            return ContractItem.hunt("matteroverdrive:rogue_android", 3, "matteroverdrive:dilithium_crystal", 1);
+        }
+        return ContractItem.hunt("minecraft:enderman", 4, "matteroverdrive:upgrade_base", 1);
+    }
+
+    private void scheduleNextGeneration(long now) {
+        nextGenerationTime = now + BASE_GENERATION_DELAY + (long) occupiedSlots() * OCCUPIED_SLOT_DELAY;
+    }
+
+    private int firstEmptySlot() {
+        for (int slot = 0; slot < offers.getSlots(); slot++) {
+            if (offers.getStackInSlot(slot).isEmpty()) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    public int occupiedSlots() {
+        int occupied = 0;
+        for (int slot = 0; slot < offers.getSlots(); slot++) {
+            if (!offers.getStackInSlot(slot).isEmpty()) {
+                occupied++;
+            }
+        }
+        return occupied;
+    }
+
+    public int ticksUntilNextGeneration() {
+        if (level == null || nextGenerationTime <= 0L) {
+            return 0;
+        }
+        long remaining = Math.max(0L, nextGenerationTime - level.getGameTime());
+        return (int) Math.min(Integer.MAX_VALUE, remaining);
+    }
+
+    public ItemStackHandler getOffers() {
+        return offers;
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("block.matteroverdrive.contract_market");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
         return new ContractMarketMenu(id, inv, this);
     }
-    @Override protected void saveAdditional(CompoundTag tag) {
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Offers", offers.serializeNBT());
-        tag.putLong("RefreshAt", refreshAt);
+        tag.putLong("NextGeneration", nextGenerationTime);
     }
-    @Override public void load(CompoundTag tag) {
+
+    @Override
+    public void load(CompoundTag tag) {
         super.load(tag);
-        refreshing = true;
+        loading = true;
         try {
-            offers.deserializeNBT(tag.getCompound("Offers"));
+            for (int slot = 0; slot < offers.getSlots(); slot++) {
+                offers.setStackInSlot(slot, ItemStack.EMPTY);
+            }
+
+            // Load through a temporary handler so old 3-slot saves cannot resize the
+            // authoritative 18-slot market inventory during migration.
+            ItemStackHandler loaded = new ItemStackHandler();
+            loaded.deserializeNBT(tag.getCompound("Offers"));
+            int copySlots = Math.min(OFFER_SLOTS, loaded.getSlots());
+            for (int slot = 0; slot < copySlots; slot++) {
+                offers.setStackInSlot(slot, loaded.getStackInSlot(slot));
+            }
         } finally {
-            refreshing = false;
+            loading = false;
         }
-        refreshAt = tag.getLong("RefreshAt");
+
+        if (tag.contains("NextGeneration")) {
+            nextGenerationTime = tag.getLong("NextGeneration");
+        } else {
+            // Compatibility with the previous 1.20.1 three-offer implementation.
+            nextGenerationTime = tag.getLong("RefreshAt");
+        }
     }
 }
