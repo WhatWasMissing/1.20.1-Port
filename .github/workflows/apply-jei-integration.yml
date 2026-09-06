@@ -1,0 +1,58 @@
+name: Apply JEI Integration
+
+on:
+  push:
+    branches:
+      - jei-integration-staging
+    paths:
+      - '.github/workflows/apply-jei-integration.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: jei-integration-staging
+          fetch-depth: 0
+
+      - name: Patch JEI integration
+        shell: python
+        run: |
+          from pathlib import Path
+
+          build = Path('build.gradle')
+          text = build.read_text(encoding='utf-8')
+          text = text.replace("repositories {\n}\n\ndependencies {\n    minecraft \"net.minecraftforge:forge:${minecraft_version}-${forge_version}\"\n}", "repositories {\n    maven {\n        name = 'BlameJared'\n        url = 'https://maven.blamejared.com/'\n    }\n}\n\ndependencies {\n    minecraft \"net.minecraftforge:forge:${minecraft_version}-${forge_version}\"\n\n    // JEI is optional at runtime; compile only against its public API.\n    compileOnly fg.deobf(\"mezz.jei:jei-${minecraft_version}-common-api:${jei_version}\") { transitive = false }\n    compileOnly fg.deobf(\"mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}\") { transitive = false }\n    runtimeOnly fg.deobf(\"mezz.jei:jei-${minecraft_version}-forge:${jei_version}\")\n}")
+          build.write_text(text, encoding='utf-8')
+
+          props = Path('gradle.properties')
+          p = props.read_text(encoding='utf-8')
+          if 'jei_version=' not in p:
+              p += '\n# Optional JEI development/runtime integration\njei_version=15.49.0.200\n'
+          props.write_text(p, encoding='utf-8')
+
+          mods = Path('src/main/resources/META-INF/mods.toml')
+          m = mods.read_text(encoding='utf-8')
+          if 'modId="jei"' not in m:
+              m += '''\n# Optional JEI integration. Standard JSON crafting/cooking recipes are discovered by JEI automatically;\n# the plugin below adds Matter Overdrive-specific machine information pages.\n[[dependencies.${mod_id}]]\nmodId="jei"\nmandatory=false\nversionRange="[15.49.0.200,16)"\nordering="AFTER"\nside="CLIENT"\n'''
+          mods.write_text(m, encoding='utf-8')
+
+          plugin = Path('src/main/java/matteroverdrive/compat/jei/MatterOverdriveJeiPlugin.java')
+          plugin.parent.mkdir(parents=True, exist_ok=True)
+          plugin.write_text('''package matteroverdrive.compat.jei;\n\nimport matteroverdrive.MatterOverdrive;\nimport matteroverdrive.registry.ModBlocks;\nimport mezz.jei.api.IModPlugin;\nimport mezz.jei.api.JeiPlugin;\nimport mezz.jei.api.registration.IRecipeRegistration;\nimport net.minecraft.network.chat.Component;\nimport net.minecraft.resources.ResourceLocation;\n\n@JeiPlugin\npublic final class MatterOverdriveJeiPlugin implements IModPlugin {\n    private static final ResourceLocation UID = new ResourceLocation(MatterOverdrive.MOD_ID, "jei");\n\n    @Override\n    public ResourceLocation getPluginUid() {\n        return UID;\n    }\n\n    @Override\n    public void registerRecipes(IRecipeRegistration registration) {\n        info(registration, "decomposer",\n                "Decomposes items with Matter values into stored Matter. Supply FE and an item with a Matter value.");\n        info(registration, "matter_recycler",\n                "Recycles items into Matter using less energy than the Decomposer, with recycler-specific processing rules.");\n        info(registration, "matter_analyzer",\n                "Analyzes items and creates Matter Overdrive pattern data for replication progression.");\n        info(registration, "inscriber",\n                "Upgrades Isolinear Circuits through the Matter Overdrive Mk1 to Mk4 progression chain.");\n        info(registration, "pattern_storage",\n                "Stores Pattern Drives and exposes stored patterns to the Matter Overdrive pattern network.");\n        info(registration, "pattern_monitor",\n                "Queues and monitors replication tasks on the Matter Overdrive pattern network.");\n        info(registration, "replicator",\n                "Replicates stored patterns by consuming Matter and FE. Pattern availability comes from Matter Overdrive pattern storage/networking.");\n        info(registration, "charging_station",\n                "Charges compatible FE-powered Matter Overdrive items and batteries.");\n        info(registration, "solar_panel",\n                "Generates FE from daylight and can feed adjacent Matter Overdrive energy consumers.");\n        info(registration, "fusion_reactor_controller",\n                "Controls the Matter Overdrive fusion reactor multiblock. See the Reactor Assembly Guide or Data Pad manual for structure details.");\n        info(registration, "fusion_reactor_io",\n                "Reactor interface for FE and Matter transfer between the fusion reactor and external systems.");\n        info(registration, "gravitational_stabilizer",\n                "Suppresses a nearby gravitational anomaly while powered and correctly aligned.");\n        info(registration, "transporter",\n                "Teleports entities to configured destinations using FE and Matter Overdrive transport data.");\n        info(registration, "weapon_station",\n                "Matter Overdrive weapon configuration and module station.");\n        info(registration, "network_switch",\n                "Configurable Matter Overdrive network switching and routing component.");\n        info(registration, "network_router",\n                "Routes Matter Overdrive network traffic according to configured destinations and filters.");\n        info(registration, "star_map",\n                "Opens the Matter Overdrive strategic Star Map system.");\n    }\n\n    private static void info(IRecipeRegistration registration, String blockId, String description) {\n        registration.addIngredientInfo(ModBlocks.get(blockId).get(), Component.literal(description));\n    }\n}\n''', encoding='utf-8')
+
+          doc = Path('docs/compat/JEI.md')
+          doc.parent.mkdir(parents=True, exist_ok=True)
+          doc.write_text('''# JEI Integration\n\nMatter Overdrive supports **Just Enough Items (JEI)** as an optional client integration on Forge 1.20.1.\n\n## Supported JEI line\n\n- Minecraft: 1.20.1\n- Forge: 47.4.10+\n- JEI: 15.49.0.200 (15.x)\n\n## What works\n\nJEI automatically discovers all standard Matter Overdrive JSON crafting, shapeless, smelting and blasting recipes. No duplicate recipe registration is required for those recipes.\n\nMatter Overdrive also registers a JEI plugin that adds information pages for major custom machines and systems whose processing logic is implemented in Java rather than Minecraft recipe JSON. These pages explain the role of the Decomposer, Recycler, Matter Analyzer, Inscriber, Pattern Storage, Pattern Monitor, Replicator, Charging Station, Solar Panel, Fusion Reactor, Stabilizer, Transporter, Weapon Station, Matter Network blocks and Star Map.\n\n## Optional dependency behavior\n\nJEI is **not required** to run Matter Overdrive. The production JAR does not bundle JEI. The build compiles against the public JEI API and includes JEI only in the development runtime.\n\n## Testing\n\n1. Launch Matter Overdrive without JEI and verify normal startup.\n2. Launch with JEI 15.49.0.200.\n3. Search `@matteroverdrive` and verify Matter Overdrive items appear.\n4. Open recipe uses/recipes for several craftable Matter Overdrive items and confirm JSON recipes appear.\n5. Open uses/recipes for Decomposer, Replicator, Fusion Reactor Controller, Transporter and Network Router and confirm their JEI information pages appear.\n6. Confirm no duplicate vanilla crafting or cooking recipes are registered.\n''', encoding='utf-8')
+
+      - name: Commit integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build.gradle gradle.properties src/main/resources/META-INF/mods.toml src/main/java/matteroverdrive/compat/jei/MatterOverdriveJeiPlugin.java docs/compat/JEI.md
+          git commit -m "Integrate JEI recipe and machine information support"
+          git push origin HEAD:jei-integration-staging
