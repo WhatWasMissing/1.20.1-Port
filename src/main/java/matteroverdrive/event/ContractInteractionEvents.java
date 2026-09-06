@@ -25,7 +25,8 @@ public final class ContractInteractionEvents {
         ResourceLocation block = ForgeRegistries.BLOCKS.getKey(event.getPlacedBlock().getBlock());
         if (block == null) return;
         advanceMatching(player, 1, contract -> "place".equals(ContractItem.type(contract))
-                && ContractItem.matchesTarget(contract, block.toString()));
+                && ContractItem.matchesTarget(contract, block.toString())
+                && ContractStageSupport.questPositionMatches(contract, event.getPos()));
     }
 
     @SubscribeEvent
@@ -34,7 +35,8 @@ public final class ContractInteractionEvents {
         ResourceLocation block = ForgeRegistries.BLOCKS.getKey(player.level().getBlockState(event.getPos()).getBlock());
         if (block == null) return;
         advanceMatching(player, 1, contract -> "block_interact".equals(ContractItem.type(contract))
-                && ContractItem.matchesTarget(contract, block.toString()));
+                && ContractItem.matchesTarget(contract, block.toString())
+                && ContractStageSupport.questPositionMatches(contract, event.getPos()));
     }
 
     @SubscribeEvent
