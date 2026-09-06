@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["IGI","IPH","WCW"],
+  "key":{"P":{"item":"matteroverdrive:plasma_core"},"C":{"item":"matteroverdrive:isolinear_circuit_mk3"},"G":{"item":"minecraft:glass"},"W":{"item":"minecraft:white_wool"},"H":{"item":"matteroverdrive:weapon_handle"},"I":{"item":"minecraft:iron_ingot"}},
+  "result":{"item":"matteroverdrive:phaser"}
+}
