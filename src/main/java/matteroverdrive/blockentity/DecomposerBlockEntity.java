@@ -4,6 +4,7 @@ import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.capability.MachineMatterStorage;
 import matteroverdrive.capability.ModCapabilities;
+import matteroverdrive.compat.AutomationItemHandler;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.MachineUpgradeInventory;
@@ -68,10 +69,14 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         @Override protected void onContentsChanged(int slot) { setChanged(); }
     };
 
+    private final IItemHandler automationItems = new AutomationItemHandler(
+            items,
+            slot -> slot == INPUT_SLOT || slot == ENERGY_SLOT,
+            slot -> slot == OUTPUT_SLOT);
     private final MachineEnergyStorage energyStorage = new MachineEnergyStorage(ENERGY_STORAGE, ENERGY_STORAGE, ENERGY_STORAGE, this::setChanged);
     private final MachineMatterStorage matterStorage = new MachineMatterStorage(MATTER_STORAGE, false, true, this::setChanged);
     private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(UPGRADE_SLOT_COUNT, upgrade -> upgrade != MachineUpgradeItem.Upgrade.RANGE, this::onUpgradesChanged);
-    private LazyOptional<IItemHandler> itemHandlerCapability = LazyOptional.of(() -> items);
+    private LazyOptional<IItemHandler> itemHandlerCapability = LazyOptional.of(() -> automationItems);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
     private LazyOptional<matteroverdrive.capability.IMatterStorage> matterCapability = LazyOptional.of(() -> matterStorage);
 
@@ -220,7 +225,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     }
     @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) { if (cap == ForgeCapabilities.ITEM_HANDLER) return itemHandlerCapability.cast(); if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast(); if (cap == ModCapabilities.MATTER) return matterCapability.cast(); return super.getCapability(cap, side); }
     @Override public void invalidateCaps() { super.invalidateCaps(); itemHandlerCapability.invalidate(); energyCapability.invalidate(); matterCapability.invalidate(); }
-    @Override public void reviveCaps() { super.reviveCaps(); itemHandlerCapability = LazyOptional.of(() -> items); energyCapability = LazyOptional.of(() -> energyStorage); matterCapability = LazyOptional.of(() -> matterStorage); }
+    @Override public void reviveCaps() { super.reviveCaps(); itemHandlerCapability = LazyOptional.of(() -> automationItems); energyCapability = LazyOptional.of(() -> energyStorage); matterCapability = LazyOptional.of(() -> matterStorage); }
     @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.decomposer"); }
     @Nullable @Override public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) { return new DecomposerMenu(containerId, playerInventory, this); }
 }
