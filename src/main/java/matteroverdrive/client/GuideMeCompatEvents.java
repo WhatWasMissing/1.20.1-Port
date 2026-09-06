@@ -14,60 +14,103 @@ import org.slf4j.Logger;
 import java.lang.reflect.Method;
 
 /**
- * Optional GuideME bridge. Reflection deliberately keeps GuideME out of MO's
- * hard dependency graph while still using GuideME 20.1.15 when installed.
+ * First-class optional GuideME 20.1.15 bridge.
+ *
+ * GuideME stays optional at class-loading time: all GuideME types are resolved
+ * reflectively, while the exact 20.1.15 builder/registry/page-anchor API is used
+ * when the mod is present.
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class GuideMeCompatEvents {
     public static final ResourceLocation GUIDE_ID = new ResourceLocation(MatterOverdrive.MOD_ID, "guide");
+    public static final ResourceLocation START_PAGE = new ResourceLocation(MatterOverdrive.MOD_ID, "index.md");
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean registered;
+    private static Object guide;
 
     private GuideMeCompatEvents() {}
 
     @SubscribeEvent
     public static void clientSetup(FMLClientSetupEvent event) {
-        if (ModList.get().isLoaded("guideme")) {
-            event.enqueueWork(GuideMeCompatEvents::registerGuide);
-        }
+        if (isAvailable()) event.enqueueWork(GuideMeCompatEvents::registerGuide);
     }
 
-    private static void registerGuide() {
-        if (registered || !ModList.get().isLoaded("guideme")) return;
+    public static boolean isAvailable() {
+        return ModList.get().isLoaded("guideme");
+    }
+
+    private static synchronized void registerGuide() {
+        if (registered || !isAvailable()) return;
         try {
             Class<?> guideClass = Class.forName("guideme.Guide");
             Object builder = guideClass.getMethod("builder", ResourceLocation.class).invoke(null, GUIDE_ID);
-            // GuideBuilder defaults are exactly what we need for matteroverdrive:guide:
-            // assets/matteroverdrive/guides/matteroverdrive/guide, start page index.md.
-            builder.getClass().getMethod("build").invoke(builder);
-            registered = true;
-        } catch (ReflectiveOperationException ex) {
-            LOGGER.error("GuideME is installed but the Matter Overdrive guide could not be registered", ex);
+
+            // GuideBuilder's 20.1.15 defaults already derive this folder from GUIDE_ID,
+            // but setting it explicitly makes the resource contract unambiguous.
+            builder.getClass().getMethod("folder", String.class)
+                    .invoke(builder, "guides/matteroverdrive/guide");
+            builder.getClass().getMethod("defaultNamespace", String.class)
+                    .invoke(builder, MatterOverdrive.MOD_ID);
+            builder.getClass().getMethod("startPage", ResourceLocation.class)
+                    .invoke(builder, START_PAGE);
+
+            guide = builder.getClass().getMethod("build").invoke(builder);
+            registered = guide != null;
+            if (registered) LOGGER.info("Registered Matter Overdrive GuideME manual {}", GUIDE_ID);
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            registered = false;
+            guide = null;
+            LOGGER.error("GuideME is installed but the Matter Overdrive manual could not be registered", ex);
         }
     }
 
-    /** Opens the Matter Overdrive GuideME manual when GuideME is present. */
+    /** Opens the manual's start page. */
     public static boolean openGuide() {
-        if (!ModList.get().isLoaded("guideme")) return false;
+        return openPage(START_PAGE);
+    }
+
+    /** Opens a concrete GuideME markdown page such as matteroverdrive:ae2.md. */
+    public static boolean openPage(ResourceLocation page) {
+        if (!isAvailable()) return false;
         registerGuide();
         try {
-            Class<?> guideClass = Class.forName("guideme.Guide");
-            Class<?> guidesClass = Class.forName("guideme.Guides");
-            Object guide = guidesClass.getMethod("getById", ResourceLocation.class).invoke(null, GUIDE_ID);
-            if (guide == null) return false;
+            Object currentGuide = resolveGuide();
+            if (currentGuide == null) return false;
 
-            Object startPage = guideClass.getMethod("getStartPage").invoke(guide);
+            Class<?> guideClass = Class.forName("guideme.Guide");
             Class<?> pageAnchorClass = Class.forName("guideme.PageAnchor");
-            Object anchor = pageAnchorClass.getMethod("page", ResourceLocation.class).invoke(null, startPage);
+            Object anchor = pageAnchorClass.getMethod("page", ResourceLocation.class).invoke(null, page);
 
             Class<?> guideScreenClass = Class.forName("guideme.internal.screen.GuideScreen");
             Method openNew = guideScreenClass.getMethod("openNew", guideClass, pageAnchorClass);
-            Object screen = openNew.invoke(null, guide, anchor);
+            Object screen = openNew.invoke(null, currentGuide, anchor);
             Minecraft.getInstance().setScreen((net.minecraft.client.gui.screens.Screen) screen);
             return true;
-        } catch (ReflectiveOperationException ex) {
-            LOGGER.error("GuideME is installed but the Matter Overdrive guide could not be opened", ex);
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            LOGGER.error("GuideME is installed but page {} could not be opened", page, ex);
             return false;
         }
+    }
+
+    /** Re-resolves GuideME resources after a manual/resource reload. */
+    public static synchronized boolean reloadGuide() {
+        if (!isAvailable()) return false;
+        try {
+            Class<?> guidesClass = Class.forName("guideme.Guides");
+            guidesClass.getMethod("reload").invoke(null);
+            guide = guidesClass.getMethod("getById", ResourceLocation.class).invoke(null, GUIDE_ID);
+            registered = guide != null;
+            return registered;
+        } catch (ReflectiveOperationException | RuntimeException ex) {
+            LOGGER.error("GuideME manual reload failed", ex);
+            return false;
+        }
+    }
+
+    private static Object resolveGuide() throws ReflectiveOperationException {
+        Class<?> guidesClass = Class.forName("guideme.Guides");
+        Object registeredGuide = guidesClass.getMethod("getById", ResourceLocation.class).invoke(null, GUIDE_ID);
+        if (registeredGuide != null) guide = registeredGuide;
+        return guide;
     }
 }
