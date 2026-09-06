@@ -2,13 +2,16 @@ package matteroverdrive.entity;
 
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.event.CocktailQuestEvents;
+import matteroverdrive.event.ContractInteractionEvents;
 import matteroverdrive.registry.ModEntities;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -50,6 +53,11 @@ public class MadScientistEntity extends Villager {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (level().isClientSide) return InteractionResult.SUCCESS;
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            ContractInteractionEvents.recordConversation(serverPlayer,
+                    new ResourceLocation("matteroverdrive", "mad_scientist"));
+        }
 
         CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         boolean active = persisted.getBoolean(QUEST_ACTIVE);
