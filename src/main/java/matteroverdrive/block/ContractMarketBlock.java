@@ -65,11 +65,21 @@ public class ContractMarketBlock extends BaseEntityBlock {
             held.shrink(1);
             if (!chained.isEmpty() && !player.getInventory().add(chained)) player.drop(chained, false);
             player.displayClientMessage(Component.literal("Contract redeemed: " + title + (xp > 0 ? " (" + xp + " XP)" : "")), true);
+
+            SoundEvent completionSound = ForgeRegistries.SOUND_EVENTS.getValue(
+                    new net.minecraft.resources.ResourceLocation("matteroverdrive", "gui.quest_complete"));
+            if (completionSound != null && player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.playNotifySound(completionSound, SoundSource.PLAYERS, 1.0F, 1.0F);
+            }
+
             if (!chained.isEmpty()) {
                 player.displayClientMessage(Component.literal("New objective received: " + ContractItem.title(chained)), true);
+                SoundEvent startedSound = ForgeRegistries.SOUND_EVENTS.getValue(
+                        new net.minecraft.resources.ResourceLocation("matteroverdrive", "gui.quest_started"));
+                if (startedSound != null && player instanceof ServerPlayer serverPlayer) {
+                    serverPlayer.playNotifySound(startedSound, SoundSource.PLAYERS, 0.9F, 1.0F);
+                }
             }
-            SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(new net.minecraft.resources.ResourceLocation("matteroverdrive", "gui.quest_complete"));
-            if (sound != null && player instanceof ServerPlayer serverPlayer) serverPlayer.playNotifySound(sound, SoundSource.PLAYERS, 1.0F, 1.0F);
             return InteractionResult.CONSUME;
         }
         if (!level.isClientSide && player instanceof ServerPlayer server
