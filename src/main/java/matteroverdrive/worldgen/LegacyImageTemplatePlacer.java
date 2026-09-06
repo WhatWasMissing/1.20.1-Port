@@ -195,7 +195,7 @@ public final class LegacyImageTemplatePlacer {
 
     private static Mapping underwater(int rgb) {
         return switch (rgb) {
-            case 0xDC979C -> new Mapping(Blocks.SHORT_GRASS.defaultBlockState(), MetadataKind.TALL_GRASS);
+            case 0xDC979C -> new Mapping(Blocks.GRASS.defaultBlockState(), MetadataKind.TALL_GRASS);
             case 0x77D1B6 -> new Mapping(Blocks.POPPY.defaultBlockState(), MetadataKind.FLOWER);
             case 0x0C1E4E -> vanilla(Blocks.FARMLAND);
             case 0xA7AC65 -> mo("tritanium_crate_orange");
@@ -235,7 +235,7 @@ public final class LegacyImageTemplatePlacer {
         return switch (kind) {
             case DYE_GLASS -> dyeGlass(meta).defaultBlockState();
             case DYE_CARPET -> dyeCarpet(meta).defaultBlockState();
-            case TALL_GRASS -> (meta == 2 ? Blocks.FERN : Blocks.SHORT_GRASS).defaultBlockState();
+            case TALL_GRASS -> (meta == 2 ? Blocks.FERN : Blocks.GRASS).defaultBlockState();
             case FLOWER -> flower(meta).defaultBlockState();
             case SAPLING -> sapling(meta).defaultBlockState();
             case CROP -> state.hasProperty(CropBlock.AGE) ? state.setValue(CropBlock.AGE, Math.min(7, meta & 7)) : state;
