@@ -49,7 +49,8 @@ public final class SourcePopulationStructureFeature extends Feature<NoneFeatureC
 
         if (!delegate.place(context)) return false;
 
-        var created = server.getEntities(null, bounds, entity -> !before.contains(entity.getUUID()));
+        var created = server.getEntities((Entity) null, bounds,
+                entity -> !before.contains(entity.getUUID()));
         switch (kind) {
             case CRASHED_SHIP, CARGO_SHIP, UNDERWATER_BASE, SAND_PIT -> {
                 // The authoritative 1.12.2 onGeneration hooks do not add combat mobs here.
