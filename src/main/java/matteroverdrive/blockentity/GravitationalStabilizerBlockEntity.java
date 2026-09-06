@@ -34,8 +34,13 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
     private static final int BASE_POWER_PER_TICK = 64;
     private static final double BASE_SUPPRESSION = 0.7D;
 
+    /*
+     * Stabilizers are reactor auxiliaries, not throughput regulators.  They may
+     * consume more or less FE as upgrades change, but their input capability must
+     * never become the bottleneck that limits the reactor's generated/output FE/t.
+     */
     private final MachineEnergyStorage energy =
-            new MachineEnergyStorage(100_000, 4_096, 0, this::setChanged);
+            new MachineEnergyStorage(100_000, Integer.MAX_VALUE, 0, this::setChanged);
     private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
             4,
             upgrade -> upgrade == MachineUpgradeItem.Upgrade.POWER
@@ -165,8 +170,6 @@ public class GravitationalStabilizerBlockEntity extends BlockEntity implements M
                 powerUpgrades++;
             }
         }
-        // This value is the remaining anomaly-strength multiplier. Lower is
-        // stronger suppression, so Power upgrades must reduce it rather than raise it.
         return Math.max(0.05D, BASE_SUPPRESSION - powerUpgrades * 0.05D);
     }
 

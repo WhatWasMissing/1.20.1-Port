@@ -1,6 +1,7 @@
 package matteroverdrive.client.screen;
 
 import matteroverdrive.android.AndroidData;
+import matteroverdrive.android.AndroidMastery;
 import matteroverdrive.client.AndroidClientState;
 import matteroverdrive.network.AndroidPerkSelectPacket;
 import matteroverdrive.network.ModNetwork;
@@ -119,6 +120,14 @@ public class AndroidSkillTreeScreen extends Screen {
                 - Long.bitCount(AndroidClientState.selectedPerks()));
     }
 
+    private int branchInvestment(int branch) {
+        int count = 0;
+        for (AndroidData.Perk perk : AndroidData.Perk.values()) {
+            if (perk.branch == branch && AndroidClientState.hasPerk(perk)) count++;
+        }
+        return count;
+    }
+
     private int priorBranchInvestments(AndroidData.Perk perk) {
         int count = 0;
         for (AndroidData.Perk candidate : AndroidData.Perk.values()) {
@@ -189,8 +198,12 @@ public class AndroidSkillTreeScreen extends Screen {
         int capstoneX = treeLeft + 8 * step;
         for (int branch = 0; branch < 3; branch++) {
             int y = rows[branch];
-            g.drawString(font, branchNames[branch], 18, y - 9, branch == 0 ? DANGER : branch == 1 ? GOLD : ACCENT, false);
-            g.drawString(font, branchSub[branch], 18, y + 4, MUTED, false);
+            int investment = branchInvestment(branch);
+            int mastery = AndroidMastery.tierForInvestment(investment);
+            g.drawString(font, branchNames[branch], 18, y - 14, branch == 0 ? DANGER : branch == 1 ? GOLD : ACCENT, false);
+            g.drawString(font, branchSub[branch], 18, y - 2, MUTED, false);
+            g.drawString(font, "FOCUS " + investment + " · " + AndroidMastery.tierName(mastery),
+                    18, y + 10, mastery > 0 ? ACCENT : LOCKED, false);
             g.fill(treeLeft, y - 1, levelNineX, y + 1, 0x66737D88);
             int forkColor = level >= AndroidData.MAX_LEVEL ? ACCENT : LOCKED;
             drawLine(g, levelNineX, y, capstoneX, y - 17, forkColor);
@@ -243,9 +256,10 @@ public class AndroidSkillTreeScreen extends Screen {
             g.drawString(font, "to inspect its function.", x, y + 34, MUTED, false);
             g.drawString(font, "One point is awarded", x, y + 62, MUTED, false);
             g.drawString(font, "every two Android levels.", x, y + 74, MUTED, false);
-            g.drawString(font, "High tiers require branch investment.", x, y + 86, GOLD, false);
-            g.drawString(font, "Level 10 forks into capstones.", x, y + 98, GOLD, false);
-            g.drawString(font, "Maximum build: 5 perks.", x, y + 110, GOLD, false);
+            g.drawString(font, "Branch mastery unlocks at 2 / 3 / 4.", x, y + 86, GOLD, false);
+            g.drawString(font, "High tiers require branch investment.", x, y + 98, GOLD, false);
+            g.drawString(font, "Level 10 forks into capstones.", x, y + 110, GOLD, false);
+            g.drawString(font, "Maximum build: 5 perks.", x, y + 122, GOLD, false);
             return;
         }
 
@@ -253,6 +267,8 @@ public class AndroidSkillTreeScreen extends Screen {
         boolean levelLocked = AndroidClientState.level() < inspected.level;
         int required = AndroidData.requiredBranchInvestment(inspected);
         int invested = priorBranchInvestments(inspected);
+        int branchTotal = branchInvestment(inspected.branch);
+        int mastery = AndroidMastery.tierForInvestment(branchTotal);
         boolean branchLocked = invested < required;
         g.drawString(font, inspected.displayName.toUpperCase(), x, y + 22, owned ? SELECTED : GOLD, false);
         g.drawString(font, (inspected.level == AndroidData.MAX_LEVEL ? "CAPSTONE" : "TIER " + inspected.level)
@@ -262,8 +278,12 @@ public class AndroidSkillTreeScreen extends Screen {
 
         int infoY = y + 126;
         g.fill(x, infoY, width - 30, infoY + 1, 0x55FFFFFF);
+        g.drawString(font, "BRANCH MASTERY", x, infoY + 10, MUTED, false);
+        g.drawString(font, branchTotal + " INVESTED · " + AndroidMastery.tierName(mastery), x, infoY + 23,
+                mastery > 0 ? ACCENT : LOCKED, false);
+        infoY += 39;
         if (required > 0) {
-            g.drawString(font, "SPECIALIZATION", x, infoY + 10, MUTED, false);
+            g.drawString(font, "NODE REQUIREMENT", x, infoY + 10, MUTED, false);
             g.drawString(font, invested + " / " + required + " PRIOR NODES", x, infoY + 23,
                     branchLocked && !owned ? DANGER : ACCENT, false);
             infoY += 39;

@@ -3,6 +3,7 @@ package matteroverdrive.event;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.android.AndroidAbilities;
 import matteroverdrive.android.AndroidData;
+import matteroverdrive.android.AndroidMastery;
 import matteroverdrive.item.weapon.WeaponBatteryItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.registry.ModItems;
@@ -73,6 +74,8 @@ public final class AndroidEvents {
         if (AndroidData.hasPerk(event.player, AndroidData.Perk.SUSTAINED_SYSTEMS)) {
             passiveCost = Math.max(1, (int)Math.ceil(passiveCost * 0.60D));
         }
+        passiveCost = Math.max(1, (int)Math.ceil(passiveCost
+                * AndroidMastery.utilityPassiveEnergyMultiplier(event.player)));
         if (activeParts == 0 || !AndroidData.tryConsumeEnergy(event.player, passiveCost)) return;
 
         if (AndroidData.hasPart(event.player, AndroidData.Part.HEAD)) {
@@ -144,8 +147,10 @@ public final class AndroidEvents {
         if (!AndroidData.isAndroid(player) || !player.isCrouching()
                 || AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY) return;
 
-        int chargeRate = AndroidData.hasPerk(player, AndroidData.Perk.QUICK_CHARGE)
+        int baseChargeRate = AndroidData.hasPerk(player, AndroidData.Perk.QUICK_CHARGE)
                 ? HANDHELD_CHARGE_PER_TICK * 3 : HANDHELD_CHARGE_PER_TICK;
+        int chargeRate = Math.max(1, (int)Math.round(baseChargeRate
+                * AndroidMastery.utilityChargeMultiplier(player)));
         int remaining = Math.min(chargeRate, AndroidData.ENERGY_CAPACITY - AndroidData.getEnergy(player));
         for (InteractionHand hand : InteractionHand.values()) {
             if (remaining <= 0) break;
@@ -186,7 +191,8 @@ public final class AndroidEvents {
                 && AndroidData.hasPart(attacker, AndroidData.Part.ARMS)
                 && AndroidData.tryConsumeEnergy(attacker, 80)) {
             float perkDamage = AndroidData.hasPerk(attacker, AndroidData.Perk.COMBAT_SERVOS) ? 5.0F : 0.0F;
-            event.setAmount(event.getAmount() + 3.0F + perkDamage);
+            float poweredDamage = (float)((3.0F + perkDamage) * AndroidMastery.assaultDamageMultiplier(attacker));
+            event.setAmount(event.getAmount() + poweredDamage);
             if (perkDamage > 0.0F && event.getEntity() != attacker) {
                 event.getEntity().push(attacker.getLookAngle().x * 0.45D, 0.12D, attacker.getLookAngle().z * 0.45D);
             }
@@ -197,7 +203,10 @@ public final class AndroidEvents {
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer defender) {
             AndroidAbilities.applyShield(event, defender);
-            if (AndroidData.isAndroid(defender)) event.setAmount(event.getAmount() * AndroidData.incomingDamageMultiplier(defender));
+            if (AndroidData.isAndroid(defender)) {
+                event.setAmount((float)(event.getAmount() * AndroidData.incomingDamageMultiplier(defender)
+                        * AndroidMastery.chassisDamageMultiplier(defender)));
+            }
         }
     }
 
