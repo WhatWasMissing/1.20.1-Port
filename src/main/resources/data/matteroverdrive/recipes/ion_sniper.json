@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["ICI","SPP"," HB"],
+  "key":{"P":{"item":"matteroverdrive:plasma_core"},"B":{"item":"matteroverdrive:battery"},"S":{"item":"matteroverdrive:weapon_receiver"},"C":{"item":"matteroverdrive:isolinear_circuit_mk4"},"H":{"item":"matteroverdrive:weapon_handle"},"I":{"item":"minecraft:iron_ingot"}},
+  "result":{"item":"matteroverdrive:ion_sniper"}
+}
