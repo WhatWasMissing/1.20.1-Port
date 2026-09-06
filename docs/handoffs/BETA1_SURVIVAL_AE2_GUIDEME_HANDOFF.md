@@ -19,6 +19,7 @@ This handoff covers the first Beta survival-hardening audit plus optional Applie
 - Verified the first Solar Panel dependency chain is reachable from vanilla resources + smelted Tritanium.
 - Verified Battery -> Charging Station and S-Magnet -> Matter Container -> Decomposer bootstrap chains are now reachable.
 - Found and fixed a hard Android progression blocker: melee and ranged Rogue Androids had no entity loot table. Both now have a source-backed 15% base chance, +10% per Looting level, to drop one random HEAD/CHEST/ARMS/LEGS part.
+- Restored the source-backed Pattern Drive survival recipe at head `4007e31655dfed1cbfb6331aaae0cb841ae90530`.
 
 ## AE2 15.4.10
 
@@ -44,45 +45,42 @@ The exact attached GuideME JAR was inspected with `javap`.
 - default resources resolve to `assets/matteroverdrive/guides/matteroverdrive/guide`.
 - opening uses `Guides.getById`, `Guide.getStartPage`, `PageAnchor.page`, and `GuideScreen.openNew`.
 - bridge uses reflection so MO still loads with GuideME absent.
-- Data Pad now shows a `GuideME Manual` button only when GuideME is installed.
+- Data Pad shows a `GuideME Manual` button only when GuideME is installed.
 - Data Pad scan history + contract controls remain intact.
 - compact built-in pages remain the no-GuideME fallback.
 
-GuideME pages now cover:
-- index
-- survival
-- matter
-- power
-- Android
-- fusion reactor
-- weapons
-- Matter Network
-- AE2
-- quests/contracts
-- Star Map
-- Dimensional Pylon
-- transporter/security
+GuideME pages cover the player how-to material by system: survival, matter, power/machines, Android, fusion reactor, weapons, Matter Network, AE2, quests/contracts, Star Map, Dimensional Pylon and transporter/security. The full standalone `SYSTEM_GUIDE.md` is therefore intentionally not copied wholesale into GuideME because that would duplicate the same instructions and create two GuideME maintenance surfaces.
+
+A dedicated **Current Features** GuideME page has now been added and linked from the manual index. It provides the implementation/parity overview that was not otherwise represented by the system how-to pages, including current major remaining parity work.
 
 `mods.toml` declares GuideME 20.1.15-20.x as an optional AFTER dependency.
+
+## CI state
+
+Exact head `4007e31655dfed1cbfb6331aaae0cb841ae90530` completed the GitHub Actions **Build mod** step successfully. The workflow is marked failed only because the **Upload test JAR** step failed, matching the recurring artifact-upload issue. Treat this as compile/build-step verified, not a newly downloadable CI artifact.
+
+The GuideME Current Features/index commits were added after that successful build step and require their own exact-head CI gate.
 
 ## Docs/testing
 
 - `docs/reference/AE2_GUIDEME_INTEGRATION.md`
 - `docs/testing/BETA1_SURVIVAL_COMPAT_TESTING.md`
+- `src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/current_features.md`
 - this handoff
 
 ## Still to verify in game
 
 1. Fresh-world ore frequency and actual iron-pickaxe drops.
-2. Full fresh Survival chain through Replicator.
+2. Full fresh Survival chain through Replicator and higher-tier progression.
 3. Rogue Android part drop pacing and all four-part completion.
 4. AE2 Storage Bus/import/export behavior on every audited machine, including chunk unload/reload and no duplication.
-5. GuideME rendering/navigation with the exact attached 20.1.15 JAR.
+5. GuideME rendering/navigation with the exact attached 20.1.15 JAR, including Current Features.
 6. Matter Overdrive startup with AE2 absent, GuideME absent, each individually present, and both present.
 
 ## Next recommended work
 
-- CI-gate the exact head and repair any Java/resource verifier errors.
+- CI-gate the new exact head and repair any Java/resource verifier errors.
 - Continue recipe reachability from Replicator into higher-tier machines/upgrades/weapons/reactor.
 - Verify quest-structure acquisition frequencies during the survival run.
+- Continue capability/automation hardening only where actual machine handlers need it; do not invent a merged AE2/Matter Network system.
 - After the survival/compat gate is clean, cut the first named Beta testing JAR and update display/mod version together.
