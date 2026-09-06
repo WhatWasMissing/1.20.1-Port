@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["ITI", "TRT", "ITI"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "T": { "item": "matteroverdrive:tritanium_ingot" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": { "item": "matteroverdrive:s_magnet", "count": 2 }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["TDT", "DRD", "TDT"],
+  "key": {
+    "T": { "item": "matteroverdrive:tritanium_ingot" },
+    "D": { "item": "matteroverdrive:dilithium_crystal" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": { "item": "matteroverdrive:battery" }
+}
