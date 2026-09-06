@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["IIC","GFG","III"],
+  "key":{"C":{"item":"matteroverdrive:isolinear_circuit_mk2"},"F":{"item":"matteroverdrive:forcefield_emitter"},"G":{"item":"minecraft:lime_stained_glass_pane"},"I":{"item":"minecraft:iron_ingot"}},
+  "result":{"item":"matteroverdrive:sniper_scope"}
+}
