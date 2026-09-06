@@ -24,7 +24,7 @@ public final class ContractInteractionEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ResourceLocation block = ForgeRegistries.BLOCKS.getKey(event.getPlacedBlock().getBlock());
         if (block == null) return;
-        advanceMatching(player, contract -> "place".equals(ContractItem.type(contract))
+        advanceMatching(player, 1, contract -> "place".equals(ContractItem.type(contract))
                 && ContractItem.matchesTarget(contract, block.toString()));
     }
 
@@ -33,7 +33,7 @@ public final class ContractInteractionEvents {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ResourceLocation block = ForgeRegistries.BLOCKS.getKey(player.level().getBlockState(event.getPos()).getBlock());
         if (block == null) return;
-        advanceMatching(player, contract -> "block_interact".equals(ContractItem.type(contract))
+        advanceMatching(player, 1, contract -> "block_interact".equals(ContractItem.type(contract))
                 && ContractItem.matchesTarget(contract, block.toString()));
     }
 
@@ -44,29 +44,50 @@ public final class ContractInteractionEvents {
         if (used.isEmpty()) return;
         ResourceLocation item = ForgeRegistries.ITEMS.getKey(used.getItem());
         if (item == null) return;
-        advanceMatching(player, contract -> "item_interact".equals(ContractItem.type(contract))
-                && ContractItem.matchesTarget(contract, item.toString()));
+
+        boolean consume = advanceMatching(player, 1, contract ->
+                ("item_interact".equals(ContractItem.type(contract))
+                        || "item_interact_consume".equals(ContractItem.type(contract)))
+                        && ContractItem.matchesTarget(contract, item.toString()),
+                contract -> "item_interact_consume".equals(ContractItem.type(contract)));
+        if (consume && !player.getAbilities().instabuild) used.shrink(1);
     }
 
-    private static void advanceMatching(ServerPlayer player, ContractPredicate predicate) {
+    /** Used by server-authoritative NPC interaction handlers to restore legacy conversation objectives. */
+    public static void recordConversation(ServerPlayer player, ResourceLocation entityType) {
+        if (player == null || entityType == null) return;
+        advanceMatching(player, 1, contract -> "conversation".equals(ContractItem.type(contract))
+                && ContractItem.matchesTarget(contract, entityType.toString()));
+    }
+
+    private static boolean advanceMatching(ServerPlayer player, int amount, ContractPredicate predicate) {
+        return advanceMatching(player, amount, predicate, contract -> false);
+    }
+
+    /** Returns true when at least one matching objective requested consumption. */
+    private static boolean advanceMatching(ServerPlayer player, int amount, ContractPredicate predicate,
+                                           ContractPredicate consumePredicate) {
         boolean changed = false;
         boolean completed = false;
+        boolean consume = false;
         String latestTitle = null;
         for (ItemStack contract : player.getInventory().items) {
             if (!(contract.getItem() instanceof ContractItem)
                     || ContractItem.complete(contract)
                     || !predicate.test(contract)) continue;
-            if (ContractStageSupport.advanceAndCheck(contract, 1)) {
+            if (consumePredicate.test(contract)) consume = true;
+            if (ContractStageSupport.advanceAndCheck(contract, amount)) {
                 completed = true;
                 latestTitle = ContractItem.title(contract);
             }
             changed = true;
         }
-        if (!changed) return;
+        if (!changed) return false;
         player.getInventory().setChanged();
         player.inventoryMenu.broadcastChanges();
         if (player.containerMenu != player.inventoryMenu) player.containerMenu.broadcastChanges();
         if (completed) notifyCompletion(player, latestTitle == null ? "Contract" : latestTitle);
+        return consume;
     }
 
     private static void notifyCompletion(ServerPlayer player, String title) {
