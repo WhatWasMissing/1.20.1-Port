@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["III","SPC","WHB"],
+  "key":{"P":{"item":"matteroverdrive:plasma_core"},"B":{"item":"matteroverdrive:battery"},"C":{"item":"matteroverdrive:isolinear_circuit_mk3"},"S":{"item":"matteroverdrive:weapon_receiver"},"W":{"item":"minecraft:white_wool"},"H":{"item":"matteroverdrive:weapon_handle"},"I":{"item":"minecraft:iron_ingot"}},
+  "result":{"item":"matteroverdrive:phaser_rifle"}
+}
