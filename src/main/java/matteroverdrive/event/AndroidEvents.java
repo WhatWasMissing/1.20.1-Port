@@ -38,17 +38,12 @@ import java.util.UUID;
 public final class AndroidEvents {
     public static final String ROGUE_ANDROID_TAG = "MatterOverdriveRogueAndroid";
     public static final int HANDHELD_CHARGE_PER_TICK = 1_024;
-    private static final UUID OUT_OF_POWER_SPEED_ID =
-            UUID.fromString("ec778ddc-9711-498b-b9aa-8e5adc436e00");
+    private static final UUID OUT_OF_POWER_SPEED_ID = UUID.fromString("ec778ddc-9711-498b-b9aa-8e5adc436e00");
     private static final AttributeModifier OUT_OF_POWER_SPEED = new AttributeModifier(
-            OUT_OF_POWER_SPEED_ID,
-            "Matter Overdrive Android out of power",
-            -0.5D,
-            AttributeModifier.Operation.MULTIPLY_TOTAL
-    );
+            OUT_OF_POWER_SPEED_ID, "Matter Overdrive Android out of power", -0.5D,
+            AttributeModifier.Operation.MULTIPLY_TOTAL);
 
-    private AndroidEvents() {
-    }
+    private AndroidEvents() {}
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone event) {
@@ -57,24 +52,18 @@ public final class AndroidEvents {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) {
-            return;
-        }
+        if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide) return;
 
         if (event.player instanceof ServerPlayer player) {
             chargeFromHeldBattery(player);
             AndroidAbilities.tick(player);
             updatePowerState(player);
-            if (player.tickCount % 2 == 0) {
-                ModNetwork.syncAndroidState(player);
-            }
+            if (player.tickCount % 2 == 0) ModNetwork.syncAndroidState(player);
         }
 
         if (event.player.tickCount % 20 != 0
                 || !AndroidData.isAndroid(event.player)
-                || AndroidData.getEnergy(event.player) <= 0) {
-            return;
-        }
+                || AndroidData.getEnergy(event.player) <= 0) return;
 
         applyAndroidBaseline(event.player);
         runUtilityPerks(event.player);
@@ -82,11 +71,9 @@ public final class AndroidEvents {
         int activeParts = Integer.bitCount(AndroidData.getParts(event.player));
         int passiveCost = activeParts * 5;
         if (AndroidData.hasPerk(event.player, AndroidData.Perk.SUSTAINED_SYSTEMS)) {
-            passiveCost = Math.max(1, (int) Math.ceil(passiveCost * 0.75D));
+            passiveCost = Math.max(1, (int)Math.ceil(passiveCost * 0.60D));
         }
-        if (activeParts == 0 || !AndroidData.tryConsumeEnergy(event.player, passiveCost)) {
-            return;
-        }
+        if (activeParts == 0 || !AndroidData.tryConsumeEnergy(event.player, passiveCost)) return;
 
         if (AndroidData.hasPart(event.player, AndroidData.Part.HEAD)) {
             event.player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 240, 0, true, false, false));
@@ -97,21 +84,23 @@ public final class AndroidEvents {
         if (AndroidData.hasPart(event.player, AndroidData.Part.LEGS)) {
             int amplifier = AndroidData.hasPerk(event.player, AndroidData.Perk.NEURAL_ACCELERATOR) ? 1 : 0;
             event.player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 45, amplifier, true, false, false));
+            if (AndroidData.hasPerk(event.player, AndroidData.Perk.NEURAL_ACCELERATOR)) {
+                event.player.addEffect(new MobEffectInstance(MobEffects.JUMP, 45, 0, true, false, false));
+            }
+            if (AndroidData.hasPerk(event.player, AndroidData.Perk.ADAPTIVE_ARMOR)
+                    && event.player.getHealth() < event.player.getMaxHealth() * 0.60F) {
+                event.player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 45, 2, true, false, false));
+            }
         }
     }
 
-    /** Core Android traits documented by the original mod, applied while the core has power. */
     private static void applyAndroidBaseline(net.minecraft.world.entity.player.Player player) {
         player.getFoodData().setFoodLevel(20);
         player.getFoodData().setSaturation(5.0F);
         player.setAirSupply(player.getMaxAirSupply());
-
         for (MobEffectInstance effect : java.util.List.copyOf(player.getActiveEffects())) {
-            if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL) {
-                player.removeEffect(effect.getEffect());
-            }
+            if (effect.getEffect().getCategory() == MobEffectCategory.HARMFUL) player.removeEffect(effect.getEffect());
         }
-
         if (player.isInWater() && !player.getAbilities().flying) {
             player.setDeltaMovement(player.getDeltaMovement().add(0.0D, -0.035D, 0.0D));
         }
@@ -121,80 +110,69 @@ public final class AndroidEvents {
         if (AndroidData.hasPerk(player, AndroidData.Perk.SELF_REPAIR)
                 && player.getHealth() < player.getMaxHealth()
                 && AndroidData.tryConsumeEnergy(player, 250)) {
-            player.heal(1.0F);
+            player.heal(AndroidData.hasPerk(player, AndroidData.Perk.SYNTHETIC_PERFECTION) ? 2.0F : 1.0F);
+        }
+
+        if (AndroidData.hasPerk(player, AndroidData.Perk.SYNTHETIC_PERFECTION)
+                && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY * 3 / 4
+                && player.getHealth() < player.getMaxHealth()
+                && AndroidData.tryConsumeEnergy(player, 125)) {
+            player.heal(0.5F);
         }
 
         if (AndroidData.hasPerk(player, AndroidData.Perk.EMERGENCY_PROTOCOL)
                 && player.getHealth() <= player.getMaxHealth() * 0.30F
-                && AndroidData.tryConsumeEnergy(player, 100)) {
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 45, 1, true, false, false));
+                && AndroidData.tryConsumeEnergy(player, 500)) {
+            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 45, 2, true, false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 45, 1, true, false, false));
+            player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 45, 1, true, false, false));
         }
 
-        if (player.tickCount % 40 == 0
-                && AndroidData.hasPerk(player, AndroidData.Perk.TACTICAL_SCAN)) {
+        if (player.tickCount % 40 == 0 && AndroidData.hasPerk(player, AndroidData.Perk.TACTICAL_SCAN)) {
+            double radius = AndroidData.hasPerk(player, AndroidData.Perk.SYNTHETIC_PERFECTION) ? 28.0D : 22.0D;
             var targets = player.level().getEntitiesOfClass(Monster.class,
-                    player.getBoundingBox().inflate(12.0D), Monster::isAlive);
+                    player.getBoundingBox().inflate(radius), Monster::isAlive);
             if (!targets.isEmpty() && AndroidData.tryConsumeEnergy(player, 250)) {
                 for (Monster target : targets) {
-                    target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 45, 0, true, false, false));
+                    target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 65, 0, true, false, false));
                 }
             }
         }
     }
 
     private static void chargeFromHeldBattery(ServerPlayer player) {
-        if (!AndroidData.isAndroid(player)
-                || !player.isCrouching()
-                || AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY) {
-            return;
-        }
+        if (!AndroidData.isAndroid(player) || !player.isCrouching()
+                || AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY) return;
 
         int chargeRate = AndroidData.hasPerk(player, AndroidData.Perk.QUICK_CHARGE)
-                ? HANDHELD_CHARGE_PER_TICK * 2 : HANDHELD_CHARGE_PER_TICK;
-        int remaining = Math.min(chargeRate,
-                AndroidData.ENERGY_CAPACITY - AndroidData.getEnergy(player));
+                ? HANDHELD_CHARGE_PER_TICK * 3 : HANDHELD_CHARGE_PER_TICK;
+        int remaining = Math.min(chargeRate, AndroidData.ENERGY_CAPACITY - AndroidData.getEnergy(player));
         for (InteractionHand hand : InteractionHand.values()) {
-            if (remaining <= 0) {
-                break;
-            }
+            if (remaining <= 0) break;
             ItemStack stack = player.getItemInHand(hand);
-            if (!(stack.getItem() instanceof WeaponBatteryItem)) {
-                continue;
-            }
+            if (!(stack.getItem() instanceof WeaponBatteryItem)) continue;
             IEnergyStorage source = stack.getCapability(ForgeCapabilities.ENERGY).orElse(null);
-            if (source == null || !source.canExtract()) {
-                continue;
-            }
-
+            if (source == null || !source.canExtract()) continue;
             int offered = source.extractEnergy(remaining, true);
             int extracted = source.extractEnergy(offered, false);
             int received = AndroidData.receiveEnergy(player, extracted);
-            if (received < extracted && source.canReceive()) {
-                source.receiveEnergy(extracted - received, false);
-            }
+            if (received < extracted && source.canReceive()) source.receiveEnergy(extracted - received, false);
             remaining -= received;
         }
     }
 
     private static void updatePowerState(ServerPlayer player) {
         AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
-        if (speed == null) {
-            return;
-        }
+        if (speed == null) return;
         boolean outOfPower = AndroidData.isAndroid(player) && AndroidData.getEnergy(player) <= 0;
-        if (outOfPower && speed.getModifier(OUT_OF_POWER_SPEED_ID) == null) {
-            speed.addTransientModifier(OUT_OF_POWER_SPEED);
-        } else if (!outOfPower && speed.getModifier(OUT_OF_POWER_SPEED_ID) != null) {
-            speed.removeModifier(OUT_OF_POWER_SPEED_ID);
-        }
+        if (outOfPower && speed.getModifier(OUT_OF_POWER_SPEED_ID) == null) speed.addTransientModifier(OUT_OF_POWER_SPEED);
+        else if (!outOfPower && speed.getModifier(OUT_OF_POWER_SPEED_ID) != null) speed.removeModifier(OUT_OF_POWER_SPEED_ID);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onLivingHurt(LivingHurtEvent event) {
         if (event.getEntity() instanceof ServerPlayer damaged
-                && AndroidData.isAndroid(damaged)
-                && AndroidData.getEnergy(damaged) > 0
-                && event.getAmount() > 0.0F) {
+                && AndroidData.isAndroid(damaged) && AndroidData.getEnergy(damaged) > 0 && event.getAmount() > 0.0F) {
             damaged.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK,
                     damaged.getX(), damaged.getY() + damaged.getBbHeight() * 0.55D, damaged.getZ(),
                     10, 0.3D, 0.45D, 0.3D, 0.04D);
@@ -207,8 +185,11 @@ public final class AndroidEvents {
                 && !attacker.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG)
                 && AndroidData.hasPart(attacker, AndroidData.Part.ARMS)
                 && AndroidData.tryConsumeEnergy(attacker, 80)) {
-            float perkDamage = AndroidData.hasPerk(attacker, AndroidData.Perk.COMBAT_SERVOS) ? 2.0F : 0.0F;
+            float perkDamage = AndroidData.hasPerk(attacker, AndroidData.Perk.COMBAT_SERVOS) ? 5.0F : 0.0F;
             event.setAmount(event.getAmount() + 3.0F + perkDamage);
+            if (perkDamage > 0.0F && event.getEntity() != attacker) {
+                event.getEntity().push(attacker.getLookAngle().x * 0.45D, 0.12D, attacker.getLookAngle().z * 0.45D);
+            }
         }
     }
 
@@ -216,18 +197,13 @@ public final class AndroidEvents {
     public static void onLivingDamage(LivingDamageEvent event) {
         if (event.getEntity() instanceof ServerPlayer defender) {
             AndroidAbilities.applyShield(event, defender);
-            if (AndroidData.isAndroid(defender)) {
-                event.setAmount(event.getAmount() * AndroidData.incomingDamageMultiplier(defender));
-            }
+            if (AndroidData.isAndroid(defender)) event.setAmount(event.getAmount() * AndroidData.incomingDamageMultiplier(defender));
         }
     }
 
     @SubscribeEvent
     public static void onRogueAndroidDrops(LivingDropsEvent event) {
-        if (!(event.getEntity() instanceof Husk husk)
-                || !husk.getPersistentData().getBoolean(ROGUE_ANDROID_TAG)) {
-            return;
-        }
+        if (!(event.getEntity() instanceof Husk husk) || !husk.getPersistentData().getBoolean(ROGUE_ANDROID_TAG)) return;
         AndroidData.Part[] parts = AndroidData.Part.values();
         AndroidData.Part part = parts[husk.getRandom().nextInt(parts.length)];
         event.getDrops().add(new ItemEntity(husk.level(), husk.getX(), husk.getY(), husk.getZ(),
