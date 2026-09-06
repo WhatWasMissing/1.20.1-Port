@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '0.0'
+  VERSION: '0.1'
 
 jobs:
   release:
