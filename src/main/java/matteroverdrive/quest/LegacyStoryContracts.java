@@ -25,6 +25,7 @@ public final class LegacyStoryContracts {
             case "gmo" -> gmo(random == null ? RandomSource.create() : random);
             case "trade_route" -> tradeRoute();
             case "stem_bolts" -> stemBolts();
+            case "to_the_power_of" -> toThePowerOf();
             default -> ItemStack.EMPTY;
         };
     }
@@ -79,6 +80,19 @@ public final class LegacyStoryContracts {
                 List.of(),
                 List.of(new ContractStageSupport.StageSpec("item_interact_consume",
                         List.of("matteroverdrive:isolinear_circuit_mk1"), 1, "Trade Route Agreement Copy")));
+    }
+
+    /**
+     * Legacy JSON accepted BigReactors, ExtraUtilities or the Matter Overdrive Solar Panel.
+     * The 1.20.1 port restores the native MO path without introducing hard dependencies on absent legacy mods.
+     */
+    private static ItemStack toThePowerOf() {
+        return ContractItem.create("to_the_power_of", "To the Power Of", "craft",
+                List.of("matteroverdrive:solar_panel"), 1, 120, false,
+                List.of(
+                        new ContractItem.RewardSpec("matteroverdrive:tritanium_ingot", 5),
+                        new ContractItem.RewardSpec("matteroverdrive:tritanium_plate", 4)
+                ));
     }
 
     /** Hidden/special legacy rewards whose identity includes custom display data. */
