@@ -1,0 +1,16 @@
+{
+  "structures": [
+    {"structure": "matteroverdrive:crashed_ship", "weight": 6},
+    {"structure": "matteroverdrive:cargo_ship", "weight": 1},
+    {"structure": "matteroverdrive:underwater_base", "weight": 2},
+    {"structure": "matteroverdrive:mad_scientist_house", "weight": 4},
+    {"structure": "matteroverdrive:android_house", "weight": 3},
+    {"structure": "matteroverdrive:sand_pit", "weight": 4}
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 147923145,
+    "spacing": 48,
+    "separation": 16
+  }
+}
