@@ -56,10 +56,19 @@ sourceSets.main.resources {
 }
 
 repositories {
+    maven {
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com/'
+    }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+
+    // JEI is optional at runtime; compile only against its public API.
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}") { transitive = false }
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}") { transitive = false }
+    runtimeOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 }
 
 def bundledDocumentationPairs = [

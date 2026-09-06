@@ -38,3 +38,12 @@ mandatory=false
 versionRange="[20.1.15,21)"
 ordering="AFTER"
 side="BOTH"
+
+# Optional JEI integration. Standard JSON crafting/cooking recipes are discovered by JEI automatically;
+# the plugin below adds Matter Overdrive-specific machine information pages.
+[[dependencies.${mod_id}]]
+modId="jei"
+mandatory=false
+versionRange="[15.49.0.200,16)"
+ordering="AFTER"
+side="CLIENT"
