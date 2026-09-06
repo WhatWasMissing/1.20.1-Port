@@ -8,6 +8,8 @@ This checklist covers the deeper quest-engine parity work layered on top of the 
 - [ ] `place` objectives advance once when the matching block is placed by the player.
 - [ ] `block_interact` objectives advance once for a matching right-clicked block.
 - [ ] `item_interact` objectives advance once for a matching right-clicked item.
+- [ ] `item_interact_consume` objectives consume exactly one matching used item in Survival and do not consume in Creative.
+- [ ] `conversation` objectives advance from the matching server-authoritative NPC interaction.
 - [ ] Existing collect/hunt/craft/mine/scan/transport/anomaly objectives still advance exactly as before.
 - [ ] One valid action may advance multiple compatible carried contracts, but never a completed contract.
 
@@ -26,13 +28,22 @@ This checklist covers the deeper quest-engine parity work layered on top of the 
 - [ ] `gmo` is sequential: scan carrots, then potatoes.
 - [ ] Each G.M.O. stage randomizes 12-24 required scans and total XP equals 10 XP per required scan across both stages.
 - [ ] G.M.O. reward is a Tritanium Spine; legacy custom attribute/name decoration is not yet recreated.
+- [ ] `trade_route` is sequential and worth 180 XP: open the captain Tritanium Crate -> read/use the Mk1 Isolinear Circuit agreement -> talk to a Mad Scientist.
+- [ ] Using the Trade Route agreement consumes one circuit in Survival.
+- [ ] Talking to the Mad Scientist advances the conversation stage without breaking Puny Humans/Cocktail interactions.
+- [ ] Trade Route is not inserted into Contract Market generation.
+- [ ] Legacy cargo-ship acquisition is documented: a red Tritanium Crate is the captain chest containing the named `Trade Route Agreement`; a lime Tritanium Crate contains the quest contract and its first-stage position points at the red crate. Worldgen activation remains pending a dedicated structure patch.
 
-## Active quest presentation
+## Active quest presentation / management
 - [ ] Contract HUD still caps itself to three carried contracts and does not overlap normal hotbar/status UI at common GUI scales.
 - [ ] Staged contracts show `Stage n/N`, the current objective and current-stage progress.
 - [ ] Completed contracts show `READY TO REDEEM`.
-- [ ] Data Pad now includes an Active Contracts page before Scan History.
-- [ ] Data Pad Active Contracts lists all carried contracts, active stage/objective, progress and XP without creating a second quest database.
+- [ ] Data Pad includes an Active Contracts page before Scan History.
+- [ ] Data Pad Active Contracts lists up to four manageable carried contracts, active stage/objective, progress and XP without creating a second quest database.
+- [ ] If more than four contracts are carried, the page reports the additional count rather than hiding their existence.
+- [ ] First ABANDON click changes only that row to `ABANDON?`; confirmation expires after roughly three seconds.
+- [ ] Second confirmation sends the real inventory slot to the server and removes only a Contract item still occupying that slot.
+- [ ] Moving/replacing the item before server handling cannot delete an unrelated item.
 - [ ] Data Pad page numbering/navigation remains correct across all eight pages.
 
 ## Regression
