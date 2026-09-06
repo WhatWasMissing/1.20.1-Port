@@ -5,6 +5,7 @@ import matteroverdrive.blockentity.GravitationalAnomalyBlockEntity;
 import matteroverdrive.blockentity.TransporterBlockEntity;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.item.MatterScannerItem;
+import matteroverdrive.quest.ContractStageSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -63,7 +64,6 @@ public final class ContractEvents {
         advanceMatching(player, 1, contract -> ContractItem.advancesWithKill(contract, type, baby));
     }
 
-    /** Modern bridge for legacy objective hooks that no longer exist directly in Forge. */
     @SubscribeEvent
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
@@ -154,7 +154,7 @@ public final class ContractEvents {
         String latestTitle = null;
         for (ItemStack contract : player.getInventory().items) {
             if (!(contract.getItem() instanceof ContractItem) || ContractItem.complete(contract) || !predicate.test(contract)) continue;
-            if (ContractItem.advanceAndCheck(contract, amount)) {
+            if (ContractStageSupport.advanceAndCheck(contract, amount)) {
                 completed = true;
                 latestTitle = ContractItem.title(contract);
             }
