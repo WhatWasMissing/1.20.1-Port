@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[" R "," C "," T "],
+  "key":{"R":{"item":"minecraft:redstone"},"C":{"item":"matteroverdrive:isolinear_circuit_mk1"},"T":{"item":"matteroverdrive:tritanium_plate"}},
+  "result":{"item":"matteroverdrive:upgrade_base"}
+}
