@@ -22,3 +22,19 @@ mandatory=true
 versionRange="[1.20.1,1.20.2)"
 ordering="NONE"
 side="BOTH"
+
+# Optional capability-level integration. Matter Overdrive remains standalone.
+[[dependencies.${mod_id}]]
+modId="ae2"
+mandatory=false
+versionRange="[15.4.10,)"
+ordering="AFTER"
+side="BOTH"
+
+# GuideME 20.1.x supplies the primary rich player manual when installed.
+[[dependencies.${mod_id}]]
+modId="guideme"
+mandatory=false
+versionRange="[20.1.15,21)"
+ordering="AFTER"
+side="BOTH"
