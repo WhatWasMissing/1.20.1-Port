@@ -45,8 +45,9 @@ public final class GuideMeCompatEvents {
             Class<?> guideClass = Class.forName("guideme.Guide");
             Object builder = guideClass.getMethod("builder", ResourceLocation.class).invoke(null, GUIDE_ID);
 
-            // GuideBuilder's 20.1.15 defaults already derive this folder from GUIDE_ID,
-            // but setting it explicitly makes the resource contract unambiguous.
+            // GuideBuilder 20.1.15 registers built guides by default. Its defaults
+            // already derive this folder from GUIDE_ID, but keep the contract
+            // explicit so resource moves fail loudly rather than opening an empty guide.
             builder.getClass().getMethod("folder", String.class)
                     .invoke(builder, "guides/matteroverdrive/guide");
             builder.getClass().getMethod("defaultNamespace", String.class)
@@ -55,6 +56,7 @@ public final class GuideMeCompatEvents {
                     .invoke(builder, START_PAGE);
 
             guide = builder.getClass().getMethod("build").invoke(builder);
+            guide = resolveGuideOrBuilt(guide);
             registered = guide != null;
             if (registered) LOGGER.info("Registered Matter Overdrive GuideME manual {}", GUIDE_ID);
         } catch (ReflectiveOperationException | RuntimeException ex) {
@@ -74,7 +76,7 @@ public final class GuideMeCompatEvents {
         if (!isAvailable()) return false;
         registerGuide();
         try {
-            Object currentGuide = resolveGuide();
+            Object currentGuide = resolveGuideOrBuilt(guide);
             if (currentGuide == null) return false;
 
             Class<?> guideClass = Class.forName("guideme.Guide");
@@ -92,25 +94,30 @@ public final class GuideMeCompatEvents {
         }
     }
 
-    /** Re-resolves GuideME resources after a manual/resource reload. */
+    /**
+     * Re-resolves the registered guide after a Minecraft resource reload.
+     * GuideME 20.1.15 has no public Guides.reload() API; its own reload listener
+     * refreshes page resources, so MO must not invoke a nonexistent method here.
+     */
     public static synchronized boolean reloadGuide() {
         if (!isAvailable()) return false;
         try {
-            Class<?> guidesClass = Class.forName("guideme.Guides");
-            guidesClass.getMethod("reload").invoke(null);
-            guide = guidesClass.getMethod("getById", ResourceLocation.class).invoke(null, GUIDE_ID);
-            registered = guide != null;
-            return registered;
+            guide = resolveGuideOrBuilt(guide);
+            if (guide == null) {
+                registered = false;
+                registerGuide();
+            }
+            return registered && guide != null;
         } catch (ReflectiveOperationException | RuntimeException ex) {
-            LOGGER.error("GuideME manual reload failed", ex);
+            LOGGER.error("GuideME manual re-resolution failed", ex);
             return false;
         }
     }
 
-    private static Object resolveGuide() throws ReflectiveOperationException {
+    private static Object resolveGuideOrBuilt(Object builtGuide) throws ReflectiveOperationException {
         Class<?> guidesClass = Class.forName("guideme.Guides");
         Object registeredGuide = guidesClass.getMethod("getById", ResourceLocation.class).invoke(null, GUIDE_ID);
-        if (registeredGuide != null) guide = registeredGuide;
-        return guide;
+        if (registeredGuide != null) return registeredGuide;
+        return builtGuide;
     }
 }
