@@ -9,6 +9,7 @@ This checklist covers the deeper quest-engine parity work layered on top of the 
 - [ ] `block_interact` objectives advance once for a matching right-clicked block.
 - [ ] `item_interact` objectives advance once for a matching right-clicked item.
 - [ ] `item_interact_consume` objectives consume exactly one matching used item in Survival and do not consume in Creative.
+- [ ] Named item-interaction objectives reject the same registry item when its custom display name does not match the active stage requirement.
 - [ ] `conversation` objectives advance from the matching server-authoritative NPC interaction.
 - [ ] Existing collect/hunt/craft/mine/scan/transport/anomaly objectives still advance exactly as before.
 - [ ] One valid action may advance multiple compatible carried contracts, but never a completed contract.
@@ -16,7 +17,7 @@ This checklist covers the deeper quest-engine parity work layered on top of the 
 ## Ordered stages
 - [ ] A staged contract exposes only its active stage through the existing Type/Target/Goal/Progress compatibility keys.
 - [ ] Completing a non-final stage rotates to the next stage instead of marking the whole contract complete.
-- [ ] Active stage index, all stage progress and final completion persist through save/reload and inventory transfer.
+- [ ] Active stage index, required custom item name, all stage progress and final completion persist through save/reload and inventory transfer.
 - [ ] Old non-staged contracts remain unchanged and redeem normally.
 - [ ] HUD/tooltips continue to report the currently active objective because active-stage state is mirrored into the existing contract keys.
 
@@ -26,13 +27,18 @@ This checklist covers the deeper quest-engine parity work layered on top of the 
 - [ ] `we_must_know` requires placing `decorative.coils`, gives 120 XP and 8 emeralds.
 - [ ] Position-locking for We Must Know remains intentionally inactive until the original crash-site acquisition path can supply/copy a quest position.
 - [ ] `gmo` is sequential: scan carrots, then potatoes.
-- [ ] Each G.M.O. stage randomizes 12-24 required scans and total XP equals 10 XP per required scan across both stages.
+- [ ] Each G.M.O. stage randomizes 12-24 required scans and total XP equals 10 XP per required scan across both stages, matching legacy `QuestLogicScanBlock.modifyXP` behavior.
 - [ ] G.M.O. reward is a Tritanium Spine; legacy custom attribute/name decoration is not yet recreated.
-- [ ] `trade_route` is sequential and worth 180 XP: open the captain Tritanium Crate -> read/use the Mk1 Isolinear Circuit agreement -> talk to a Mad Scientist.
-- [ ] Using the Trade Route agreement consumes one circuit in Survival.
+- [ ] `trade_route` is sequential and worth 180 XP: open the red captain Tritanium Crate -> read/use the specifically named `Trade Route Agreement` Mk1 Isolinear Circuit -> talk to a Mad Scientist.
+- [ ] An ordinary Mk1 Isolinear Circuit cannot satisfy the Trade Route agreement stage.
+- [ ] Using the Trade Route Agreement consumes one circuit in Survival.
 - [ ] Talking to the Mad Scientist advances the conversation stage without breaking Puny Humans/Cocktail interactions.
-- [ ] Trade Route is not inserted into Contract Market generation.
+- [ ] Redeeming Trade Route gives the hidden custom-named `Trade Route Agreement Copy` and chains into `stem_bolts`.
+- [ ] `stem_bolts` accepts only the named Agreement Copy, not an ordinary Mk1 circuit.
+- [ ] `to_the_power_of` accepts the native Matter Overdrive Solar Panel, awards 120 XP, 5 Tritanium Ingots and 4 Tritanium Plates; obsolete BigReactors/ExtraUtilities alternatives are intentionally not hard dependencies in 1.20.1.
+- [ ] Trade Route, Stem Bolts and To the Power Of are not inserted into Contract Market generation.
 - [ ] Legacy cargo-ship acquisition is documented: a red Tritanium Crate is the captain chest containing the named `Trade Route Agreement`; a lime Tritanium Crate contains the quest contract and its first-stage position points at the red crate. Worldgen activation remains pending a dedicated structure patch.
+- [ ] Legacy Trade Route Failed Pig entity reward remains pending until quest-position storage/acquisition is restored, so it can spawn at the correct stored quest position rather than at an invented location.
 
 ## Active quest presentation / management
 - [ ] Contract HUD still caps itself to three carried contracts and does not overlap normal hotbar/status UI at common GUI scales.
