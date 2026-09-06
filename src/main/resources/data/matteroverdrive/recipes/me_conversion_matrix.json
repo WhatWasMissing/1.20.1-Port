@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["EIE","CDC","EIE"],
+  "key":{"C":{"item":"matteroverdrive:isolinear_circuit_mk2"},"D":{"item":"matteroverdrive:dilithium_crystal"},"E":{"item":"minecraft:ender_pearl"},"I":{"item":"minecraft:iron_ingot"}},
+  "result":{"item":"matteroverdrive:me_conversion_matrix"}
+}
