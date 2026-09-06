@@ -39,10 +39,7 @@ public final class AndroidData {
         }
     }
 
-    /**
-     * Perks are deliberately sparse choices now: one point is earned every two levels.
-     * A player can therefore finish with five of these thirty nodes instead of filling one node every level.
-     */
+    /** Five total Ascension Points by level 10. Higher tiers require prior investment in the same branch. */
     public enum Perk {
         EFFICIENT_CORE(2, 0, "Paracausal Core", "All Android abilities consume 20% less FE."),
         REINFORCED_FRAME(2, 1, "Tritanium Skeleton", "Reduce all incoming damage by 10%."),
@@ -50,30 +47,30 @@ public final class AndroidData {
         GHOST_PROTOCOL(3, 0, "Ghost Protocol", "Cloak consumes 40% less FE."),
         BARRIER_MATRIX(3, 1, "Aegis Matrix", "Force Field consumes 40% less FE."),
         QUICK_CHARGE(3, 2, "Rapid Induction", "Handheld batteries charge the Android three times faster."),
-        RESONANT_PULSE(4, 0, "Resonant Detonation", "Sonic Shockwave gains substantially increased damage."),
+        RESONANT_PULSE(4, 0, "Resonant Detonation", "Sonic Shockwave gains +4 damage."),
         PHASE_CAPACITOR(4, 1, "Phase Capacitor", "Ender Teleport gains 6 blocks of range."),
         LEARNING_MATRIX(4, 2, "Adaptive Learning Matrix", "Future Android XP gains are increased by 40%."),
-        WIDEBAND_PULSE(5, 0, "Wideband Rupture", "Sonic Shockwave gains a much larger effective radius."),
+        WIDEBAND_PULSE(5, 0, "Wideband Rupture", "Sonic Shockwave radius expands by 4 blocks."),
         RAPID_BLINK(5, 1, "Blink Accelerator", "Ender Teleport cooldown is 25% shorter."),
         COOLDOWN_ROUTER(5, 2, "Parallel Cognition", "Shockwave and Teleport cooldowns are 20% shorter."),
-        COMBAT_SERVOS(6, 0, "Siege Servos", "Direct melee attacks gain a major damage bonus."),
+        COMBAT_SERVOS(6, 0, "Siege Servos", "Powered melee attacks gain +5 damage and stronger knockback."),
         KINETIC_PLATING(6, 1, "Kinetic Plating", "Reduce incoming damage by a further 15%."),
-        REACTIVE_PLATING(6, 2, "Reactive Plating", "Gain another layer of general damage mitigation."),
+        REACTIVE_PLATING(6, 2, "Reactive Plating", "Reduce incoming damage by another 10%."),
         SHOCK_RECYCLER(7, 0, "Pulse Recycler", "Sonic Shockwave consumes 35% less FE."),
         BLINK_RECYCLER(7, 1, "Phase Recycler", "Ender Teleport consumes 35% less FE."),
         SELF_REPAIR(7, 2, "Nanite Reconstruction", "Continuously spend FE to repair damaged health."),
         SHOCK_MOMENTUM(8, 0, "Gravitic Aftershock", "Sonic Shockwave launches targets dramatically farther."),
         PHASE_STABILIZER(8, 1, "Phase Stabilizer", "Ender Teleport gains another 6 blocks of range."),
-        SILENT_CLOAK(8, 2, "Null-Signature Cloak", "Cloak receives a second major efficiency reduction."),
-        OVERCHARGED_PULSE(9, 0, "Overcharged Singularity", "Sonic Shockwave gains another large damage increase."),
-        NEURAL_ACCELERATOR(9, 1, "Neural Accelerator", "Leg servos provide significantly stronger movement speed."),
-        TACTICAL_SCAN(9, 2, "Predator Optics", "Periodically expose nearby hostile targets through terrain."),
-        APEX_CORE(10, 0, "Apex Reactor Core", "All Android abilities gain another major FE efficiency bonus."),
-        ADAMANT_CHASSIS(10, 1, "Adamant Chassis", "Gain heavy endgame damage mitigation."),
-        EMERGENCY_PROTOCOL(10, 2, "Last-Stand Protocol", "At critical health, automatically power reinforced defenses."),
-        LONG_RANGE_BLINK(10, 0, "Trans-Dimensional Blink", "Ender Teleport gains extreme additional range."),
-        ADAPTIVE_ARMOR(10, 1, "Adaptive Armor", "Repeated chassis reinforcement further reduces incoming damage."),
-        SYNTHETIC_PERFECTION(10, 2, "Synthetic Perfection", "Capstone: reduce ability FE use and incoming damage together.");
+        SILENT_CLOAK(8, 2, "Null-Signature Cloak", "Cloak receives a second 35% efficiency reduction and suppresses nearby targeting."),
+        OVERCHARGED_PULSE(9, 0, "Overcharged Singularity", "Sonic Shockwave gains +6 damage and briefly weakens survivors."),
+        NEURAL_ACCELERATOR(9, 1, "Neural Accelerator", "Leg servos provide significantly stronger movement speed and jump control."),
+        TACTICAL_SCAN(9, 2, "Predator Optics", "Expose hostile targets through terrain at greatly increased range."),
+        APEX_CORE(10, 0, "Apex Reactor Core", "ASSAULT CAPSTONE: ability costs fall another 35%; Shockwave cooldown is halved and kills recycle FE."),
+        ADAMANT_CHASSIS(10, 1, "Adamant Chassis", "CHASSIS CAPSTONE: heavy mitigation and Force Field absorbs 75% of incoming damage."),
+        EMERGENCY_PROTOCOL(10, 2, "Last-Stand Protocol", "UTILITY CAPSTONE: critical health automatically triggers powered resistance, regeneration and absorption."),
+        LONG_RANGE_BLINK(10, 0, "Trans-Dimensional Blink", "ASSAULT CAPSTONE: extreme blink range and the destination trace can phase through intervening blocks."),
+        ADAPTIVE_ARMOR(10, 1, "Adaptive Armor", "CHASSIS CAPSTONE: further mitigation and stronger powered mobility while damaged."),
+        SYNTHETIC_PERFECTION(10, 2, "Synthetic Perfection", "UTILITY CAPSTONE: lower FE use, lower damage taken and enhanced nanite repair while highly charged.");
 
         public final int level; public final int branch; public final String displayName; public final String description;
         Perk(int level, int branch, String displayName, String description) {
@@ -114,13 +111,44 @@ public final class AndroidData {
     public static int skillPointsForLevel(int level) { return Math.max(0, Mth.clamp(level, 1, MAX_LEVEL) / 2); }
     public static int getAvailableSkillPoints(Player player) { return Math.max(0, skillPointsForLevel(getLevel(player)) - getSpentSkillPoints(player)); }
 
+    public static int requiredBranchInvestment(Perk perk) {
+        if (perk.level >= 10) return 3;
+        if (perk.level >= 8) return 2;
+        if (perk.level >= 5) return 1;
+        return 0;
+    }
+    public static int getPriorBranchInvestments(Player player, Perk perk) {
+        return priorBranchInvestments(getSelectedPerks(player), perk);
+    }
+    private static int priorBranchInvestments(long mask, Perk perk) {
+        int count = 0;
+        for (Perk candidate : Perk.values()) {
+            if (candidate.branch == perk.branch && candidate.level < perk.level
+                    && (mask & (1L << candidate.ordinal())) != 0L) count++;
+        }
+        return count;
+    }
+    public static boolean meetsPerkPrerequisites(Player player, Perk perk) {
+        return getPriorBranchInvestments(player, perk) >= requiredBranchInvestment(perk);
+    }
+    private static boolean maskMeetsPrerequisites(long mask) {
+        for (Perk perk : Perk.values()) {
+            if ((mask & (1L << perk.ordinal())) != 0L
+                    && priorBranchInvestments(mask, perk) < requiredBranchInvestment(perk)) return false;
+        }
+        return true;
+    }
+
     public static boolean selectPerk(Player player, Perk perk) {
-        if (!isAndroid(player) || getLevel(player) < perk.level || hasPerk(player, perk) || getAvailableSkillPoints(player) <= 0) return false;
+        if (!isAndroid(player) || getLevel(player) < perk.level || hasPerk(player, perk)
+                || getAvailableSkillPoints(player) <= 0 || !meetsPerkPrerequisites(player, perk)) return false;
         CompoundTag state = data(player); writeSelectedPerks(state, getSelectedPerks(player) | (1L << perk.ordinal())); save(player, state); return true;
     }
     public static boolean tryRefundPerk(Player player, Perk perk) {
-        if (!isAndroid(player) || perk == null || !hasPerk(player, perk) || !tryConsumeEnergy(player, PERK_REFUND_COST)) return false;
-        CompoundTag state = data(player); writeSelectedPerks(state, getSelectedPerks(player) & ~(1L << perk.ordinal())); save(player, state); return true;
+        if (!isAndroid(player) || perk == null || !hasPerk(player, perk)) return false;
+        long nextMask = getSelectedPerks(player) & ~(1L << perk.ordinal());
+        if (!maskMeetsPrerequisites(nextMask) || !tryConsumeEnergy(player, PERK_REFUND_COST)) return false;
+        CompoundTag state = data(player); writeSelectedPerks(state, nextMask); save(player, state); return true;
     }
     public static boolean tryResetPerks(Player player) {
         if (!isAndroid(player) || getSelectedPerks(player) == 0L || !tryConsumeEnergy(player, PERK_RESET_COST)) return false;
@@ -130,10 +158,12 @@ public final class AndroidData {
     public static int scaleAbilityEnergy(Player player, int base, Perk specialisedEfficiency) {
         double m = 1.0D;
         if (hasPerk(player, Perk.EFFICIENT_CORE)) m *= 0.80D;
-        if (hasPerk(player, specialisedEfficiency)) m *= 0.60D;
-        if (hasPerk(player, Perk.APEX_CORE)) m *= 0.75D;
+        if (specialisedEfficiency != null && hasPerk(player, specialisedEfficiency)) {
+            m *= specialisedEfficiency == Perk.GHOST_PROTOCOL || specialisedEfficiency == Perk.BARRIER_MATRIX ? 0.60D : 0.65D;
+        }
+        if (hasPerk(player, Perk.APEX_CORE)) m *= 0.65D;
         if (hasPerk(player, Perk.SYNTHETIC_PERFECTION)) m *= 0.85D;
-        if (specialisedEfficiency == Perk.GHOST_PROTOCOL && hasPerk(player, Perk.SILENT_CLOAK)) m *= 0.70D;
+        if (specialisedEfficiency == Perk.GHOST_PROTOCOL && hasPerk(player, Perk.SILENT_CLOAK)) m *= 0.65D;
         return Math.max(1, (int)Math.ceil(base * m));
     }
     public static float incomingDamageMultiplier(Player player) {
