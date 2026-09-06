@@ -2,6 +2,7 @@ package matteroverdrive.blockentity;
 
 import matteroverdrive.block.MatterRecyclerBlock;
 import matteroverdrive.capability.MachineEnergyStorage;
+import matteroverdrive.compat.AutomationItemHandler;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.MachineUpgradeInventory;
@@ -57,6 +58,10 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         @Override protected void onContentsChanged(int slot) { setChanged(); }
     };
 
+    private final IItemHandler automationItems = new AutomationItemHandler(
+            items,
+            slot -> slot == INPUT_SLOT || slot == ENERGY_SLOT,
+            slot -> slot == OUTPUT_SLOT);
     private final MachineEnergyStorage energyStorage =
             new MachineEnergyStorage(ENERGY_STORAGE, ENERGY_STORAGE, ENERGY_STORAGE, this::setChanged);
     private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
@@ -67,7 +72,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
                     || upgrade == MachineUpgradeItem.Upgrade.HYPER_SPEED,
             this::onUpgradesChanged
     );
-    private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> items);
+    private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> automationItems);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
 
     private int recycleTime;
@@ -248,7 +253,7 @@ public class MatterRecyclerBlockEntity extends BlockEntity implements MenuProvid
         return super.getCapability(cap, side);
     }
     @Override public void invalidateCaps() { super.invalidateCaps(); itemCapability.invalidate(); energyCapability.invalidate(); }
-    @Override public void reviveCaps() { super.reviveCaps(); itemCapability = LazyOptional.of(() -> items); energyCapability = LazyOptional.of(() -> energyStorage); }
+    @Override public void reviveCaps() { super.reviveCaps(); itemCapability = LazyOptional.of(() -> automationItems); energyCapability = LazyOptional.of(() -> energyStorage); }
 
     @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.matter_recycler"); }
     @Nullable @Override public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
