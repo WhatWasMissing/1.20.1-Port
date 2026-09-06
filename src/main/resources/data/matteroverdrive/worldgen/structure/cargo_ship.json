@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:cargo_ship",
+  "biomes": "#matteroverdrive:has_structure/cargo_ship",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
