@@ -1,51 +1,109 @@
 # Structures + AE2 + GuideME full-pass handoff
 
 Target branch: `testing/main`
-Pass head when written: `fcc495c669be1504acb60ab36ec21da8f3ef09f8`
 Date: 2026-09-06
 
-## What landed
+## Current state
 
-### Source-backed structure populations
-- Added `SourcePopulationStructureFeature` as a correction layer around the existing modern terrain/layout wrapper.
-- Android House now removes the reconstruction-only Drone, preserves the legacy 60% ranged / 40% melee ordinary-defender mix, normalizes ordinary population to the source-backed 3/4/5 distribution, and adds one guaranteed level-3 legendary ranged Rogue Android.
-- Crashed Ship, Cargo Ship, Underwater Base and Sand Pit now remove Android/Drone combat occupants that were added by the early port but are absent from their authoritative 1.12.2 generation hooks.
-- Mad Scientist House is intentionally left on its separate recovered village-piece population path pending a dedicated source audit.
+The pass has moved beyond the original population-only audit. The three image-backed 1.12.2 structures now use the original PNG templates through a dedicated legacy decoder, external item automation has been hardened for AE2/Forge automation, GuideME 20.1.15 uses its actual optional API surface, and the first source-backed MOImageGen structure callbacks are restored.
 
-### Deeper structure audit
-- Confirmed embedded legacy template dimensions:
-  - Android House 21x21
-  - Crashed Ship 11x35
-  - Cargo Ship 58x23
-  - Underwater Base 43x43
-  - Sand Pit 24x24
-- Confirmed Crashed Ship ~256-block separation, Cargo Ship ~4096 plus 10% roll, Underwater Base deep-ocean + >26-water-depth validation + ~2048 separation, Sand Pit desert-only, Android House Y offset -2 and Sand Pit Y offset -9.
-- Recovered Crashed Ship block callbacks: oriented Holo Signs, 30% crash text, crash contract injection into crates, and 5% decorated tier-3 weapon generation in Weapon Stations.
-- Exact block-for-pixel PNG decoding is not yet claimed; current layouts remain procedural translations with modern terrain suitability/entrance cleanup.
+## Structures
 
-### AE2 15.4.10
-- Confirmed the correct integration boundary from the attached AE2 JAR: `ForgeExternalStorageStrategy` / `ItemHandlerAdapter` consume Forge `IItemHandler` capabilities.
-- Kept Matter Network and ME separate; no AE-power-to-FE or Matter conversion was added.
-- Added `/moae2` runtime capability audit. Point at a machine to inspect the item handler visible on each face, discovered slot count, FE capability and Matter capability.
-- Expanded the GuideME AE2 page with the supported machine matrix, recommended Import/Export/Storage Bus use, persistence expectations and network boundary.
+### Android House population
+- `SourcePopulationStructureFeature` corrects the modern reconstruction after placement.
+- Ordinary defenders are normalized to the source-backed 3/4/5 population.
+- Source mix is 60% ranged / 40% melee.
+- The reconstruction-only Drone is removed.
+- Exactly one persistent level-3 legendary ranged Rogue Android is added at the centred equivalent of legacy template-relative `(12,4,10)`.
 
-### GuideME 20.1.15
-- Rechecked exact GuideME bytecode/API. `Guide.builder(ResourceLocation)` is valid and `GuideBuilder.build()` registers by default.
-- Bridge now explicitly owns `guides/matteroverdrive/guide`, `matteroverdrive` namespace and `matteroverdrive:index.md` start page.
-- Added page-aware opening via `PageAnchor.page(...)`, registry re-resolution via `Guides.getById`, and reload support via `Guides.reload()`.
-- Added a GuideME World Structures page and linked it from the guide index.
-- Data Pad fallback remains available when GuideME is absent.
+### Other populations
+The authoritative 1.12.2 generation hooks for Crashed Ship, Cargo Ship, Underwater Base and Sand Pit do not create Rogue Android/Drone combat occupants, so reconstruction-only occupants are removed from those structures. Mad Scientist House remains on its separate recovered village-piece path.
+
+### Exact PNG geometry
+`LegacyImageTemplatePlacer` is now the normal generation path for:
+- Crashed Ship (`11x35` legacy layer size)
+- Cargo Ship (`58x23`)
+- Underwater Base (`43x43`)
+
+The PNG is decoded as the old MOImageGen Y-layer atlas. Cargo/Underwater alpha is translated as legacy metadata (`255-alpha`) where Minecraft 1.20.1 has a meaningful equivalent block state. Magenta remains explicit air. Random ore mapping is retained. If a legacy resource is missing/corrupt the old procedural translation remains a safety fallback rather than silently deleting worldgen.
+
+Android House and Sand Pit remain class-driven translations because their authoritative generation path contains additional class logic and is not simply equivalent to these three PNG workers.
+
+### Source-backed callbacks now restored
+`LegacyStructureCallbacks` runs only after successful exact PNG placement.
+
+Crashed Ship:
+- crashed-ship crate is reset to the authoritative one-roll loot table: Tritanium Nugget weight 80, Battery weight 10, empty weight 10;
+- `crash_landing` story contract is inserted and stores the crash position;
+- Holo Signs use the two independent legacy 30% text checks (`I hope my insurance covers this.` / `Keep calm and respawn.` / otherwise blank);
+- Weapon Stations retain the legacy 10/200 (5%) generated level-3 weapon chance, using the source weapon-type weights and modern registered weapon equivalents.
+
+Cargo Ship:
+- the red crate receives the named Mk1 Isolinear Circuit `Trade Route Agreement` and becomes the Trade Route quest position;
+- the first lime crate receives the `trade_route` story contract after generation, matching the old worker state;
+- Holo Signs receive the recovered Cargo Unit multiline status text. The modern Holo Sign renderer now supports multiple lines.
+
+Underwater Base:
+- exact template geometry/metadata is active;
+- population hook remains intentionally empty;
+- no invented post-generation callback has been added where the 1.12.2 behaviour has not yet been recovered.
+
+### Placement facts retained from source audit
+- Crashed Ship: roughly 256-block same-type separation in legacy.
+- Cargo Ship: roughly 4096-block separation plus a 10% generation roll.
+- Underwater Base: deep-ocean placement, >26 blocks water-depth validation, roughly 2048-block separation.
+- Sand Pit: desert-only, Y offset -9.
+- Android House: Y offset -2.
+
+The current 1.20.1 placed-feature rarity system is not naively replaced with legacy candidate weights because the old generator combined weighted candidate selection with separate location/distance checks.
+
+## AE2 15.4.10 / Forge automation
+
+The attached AE2 JAR confirms external storage and buses consume Forge `IItemHandler`; Matter Overdrive therefore does not implement a fake ME network adapter and does not merge Matter Network with ME.
+
+A concrete automation bug was fixed: raw `ItemStackHandler` permits extraction from slots even when `isItemValid` correctly rejects insertion. `AutomationItemHandler` now provides a capability-only view while internal machine inventories remain unchanged.
+
+External item rules:
+- Tritanium Crate: normal general-purpose storage.
+- Decomposer: insert Input/Energy; extract Output.
+- Recycler: insert Input/Energy; extract Output.
+- Inscriber: insert Primary/Secondary/Energy; extract Output.
+- Replicator: insert Pattern Drive/Energy; extract Output/Failure Output.
+- Pattern Storage: public Energy/Pattern Drive slots are bidirectional, with existing item validity preserved.
+- Machine upgrade inventories remain private and are never included in the exposed capability.
+
+FE and Matter capabilities remain their existing Forge/MO capabilities. No AE power -> FE conversion, Matter -> AE conversion, or ME/Matter Network merge was added.
+
+The automation-hardening head `ddb4972f3a65ceb9df89b5ef52d7e47b4b876f52` passed the Gradle **Build mod** step. The GitHub workflow then failed only at the repository's recurring Upload test JAR step.
+
+## GuideME 20.1.15
+
+The optional bridge was checked against the exact attached GuideME JAR.
+- Builder entry point is `guideme.Guides.builder(ResourceLocation)`.
+- `GuideBuilder.build()` registers the guide by default.
+- registered guide re-resolution uses `Guides.getById`.
+- arbitrary page opening uses `PageAnchor.page(...)`.
+- GuideME remains reflection-loaded/optional so Matter Overdrive starts without it.
+- resource folder is `guides/matteroverdrive/guide`, namespace `matteroverdrive`, start page `matteroverdrive:index.md`.
+- the Data Pad uses GuideME as the primary full manual when available and retains its built-in fallback when GuideME is absent.
+
+Important correction to the older handoff: GuideME 20.1.15 does **not** expose `Guides.reload()`. The invalid reflective reload call was removed; resource reload clears the cached guide and the bridge re-resolves the registered guide instead.
+
+Guide pages currently cover Current Features, Survival, Matter, Power/Machines, Android, Fusion Reactor, Weapons, Matter Network, AE2, World Structures, Quests/Contracts, Star Map, Dimensional Pylon, and Transporter/Security.
 
 ## Runtime verification still required
-1. Fresh Android Houses: 3-5 ordinary defenders, 60/40 ranged/melee over a sample, exactly one level-3 legendary ranged defender, no structure-created Drone.
-2. Fresh Crashed/Cargo/Underwater/Sand structures: no structure-created Android/Drone defenders.
-3. `/moae2` against every face of Crate, Decomposer, Recycler, Inscriber, Replicator and Pattern Storage; compare against actual Storage/Import/Export Bus behaviour.
-4. AE2 automation through chunk unload/reload with no duplicate outputs, lost Pattern Drive NBT, or reset active processing.
-5. Startup matrix: MO only; MO+AE2; MO+GuideME; MO+AE2+GuideME.
-6. GuideME navigation through every page, then resource reload and reopen.
-7. Data Pad fallback with GuideME absent.
+1. Fresh Android Houses: sample 3-5 ordinary defenders, verify approximately 60/40 ranged/melee, exactly one level-3 legendary ranged defender, no structure-generated Drone.
+2. Fresh Crashed Ship: exact silhouette, one source-weighted loot roll plus Crash Landing contract, sign text distribution, and rare Weapon Station weapon.
+3. Fresh Cargo Ship: named Trade Route Agreement in red crate, Trade Route contract in lime crate, multiline Cargo Unit sign text.
+4. Fresh Underwater Base: exact template shape, doors/ladders/crops/glass metadata, no structure-created combat population.
+5. AE2 Storage/Import/Export Bus automation on every supported machine face through chunk unload/reload; verify no input stealing, duplication, lost Pattern Drive NBT or reset Replicator task state.
+6. Startup matrix: MO only; MO+AE2; MO+GuideME; MO+AE2+GuideME.
+7. GuideME: open every manual page, resource-reload, reopen; then remove GuideME and verify Data Pad fallback with no missing-class error.
 
-## Highest-value structure follow-up
-Translate the original PNG colour/alpha mapping tables and MOImageGen worker semantics into a 1.20.1 template decoder, then replace the remaining procedural structure approximations block-for-pixel. The old PNGs and constructors are now identified well enough to do this source-backed rather than by eye.
+## Remaining source-backed structure work
+- Recover and apply exact old Holo Sign orientation/scale callback state where the modern sign backend can represent it.
+- Finish any Underwater Base worker callbacks confirmed by bytecode; do not invent them.
+- Audit Mad Scientist House and Sand Pit block/loot callback details against their authoritative class paths.
+- Runtime-check the exact PNG atlas orientation and Y offsets in fresh chunks.
 
-Before further writes, re-fetch `testing/main`; do not assume this SHA remains current.
+Before further writes, always re-fetch `testing/main`; do not assume a SHA remains current.
