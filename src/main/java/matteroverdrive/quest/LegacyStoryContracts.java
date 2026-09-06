@@ -12,6 +12,7 @@ import java.util.List;
  */
 public final class LegacyStoryContracts {
     public static final String NEXT_CONTRACT = "NextContract";
+    public static final String QUEST_ITEM_NAME = "QuestItemName";
 
     private LegacyStoryContracts() {}
 
@@ -21,6 +22,7 @@ public final class LegacyStoryContracts {
             case "crash_landing" -> crashLanding();
             case "we_must_know" -> weMustKnow();
             case "gmo" -> gmo(random == null ? RandomSource.create() : random);
+            case "trade_route" -> tradeRoute();
             default -> ItemStack.EMPTY;
         };
     }
@@ -61,6 +63,27 @@ public final class LegacyStoryContracts {
                         new ContractStageSupport.StageSpec("scan", List.of("minecraft:carrots"), carrots),
                         new ContractStageSupport.StageSpec("scan", List.of("minecraft:potatoes"), potatoes)
                 ));
+    }
+
+    /**
+     * Legacy Trade Route sequence: open the captain's chest, read/consume the Trade Route Agreement,
+     * then speak to a Mad Scientist. The old captain container is represented by the Tritanium Crate
+     * used by the restored crashed/cargo ship structures; the agreement uses the existing Mk1
+     * Isolinear Circuit. Acquisition remains dormant until structure-specific quest loot is restored.
+     */
+    private static ItemStack tradeRoute() {
+        ItemStack contract = ContractStageSupport.createStaged("trade_route", "Trade Route", 180,
+                List.of(),
+                List.of(
+                        new ContractStageSupport.StageSpec("block_interact",
+                                List.of("matteroverdrive:tritanium_crate"), 1),
+                        new ContractStageSupport.StageSpec("item_interact_consume",
+                                List.of("matteroverdrive:isolinear_circuit_mk1"), 1),
+                        new ContractStageSupport.StageSpec("conversation",
+                                List.of("matteroverdrive:mad_scientist"), 1)
+                ));
+        contract.getOrCreateTag().putString(QUEST_ITEM_NAME, "Trade Route Agreement");
+        return contract;
     }
 
     public static ItemStack chainedFrom(ItemStack completed, RandomSource random) {
