@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:underwater_base",
+  "biomes": "#minecraft:is_ocean",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
