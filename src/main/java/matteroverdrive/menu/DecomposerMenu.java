@@ -1,6 +1,7 @@
 package matteroverdrive.menu;
 
 import matteroverdrive.blockentity.DecomposerBlockEntity;
+import matteroverdrive.machine.MachineRedstoneMode;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.registry.ModBlocks;
@@ -20,165 +21,16 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class DecomposerMenu extends AbstractContainerMenu {
-    private static final int MACHINE_SLOTS = 7;
-    private static final int PLAYER_INV_START = MACHINE_SLOTS;
-    private static final int PLAYER_INV_END = PLAYER_INV_START + 27;
-    private static final int HOTBAR_END = PLAYER_INV_END + 9;
-
-    private final DecomposerBlockEntity decomposer;
-    private final ContainerData data;
-
-    public DecomposerMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buffer) {
-        this(containerId, playerInventory, getDecomposer(playerInventory, buffer.readBlockPos()), new SimpleContainerData(12));
-    }
-
-    public DecomposerMenu(int containerId, Inventory playerInventory, DecomposerBlockEntity decomposer) {
-        this(containerId, playerInventory, decomposer, decomposer.getContainerData());
-    }
-
-    private DecomposerMenu(int containerId, Inventory playerInventory, DecomposerBlockEntity decomposer, ContainerData data) {
-        super(ModMenus.DECOMPOSER.get(), containerId);
-        this.decomposer = decomposer;
-        this.data = data == null ? new SimpleContainerData(12) : data;
-
-        addSlot(new SlotItemHandler(decomposer.getItemHandler(), DecomposerBlockEntity.INPUT_SLOT, 26, 44));
-        addSlot(new SlotItemHandler(decomposer.getItemHandler(), DecomposerBlockEntity.ENERGY_SLOT, 80, 44));
-        addSlot(new SlotItemHandler(decomposer.getItemHandler(), DecomposerBlockEntity.OUTPUT_SLOT, 134, 44) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return false;
-            }
-        });
-
-        for (int slot = 0; slot < DecomposerBlockEntity.UPGRADE_SLOT_COUNT; slot++) {
-            addSlot(new SlotItemHandler(decomposer.getUpgradeInventory(), slot, 53 + slot * 18, 80));
-        }
-
-        addPlayerInventory(playerInventory);
-        addDataSlots(this.data);
-    }
-
-    private static DecomposerBlockEntity getDecomposer(Inventory playerInventory, BlockPos pos) {
-        BlockEntity blockEntity = playerInventory.player.level().getBlockEntity(pos);
-        if (blockEntity instanceof DecomposerBlockEntity decomposer) {
-            return decomposer;
-        }
-        throw new IllegalStateException("Matter Overdrive decomposer block entity missing at " + pos);
-    }
-
-    private void addPlayerInventory(Inventory playerInventory) {
-        for (int row = 0; row < 3; row++) {
-            for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(playerInventory, column + row * 9 + 9, 8 + column * 18, 114 + row * 18));
-            }
-        }
-        for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(playerInventory, column, 8 + column * 18, 172));
-        }
-    }
-
-    @Override
-    public ItemStack quickMoveStack(Player player, int index) {
-        ItemStack empty = ItemStack.EMPTY;
-        Slot sourceSlot = slots.get(index);
-        if (!sourceSlot.hasItem()) {
-            return empty;
-        }
-
-        ItemStack source = sourceSlot.getItem();
-        ItemStack copy = source.copy();
-
-        if (index < MACHINE_SLOTS) {
-            if (!moveItemStackTo(source, PLAYER_INV_START, HOTBAR_END, true)) {
-                return empty;
-            }
-        } else {
-            boolean moved = false;
-            if (source.getItem() instanceof MachineUpgradeItem) {
-                moved = moveItemStackTo(source, 3, MACHINE_SLOTS, false);
-            }
-            if (!moved && source.getCapability(ForgeCapabilities.ENERGY).map(storage -> storage.canExtract()).orElse(false)) {
-                moved = moveItemStackTo(source, DecomposerBlockEntity.ENERGY_SLOT, DecomposerBlockEntity.ENERGY_SLOT + 1, false);
-            }
-            if (!moved && MatterValueRegistry.containsMatter(source)) {
-                moved = moveItemStackTo(source, DecomposerBlockEntity.INPUT_SLOT, DecomposerBlockEntity.INPUT_SLOT + 1, false);
-            }
-            if (!moved) {
-                if (index < PLAYER_INV_END) {
-                    moved = moveItemStackTo(source, PLAYER_INV_END, HOTBAR_END, false);
-                } else {
-                    moved = moveItemStackTo(source, PLAYER_INV_START, PLAYER_INV_END, false);
-                }
-            }
-            if (!moved) {
-                return empty;
-            }
-        }
-
-        if (source.isEmpty()) {
-            sourceSlot.set(ItemStack.EMPTY);
-        } else {
-            sourceSlot.setChanged();
-        }
-        sourceSlot.onTake(player, source);
-        return copy;
-    }
-
-    @Override
-    public boolean stillValid(Player player) {
-        return stillValid(
-                ContainerLevelAccess.create(decomposer.getLevel(), decomposer.getBlockPos()),
-                player,
-                ModBlocks.get("decomposer").get()
-        );
-    }
-
-    public int getProgress() {
-        return data.get(0);
-    }
-
-    public int getMaxProgress() {
-        return data.get(1);
-    }
-
-    public int getEnergy() {
-        return combineWords(data.get(2), data.get(3));
-    }
-
-    public int getEnergyCapacity() {
-        return combineWords(data.get(4), data.get(5));
-    }
-
-    public int getMatter() {
-        return data.get(6) & 0xFFFF;
-    }
-
-    public int getMatterCapacity() {
-        return data.get(7) & 0xFFFF;
-    }
-
-    public int getInputMatterValue() {
-        return data.get(8) & 0xFFFF;
-    }
-
-    public int getEnergyPerTick() {
-        return data.get(9) & 0xFFFF;
-    }
-
-    public double getFailureChancePercent() {
-        return combineWords(data.get(10), data.get(11)) / 10_000.0D;
-    }
-
-    private static int combineWords(int low, int high) {
-        return (low & 0xFFFF) | ((high & 0xFFFF) << 16);
-    }
-
-    @Override
-    public boolean clickMenuButton(Player player, int id) {
-        if (id != 1) return false;
-        boolean enabled = decomposer.getEnergyStorage().toggleInfiniteEnergy();
-        player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
-        return true;
-    }
+    private static final int MACHINE_SLOTS=7,PLAYER_INV_START=7,PLAYER_INV_END=34,HOTBAR_END=43;
+    private final DecomposerBlockEntity decomposer;private final ContainerData data;
+    public DecomposerMenu(int id,Inventory inv,FriendlyByteBuf buf){this(id,inv,getDecomposer(inv,buf.readBlockPos()),new SimpleContainerData(13));}
+    public DecomposerMenu(int id,Inventory inv,DecomposerBlockEntity decomposer){this(id,inv,decomposer,decomposer.getContainerData());}
+    private DecomposerMenu(int id,Inventory inv,DecomposerBlockEntity decomposer,ContainerData data){super(ModMenus.DECOMPOSER.get(),id);this.decomposer=decomposer;this.data=data==null?new SimpleContainerData(13):data;addSlot(new SlotItemHandler(decomposer.getItemHandler(),0,26,44));addSlot(new SlotItemHandler(decomposer.getItemHandler(),1,80,44));addSlot(new SlotItemHandler(decomposer.getItemHandler(),2,134,44){@Override public boolean mayPlace(ItemStack stack){return false;}});for(int s=0;s<4;s++)addSlot(new SlotItemHandler(decomposer.getUpgradeInventory(),s,53+s*18,80));addPlayerInventory(inv);addDataSlots(this.data);}
+    private static DecomposerBlockEntity getDecomposer(Inventory inv,BlockPos pos){BlockEntity be=inv.player.level().getBlockEntity(pos);if(be instanceof DecomposerBlockEntity d)return d;throw new IllegalStateException("Matter Overdrive decomposer block entity missing at "+pos);}
+    private void addPlayerInventory(Inventory inv){for(int r=0;r<3;r++)for(int c=0;c<9;c++)addSlot(new Slot(inv,c+r*9+9,8+c*18,114+r*18));for(int c=0;c<9;c++)addSlot(new Slot(inv,c,8+c*18,172));}
+    @Override public ItemStack quickMoveStack(Player player,int index){Slot slot=slots.get(index);if(!slot.hasItem())return ItemStack.EMPTY;ItemStack source=slot.getItem(),copy=source.copy();boolean moved;if(index<MACHINE_SLOTS)moved=moveItemStackTo(source,PLAYER_INV_START,HOTBAR_END,true);else{moved=false;if(source.getItem() instanceof MachineUpgradeItem)moved=moveItemStackTo(source,3,MACHINE_SLOTS,false);if(!moved&&source.getCapability(ForgeCapabilities.ENERGY).map(e->e.canExtract()).orElse(false))moved=moveItemStackTo(source,1,2,false);if(!moved&&MatterValueRegistry.containsMatter(source))moved=moveItemStackTo(source,0,1,false);if(!moved)moved=index<PLAYER_INV_END?moveItemStackTo(source,PLAYER_INV_END,HOTBAR_END,false):moveItemStackTo(source,PLAYER_INV_START,PLAYER_INV_END,false);}if(!moved)return ItemStack.EMPTY;if(source.isEmpty())slot.set(ItemStack.EMPTY);else slot.setChanged();slot.onTake(player,source);return copy;}
+    @Override public boolean stillValid(Player player){return stillValid(ContainerLevelAccess.create(decomposer.getLevel(),decomposer.getBlockPos()),player,ModBlocks.get("decomposer").get());}
+    public int getProgress(){return data.get(0);}public int getMaxProgress(){return data.get(1);}public int getEnergy(){return combineWords(data.get(2),data.get(3));}public int getEnergyCapacity(){return combineWords(data.get(4),data.get(5));}public int getMatter(){return data.get(6)&0xFFFF;}public int getMatterCapacity(){return data.get(7)&0xFFFF;}public int getInputMatterValue(){return data.get(8)&0xFFFF;}public int getEnergyPerTick(){return data.get(9)&0xFFFF;}public double getFailureChancePercent(){return combineWords(data.get(10),data.get(11))/10000.0D;}public int getRedstoneMode(){return data.get(12);}public String getRedstoneModeLabel(){return MachineRedstoneMode.label(getRedstoneMode());}
+    private static int combineWords(int low,int high){return(low&0xFFFF)|((high&0xFFFF)<<16);}
+    @Override public boolean clickMenuButton(Player player,int id){if(id==1){boolean enabled=decomposer.getEnergyStorage().toggleInfiniteEnergy();player.displayClientMessage(net.minecraft.network.chat.Component.literal("[DEBUG] Infinite energy: "+(enabled?"ON":"OFF")),true);return true;}if(id==2){int mode=decomposer.cycleRedstoneMode();player.displayClientMessage(net.minecraft.network.chat.Component.literal("Redstone mode: "+MachineRedstoneMode.label(mode)),true);return true;}return false;}
 }
