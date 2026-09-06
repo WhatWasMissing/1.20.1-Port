@@ -3,40 +3,12 @@
   "flip_v": true,
   "model": "matteroverdrive:models/item/ion_sniper.obj",
   "display": {
-    "gui": {
-      "rotation": [20, 45, 0],
-      "translation": [12.8, 14.4, 0],
-      "scale": [1.5, 1.5, 1.5]
-    },
-    "ground": {
-      "rotation": [0, 0, 0],
-      "translation": [9.6, 8.0, 4.8],
-      "scale": [1.2, 1.2, 1.2]
-    },
-    "fixed": {
-      "rotation": [0, 180, 0],
-      "translation": [0, 0, 0],
-      "scale": [1.0, 1.0, 1.0]
-    },
-    "thirdperson_righthand": {
-      "rotation": [0, 180, 0],
-      "translation": [-12.8, 12.8, -9.6],
-      "scale": [1.6, 1.6, 1.6]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [0, 180, 0],
-      "translation": [12.8, 12.8, -9.6],
-      "scale": [1.6, 1.6, 1.6]
-    },
-    "firstperson_righthand": {
-      "rotation": [3, 185, 0],
-      "translation": [2.08, -2.88, -24.0],
-      "scale": [1.25, 1.25, 1.0]
-    },
-    "firstperson_lefthand": {
-      "rotation": [3, 175, 0],
-      "translation": [-2.08, -2.88, -24.0],
-      "scale": [1.25, 1.25, 1.0]
-    }
+    "gui": {"rotation": [20, 45, 0], "translation": [12.8, 14.4, 0], "scale": [1.5, 1.5, 1.5]},
+    "ground": {"rotation": [0, 0, 0], "translation": [9.6, 8.0, 4.8], "scale": [1.2, 1.2, 1.2]},
+    "fixed": {"rotation": [0, 180, 0], "translation": [0, 0, 0], "scale": [1.0, 1.0, 1.0]},
+    "thirdperson_righthand": {"rotation": [0, 180, 0], "translation": [-12.8, 12.8, -9.6], "scale": [1.6, 1.6, 1.6]},
+    "thirdperson_lefthand": {"rotation": [0, 180, 0], "translation": [12.8, 12.8, -9.6], "scale": [1.6, 1.6, 1.6]},
+    "firstperson_righthand": {"rotation": [3, 185, 0], "translation": [2.08, -2.88, -8.8], "scale": [1.0, 1.0, 0.8]},
+    "firstperson_lefthand": {"rotation": [3, 175, 0], "translation": [-2.08, -2.88, -8.8], "scale": [1.0, 1.0, 0.8]}
   }
 }
