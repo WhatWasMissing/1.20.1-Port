@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["TWT","I I","I I"],
+  "key":{"T":{"item":"matteroverdrive:tritanium_ingot"},"W":{"item":"minecraft:black_wool"},"I":{"item":"minecraft:iron_ingot"}},
+  "result":{"item":"matteroverdrive:weapon_handle"}
+}
