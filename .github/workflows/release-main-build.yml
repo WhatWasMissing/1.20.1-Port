@@ -15,6 +15,13 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: matteroverdrive-main-release
+  cancel-in-progress: true
+
+env:
+  VERSION: '0.0'
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -38,19 +45,28 @@ jobs:
             echo "No release JAR found in build/libs" >&2
             exit 1
           fi
-          cp "$JAR" "MatterOverdrive-1.20.1-Beta1-${GITHUB_SHA::7}.jar"
-          echo "RELEASE_JAR=MatterOverdrive-1.20.1-Beta1-${GITHUB_SHA::7}.jar" >> "$GITHUB_ENV"
+          cp "$JAR" "MatterOverdrive-1.20.1-${VERSION}.jar"
+          echo "RELEASE_JAR=MatterOverdrive-1.20.1-${VERSION}.jar" >> "$GITHUB_ENV"
 
-      - name: Create GitHub Release and upload JAR
+      - name: Clean legacy Beta release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: beta1-2026-09-06
         run: |
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$RELEASE_JAR" --clobber
-          else
-            gh release create "$TAG" "$RELEASE_JAR" \
+          gh release delete "beta1-2026-09-06" --yes --cleanup-tag 2>/dev/null || true
+
+      - name: Publish versioned release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release upload "$VERSION" "$RELEASE_JAR" --clobber
+            gh release edit "$VERSION" \
               --target "$GITHUB_SHA" \
-              --title "Matter Overdrive 1.20.1 Beta 1 - 2026-09-06" \
-              --notes "Beta 1 integration build from main. Includes the merged survival progression, structures, AE2 capability hardening, GuideME integration, Android/entity parity, reactor/network work, weapons, world content and current parity fixes. Built from commit $GITHUB_SHA."
+              --title "Matter Overdrive 1.20.1 ${VERSION}" \
+              --notes "Matter Overdrive 1.20.1 test release ${VERSION}. Built from commit $GITHUB_SHA."
+          else
+            gh release create "$VERSION" "$RELEASE_JAR" \
+              --target "$GITHUB_SHA" \
+              --title "Matter Overdrive 1.20.1 ${VERSION}" \
+              --notes "Matter Overdrive 1.20.1 test release ${VERSION}. Built from commit $GITHUB_SHA."
           fi
