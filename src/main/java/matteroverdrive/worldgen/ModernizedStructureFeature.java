@@ -10,11 +10,12 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 
 /**
- * Modern placement wrapper around the recovered Matter Overdrive structure layouts.
+ * Modern placement wrapper around recovered Matter Overdrive structures.
  *
- * Legacy dimensions, machine roles, loot themes and occupants remain authoritative,
- * while placement uses 1.20.1-era terrain checks and entrance cleanup so structures
- * do not blindly stamp themselves into obviously unsuitable terrain.
+ * PNG-backed legacy generators are decoded block-for-pixel from the original
+ * resources. Village pieces and the sand pit retain their class-driven translated
+ * layouts. Placement checks remain modern so legacy templates do not blindly stamp
+ * themselves into obviously unsuitable terrain.
  */
 public final class ModernizedStructureFeature extends Feature<NoneFeatureConfiguration> {
     private final LegacyParityStructureFeature.Kind kind;
@@ -29,7 +30,16 @@ public final class ModernizedStructureFeature extends Feature<NoneFeatureConfigu
     @Override
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         if (!terrainSuitable(context.level(), context.origin())) return false;
-        boolean placed = delegate.place(context);
+
+        boolean placed;
+        if (LegacyImageTemplatePlacer.supports(kind)) {
+            placed = LegacyImageTemplatePlacer.place(context.level(), context.origin(), context.random(), kind);
+            // Missing/corrupt legacy resources should never silently remove worldgen.
+            if (!placed) placed = delegate.place(context);
+        } else {
+            placed = delegate.place(context);
+        }
+
         if (placed) clearEntrances(context.level(), context.origin());
         return placed;
     }
