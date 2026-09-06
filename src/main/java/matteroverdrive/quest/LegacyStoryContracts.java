@@ -107,7 +107,10 @@ public final class LegacyStoryContracts {
     public static ItemStack chainedFrom(ItemStack completed, RandomSource random) {
         if (completed == null || completed.isEmpty() || !completed.hasTag()) return ItemStack.EMPTY;
         String next = completed.getTag().getString(NEXT_CONTRACT);
-        return next.isBlank() ? ItemStack.EMPTY : create(next, random);
+        if (next.isBlank()) return ItemStack.EMPTY;
+        ItemStack chained = create(next, random);
+        ContractStageSupport.copyQuestPosition(completed, chained);
+        return chained;
     }
 
     private static int between(RandomSource random, int min, int max) {
