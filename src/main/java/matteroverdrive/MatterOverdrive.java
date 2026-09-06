@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 @Mod(MatterOverdrive.MOD_ID)
 public final class MatterOverdrive {
     public static final String MOD_ID = "matteroverdrive";
-    public static final String DISPLAY_VERSION = "0.2";
+    public static final String DISPLAY_VERSION = "0.3";
     public static final String AUTHOR = "MVQ1303";
     private static final Logger LOGGER = LogUtils.getLogger();
 
