@@ -12,11 +12,10 @@ import net.minecraft.network.chat.Component;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** A clean constellation-style Android progression screen inspired by modern sci-fi loadout UIs. */
+/** A constellation-style Android progression screen inspired by modern sci-fi loadout UIs. */
 public class AndroidSkillTreeScreen extends Screen {
     private static final int BACKDROP = 0xF40A0C10;
     private static final int PANEL = 0xD9161B22;
-    private static final int PANEL_LIGHT = 0xCC202731;
     private static final int TEXT = 0xFFE7E9EC;
     private static final int MUTED = 0xFF8E98A5;
     private static final int ACCENT = 0xFF67D9E8;
@@ -58,7 +57,8 @@ public class AndroidSkillTreeScreen extends Screen {
             boolean pending = pendingPerk == perk.ordinal();
             boolean affordable = AndroidClientState.isActive()
                     && AndroidClientState.level() >= perk.level
-                    && availablePoints() > 0;
+                    && availablePoints() > 0
+                    && meetsClientPrerequisites(perk);
 
             Component glyph = Component.literal(selected ? "✦" : pending ? "◆" : "◇");
             Button node = Button.builder(glyph, button -> {
@@ -97,7 +97,7 @@ public class AndroidSkillTreeScreen extends Screen {
                 rebuild();
             }
         }).bounds(width / 2 - 65, footerY, 130, 20).build();
-        confirm.active = pendingPerk >= 0;
+        confirm.active = pendingPerk >= 0 && (pendingRefund || canUnlock(AndroidData.Perk.values()[pendingPerk]));
         addRenderableWidget(confirm);
 
         addRenderableWidget(Button.builder(Component.literal("CLOSE"), b -> onClose())
@@ -107,6 +107,27 @@ public class AndroidSkillTreeScreen extends Screen {
     private int availablePoints() {
         return Math.max(0, AndroidData.skillPointsForLevel(AndroidClientState.level())
                 - Long.bitCount(AndroidClientState.selectedPerks()));
+    }
+
+    private int priorBranchInvestments(AndroidData.Perk perk) {
+        int count = 0;
+        for (AndroidData.Perk candidate : AndroidData.Perk.values()) {
+            if (candidate.branch == perk.branch && candidate.level < perk.level
+                    && AndroidClientState.hasPerk(candidate)) count++;
+        }
+        return count;
+    }
+
+    private boolean meetsClientPrerequisites(AndroidData.Perk perk) {
+        return priorBranchInvestments(perk) >= AndroidData.requiredBranchInvestment(perk);
+    }
+
+    private boolean canUnlock(AndroidData.Perk perk) {
+        return AndroidClientState.isActive()
+                && !AndroidClientState.hasPerk(perk)
+                && AndroidClientState.level() >= perk.level
+                && availablePoints() > 0
+                && meetsClientPrerequisites(perk);
     }
 
     @Override
@@ -172,7 +193,7 @@ public class AndroidSkillTreeScreen extends Screen {
         }
 
         super.render(g, mouseX, mouseY, partialTick);
-        renderInspectionPanel(g, mouseX, mouseY);
+        renderInspectionPanel(g);
     }
 
     private void drawAtmosphere(GuiGraphics g) {
@@ -182,7 +203,7 @@ public class AndroidSkillTreeScreen extends Screen {
         for (int y = 96; y < height - 40; y += 48) g.fill(0, y, width, y + 1, 0x111D2834);
     }
 
-    private void renderInspectionPanel(GuiGraphics g, int mouseX, int mouseY) {
+    private void renderInspectionPanel(GuiGraphics g) {
         AndroidData.Perk inspected = pendingPerk >= 0 ? AndroidData.Perk.values()[pendingPerk] : null;
         for (Map.Entry<Button, AndroidData.Perk> entry : perkButtons.entrySet()) {
             if (entry.getKey().isHoveredOrFocused()) { inspected = entry.getValue(); break; }
@@ -196,24 +217,38 @@ public class AndroidSkillTreeScreen extends Screen {
             g.drawString(font, "to inspect its function.", x, y + 34, MUTED, false);
             g.drawString(font, "One point is awarded", x, y + 62, MUTED, false);
             g.drawString(font, "every two Android levels.", x, y + 74, MUTED, false);
-            g.drawString(font, "Maximum build: 5 perks.", x, y + 86, GOLD, false);
+            g.drawString(font, "High tiers require branch investment.", x, y + 86, GOLD, false);
+            g.drawString(font, "Maximum build: 5 perks.", x, y + 98, GOLD, false);
             return;
         }
 
         boolean owned = AndroidClientState.hasPerk(inspected);
         boolean levelLocked = AndroidClientState.level() < inspected.level;
+        int required = AndroidData.requiredBranchInvestment(inspected);
+        int invested = priorBranchInvestments(inspected);
+        boolean branchLocked = invested < required;
         g.drawString(font, inspected.displayName.toUpperCase(), x, y + 22, owned ? SELECTED : GOLD, false);
-        g.drawString(font, "TIER " + inspected.level + " · " + (owned ? "INSTALLED" : levelLocked ? "LOCKED" : "AVAILABLE"),
-                x, y + 36, owned ? ACCENT : levelLocked ? LOCKED : TEXT, false);
+        g.drawString(font, "TIER " + inspected.level + " · " + (owned ? "INSTALLED" : levelLocked || branchLocked ? "LOCKED" : "AVAILABLE"),
+                x, y + 36, owned ? ACCENT : levelLocked || branchLocked ? LOCKED : TEXT, false);
         drawWrapped(g, inspected.description, x, y + 58, 220, TEXT);
 
-        int infoY = y + 116;
+        int infoY = y + 126;
         g.fill(x, infoY, width - 30, infoY + 1, 0x55FFFFFF);
+        if (required > 0) {
+            g.drawString(font, "SPECIALIZATION", x, infoY + 10, MUTED, false);
+            g.drawString(font, invested + " / " + required + " PRIOR NODES", x, infoY + 23,
+                    branchLocked && !owned ? DANGER : ACCENT, false);
+            infoY += 39;
+        }
+
         if (owned) {
             g.drawString(font, "REFUND COST", x, infoY + 12, MUTED, false);
             g.drawString(font, "10,000 FE", x, infoY + 25, ACCENT, false);
+            if (required > 0) g.drawString(font, "Dependent perks must remain valid.", x, infoY + 38, MUTED, false);
         } else if (levelLocked) {
             g.drawString(font, "REQUIRES ANDROID LEVEL " + inspected.level, x, infoY + 14, DANGER, false);
+        } else if (branchLocked) {
+            g.drawString(font, "DEEPER BRANCH INVESTMENT REQUIRED", x, infoY + 14, DANGER, false);
         } else if (availablePoints() <= 0) {
             g.drawString(font, "NO ASCENSION POINT AVAILABLE", x, infoY + 14, DANGER, false);
         } else {
