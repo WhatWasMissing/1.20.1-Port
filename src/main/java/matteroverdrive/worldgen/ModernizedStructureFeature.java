@@ -32,14 +32,19 @@ public final class ModernizedStructureFeature extends Feature<NoneFeatureConfigu
         if (!terrainSuitable(context.level(), context.origin())) return false;
 
         boolean placed;
+        boolean exactTemplate = false;
         if (LegacyImageTemplatePlacer.supports(kind)) {
             placed = LegacyImageTemplatePlacer.place(context.level(), context.origin(), context.random(), kind);
+            exactTemplate = placed;
             // Missing/corrupt legacy resources should never silently remove worldgen.
             if (!placed) placed = delegate.place(context);
         } else {
             placed = delegate.place(context);
         }
 
+        if (exactTemplate) {
+            LegacyStructureCallbacks.apply(context.level(), context.origin(), context.random(), kind);
+        }
         if (placed) clearEntrances(context.level(), context.origin());
         return placed;
     }
