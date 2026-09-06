@@ -5,6 +5,7 @@ import matteroverdrive.capability.IMatterStorage;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.capability.MachineMatterStorage;
 import matteroverdrive.capability.ModCapabilities;
+import matteroverdrive.compat.AutomationItemHandler;
 import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.MachineUpgradeInventory;
@@ -69,38 +70,33 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             };
         }
 
-        @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
+        @Override protected void onContentsChanged(int slot) { setChanged(); }
     };
 
+    private final IItemHandler automationItems = new AutomationItemHandler(
+            items,
+            slot -> slot == DRIVE_SLOT || slot == ENERGY_SLOT,
+            slot -> slot == OUTPUT_SLOT || slot == FAILURE_SLOT);
     private final MachineEnergyStorage energyStorage =
             new MachineEnergyStorage(ENERGY_STORAGE, ENERGY_STORAGE, ENERGY_STORAGE, this::setChanged);
     private final MachineMatterStorage matterStorage =
             new MachineMatterStorage(MATTER_STORAGE, true, false, this::setChanged);
     private final MachineUpgradeInventory upgrades = new MachineUpgradeInventory(
-            UPGRADE_SLOT_COUNT,
-            upgrade -> upgrade != MachineUpgradeItem.Upgrade.RANGE,
-            this::onUpgradesChanged
-    );
-    private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> items);
+            UPGRADE_SLOT_COUNT, upgrade -> upgrade != MachineUpgradeItem.Upgrade.RANGE, this::onUpgradesChanged);
+    private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> automationItems);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
     private LazyOptional<IMatterStorage> matterCapability = LazyOptional.of(() -> matterStorage);
 
     private int replicateTime;
     private boolean running;
-
     private ItemStack networkPattern = ItemStack.EMPTY;
     private int networkPatternMatter;
     private int networkPatternProgress;
     private int networkTaskAmount;
-    @Nullable
-    private BlockPos networkTaskSource;
+    @Nullable private BlockPos networkTaskSource;
 
     private final ContainerData data = new ContainerData() {
-        @Override
-        public int get(int index) {
+        @Override public int get(int index) {
             return switch (index) {
                 case 0 -> replicateTime;
                 case 1 -> getSpeed();
@@ -118,23 +114,11 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                 default -> 0;
             };
         }
-
-        @Override
-        public void set(int index, int value) {
-            if (index == 0) {
-                replicateTime = Math.max(0, value);
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 13;
-        }
+        @Override public void set(int index, int value) { if (index == 0) replicateTime = Math.max(0, value); }
+        @Override public int getCount() { return 13; }
     };
 
-    public ReplicatorBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.REPLICATOR.get(), pos, state);
-    }
+    public ReplicatorBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.REPLICATOR.get(), pos, state); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, ReplicatorBlockEntity replicator) {
         replicator.energyStorage.beginUsageTick(level.getGameTime());
@@ -147,28 +131,19 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     private void chargeFromEnergyItem() {
         ItemStack stack = items.getStackInSlot(ENERGY_SLOT);
-        if (stack.isEmpty() || energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) {
-            return;
-        }
+        if (stack.isEmpty() || energyStorage.getEnergyStored() >= energyStorage.getMaxEnergyStored()) return;
         stack.getCapability(ForgeCapabilities.ENERGY).ifPresent(source -> {
-            if (!source.canExtract()) {
-                return;
-            }
-            int request = Math.min(ENERGY_ITEM_TRANSFER_PER_TICK,
-                    energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored());
+            if (!source.canExtract()) return;
+            int request = Math.min(ENERGY_ITEM_TRANSFER_PER_TICK, energyStorage.getMaxEnergyStored() - energyStorage.getEnergyStored());
             int offered = source.extractEnergy(request, true);
             int accepted = energyStorage.receiveEnergy(offered, false);
-            if (accepted > 0) {
-                source.extractEnergy(accepted, false);
-            }
+            if (accepted > 0) source.extractEnergy(accepted, false);
         });
     }
 
     private void onUpgradesChanged() {
-        energyStorage.setCapacity(scaleCapacity(
-                ENERGY_STORAGE, upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerStorage)));
-        matterStorage.setCapacity(scaleCapacity(
-                MATTER_STORAGE, upgrades.getMultiplier(MachineUpgradeItem.Upgrade::matterStorage)));
+        energyStorage.setCapacity(scaleCapacity(ENERGY_STORAGE, upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerStorage)));
+        matterStorage.setCapacity(scaleCapacity(MATTER_STORAGE, upgrades.getMultiplier(MachineUpgradeItem.Upgrade::matterStorage)));
         setChanged();
     }
 
@@ -177,48 +152,28 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     }
 
     private void manageReplicate() {
-        if (!canReplicate()) {
-            running = false;
-            replicateTime = 0;
-            return;
-        }
+        if (!canReplicate()) { running = false; replicateTime = 0; return; }
         int drain = getEnergyDrainPerTick();
-        if (energyStorage.getEnergyStored() < drain) {
-            running = false;
-            return;
-        }
+        if (energyStorage.getEnergyStored() < drain) { running = false; return; }
         running = true;
         energyStorage.consumeEnergy(drain, level.getGameTime());
         replicateTime++;
-        if (replicateTime >= getSpeed()) {
-            replicateTime = 0;
-            replicateItem();
-        }
+        if (replicateTime >= getSpeed()) { replicateTime = 0; replicateItem(); }
     }
 
-    public boolean queueNetworkReplication(PatternData pattern, int amount) {
-        return queueNetworkReplication(pattern, amount, null);
-    }
+    public boolean queueNetworkReplication(PatternData pattern, int amount) { return queueNetworkReplication(pattern, amount, null); }
 
     public boolean queueNetworkReplication(PatternData pattern, int amount, @Nullable BlockPos sourceMonitor) {
-        if (pattern == null || pattern.stack().isEmpty() || pattern.matter() <= 0 || pattern.progress() <= 0
-                || amount <= 0) {
-            return false;
-        }
-
+        if (pattern == null || pattern.stack().isEmpty() || pattern.matter() <= 0 || pattern.progress() <= 0 || amount <= 0) return false;
         if (hasNetworkTask()) {
             boolean samePattern = ItemStack.isSameItemSameTags(networkPattern, pattern.stack())
-                    && networkPatternMatter == pattern.matter()
-                    && networkPatternProgress == pattern.progress();
+                    && networkPatternMatter == pattern.matter() && networkPatternProgress == pattern.progress();
             boolean sameSource = Objects.equals(networkTaskSource, sourceMonitor);
-            if (!samePattern || !sameSource || networkTaskAmount > Integer.MAX_VALUE - amount) {
-                return false;
-            }
+            if (!samePattern || !sameSource || networkTaskAmount > Integer.MAX_VALUE - amount) return false;
             networkTaskAmount += amount;
             setChanged();
             return true;
         }
-
         networkPattern = pattern.stack().copy();
         networkPattern.setCount(1);
         networkPatternMatter = pattern.matter();
@@ -230,60 +185,35 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
         return true;
     }
 
-    public boolean hasNetworkTask() {
-        return networkTaskAmount > 0 && !networkPattern.isEmpty();
-    }
+    public boolean hasNetworkTask() { return networkTaskAmount > 0 && !networkPattern.isEmpty(); }
 
-    private ItemStack getCurrentPattern() {
-        if (hasNetworkTask()) {
-            return networkPattern.copy();
-        }
-        return PatternDriveItem.getPatternStack(items.getStackInSlot(DRIVE_SLOT));
-    }
-
-    private int getCurrentMatterCost() {
-        return hasNetworkTask() ? networkPatternMatter : PatternDriveItem.getMatter(items.getStackInSlot(DRIVE_SLOT));
-    }
-
-    private int getCurrentPatternProgress() {
-        return hasNetworkTask() ? networkPatternProgress : PatternDriveItem.getProgress(items.getStackInSlot(DRIVE_SLOT));
-    }
+    private ItemStack getCurrentPattern() { return hasNetworkTask() ? networkPattern.copy() : PatternDriveItem.getPatternStack(items.getStackInSlot(DRIVE_SLOT)); }
+    private int getCurrentMatterCost() { return hasNetworkTask() ? networkPatternMatter : PatternDriveItem.getMatter(items.getStackInSlot(DRIVE_SLOT)); }
+    private int getCurrentPatternProgress() { return hasNetworkTask() ? networkPatternProgress : PatternDriveItem.getProgress(items.getStackInSlot(DRIVE_SLOT)); }
 
     private boolean canReplicate() {
         ItemStack pattern = getCurrentPattern();
         int matter = getCurrentMatterCost();
         int progress = getCurrentPatternProgress();
         return !pattern.isEmpty() && matter > 0 && progress > 0
-                && matterStorage.getMatterStored() >= matter
-                && canPutInOutput(pattern)
-                && canPutFailure(matter);
+                && matterStorage.getMatterStored() >= matter && canPutInOutput(pattern) && canPutFailure(matter);
     }
 
     private boolean canPutInOutput(ItemStack pattern) {
         ItemStack output = items.getStackInSlot(OUTPUT_SLOT);
-        if (output.isEmpty()) {
-            return true;
-        }
-        return ItemStack.isSameItemSameTags(output, pattern) && output.getCount() < output.getMaxStackSize();
+        return output.isEmpty() || (ItemStack.isSameItemSameTags(output, pattern) && output.getCount() < output.getMaxStackSize());
     }
 
     private boolean canPutFailure(int matter) {
         ItemStack output = items.getStackInSlot(FAILURE_SLOT);
-        if (output.isEmpty()) {
-            return true;
-        }
-        return output.is(ModItems.get("matter_dust").get())
-                && MatterDustItem.getMatter(output) == matter
-                && output.getCount() < output.getMaxStackSize();
+        return output.isEmpty() || (output.is(ModItems.get("matter_dust").get())
+                && MatterDustItem.getMatter(output) == matter && output.getCount() < output.getMaxStackSize());
     }
 
     private void replicateItem() {
         ItemStack pattern = getCurrentPattern();
         int matter = getCurrentMatterCost();
-        if (pattern.isEmpty() || matter <= 0 || matterStorage.getMatterStored() < matter) {
-            return;
-        }
-
+        if (pattern.isEmpty() || matter <= 0 || matterStorage.getMatterStored() < matter) return;
         boolean networkTask = hasNetworkTask();
         BlockPos taskSource = networkTaskSource;
         boolean failed = RANDOM.nextDouble() < getFailChance();
@@ -293,38 +223,25 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                 ItemStack dust = new ItemStack(ModItems.get("matter_dust").get());
                 MatterDustItem.setMatter(dust, matter);
                 items.setStackInSlot(FAILURE_SLOT, dust);
-            } else {
-                failure.grow(1);
-            }
+            } else failure.grow(1);
         } else {
             ItemStack output = items.getStackInSlot(OUTPUT_SLOT);
-            if (output.isEmpty()) {
-                items.setStackInSlot(OUTPUT_SLOT, pattern.copy());
-            } else {
-                output.grow(1);
-            }
+            if (output.isEmpty()) items.setStackInSlot(OUTPUT_SLOT, pattern.copy());
+            else output.grow(1);
         }
-
         if (networkTask) {
             networkTaskAmount--;
             acknowledgeNetworkTask(taskSource, pattern, failed);
-            if (networkTaskAmount <= 0) {
-                clearNetworkTask();
-            }
+            if (networkTaskAmount <= 0) clearNetworkTask();
         }
-
         matterStorage.setMatterStored(matterStorage.getMatterStored() - matter);
         setChanged();
     }
 
     private void acknowledgeNetworkTask(@Nullable BlockPos sourceMonitor, ItemStack pattern, boolean failed) {
-        if (level == null || sourceMonitor == null) {
-            return;
-        }
+        if (level == null || sourceMonitor == null) return;
         BlockEntity source = level.getBlockEntity(sourceMonitor);
-        if (source instanceof PatternMonitorBlockEntity monitor) {
-            monitor.completeNetworkRequest(pattern, failed);
-        }
+        if (source instanceof PatternMonitorBlockEntity monitor) monitor.completeNetworkRequest(pattern, failed);
     }
 
     private void clearNetworkTask() {
@@ -337,11 +254,8 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public int getSpeed() {
         int matter = getCurrentMatterCost();
-        if (matter <= 0) {
-            return 0;
-        }
-        double scaled = Math.log1p(matter);
-        scaled *= scaled;
+        if (matter <= 0) return 0;
+        double scaled = Math.log1p(matter); scaled *= scaled;
         int speed = (int) Math.round(((REPLICATE_SPEED_PER_MATTER * Math.log1p(scaled * 0.05D) * 10.0D) - 60.0D)
                 * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed)) + 60;
         return Math.max(1, speed);
@@ -349,72 +263,38 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public int getEnergyDrainMax() {
         int matter = getCurrentMatterCost();
-        if (matter <= 0) {
-            return 0;
-        }
+        if (matter <= 0) return 0;
         return Math.max(1, (int) Math.round(Math.log1p(matter * 0.05D) * 4.0D * REPLICATE_ENERGY_PER_MATTER
                 * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerUsage)));
     }
 
-    public int getEnergyDrainPerTick() {
-        int speed = getSpeed();
-        return speed <= 0 ? 0 : Math.max(1, getEnergyDrainMax() / speed);
-    }
-
-    public double getFailChance() {
-        /*
-         * Pattern progress controls whether a pattern may be used; it must not
-         * turn a valid normal-drive replication into an almost-guaranteed
-         * failure when the drive contains multiple analysed items.
-         */
-        return Math.min(1.0D,
-                FAIL_CHANCE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::failureChance));
-    }
-
-    public ItemStackHandler getItemHandler() {
-        return items;
-    }
-
-    public MachineEnergyStorage getEnergyStorage() {
-        return energyStorage;
-    }
-
-    public MachineMatterStorage getMatterStorage() {
-        return matterStorage;
-    }
-
-    public MachineUpgradeInventory getUpgradeInventory() {
-        return upgrades;
-    }
-
-    public ContainerData getContainerData() {
-        return data;
-    }
+    public int getEnergyDrainPerTick() { int speed = getSpeed(); return speed <= 0 ? 0 : Math.max(1, getEnergyDrainMax() / speed); }
+    public double getFailChance() { return Math.min(1.0D, FAIL_CHANCE * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::failureChance)); }
+    public ItemStackHandler getItemHandler() { return items; }
+    public MachineEnergyStorage getEnergyStorage() { return energyStorage; }
+    public MachineMatterStorage getMatterStorage() { return matterStorage; }
+    public MachineUpgradeInventory getUpgradeInventory() { return upgrades; }
+    public ContainerData getContainerData() { return data; }
 
     public void dropContents() {
-        if (level == null || level.isClientSide) {
-            return;
-        }
+        if (level == null || level.isClientSide) return;
         for (int slot = 0; slot < items.getSlots(); slot++) {
             ItemStack stack = items.getStackInSlot(slot);
             if (!stack.isEmpty()) {
-                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
-                        worldPosition.getZ() + 0.5, stack.copy());
+                Containers.dropItemStack(level, worldPosition.getX()+0.5, worldPosition.getY()+0.5, worldPosition.getZ()+0.5, stack.copy());
                 items.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
         for (int slot = 0; slot < upgrades.getSlots(); slot++) {
             ItemStack stack = upgrades.getStackInSlot(slot);
             if (!stack.isEmpty()) {
-                Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 0.5,
-                        worldPosition.getZ() + 0.5, stack.copy());
+                Containers.dropItemStack(level, worldPosition.getX()+0.5, worldPosition.getY()+0.5, worldPosition.getZ()+0.5, stack.copy());
                 upgrades.setStackInSlot(slot, ItemStack.EMPTY);
             }
         }
     }
 
-    @Override
-    protected void saveAdditional(CompoundTag tag) {
+    @Override protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Items", items.serializeNBT());
         tag.put("Upgrades", upgrades.serializeNBT());
@@ -430,21 +310,14 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             tag.putInt("NetworkPatternMatter", networkPatternMatter);
             tag.putInt("NetworkPatternProgress", networkPatternProgress);
             tag.putInt("NetworkTaskAmount", networkTaskAmount);
-            if (networkTaskSource != null) {
-                tag.putLong("NetworkTaskSource", networkTaskSource.asLong());
-            }
+            if (networkTaskSource != null) tag.putLong("NetworkTaskSource", networkTaskSource.asLong());
         }
     }
 
-    @Override
-    public void load(CompoundTag tag) {
+    @Override public void load(CompoundTag tag) {
         super.load(tag);
-        if (tag.contains("Items")) {
-            items.deserializeNBT(tag.getCompound("Items"));
-        }
-        if (tag.contains("Upgrades")) {
-            upgrades.deserializeNBT(tag.getCompound("Upgrades"));
-        }
+        if (tag.contains("Items")) items.deserializeNBT(tag.getCompound("Items"));
+        if (tag.contains("Upgrades")) upgrades.deserializeNBT(tag.getCompound("Upgrades"));
         onUpgradesChanged();
         energyStorage.setEnergyStored(tag.getInt("Energy"));
         energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
@@ -463,59 +336,26 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
                 networkPatternMatter = matter;
                 networkPatternProgress = Math.min(100, progress);
                 networkTaskAmount = amount;
-                if (tag.contains("NetworkTaskSource", Tag.TAG_LONG)) {
-                    networkTaskSource = BlockPos.of(tag.getLong("NetworkTaskSource"));
-                }
+                if (tag.contains("NetworkTaskSource", Tag.TAG_LONG)) networkTaskSource = BlockPos.of(tag.getLong("NetworkTaskSource"));
             }
         }
     }
 
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
-            return itemCapability.cast();
-        }
-        if (cap == ForgeCapabilities.ENERGY) {
-            return energyCapability.cast();
-        }
-        if (cap == ModCapabilities.MATTER) {
-            return matterCapability.cast();
-        }
+    @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER) return itemCapability.cast();
+        if (cap == ForgeCapabilities.ENERGY) return energyCapability.cast();
+        if (cap == ModCapabilities.MATTER) return matterCapability.cast();
         return super.getCapability(cap, side);
     }
-
-    @Override
-    public void invalidateCaps() {
-        super.invalidateCaps();
-        itemCapability.invalidate();
-        energyCapability.invalidate();
-        matterCapability.invalidate();
-    }
-
-    @Override
-    public void reviveCaps() {
+    @Override public void invalidateCaps() { super.invalidateCaps(); itemCapability.invalidate(); energyCapability.invalidate(); matterCapability.invalidate(); }
+    @Override public void reviveCaps() {
         super.reviveCaps();
-        itemCapability = LazyOptional.of(() -> items);
+        itemCapability = LazyOptional.of(() -> automationItems);
         energyCapability = LazyOptional.of(() -> energyStorage);
         matterCapability = LazyOptional.of(() -> matterStorage);
     }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("block.matteroverdrive.replicator");
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
-        return new ReplicatorMenu(containerId, playerInventory, this);
-    }
-
-    private static int lowWord(int value) {
-        return value & 0xFFFF;
-    }
-
-    private static int highWord(int value) {
-        return (value >>> 16) & 0xFFFF;
-    }
+    @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.replicator"); }
+    @Nullable @Override public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) { return new ReplicatorMenu(containerId, playerInventory, this); }
+    private static int lowWord(int value) { return value & 0xFFFF; }
+    private static int highWord(int value) { return (value >>> 16) & 0xFFFF; }
 }
