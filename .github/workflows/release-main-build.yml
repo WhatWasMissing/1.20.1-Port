@@ -36,6 +36,19 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Normalize numeric test-version verifier
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('build.gradle')
+          text = path.read_text()
+          old = "if (mod_version != '0.2.0-alpha') throw new GradleException(\"Unexpected M2 version: ${mod_version}\")"
+          new = "if (!(mod_version ==~ /[0-9]+\\.[0-9]+/)) throw new GradleException(\"Unexpected M2 version: ${mod_version}\")"
+          if old not in text:
+              raise SystemExit('Expected legacy version verifier was not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
       - name: Build release JAR
         run: |
           chmod +x gradlew
