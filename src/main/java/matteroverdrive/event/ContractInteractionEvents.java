@@ -48,7 +48,8 @@ public final class ContractInteractionEvents {
         boolean consume = advanceMatching(player, 1, contract ->
                 ("item_interact".equals(ContractItem.type(contract))
                         || "item_interact_consume".equals(ContractItem.type(contract)))
-                        && ContractItem.matchesTarget(contract, item.toString()),
+                        && ContractItem.matchesTarget(contract, item.toString())
+                        && ContractStageSupport.requiredNameMatches(contract, used),
                 contract -> "item_interact_consume".equals(ContractItem.type(contract)));
         if (consume && !player.getAbilities().instabuild) used.shrink(1);
     }
