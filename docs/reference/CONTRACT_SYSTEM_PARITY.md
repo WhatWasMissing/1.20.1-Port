@@ -27,3 +27,7 @@ Authoritative references: Matter Overdrive 1.7.10 0.4.2 and 1.12.2 0.7.1.0.
 ## Remaining deeper quest parity
 
 The authoritative JARs contain a broader scripted quest/dialog framework beyond market contracts: sequential multi-stage quests, placement and interaction objectives, conversation gates, hidden quest rewards/chaining, entity/sound rewards, NPC dialog cameras, active-quest management/abandon actions, and story quests such as Crash Landing, We Must Know, G.M.O., Trade Route and Stem Bolts. Those should be restored on top of the extensible contract/objective layer rather than by recreating the old global quest architecture verbatim.
+
+## Later: local Forge visual test harness
+
+When a local Forge client is available, add a development-only Matter Overdrive visual test harness so rendering work can be inspected systematically instead of relying on manual setup for every screen/model. Target commands should be able to open known GUIs, equip/configure known weapons, position camera/player, spawn representative structures/entities and capture screenshots plus state metadata. Also add lightweight GUI layout validation for slot/button/text bounds and overlapping hitboxes. Keep this test tooling development-only and isolated from normal gameplay/network state.
