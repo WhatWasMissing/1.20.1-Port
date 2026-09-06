@@ -35,6 +35,7 @@ The system pages below replace the need to duplicate the full standalone System 
 - [Weapons](weapons.md)
 - [Matter Network](network.md)
 - [Applied Energistics 2](ae2.md)
+- [World Structures](structures.md)
 - [Quests and Contracts](quests.md)
 - [Star Map](starmap.md)
 - [Dimensional Pylon](pylon.md)
