@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.ContractItem;
+import matteroverdrive.quest.ContractStageSupport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
@@ -32,8 +33,9 @@ public final class ContractHudEvents {
 
         GuiGraphics graphics = event.getGuiGraphics();
         int width = minecraft.getWindow().getGuiScaledWidth();
-        int panelWidth = 166;
-        int panelHeight = 18 + contracts.size() * 22;
+        int panelWidth = 184;
+        int rowHeight = 31;
+        int panelHeight = 18 + contracts.size() * rowHeight;
         int x = width - panelWidth - 8;
         int y = 8;
         graphics.fill(x, y, x + panelWidth, y + panelHeight, 0xB010171D);
@@ -43,12 +45,20 @@ public final class ContractHudEvents {
         int rowY = y + 18;
         for (ItemStack contract : contracts) {
             int color = ContractItem.complete(contract) ? 0x57C47A : 0xEAF4F7;
-            String title = trim(ContractItem.title(contract), 24);
+            String title = trim(ContractItem.title(contract), 27);
             graphics.drawString(minecraft.font, title, x + 6, rowY, color, false);
-            graphics.drawString(minecraft.font,
-                    ContractItem.progress(contract) + " / " + ContractItem.goal(contract),
-                    x + 6, rowY + 10, 0x9EB1B8, false);
-            rowY += 22;
+
+            String stage = ContractStageSupport.stageLabel(contract);
+            String objective = trim(ContractItem.objectiveText(contract), stage.isBlank() ? 29 : 22);
+            String objectiveLine = stage.isBlank() ? objective : stage + "  " + objective;
+            graphics.drawString(minecraft.font, objectiveLine, x + 6, rowY + 10, 0x9EB1B8, false);
+
+            String progress = ContractItem.complete(contract)
+                    ? "READY TO REDEEM"
+                    : ContractItem.progress(contract) + " / " + ContractItem.goal(contract);
+            graphics.drawString(minecraft.font, progress, x + 6, rowY + 20,
+                    ContractItem.complete(contract) ? 0x57C47A : 0x78C9DC, false);
+            rowY += rowHeight;
         }
     }
 
