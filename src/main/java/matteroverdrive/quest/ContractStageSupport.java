@@ -17,6 +17,7 @@ import java.util.List;
 public final class ContractStageSupport {
     public static final String STAGES = "Stages";
     public static final String ACTIVE_STAGE = "ActiveStage";
+    public static final String REQUIRED_NAME = "RequiredName";
 
     private ContractStageSupport() {}
 
@@ -32,6 +33,7 @@ public final class ContractStageSupport {
         for (StageSpec stage : stages) list.add(writeStage(stage));
         root.put(STAGES, list);
         root.putInt(ACTIVE_STAGE, 0);
+        mirror(root, list.getCompound(0));
         return contract;
     }
 
@@ -48,6 +50,15 @@ public final class ContractStageSupport {
 
     public static int stageCount(ItemStack contract) {
         return isStaged(contract) ? contract.getOrCreateTag().getList(STAGES, Tag.TAG_COMPOUND).size() : 1;
+    }
+
+    public static String requiredName(ItemStack contract) {
+        return contract.getOrCreateTag().getString(REQUIRED_NAME);
+    }
+
+    public static boolean requiredNameMatches(ItemStack contract, ItemStack used) {
+        String required = requiredName(contract);
+        return required.isBlank() || (used.hasCustomHoverName() && required.equals(used.getHoverName().getString()));
     }
 
     /** Advances the active objective and rotates to the next stage when appropriate. */
@@ -82,6 +93,7 @@ public final class ContractStageSupport {
         tag.putInt(ContractItem.GOAL, Math.max(1, stage.goal()));
         tag.putInt(ContractItem.PROGRESS, 0);
         tag.putBoolean(ContractItem.CHILDREN_ONLY, stage.childrenOnly());
+        if (stage.requiredName() != null && !stage.requiredName().isBlank()) tag.putString(REQUIRED_NAME, stage.requiredName());
         if (stage.targets() != null && !stage.targets().isEmpty()) {
             tag.putString(ContractItem.TARGET, stage.targets().get(0));
             ListTag targets = new ListTag();
@@ -96,13 +108,17 @@ public final class ContractStageSupport {
         root.putInt(ContractItem.GOAL, Math.max(1, stage.getInt(ContractItem.GOAL)));
         root.putInt(ContractItem.PROGRESS, Math.max(0, stage.getInt(ContractItem.PROGRESS)));
         root.putBoolean(ContractItem.CHILDREN_ONLY, stage.getBoolean(ContractItem.CHILDREN_ONLY));
+        if (stage.contains(REQUIRED_NAME, Tag.TAG_STRING)) root.putString(REQUIRED_NAME, stage.getString(REQUIRED_NAME));
+        else root.remove(REQUIRED_NAME);
         if (stage.contains(ContractItem.TARGET, Tag.TAG_STRING)) root.putString(ContractItem.TARGET, stage.getString(ContractItem.TARGET));
         else root.remove(ContractItem.TARGET);
         if (stage.contains(ContractItem.TARGETS, Tag.TAG_LIST)) root.put(ContractItem.TARGETS, stage.getList(ContractItem.TARGETS, Tag.TAG_STRING).copy());
         else root.remove(ContractItem.TARGETS);
     }
 
-    public record StageSpec(String type, List<String> targets, int goal, boolean childrenOnly) {
-        public StageSpec(String type, List<String> targets, int goal) { this(type, targets, goal, false); }
+    public record StageSpec(String type, List<String> targets, int goal, boolean childrenOnly, String requiredName) {
+        public StageSpec(String type, List<String> targets, int goal) { this(type, targets, goal, false, ""); }
+        public StageSpec(String type, List<String> targets, int goal, boolean childrenOnly) { this(type, targets, goal, childrenOnly, ""); }
+        public StageSpec(String type, List<String> targets, int goal, String requiredName) { this(type, targets, goal, false, requiredName); }
     }
 }
