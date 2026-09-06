@@ -12,10 +12,12 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
 /**
  * Modern placement wrapper around recovered Matter Overdrive structures.
  *
- * PNG-backed legacy generators are decoded block-for-pixel from the original
- * resources. Village pieces and the sand pit retain their class-driven translated
- * layouts. Placement checks remain modern so legacy templates do not blindly stamp
- * themselves into obviously unsuitable terrain.
+ * The exact legacy PNG decoder remains available, but the three large PNG-backed
+ * templates are temporarily routed through the older translated placement path.
+ * Stamping 35-58 block wide templates directly from a normal Feature can reach
+ * outside the currently generating chunk/region and deadlock synchronous chunk
+ * generation. Exact templates should be re-enabled after moving them to a proper
+ * multi-chunk Structure implementation.
  */
 public final class ModernizedStructureFeature extends Feature<NoneFeatureConfiguration> {
     private final LegacyParityStructureFeature.Kind kind;
@@ -31,20 +33,10 @@ public final class ModernizedStructureFeature extends Feature<NoneFeatureConfigu
     public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context) {
         if (!terrainSuitable(context.level(), context.origin())) return false;
 
-        boolean placed;
-        boolean exactTemplate = false;
-        if (LegacyImageTemplatePlacer.supports(kind)) {
-            placed = LegacyImageTemplatePlacer.place(context.level(), context.origin(), context.random(), kind);
-            exactTemplate = placed;
-            // Missing/corrupt legacy resources should never silently remove worldgen.
-            if (!placed) placed = delegate.place(context);
-        } else {
-            placed = delegate.place(context);
-        }
-
-        if (exactTemplate) {
-            LegacyStructureCallbacks.apply(context.level(), context.origin(), context.random(), kind);
-        }
+        // Emergency world-load hotfix: do not stamp the large exact PNG templates
+        // from the ordinary Feature pipeline. The decoder is retained for migration
+        // to Minecraft's proper multi-chunk Structure system.
+        boolean placed = delegate.place(context);
         if (placed) clearEntrances(context.level(), context.origin());
         return placed;
     }
@@ -53,8 +45,8 @@ public final class ModernizedStructureFeature extends Feature<NoneFeatureConfigu
         return switch (kind) {
             case ANDROID_HOUSE -> stableLand(level, origin, 10, 10, 5);
             case MAD_SCIENTIST_HOUSE -> stableLand(level, origin, 4, 4, 4);
-            case CRASHED_SHIP -> stableLand(level, origin, 5, 17, 8);
-            case CARGO_SHIP -> stableLand(level, origin, 29, 11, 10);
+            // Keep emergency fallback terrain probes inside/near the current chunk.
+            case CRASHED_SHIP, CARGO_SHIP -> stableLand(level, origin, 5, 5, 10);
             case UNDERWATER_BASE, SAND_PIT -> true;
         };
     }
