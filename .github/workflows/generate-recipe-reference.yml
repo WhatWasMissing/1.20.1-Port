@@ -1,0 +1,131 @@
+name: Generate Recipe Reference
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/generate-recipe-reference.yml'
+      - 'src/main/resources/data/matteroverdrive/recipes/**'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Generate Markdown recipe reference
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('src/main/resources/data/matteroverdrive/recipes')
+          out = Path('docs/CURRENT_CRAFTING_RECIPES.md')
+
+          def ingredient(v):
+              if isinstance(v, str):
+                  return f'`{v}`'
+              if isinstance(v, list):
+                  return ' OR '.join(ingredient(x) for x in v)
+              if isinstance(v, dict):
+                  if 'item' in v:
+                      return f'`{v["item"]}`'
+                  if 'tag' in v:
+                      return f'`#{v["tag"]}`'
+                  return f'`{json.dumps(v, separators=(",", ":"))}`'
+              return f'`{v}`'
+
+          def result_text(v):
+              if isinstance(v, str):
+                  return f'`{v}`'
+              if isinstance(v, dict):
+                  item = v.get('item', v.get('id', '?'))
+                  count = v.get('count', 1)
+                  return f'`{item}`' + (f' x{count}' if count != 1 else '')
+              return f'`{v}`'
+
+          groups = {'crafting': [], 'cooking': [], 'other': []}
+          for p in sorted(root.glob('*.json')):
+              try:
+                  data = json.loads(p.read_text(encoding='utf-8'))
+              except Exception as e:
+                  groups['other'].append((p, None, str(e)))
+                  continue
+              typ = data.get('type', 'unknown')
+              if typ in ('minecraft:crafting_shaped', 'minecraft:crafting_shapeless'):
+                  groups['crafting'].append((p, data, None))
+              elif typ in ('minecraft:smelting', 'minecraft:blasting', 'minecraft:smoking', 'minecraft:campfire_cooking'):
+                  groups['cooking'].append((p, data, None))
+              else:
+                  groups['other'].append((p, data, None))
+
+          lines = [
+              '# Matter Overdrive 1.20.1 - Current Recipe Reference',
+              '',
+              '> Auto-generated directly from `src/main/resources/data/matteroverdrive/recipes` on the current `main` branch. Do not hand-edit this file.',
+              '',
+              f'**Crafting-table recipes:** {len(groups["crafting"])}  ',
+              f'**Smelting/blasting/cooking recipes:** {len(groups["cooking"])}  ',
+              f'**Other/unknown recipe JSONs:** {len(groups["other"])}',
+              '',
+              '## Crafting-table recipes',
+              ''
+          ]
+
+          for p, d, _ in groups['crafting']:
+              rid = p.stem
+              typ = d['type']
+              lines += [f'### `{rid}`', '', f'**Result:** {result_text(d.get("result", "?"))}  ', f'**Type:** `{typ}`', '']
+              if typ == 'minecraft:crafting_shaped':
+                  pattern = d.get('pattern', [])
+                  lines += ['**Pattern:**', '', '```text'] + list(pattern) + ['```', '', '**Key:**', '']
+                  for key, val in d.get('key', {}).items():
+                      lines.append(f'- `{key}` = {ingredient(val)}')
+              else:
+                  lines += ['**Ingredients:**', '']
+                  for val in d.get('ingredients', []):
+                      lines.append(f'- {ingredient(val)}')
+              lines += ['', '---', '']
+
+          lines += ['## Furnace / blasting / cooking recipes', '']
+          for p, d, _ in groups['cooking']:
+              lines += [
+                  f'### `{p.stem}`', '',
+                  f'**Type:** `{d.get("type")}`  ',
+                  f'**Input:** {ingredient(d.get("ingredient", "?"))}  ',
+                  f'**Result:** {result_text(d.get("result", "?"))}  ',
+                  f'**Experience:** `{d.get("experience", 0)}`  ',
+                  f'**Cooking time:** `{d.get("cookingtime", "default")}` ticks', '', '---', ''
+              ]
+
+          lines += ['## Other recipe JSONs', '', 'These files are included so the reference covers every JSON currently present in the recipe directory, even if it is not a normal crafting/cooking recipe.', '']
+          for p, d, err in groups['other']:
+              if err:
+                  lines += [f'- `{p.name}` - **JSON read error:** {err}']
+              else:
+                  lines += [f'- `{p.name}` - type `{d.get("type", "unknown")}`']
+
+          lines += ['', '## Notes', '', '- Item and tag IDs are shown exactly as defined by the datapack recipes.', '- A `#` prefix denotes a Minecraft/Forge item tag.', '- This document describes recipe JSONs only; machine processing logic implemented directly in Java is not silently inferred here.', '']
+          out.parent.mkdir(parents=True, exist_ok=True)
+          out.write_text('\n'.join(lines), encoding='utf-8')
+          print(f'Wrote {out}')
+          PY
+
+      - name: Commit generated reference
+        run: |
+          if git diff --quiet -- docs/CURRENT_CRAFTING_RECIPES.md && git ls-files --error-unmatch docs/CURRENT_CRAFTING_RECIPES.md >/dev/null 2>&1; then
+            echo 'Recipe reference already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/CURRENT_CRAFTING_RECIPES.md
+          git commit -m 'Update current crafting recipe reference'
+          git push origin HEAD:main
