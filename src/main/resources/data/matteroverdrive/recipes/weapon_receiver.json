@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["IRT","   ","IIT"],
+  "key":{"R":{"item":"minecraft:redstone"},"T":{"item":"matteroverdrive:tritanium_ingot"},"I":{"item":"minecraft:iron_ingot"}},
+  "result":{"item":"matteroverdrive:weapon_receiver"}
+}
