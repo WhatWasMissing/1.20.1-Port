@@ -219,6 +219,11 @@ public class ContractItem extends Item {
             case "scan" -> "Scan " + target;
             case "transport" -> "Use a Matter Overdrive Transporter";
             case "anomaly" -> "Enter a gravitational anomaly event horizon";
+            case "place" -> "Place " + target;
+            case "block_interact" -> "Interact with " + target;
+            case "item_interact" -> "Use " + target;
+            case "item_interact_consume" -> "Read/use " + target;
+            case "conversation" -> "Talk to " + target;
             default -> "Complete the assigned objective";
         };
     }
