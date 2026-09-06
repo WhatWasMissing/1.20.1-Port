@@ -12,6 +12,8 @@ import net.minecraft.util.Mth;
 
 /** 1.20 reconstruction of the authoritative 1.12 ModelDrone geometry. */
 public final class DroneModel extends HierarchicalModel<DroneEntity> {
+    private static final float QUARTER_PI = (float) (Math.PI / 4.0D);
+
     private final ModelPart root;
     private final ModelPart body;
     private final ModelPart flapUpper;
@@ -41,16 +43,16 @@ public final class DroneModel extends HierarchicalModel<DroneEntity> {
 
         body.addOrReplaceChild("flap_upper",
                 CubeListBuilder.create().texOffs(0, 19).mirror().addBox(-1.0F, -3.0F, -1.0F, 2.0F, 4.0F, 1.0F),
-                PartPose.offsetAndRotation(0.0F, -3.0F, -3.0F, -Mth.QUARTER_PI, 0.0F, 0.0F));
+                PartPose.offsetAndRotation(0.0F, -3.0F, -3.0F, -QUARTER_PI, 0.0F, 0.0F));
         body.addOrReplaceChild("flap_bottom",
                 CubeListBuilder.create().texOffs(7, 19).mirror().addBox(-1.0F, -1.0F, -1.0F, 2.0F, 4.0F, 1.0F),
-                PartPose.offsetAndRotation(0.0F, 2.0F, -3.0F, Mth.QUARTER_PI, 0.0F, 0.0F));
+                PartPose.offsetAndRotation(0.0F, 2.0F, -3.0F, QUARTER_PI, 0.0F, 0.0F));
         body.addOrReplaceChild("flap_left",
                 CubeListBuilder.create().texOffs(0, 13).mirror().addBox(-1.0F, -1.0F, -1.0F, 2.0F, 4.0F, 1.0F),
-                PartPose.offsetAndRotation(3.0F, 0.0F, -3.0F, Mth.QUARTER_PI, 0.0F, -Mth.HALF_PI));
+                PartPose.offsetAndRotation(3.0F, 0.0F, -3.0F, QUARTER_PI, 0.0F, -Mth.HALF_PI));
         body.addOrReplaceChild("flap_right",
                 CubeListBuilder.create().texOffs(7, 13).mirror().addBox(-1.0F, -3.0F, -1.0F, 2.0F, 4.0F, 1.0F),
-                PartPose.offsetAndRotation(-3.0F, 0.0F, -3.0F, -Mth.QUARTER_PI, 0.0F, -Mth.HALF_PI));
+                PartPose.offsetAndRotation(-3.0F, 0.0F, -3.0F, -QUARTER_PI, 0.0F, -Mth.HALF_PI));
         body.addOrReplaceChild("exhaust_left",
                 CubeListBuilder.create().texOffs(26, 0).mirror().addBox(-1.0F, -1.0F, 0.0F, 2.0F, 3.0F, 3.0F),
                 PartPose.offsetAndRotation(3.0F, 0.0F, 2.0F, -0.6108652F, 0.0F, 0.0F));
@@ -76,11 +78,11 @@ public final class DroneModel extends HierarchicalModel<DroneEntity> {
         body.yRot = netHeadYaw * Mth.DEG_TO_RAD;
 
         float flap = Mth.clamp(limbSwingAmount, 0.0F, 1.0F) * 0.6F;
-        flapUpper.xRot = -Mth.QUARTER_PI - flap;
-        flapBottom.xRot = Mth.QUARTER_PI + flap;
-        flapLeft.xRot = Mth.QUARTER_PI + flap;
+        flapUpper.xRot = -QUARTER_PI - flap;
+        flapBottom.xRot = QUARTER_PI + flap;
+        flapLeft.xRot = QUARTER_PI + flap;
         flapLeft.zRot = -Mth.HALF_PI;
-        flapRight.xRot = -Mth.QUARTER_PI - flap;
+        flapRight.xRot = -QUARTER_PI - flap;
         flapRight.zRot = -Mth.HALF_PI;
 
         float exhaustPitch = -1.0F + flap - body.xRot;
