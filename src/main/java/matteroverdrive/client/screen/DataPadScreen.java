@@ -1,10 +1,14 @@
 package matteroverdrive.client.screen;
 
+import matteroverdrive.item.ContractItem;
+import matteroverdrive.quest.ContractStageSupport;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +18,8 @@ public class DataPadScreen extends Screen {
     private static final int BORDER_COLOR = 0xFF33CCFF;
     private static final int TEXT_COLOR = 0xFFE6F7FF;
     private static final int MUTED_COLOR = 0xFF9BB6C3;
+    private static final int ACTIVE_CONTRACTS_PAGE = 6;
+    private static final int HISTORY_PAGE = 7;
 
     private static final List<String> TITLES = List.of(
             "Overview",
@@ -22,6 +28,7 @@ public class DataPadScreen extends Screen {
             "Fusion Reactor",
             "Android System",
             "Survival Progression",
+            "Active Contracts",
             "Scan History"
     );
 
@@ -74,12 +81,8 @@ public class DataPadScreen extends Screen {
 
     private void setPage(int nextPage) {
         page = Math.max(0, Math.min(TITLES.size() - 1, nextPage));
-        if (previousButton != null) {
-            previousButton.active = page > 0;
-        }
-        if (nextButton != null) {
-            nextButton.active = page < TITLES.size() - 1;
-        }
+        if (previousButton != null) previousButton.active = page > 0;
+        if (nextButton != null) nextButton.active = page < TITLES.size() - 1;
     }
 
     @Override
@@ -104,8 +107,10 @@ public class DataPadScreen extends Screen {
         int textX = left + 14;
         int textY = top + 48;
         int maxWidth = right - left - 28;
-        if (page == TITLES.size() - 1) {
-            textY = renderHistory(graphics, textX, textY, maxWidth);
+        if (page == HISTORY_PAGE) {
+            renderHistory(graphics, textX, textY, maxWidth);
+        } else if (page == ACTIVE_CONTRACTS_PAGE) {
+            renderContracts(graphics, textX, textY, maxWidth, bottom);
         } else {
             for (String paragraph : GUIDE_PAGES.get(page)) {
                 for (FormattedCharSequence line : font.split(Component.literal(paragraph), maxWidth)) {
@@ -116,15 +121,54 @@ public class DataPadScreen extends Screen {
             }
         }
 
-        graphics.drawString(font, Component.literal("Use on blocks to add scan-history entries."),
+        graphics.drawString(font, Component.literal(page == ACTIVE_CONTRACTS_PAGE
+                        ? "Completed contracts are redeemed at a Contract Market."
+                        : "Use on blocks to add scan-history entries."),
                 textX, bottom - 15, MUTED_COLOR, false);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
+    private void renderContracts(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) return;
+        List<ItemStack> contracts = new ArrayList<>();
+        for (ItemStack stack : minecraft.player.getInventory().items) {
+            if (stack.getItem() instanceof ContractItem) contracts.add(stack);
+        }
+        if (contracts.isEmpty()) {
+            graphics.drawString(font, Component.literal("No active contracts in your inventory."), x, y, MUTED_COLOR, false);
+            return;
+        }
+
+        for (int i = 0; i < contracts.size(); i++) {
+            ItemStack contract = contracts.get(i);
+            int titleColor = ContractItem.complete(contract) ? 0xFF57C47A : TEXT_COLOR;
+            String stage = ContractStageSupport.stageLabel(contract);
+            graphics.drawString(font, Component.literal((i + 1) + ". " + ContractItem.title(contract)), x, y, titleColor, false);
+            y += 11;
+            String objective = ContractItem.objectiveText(contract);
+            if (!stage.isBlank()) objective = stage + " — " + objective;
+            for (FormattedCharSequence line : font.split(Component.literal(objective), maxWidth - 8)) {
+                graphics.drawString(font, line, x + 8, y, MUTED_COLOR, false);
+                y += 10;
+            }
+            String progress = ContractItem.complete(contract)
+                    ? "READY TO REDEEM"
+                    : "Progress " + ContractItem.progress(contract) + " / " + ContractItem.goal(contract);
+            if (ContractItem.xp(contract) > 0) progress += "   XP " + ContractItem.xp(contract);
+            graphics.drawString(font, Component.literal(progress), x + 8, y,
+                    ContractItem.complete(contract) ? 0xFF57C47A : BORDER_COLOR, false);
+            y += 15;
+            if (y > bottom - 34) {
+                if (i < contracts.size() - 1) graphics.drawString(font, Component.literal("More contracts are carried; use the HUD or scroll inventory tooltips."), x, y, MUTED_COLOR, false);
+                break;
+            }
+        }
+    }
+
     private int renderHistory(GuiGraphics graphics, int x, int y, int maxWidth) {
         if (history.isEmpty()) {
-            graphics.drawString(font, Component.literal("No blocks recorded yet."),
-                    x, y, MUTED_COLOR, false);
+            graphics.drawString(font, Component.literal("No blocks recorded yet."), x, y, MUTED_COLOR, false);
             return y + 11;
         }
         for (int i = 0; i < history.size(); i++) {
@@ -134,8 +178,7 @@ public class DataPadScreen extends Screen {
                 y += 10;
             }
             if (y > height - 70) {
-                graphics.drawString(font, Component.literal("More entries are stored; increase GUI height to view."),
-                        x, y, MUTED_COLOR, false);
+                graphics.drawString(font, Component.literal("More entries are stored; increase GUI height to view."), x, y, MUTED_COLOR, false);
                 break;
             }
         }
@@ -143,7 +186,5 @@ public class DataPadScreen extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
+    public boolean isPauseScreen() { return false; }
 }
