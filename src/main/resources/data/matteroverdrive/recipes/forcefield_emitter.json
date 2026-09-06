@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["CGC","CDC","P1P"],
+  "key":{"P":{"item":"matteroverdrive:tritanium_plate"},"1":{"item":"matteroverdrive:isolinear_circuit_mk1"},"C":{"item":"matteroverdrive:s_magnet"},"D":{"item":"matteroverdrive:dilithium_crystal"},"G":{"item":"minecraft:glass"}},
+  "result":{"item":"matteroverdrive:forcefield_emitter"}
+}
