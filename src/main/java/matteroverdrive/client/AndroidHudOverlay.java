@@ -44,11 +44,12 @@ public final class AndroidHudOverlay {
         int level = AndroidClientState.level();
         int levelStart = (level - 1) * 100;
         int unspent = Math.max(0, level - Long.bitCount(AndroidClientState.selectedPerks()));
+        String skillTreeKey = AndroidKeyMappings.OPEN_SKILL_TREE.getTranslatedKeyMessage().getString();
         String progression = (level >= 10
                 ? "LEVEL 10  MAX XP"
                 : String.format("LEVEL %d  XP %d / %d", level,
                         Math.max(0, AndroidClientState.experience() - levelStart), 100))
-                + (unspent > 0 ? "  K:" + unspent : "");
+                + (unspent > 0 ? "  " + skillTreeKey + ":" + unspent : "");
         graphics.drawString(minecraft.font, progression, x + 6, y + 34, 0xFFFFD27A, false);
 
         graphics.drawString(minecraft.font,
@@ -76,7 +77,9 @@ public final class AndroidHudOverlay {
             state = String.format("COOLDOWN %.1fs", AndroidClientState.cooldownTicks() / 20.0D);
             color = 0xFFFFB45B;
         } else {
-            state = "V: CYCLE   B: ACTIVATE";
+            String cycleKey = AndroidKeyMappings.CYCLE_ABILITY.getTranslatedKeyMessage().getString();
+            String activateKey = AndroidKeyMappings.ACTIVATE_ABILITY.getTranslatedKeyMessage().getString();
+            state = cycleKey + ": CYCLE   " + activateKey + ": ACTIVATE";
             color = 0xFF9BB6C3;
         }
         graphics.drawString(minecraft.font, state, x + 6, y + 57, color, false);
