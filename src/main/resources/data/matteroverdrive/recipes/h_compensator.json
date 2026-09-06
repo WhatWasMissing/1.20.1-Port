@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[" M ","CPC","DED"],
+  "key":{"P":{"item":"matteroverdrive:isolinear_circuit_mk2"},"C":{"item":"matteroverdrive:isolinear_circuit_mk1"},"D":{"item":"matteroverdrive:dilithium_crystal"},"E":{"item":"minecraft:ender_eye"},"M":{"item":"matteroverdrive:machine_casing"}},
+  "result":{"item":"matteroverdrive:h_compensator"}
+}
