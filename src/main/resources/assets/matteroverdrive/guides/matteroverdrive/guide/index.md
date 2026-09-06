@@ -8,7 +8,9 @@ item_ids:
 ---
 # Matter Overdrive
 
-Welcome to the Matter Overdrive field manual. This GuideME edition is the primary player-facing manual when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
+Welcome to the Matter Overdrive field manual. This GuideME edition is the primary player-facing **how-to guide** when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
+
+The system pages below replace the need to duplicate the full standalone System Guide inside GuideME. For a quick implementation/parity overview, see [Current Features](current_features.md).
 
 ## Survival start
 
@@ -18,6 +20,10 @@ Welcome to the Matter Overdrive field manual. This GuideME edition is the primar
 4. Build a **Charging Station** and charge portable energy storage.
 5. Build a **Decomposer** to turn items into matter.
 6. Use analyzed patterns and a **Replicator** to manufacture matter-based items.
+
+## Reference
+
+- [Current Features](current_features.md)
 
 ## Systems
 
