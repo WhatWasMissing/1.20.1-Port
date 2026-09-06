@@ -1,5 +1,6 @@
 package matteroverdrive.client.screen;
 
+import matteroverdrive.client.GuideMeCompatEvents;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
@@ -37,7 +38,7 @@ public class DataPadScreen extends Screen {
     private static final List<List<String>> GUIDE_PAGES = List.of(
             List.of(
                     "Matter Overdrive turns stored matter and Forge Energy into a connected technology chain.",
-                    "Use the page buttons to review the current implemented systems. Use the Data Pad on a block to record its registry ID and matter value."
+                    "GuideME is the primary manual when installed. The pages here remain available as a lightweight fallback and the Data Pad still manages scanning and contracts."
             ),
             List.of(
                     "Decompose supported items into matter, analyse items into patterns, store those patterns on Pattern Drives, then queue them through the Pattern Monitor and Replicator.",
@@ -57,7 +58,7 @@ public class DataPadScreen extends Screen {
             ),
             List.of(
                     "Tritanium generates from Y -32 to 64. Dilithium generates from Y -64 to 16 in fresh Overworld chunks.",
-                    "Process the ores in a furnace or blast furnace. Temporary survival recipes provide the Android pills until the full Mad Scientist quest route is restored."
+                    "Mine both ores with an iron-tier pickaxe or better, then process them in a furnace or blast furnace."
             )
     );
 
@@ -69,6 +70,7 @@ public class DataPadScreen extends Screen {
     private long abandonArmedUntil;
     private Button previousButton;
     private Button nextButton;
+    private Button manualButton;
 
     public DataPadScreen(List<String> history) {
         super(Component.literal("Matter Overdrive Data Pad"));
@@ -84,6 +86,10 @@ public class DataPadScreen extends Screen {
         nextButton = addRenderableWidget(Button.builder(Component.literal("Next >"),
                 button -> setPage(page + 1)).bounds(width / 2 + 9, y, 96, 20).build());
 
+        manualButton = addRenderableWidget(Button.builder(Component.literal("GuideME Manual"), button -> openManual())
+                .bounds(Math.max(14, width / 2 - 188), 18, 96, 20).build());
+        manualButton.visible = net.minecraftforge.fml.ModList.get().isLoaded("guideme");
+
         int right = Math.min(width - 12, width / 2 + 190);
         int top = 12;
         for (int row = 0; row < MAX_MANAGED_CONTRACTS; row++) {
@@ -94,6 +100,10 @@ public class DataPadScreen extends Screen {
             abandonButtons.add(button);
         }
         setPage(page);
+    }
+
+    private void openManual() {
+        GuideMeCompatEvents.openGuide();
     }
 
     private void setPage(int nextPage) {
