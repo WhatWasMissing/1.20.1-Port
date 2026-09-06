@@ -1,6 +1,6 @@
 {
   "type":"forge:add_features",
-  "biomes":"#minecraft:is_ocean",
+  "biomes":[],
   "features":"matteroverdrive:underwater_base",
   "step":"surface_structures"
 }
