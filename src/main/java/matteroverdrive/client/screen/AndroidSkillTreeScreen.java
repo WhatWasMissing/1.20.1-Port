@@ -4,7 +4,6 @@ import matteroverdrive.android.AndroidData;
 import matteroverdrive.client.AndroidClientState;
 import matteroverdrive.network.AndroidPerkSelectPacket;
 import matteroverdrive.network.ModNetwork;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,13 +12,18 @@ import net.minecraft.network.chat.Component;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/** A clean constellation-style Android progression screen inspired by modern sci-fi loadout UIs. */
 public class AndroidSkillTreeScreen extends Screen {
-    private static final int PANEL = 0xF010141C;
-    private static final int GRID = 0xFF242A34;
-    private static final int GOLD = 0xFFE0A800;
-    private static final int LOCKED = 0xFF69717C;
-    private static final int SELECTED = 0xFF54E68A;
-    private static final int PENDING = 0xFF62E6FF;
+    private static final int BACKDROP = 0xF40A0C10;
+    private static final int PANEL = 0xD9161B22;
+    private static final int PANEL_LIGHT = 0xCC202731;
+    private static final int TEXT = 0xFFE7E9EC;
+    private static final int MUTED = 0xFF8E98A5;
+    private static final int ACCENT = 0xFF67D9E8;
+    private static final int GOLD = 0xFFE9C46A;
+    private static final int SELECTED = 0xFFF5F7FA;
+    private static final int LOCKED = 0xFF414852;
+    private static final int DANGER = 0xFFE07A5F;
 
     private final Map<Button, AndroidData.Perk> perkButtons = new LinkedHashMap<>();
     private long displayedPerks;
@@ -28,166 +32,202 @@ public class AndroidSkillTreeScreen extends Screen {
     private boolean pendingRefund;
     private boolean resetArmed;
 
-    public AndroidSkillTreeScreen() {
-        super(Component.literal("Android Skill Tree"));
-    }
+    public AndroidSkillTreeScreen() { super(Component.literal("ANDROID SUBSYSTEM")); }
 
     @Override
     protected void init() {
         displayedPerks = AndroidClientState.selectedPerks();
         displayedLevel = AndroidClientState.level();
-        rebuildPerkButtons();
+        rebuild();
     }
 
-    private void rebuildPerkButtons() {
+    private void rebuild() {
         clearWidgets();
         perkButtons.clear();
-        int center = width / 2;
-        int top = 54;
-        int[] columns = {center - 305, center - 95, center + 115};
+
+        int treeLeft = Math.max(130, width / 2 - 300);
+        int treeRight = Math.min(width - 210, width / 2 + 300);
+        int usable = Math.max(300, treeRight - treeLeft);
+        int step = Math.max(32, usable / 9);
+        int[] rows = {height / 2 - 72, height / 2, height / 2 + 72};
 
         for (AndroidData.Perk perk : AndroidData.Perk.values()) {
-            int x = columns[Math.max(0, Math.min(2, perk.branch))];
-            int y = top + (perk.level - 1) * 34;
+            int x = treeLeft + (perk.level - 2) * step - 14;
+            int y = rows[Math.max(0, Math.min(2, perk.branch))] - 14;
             boolean selected = AndroidClientState.hasPerk(perk);
-            boolean levelChosen = hasSelectedPerkAtLevel(perk.level);
             boolean pending = pendingPerk == perk.ordinal();
-            Component label = Component.literal("L" + perk.level + "  " + perk.displayName)
-                    .withStyle(selected ? ChatFormatting.GREEN
-                            : pending ? ChatFormatting.AQUA
-                            : perk.level <= AndroidClientState.level() && !levelChosen
-                            ? ChatFormatting.GOLD : ChatFormatting.DARK_GRAY);
-            Button button = Button.builder(label, pressed -> {
+            boolean affordable = AndroidClientState.isActive()
+                    && AndroidClientState.level() >= perk.level
+                    && availablePoints() > 0;
+
+            Component glyph = Component.literal(selected ? "✦" : pending ? "◆" : "◇");
+            Button node = Button.builder(glyph, button -> {
                 pendingPerk = perk.ordinal();
                 pendingRefund = selected;
                 resetArmed = false;
-                rebuildPerkButtons();
-            }).bounds(x, y, 190, 26).build();
-            button.active = AndroidClientState.isActive() && (selected
-                    || (!levelChosen && AndroidClientState.level() >= perk.level));
-            addRenderableWidget(button);
-            perkButtons.put(button, perk);
+                rebuild();
+            }).bounds(x, y, 28, 28).build();
+            node.active = selected || affordable;
+            addRenderableWidget(node);
+            perkButtons.put(node, perk);
         }
 
-        Button reset = Button.builder(Component.literal(resetArmed
-                        ? "Confirm reset (25k FE)" : "Reset perks"),
-                button -> {
-                    if (resetArmed) {
-                        ModNetwork.CHANNEL.sendToServer(new AndroidPerkSelectPacket(-1));
-                        resetArmed = false;
-                        pendingPerk = -1;
-                        pendingRefund = false;
-                    } else {
-                        resetArmed = true;
-                        pendingPerk = -1;
-                        pendingRefund = false;
-                    }
-                    rebuildPerkButtons();
-                }).bounds(width / 2 - 180, height - 27, 140, 20).build();
+        int footerY = height - 31;
+        Button reset = Button.builder(Component.literal(resetArmed ? "CONFIRM WIPE · 50K FE" : "RESET BUILD"), button -> {
+            if (resetArmed) {
+                ModNetwork.CHANNEL.sendToServer(new AndroidPerkSelectPacket(-1));
+                resetArmed = false;
+            } else {
+                resetArmed = true;
+            }
+            pendingPerk = -1;
+            pendingRefund = false;
+            rebuild();
+        }).bounds(18, footerY, 150, 20).build();
         reset.active = AndroidClientState.selectedPerks() != 0L;
         addRenderableWidget(reset);
 
-        Button confirm = Button.builder(Component.literal(pendingPerk >= 0
-                        ? pendingRefund ? "Confirm refund" : "Confirm perk"
-                        : "Select a perk"),
-                button -> {
-                    if (pendingPerk >= 0) {
-                        int request = pendingRefund ? -2 - pendingPerk : pendingPerk;
-                        ModNetwork.CHANNEL.sendToServer(new AndroidPerkSelectPacket(request));
-                        pendingPerk = -1;
-                        pendingRefund = false;
-                        rebuildPerkButtons();
-                    }
-                }).bounds(width / 2 - 30, height - 27, 120, 20).build();
+        Button confirm = Button.builder(Component.literal(pendingPerk < 0 ? "SELECT NODE"
+                        : pendingRefund ? "REFUND · 10K FE" : "UNLOCK NODE"), button -> {
+            if (pendingPerk >= 0) {
+                int request = pendingRefund ? -2 - pendingPerk : pendingPerk;
+                ModNetwork.CHANNEL.sendToServer(new AndroidPerkSelectPacket(request));
+                pendingPerk = -1;
+                pendingRefund = false;
+                rebuild();
+            }
+        }).bounds(width / 2 - 65, footerY, 130, 20).build();
         confirm.active = pendingPerk >= 0;
         addRenderableWidget(confirm);
 
-        addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
-                .bounds(width / 2 + 100, height - 27, 80, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("CLOSE"), b -> onClose())
+                .bounds(width - 98, footerY, 80, 20).build());
     }
 
-    private boolean hasSelectedPerkAtLevel(int level) {
-        for (AndroidData.Perk perk : AndroidData.Perk.values()) {
-            if (perk.level == level && AndroidClientState.hasPerk(perk)) return true;
-        }
-        return false;
+    private int availablePoints() {
+        return Math.max(0, AndroidData.skillPointsForLevel(AndroidClientState.level())
+                - Long.bitCount(AndroidClientState.selectedPerks()));
     }
 
     @Override
     public void tick() {
-        if (displayedPerks != AndroidClientState.selectedPerks()
-                || displayedLevel != AndroidClientState.level()) {
+        if (displayedPerks != AndroidClientState.selectedPerks() || displayedLevel != AndroidClientState.level()) {
             displayedPerks = AndroidClientState.selectedPerks();
             displayedLevel = AndroidClientState.level();
-            rebuildPerkButtons();
+            rebuild();
         }
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
-        graphics.fill(8, 8, width - 8, height - 36, PANEL);
-        for (int x = 12; x < width - 12; x += 16) {
-            graphics.fill(x, 12, x + 1, height - 40, GRID);
-        }
-        for (int y = 12; y < height - 40; y += 16) {
-            graphics.fill(12, y, width - 12, y + 1, GRID);
-        }
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        g.fill(0, 0, width, height, BACKDROP);
+        drawAtmosphere(g);
 
-        int center = width / 2;
-        int top = 54;
-        int[] lineX = {center - 210, center, center + 210};
-        graphics.drawCenteredString(font, title, center, 13, 0xFF62E6FF);
-        int spent = Long.bitCount(AndroidClientState.selectedPerks());
-        int available = Math.max(0, AndroidClientState.level() - spent);
-        graphics.drawCenteredString(font,
-                Component.literal("Level " + AndroidClientState.level() + "   Available points: " + available
-                        + "   Click a node, then confirm"),
-                center, 26, available > 0 ? GOLD : 0xFFB5C4CF);
-        graphics.drawCenteredString(font, Component.literal("ASSAULT"), lineX[0], 43, GOLD);
-        graphics.drawCenteredString(font, Component.literal("UTILITY"), lineX[1], 43, PENDING);
-        graphics.drawCenteredString(font, Component.literal("SURVIVAL / MOBILITY"), lineX[2], 43, GOLD);
+        int level = AndroidClientState.level();
+        int points = availablePoints();
+        int currentXp = AndroidClientState.experience();
+        int levelStart = AndroidData.experienceForLevel(level);
+        int levelEnd = level >= AndroidData.MAX_LEVEL ? levelStart : AndroidData.experienceForLevel(level + 1);
+        int progress = level >= AndroidData.MAX_LEVEL ? 100 : Math.max(0, Math.min(100,
+                (int)(100.0 * (currentXp - levelStart) / Math.max(1, levelEnd - levelStart))));
+
+        g.drawString(font, "ANDROID // SYNTHETIC ASCENSION", 18, 16, TEXT, false);
+        g.drawString(font, "SUBSYSTEM CALIBRATION", 18, 29, MUTED, false);
+        g.drawString(font, "POWER " + AndroidClientState.energy() + " / " + AndroidData.ENERGY_CAPACITY,
+                width - 190, 17, ACCENT, false);
+
+        g.fill(18, 46, width - 18, 47, 0x55FFFFFF);
+        g.drawString(font, "LEVEL", 18, 59, MUTED, false);
+        g.drawString(font, Integer.toString(level), 18, 72, TEXT, false);
+        g.drawString(font, "ASCENSION POINTS", 72, 59, MUTED, false);
+        g.drawString(font, points + " AVAILABLE", 72, 72, points > 0 ? GOLD : TEXT, false);
+        g.drawString(font, level >= AndroidData.MAX_LEVEL ? "MAXIMUM SYNTHESIS" : currentXp + " / " + levelEnd + " XP",
+                205, 72, MUTED, false);
+        g.fill(205, 60, width - 210, 64, 0x553B424C);
+        g.fill(205, 60, 205 + (width - 415) * progress / 100, 64, ACCENT);
+
+        int treeLeft = Math.max(130, width / 2 - 300);
+        int treeRight = Math.min(width - 210, width / 2 + 300);
+        int usable = Math.max(300, treeRight - treeLeft);
+        int step = Math.max(32, usable / 9);
+        int[] rows = {height / 2 - 72, height / 2, height / 2 + 72};
+        String[] branchNames = {"ASSAULT", "CHASSIS", "UTILITY"};
+        String[] branchSub = {"OFFENSIVE SYSTEMS", "SURVIVABILITY", "COGNITION & SUPPORT"};
 
         for (int branch = 0; branch < 3; branch++) {
-            for (int level = 1; level < AndroidData.MAX_LEVEL; level++) {
-                int y1 = top + (level - 1) * 34 + 26;
-                int y2 = top + level * 34;
-                graphics.fill(lineX[branch] - 1, y1, lineX[branch] + 1, y2, GOLD);
+            int y = rows[branch];
+            g.drawString(font, branchNames[branch], 18, y - 9, branch == 0 ? DANGER : branch == 1 ? GOLD : ACCENT, false);
+            g.drawString(font, branchSub[branch], 18, y + 4, MUTED, false);
+            g.fill(treeLeft, y - 1, treeRight, y + 1, 0x66737D88);
+            for (int levelGate = 2; levelGate <= 10; levelGate++) {
+                int x = treeLeft + (levelGate - 2) * step;
+                boolean unlocked = level >= levelGate;
+                g.fill(x - 2, y - 2, x + 2, y + 2, unlocked ? ACCENT : LOCKED);
             }
         }
-        for (int level = 1; level <= AndroidData.MAX_LEVEL; level++) {
-            int y = top + (level - 1) * 34 + 12;
-            int color = hasSelectedPerkAtLevel(level) ? SELECTED
-                    : level <= AndroidClientState.level() ? GOLD : LOCKED;
-            graphics.fill(lineX[0] + 94, y, lineX[1] - 94, y + 2, color);
-            graphics.fill(lineX[1] + 94, y, lineX[2] - 94, y + 2, color);
+
+        for (int levelGate = 2; levelGate <= 10; levelGate++) {
+            int x = treeLeft + (levelGate - 2) * step;
+            g.drawCenteredString(font, Integer.toString(levelGate), x, rows[0] - 32, level >= levelGate ? TEXT : LOCKED);
         }
 
-        super.render(graphics, mouseX, mouseY, partialTick);
+        super.render(g, mouseX, mouseY, partialTick);
+        renderInspectionPanel(g, mouseX, mouseY);
+    }
 
-        String detail = resetArmed
-                ? "Resetting refunds all perk points, disables toggled abilities and costs 25,000 Android FE."
-                : pendingPerk >= 0 && pendingRefund
-                ? "Refund this installed perk for 2,500 Android FE; its level point becomes available again."
-                : "Hover a perk to view its effect. Click an installed perk to refund it.";
-        int detailColor = resetArmed ? 0xFFFFB45B : 0xFFB5C4CF;
+    private void drawAtmosphere(GuiGraphics g) {
+        g.fill(width - 260, 48, width - 18, height - 42, PANEL);
+        g.fill(width - 257, 51, width - 21, height - 45, 0x331AEEF2);
+        for (int x = 0; x < width; x += 48) g.fill(x, 0, x + 1, height, 0x111D2834);
+        for (int y = 96; y < height - 40; y += 48) g.fill(0, y, width, y + 1, 0x111D2834);
+    }
+
+    private void renderInspectionPanel(GuiGraphics g, int mouseX, int mouseY) {
+        AndroidData.Perk inspected = pendingPerk >= 0 ? AndroidData.Perk.values()[pendingPerk] : null;
         for (Map.Entry<Button, AndroidData.Perk> entry : perkButtons.entrySet()) {
-            if (entry.getKey().isHoveredOrFocused()) {
-                AndroidData.Perk perk = entry.getValue();
-                detail = pendingRefund && pendingPerk == perk.ordinal()
-                        ? "Refund " + perk.displayName + " for 2,500 Android FE."
-                        : perk.description;
-                detailColor = AndroidClientState.hasPerk(perk) ? SELECTED
-                        : pendingPerk == perk.ordinal() ? PENDING
-                        : perk.level <= AndroidClientState.level() ? GOLD : LOCKED;
-                break;
-            }
+            if (entry.getKey().isHoveredOrFocused()) { inspected = entry.getValue(); break; }
         }
-        graphics.drawCenteredString(font, Component.literal(detail), center, height - 48, detailColor);
+
+        int x = width - 244;
+        int y = 110;
+        g.drawString(font, "NODE INSPECTION", x, y, MUTED, false);
+        if (inspected == null) {
+            g.drawString(font, "Select a subsystem node", x, y + 22, TEXT, false);
+            g.drawString(font, "to inspect its function.", x, y + 34, MUTED, false);
+            g.drawString(font, "One point is awarded", x, y + 62, MUTED, false);
+            g.drawString(font, "every two Android levels.", x, y + 74, MUTED, false);
+            g.drawString(font, "Maximum build: 5 perks.", x, y + 86, GOLD, false);
+            return;
+        }
+
+        boolean owned = AndroidClientState.hasPerk(inspected);
+        boolean levelLocked = AndroidClientState.level() < inspected.level;
+        g.drawString(font, inspected.displayName.toUpperCase(), x, y + 22, owned ? SELECTED : GOLD, false);
+        g.drawString(font, "TIER " + inspected.level + " · " + (owned ? "INSTALLED" : levelLocked ? "LOCKED" : "AVAILABLE"),
+                x, y + 36, owned ? ACCENT : levelLocked ? LOCKED : TEXT, false);
+        drawWrapped(g, inspected.description, x, y + 58, 220, TEXT);
+
+        int infoY = y + 116;
+        g.fill(x, infoY, width - 30, infoY + 1, 0x55FFFFFF);
+        if (owned) {
+            g.drawString(font, "REFUND COST", x, infoY + 12, MUTED, false);
+            g.drawString(font, "10,000 FE", x, infoY + 25, ACCENT, false);
+        } else if (levelLocked) {
+            g.drawString(font, "REQUIRES ANDROID LEVEL " + inspected.level, x, infoY + 14, DANGER, false);
+        } else if (availablePoints() <= 0) {
+            g.drawString(font, "NO ASCENSION POINT AVAILABLE", x, infoY + 14, DANGER, false);
+        } else {
+            g.drawString(font, "COST", x, infoY + 12, MUTED, false);
+            g.drawString(font, "1 ASCENSION POINT", x, infoY + 25, GOLD, false);
+        }
     }
 
-    @Override
-    public boolean isPauseScreen() {
-        return false;
+    private void drawWrapped(GuiGraphics g, String text, int x, int y, int maxWidth, int color) {
+        for (var line : font.split(Component.literal(text), maxWidth)) {
+            g.drawString(font, line, x, y, color, false);
+            y += 11;
+        }
     }
+
+    @Override public boolean isPauseScreen() { return false; }
 }
