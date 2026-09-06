@@ -52,7 +52,7 @@ public class AndroidSkillTreeScreen extends Screen {
 
         for (AndroidData.Perk perk : AndroidData.Perk.values()) {
             int x = treeLeft + (perk.level - 2) * step - 14;
-            int y = rows[Math.max(0, Math.min(2, perk.branch))] - 14;
+            int y = rows[Math.max(0, Math.min(2, perk.branch))] + capstoneOffset(perk) - 14;
             boolean selected = AndroidClientState.hasPerk(perk);
             boolean pending = pendingPerk == perk.ordinal();
             boolean affordable = AndroidClientState.isActive()
@@ -102,6 +102,16 @@ public class AndroidSkillTreeScreen extends Screen {
 
         addRenderableWidget(Button.builder(Component.literal("CLOSE"), b -> onClose())
                 .bounds(width - 98, footerY, 80, 20).build());
+    }
+
+    private int capstoneOffset(AndroidData.Perk perk) {
+        if (perk.level != AndroidData.MAX_LEVEL) return 0;
+        int index = 0;
+        for (AndroidData.Perk candidate : AndroidData.Perk.values()) {
+            if (candidate == perk) break;
+            if (candidate.level == AndroidData.MAX_LEVEL && candidate.branch == perk.branch) index++;
+        }
+        return index == 0 ? -17 : 17;
     }
 
     private int availablePoints() {
@@ -175,16 +185,22 @@ public class AndroidSkillTreeScreen extends Screen {
         String[] branchNames = {"ASSAULT", "CHASSIS", "UTILITY"};
         String[] branchSub = {"OFFENSIVE SYSTEMS", "SURVIVABILITY", "COGNITION & SUPPORT"};
 
+        int levelNineX = treeLeft + 7 * step;
+        int capstoneX = treeLeft + 8 * step;
         for (int branch = 0; branch < 3; branch++) {
             int y = rows[branch];
             g.drawString(font, branchNames[branch], 18, y - 9, branch == 0 ? DANGER : branch == 1 ? GOLD : ACCENT, false);
             g.drawString(font, branchSub[branch], 18, y + 4, MUTED, false);
-            g.fill(treeLeft, y - 1, treeRight, y + 1, 0x66737D88);
-            for (int levelGate = 2; levelGate <= 10; levelGate++) {
+            g.fill(treeLeft, y - 1, levelNineX, y + 1, 0x66737D88);
+            int forkColor = level >= AndroidData.MAX_LEVEL ? ACCENT : LOCKED;
+            drawLine(g, levelNineX, y, capstoneX, y - 17, forkColor);
+            drawLine(g, levelNineX, y, capstoneX, y + 17, forkColor);
+            for (int levelGate = 2; levelGate <= 9; levelGate++) {
                 int x = treeLeft + (levelGate - 2) * step;
                 boolean unlocked = level >= levelGate;
                 g.fill(x - 2, y - 2, x + 2, y + 2, unlocked ? ACCENT : LOCKED);
             }
+            g.drawString(font, "CAPSTONE", capstoneX - 22, y - 37, level >= AndroidData.MAX_LEVEL ? GOLD : LOCKED, false);
         }
 
         for (int levelGate = 2; levelGate <= 10; levelGate++) {
@@ -194,6 +210,16 @@ public class AndroidSkillTreeScreen extends Screen {
 
         super.render(g, mouseX, mouseY, partialTick);
         renderInspectionPanel(g);
+    }
+
+    private void drawLine(GuiGraphics g, int x1, int y1, int x2, int y2, int color) {
+        int steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+        if (steps <= 0) return;
+        for (int i = 0; i <= steps; i++) {
+            int x = x1 + (x2 - x1) * i / steps;
+            int y = y1 + (y2 - y1) * i / steps;
+            g.fill(x, y, x + 1, y + 1, color);
+        }
     }
 
     private void drawAtmosphere(GuiGraphics g) {
@@ -218,7 +244,8 @@ public class AndroidSkillTreeScreen extends Screen {
             g.drawString(font, "One point is awarded", x, y + 62, MUTED, false);
             g.drawString(font, "every two Android levels.", x, y + 74, MUTED, false);
             g.drawString(font, "High tiers require branch investment.", x, y + 86, GOLD, false);
-            g.drawString(font, "Maximum build: 5 perks.", x, y + 98, GOLD, false);
+            g.drawString(font, "Level 10 forks into capstones.", x, y + 98, GOLD, false);
+            g.drawString(font, "Maximum build: 5 perks.", x, y + 110, GOLD, false);
             return;
         }
 
@@ -228,7 +255,8 @@ public class AndroidSkillTreeScreen extends Screen {
         int invested = priorBranchInvestments(inspected);
         boolean branchLocked = invested < required;
         g.drawString(font, inspected.displayName.toUpperCase(), x, y + 22, owned ? SELECTED : GOLD, false);
-        g.drawString(font, "TIER " + inspected.level + " · " + (owned ? "INSTALLED" : levelLocked || branchLocked ? "LOCKED" : "AVAILABLE"),
+        g.drawString(font, (inspected.level == AndroidData.MAX_LEVEL ? "CAPSTONE" : "TIER " + inspected.level)
+                        + " · " + (owned ? "INSTALLED" : levelLocked || branchLocked ? "LOCKED" : "AVAILABLE"),
                 x, y + 36, owned ? ACCENT : levelLocked || branchLocked ? LOCKED : TEXT, false);
         drawWrapped(g, inspected.description, x, y + 58, 220, TEXT);
 
