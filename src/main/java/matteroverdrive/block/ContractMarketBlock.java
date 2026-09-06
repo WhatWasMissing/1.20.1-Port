@@ -2,6 +2,7 @@ package matteroverdrive.block;
 
 import matteroverdrive.blockentity.ContractMarketBlockEntity;
 import matteroverdrive.item.ContractItem;
+import matteroverdrive.quest.LegacyStoryContracts;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -60,8 +61,13 @@ public class ContractMarketBlock extends BaseEntityBlock {
             int xp = ContractItem.xp(held);
             if (xp > 0) player.giveExperiencePoints(xp);
             String title = ContractItem.title(held);
+            ItemStack chained = LegacyStoryContracts.chainedFrom(held, level.random);
             held.shrink(1);
+            if (!chained.isEmpty() && !player.getInventory().add(chained)) player.drop(chained, false);
             player.displayClientMessage(Component.literal("Contract redeemed: " + title + (xp > 0 ? " (" + xp + " XP)" : "")), true);
+            if (!chained.isEmpty()) {
+                player.displayClientMessage(Component.literal("New objective received: " + ContractItem.title(chained)), true);
+            }
             SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(new net.minecraft.resources.ResourceLocation("matteroverdrive", "gui.quest_complete"));
             if (sound != null && player instanceof ServerPlayer serverPlayer) serverPlayer.playNotifySound(sound, SoundSource.PLAYERS, 1.0F, 1.0F);
             return InteractionResult.CONSUME;
