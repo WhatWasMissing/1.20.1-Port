@@ -1,6 +1,7 @@
 package matteroverdrive.quest;
 
 import matteroverdrive.item.ContractItem;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -18,6 +19,8 @@ public final class ContractStageSupport {
     public static final String STAGES = "Stages";
     public static final String ACTIVE_STAGE = "ActiveStage";
     public static final String REQUIRED_NAME = "RequiredName";
+    public static final String QUEST_POS = "QuestPos";
+    public static final String QUEST_RADIUS = "QuestRadius";
 
     private ContractStageSupport() {}
 
@@ -59,6 +62,33 @@ public final class ContractStageSupport {
     public static boolean requiredNameMatches(ItemStack contract, ItemStack used) {
         String required = requiredName(contract);
         return required.isBlank() || (used.hasCustomHoverName() && required.equals(used.getHoverName().getString()));
+    }
+
+    public static void setQuestPosition(ItemStack contract, BlockPos pos, int radius) {
+        if (contract == null || contract.isEmpty() || pos == null) return;
+        CompoundTag tag = contract.getOrCreateTag();
+        tag.putLong(QUEST_POS, pos.asLong());
+        tag.putInt(QUEST_RADIUS, Math.max(0, radius));
+    }
+
+    public static boolean hasQuestPosition(ItemStack contract) {
+        return contract != null && !contract.isEmpty() && contract.hasTag()
+                && contract.getTag().contains(QUEST_POS, Tag.TAG_LONG);
+    }
+
+    public static boolean questPositionMatches(ItemStack contract, BlockPos eventPos) {
+        if (!hasQuestPosition(contract)) return true;
+        if (eventPos == null) return false;
+        CompoundTag tag = contract.getOrCreateTag();
+        BlockPos questPos = BlockPos.of(tag.getLong(QUEST_POS));
+        int radius = Math.max(0, tag.getInt(QUEST_RADIUS));
+        return questPos.distSqr(eventPos) <= (double) radius * radius;
+    }
+
+    public static void copyQuestPosition(ItemStack from, ItemStack to) {
+        if (!hasQuestPosition(from) || to == null || to.isEmpty()) return;
+        CompoundTag source = from.getOrCreateTag();
+        setQuestPosition(to, BlockPos.of(source.getLong(QUEST_POS)), source.getInt(QUEST_RADIUS));
     }
 
     /** Advances the active objective and rotates to the next stage when appropriate. */
