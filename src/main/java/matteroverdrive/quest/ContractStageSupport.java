@@ -8,13 +8,10 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
-/**
- * Ordered objective support layered on top of ContractItem's compatibility keys.
- * The active stage is mirrored into Type/Target/Targets/Goal/Progress/ChildrenOnly,
- * so existing HUD, tooltips, redemption and old saves keep using the same contract API.
- */
+/** Ordered objective support layered on ContractItem's backwards-compatible top-level keys. */
 public final class ContractStageSupport {
     public static final String STAGES = "Stages";
     public static final String ACTIVE_STAGE = "ActiveStage";
@@ -76,19 +73,27 @@ public final class ContractStageSupport {
                 && contract.getTag().contains(QUEST_POS, Tag.TAG_LONG);
     }
 
+    @Nullable
+    public static BlockPos questPosition(ItemStack contract) {
+        return hasQuestPosition(contract) ? BlockPos.of(contract.getOrCreateTag().getLong(QUEST_POS)) : null;
+    }
+
+    public static int questRadius(ItemStack contract) {
+        return hasQuestPosition(contract) ? Math.max(0, contract.getOrCreateTag().getInt(QUEST_RADIUS)) : 0;
+    }
+
     public static boolean questPositionMatches(ItemStack contract, BlockPos eventPos) {
-        if (!hasQuestPosition(contract)) return true;
+        BlockPos questPos = questPosition(contract);
+        if (questPos == null) return true;
         if (eventPos == null) return false;
-        CompoundTag tag = contract.getOrCreateTag();
-        BlockPos questPos = BlockPos.of(tag.getLong(QUEST_POS));
-        int radius = Math.max(0, tag.getInt(QUEST_RADIUS));
+        int radius = questRadius(contract);
         return questPos.distSqr(eventPos) <= (double) radius * radius;
     }
 
     public static void copyQuestPosition(ItemStack from, ItemStack to) {
-        if (!hasQuestPosition(from) || to == null || to.isEmpty()) return;
-        CompoundTag source = from.getOrCreateTag();
-        setQuestPosition(to, BlockPos.of(source.getLong(QUEST_POS)), source.getInt(QUEST_RADIUS));
+        BlockPos pos = questPosition(from);
+        if (pos == null || to == null || to.isEmpty()) return;
+        setQuestPosition(to, pos, questRadius(from));
     }
 
     /** Advances the active objective and rotates to the next stage when appropriate. */

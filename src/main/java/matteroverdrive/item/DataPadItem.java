@@ -1,7 +1,9 @@
 package matteroverdrive.item;
 
+import matteroverdrive.event.ContractEvents;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.network.ModNetwork;
+import matteroverdrive.quest.LegacyStoryContracts;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -45,18 +47,35 @@ public class DataPadItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        if (context.getLevel().isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
+        if (context.getLevel().isClientSide) return InteractionResult.SUCCESS;
 
         ItemStack dataPad = context.getItemInHand();
         BlockState state = context.getLevel().getBlockState(context.getClickedPos());
-        ItemStack blockItem = new ItemStack(state.getBlock().asItem());
         ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+
+        if (isLegacyQuestScanner(dataPad) && context.getPlayer() instanceof ServerPlayer serverPlayer
+                && isLegacyScanTarget(blockId)) {
+            ItemStack blockItem = new ItemStack(state.getBlock().asItem());
+            int matter = MatterValueRegistry.getMatter(blockItem);
+            String displayName = blockItem.isEmpty() ? state.getBlock().getName().getString() : blockItem.getHoverName().getString();
+            String entry = displayName + " | " + blockId + " | " + matter + " kM";
+            record(dataPad, entry);
+            ContractEvents.recordScan(serverPlayer, blockId);
+
+            // Legacy Mad Scientist Data Pad was configured with Destroys=true and only destroyable targets.
+            if (state.getDestroySpeed(context.getLevel(), context.getClickedPos()) >= 0.0F) {
+                context.getLevel().destroyBlock(context.getClickedPos(), false, serverPlayer);
+            }
+            serverPlayer.sendSystemMessage(Component.literal("Research sample recorded: " + displayName)
+                    .withStyle(ChatFormatting.LIGHT_PURPLE));
+            serverPlayer.getInventory().setChanged();
+            serverPlayer.inventoryMenu.broadcastChanges();
+            return InteractionResult.CONSUME;
+        }
+
+        ItemStack blockItem = new ItemStack(state.getBlock().asItem());
         int matter = MatterValueRegistry.getMatter(blockItem);
-        String displayName = blockItem.isEmpty()
-                ? state.getBlock().getName().getString()
-                : blockItem.getHoverName().getString();
+        String displayName = blockItem.isEmpty() ? state.getBlock().getName().getString() : blockItem.getHoverName().getString();
         String entry = displayName + " | " + blockId + " | " + matter + " kM";
         record(dataPad, entry);
 
@@ -71,15 +90,24 @@ public class DataPadItem extends Item {
         return InteractionResult.CONSUME;
     }
 
+    private static boolean isLegacyScanTarget(ResourceLocation id) {
+        if (id == null) return false;
+        String value = id.toString();
+        return value.equals("minecraft:carrots") || value.equals("minecraft:potatoes") || value.equals("minecraft:wheat");
+    }
+
+    public static boolean isLegacyQuestScanner(ItemStack stack) {
+        return stack != null && !stack.isEmpty() && stack.hasTag()
+                && stack.getTag().getBoolean(LegacyStoryContracts.LEGACY_SCAN_PAD);
+    }
+
     private static void record(ItemStack dataPad, String entry) {
         ListTag previous = dataPad.getOrCreateTag().getList(HISTORY_TAG, Tag.TAG_STRING);
         ListTag next = new ListTag();
         next.add(StringTag.valueOf(entry));
         for (int i = 0; i < previous.size() && next.size() < HISTORY_CAPACITY; i++) {
             String old = previous.getString(i);
-            if (!old.equals(entry)) {
-                next.add(StringTag.valueOf(old));
-            }
+            if (!old.equals(entry)) next.add(StringTag.valueOf(old));
         }
         dataPad.getOrCreateTag().put(HISTORY_TAG, next);
     }
@@ -87,30 +115,25 @@ public class DataPadItem extends Item {
     public static List<String> getHistory(ItemStack dataPad) {
         List<String> history = new ArrayList<>();
         CompoundTag root = dataPad.getTag();
-        if (root == null) {
-            return history;
-        }
+        if (root == null) return history;
         ListTag list = root.getList(HISTORY_TAG, Tag.TAG_STRING);
-        for (int i = 0; i < list.size() && i < HISTORY_CAPACITY; i++) {
-            history.add(list.getString(i));
-        }
+        for (int i = 0; i < list.size() && i < HISTORY_CAPACITY; i++) history.add(list.getString(i));
         return history;
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level,
-                                List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         List<String> history = getHistory(stack);
-        tooltip.add(Component.literal("Guide and block scan history")
-                .withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY)
-                .withStyle(ChatFormatting.GRAY));
-        if (!history.isEmpty()) {
-            tooltip.add(Component.literal("Latest: " + history.get(0))
-                    .withStyle(ChatFormatting.DARK_GRAY));
+        if (isLegacyQuestScanner(stack)) {
+            tooltip.add(Component.literal("Mad Scientist research scanner").withStyle(ChatFormatting.LIGHT_PURPLE));
+            tooltip.add(Component.literal("Scans and destroys Wheat, Carrots and Potatoes; advances matching research quests.")
+                    .withStyle(ChatFormatting.GRAY));
+        } else {
+            tooltip.add(Component.literal("Guide and block scan history").withStyle(ChatFormatting.AQUA));
         }
-        tooltip.add(Component.literal("Use on a block to record it; use in air to open the guide.")
-                .withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY).withStyle(ChatFormatting.GRAY));
+        if (!history.isEmpty()) tooltip.add(Component.literal("Latest: " + history.get(0)).withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Use on a block to record it; use in air to open the guide.").withStyle(ChatFormatting.DARK_GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 }

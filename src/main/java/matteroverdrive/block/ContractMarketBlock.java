@@ -57,6 +57,7 @@ public class ContractMarketBlock extends BaseEntityBlock {
         if (!level.isClientSide && held.getItem() instanceof ContractItem && ContractItem.complete(held)) {
             for (ItemStack reward : ContractItem.rewardItems(held)) give(player, reward);
             for (ItemStack reward : LegacyStoryContracts.specialRewards(held)) give(player, reward);
+            if (player instanceof ServerPlayer serverPlayer) LegacyStoryContracts.applyWorldRewards(serverPlayer, held);
 
             int xp = ContractItem.xp(held);
             if (xp > 0) player.giveExperiencePoints(xp);
