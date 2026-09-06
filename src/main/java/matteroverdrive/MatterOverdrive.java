@@ -13,10 +13,13 @@ import matteroverdrive.registry.ModMenus;
 import matteroverdrive.registry.ModStructures;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.registry.ModSounds;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
 @Mod(MatterOverdrive.MOD_ID)
@@ -41,6 +44,13 @@ public final class MatterOverdrive {
         ModStructures.STRUCTURE_PIECES.register(modBus);
         modBus.addListener(ModCapabilities::register);
         modBus.addListener(this::commonSetup);
+
+        // GuideME builds its static guide page map during the first client resource
+        // reload. Register MO's guide from the mod constructor, matching GuideME's
+        // intended static-guide lifecycle, rather than waiting for client setup.
+        if (FMLEnvironment.dist == Dist.CLIENT && ModList.get().isLoaded("guideme")) {
+            matteroverdrive.client.GuideMeCompatEvents.bootstrap();
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
