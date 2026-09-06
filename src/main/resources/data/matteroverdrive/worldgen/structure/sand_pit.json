@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:sand_pit",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
