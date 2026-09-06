@@ -6,6 +6,7 @@ import matteroverdrive.client.screen.AndroidSpawnerScreen;
 import matteroverdrive.client.screen.AndroidStationScreen;
 import matteroverdrive.client.screen.NetworkRouterScreen;
 import matteroverdrive.client.screen.NetworkSwitchScreen;
+import matteroverdrive.client.screen.PylonScreen;
 import matteroverdrive.client.screen.ContractMarketScreen;
 import matteroverdrive.client.screen.StarMapScreen;
 import matteroverdrive.client.screen.ChargingStationScreen;
@@ -50,6 +51,7 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.ANDROID_STATION.get(), AndroidStationScreen::new);
             MenuScreens.register(ModMenus.NETWORK_ROUTER.get(), NetworkRouterScreen::new);
             MenuScreens.register(ModMenus.NETWORK_SWITCH.get(), NetworkSwitchScreen::new);
+            MenuScreens.register(ModMenus.PYLON.get(), PylonScreen::new);
             MenuScreens.register(ModMenus.CONTRACT_MARKET.get(), ContractMarketScreen::new);
             MenuScreens.register(ModMenus.STAR_MAP.get(), StarMapScreen::new);
             MenuScreens.register(ModMenus.ENERGY_PIPE.get(), EnergyPipeScreen::new);
