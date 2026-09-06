@@ -27,6 +27,14 @@ This checklist covers the deeper quest-engine parity work layered on top of the 
 - [ ] Each G.M.O. stage randomizes 12-24 required scans and total XP equals 10 XP per required scan across both stages.
 - [ ] G.M.O. reward is a Tritanium Spine; legacy custom attribute/name decoration is not yet recreated.
 
+## Active quest presentation
+- [ ] Contract HUD still caps itself to three carried contracts and does not overlap normal hotbar/status UI at common GUI scales.
+- [ ] Staged contracts show `Stage n/N`, the current objective and current-stage progress.
+- [ ] Completed contracts show `READY TO REDEEM`.
+- [ ] Data Pad now includes an Active Contracts page before Scan History.
+- [ ] Data Pad Active Contracts lists all carried contracts, active stage/objective, progress and XP without creating a second quest database.
+- [ ] Data Pad page numbering/navigation remains correct across all eight pages.
+
 ## Regression
 - [ ] Contract Market still generates only its recovered seven weighted market families.
 - [ ] Market 18-slot capacity/cadence remains unchanged.
