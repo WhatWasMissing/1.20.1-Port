@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "minecraft:random_chance_with_looting",
+          "chance": 0.15,
+          "looting_multiplier": 0.1
+        }
+      ],
+      "entries": [
+        { "type": "minecraft:item", "name": "matteroverdrive:rogue_android_part_head", "weight": 1 },
+        { "type": "minecraft:item", "name": "matteroverdrive:rogue_android_part_chest", "weight": 1 },
+        { "type": "minecraft:item", "name": "matteroverdrive:rogue_android_part_arms", "weight": 1 },
+        { "type": "minecraft:item", "name": "matteroverdrive:rogue_android_part_legs", "weight": 1 }
+      ]
+    }
+  ],
+  "random_sequence": "matteroverdrive:entities/ranged_rogue_android"
+}
