@@ -3,11 +3,12 @@ package matteroverdrive.android;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
-/** Swappable subclass/Aspect/Fragment/Artifact/Drone-specialisation layer over permanent Android progression. */
+/** Swappable subclass/Aspect/Fragment/passive/Drone-specialisation layer over permanent Android progression. */
 public final class AndroidLoadout {
     private static final String ROOT = "MatterOverdriveAndroidLoadout";
     private static final String ASPECTS = "Aspects";
     private static final String FRAGMENTS = "Fragments";
+    /* Kept as Artifact in NBT for save compatibility; player-facing UI calls this the Passive Protocol. */
     private static final String ARTIFACT = "Artifact";
     private static final String DRONE_PERKS = "DronePerks";
     private static final String SPECIALIZATION = "Specialization";
@@ -19,7 +20,12 @@ public final class AndroidLoadout {
         SINGULARITY_CASCADE("Singularity Cascade", "Collapse the local combat space into an explosive kinetic pulse.", 45_000, 900),
         CITADEL_PROTOCOL("Citadel Protocol", "Become a mobile fortress with heavy resistance, absorption and nanite repair.", 35_000, 1_200),
         PHASE_DOMINION("Phase Dominion", "Enter an accelerated phase state while suppressing and exposing nearby hostiles.", 40_000, 1_000),
-        OVERMIND_ASCENDANT("Overmind Ascendant", "Fully repair and overclock linked drones while exposing targets across the command radius.", 30_000, 900);
+        OVERMIND_ASCENDANT("Overmind Ascendant", "Fully repair and overclock linked drones while exposing targets across the command radius.", 30_000, 900),
+        EXECUTION_LATTICE("Execution Lattice", "Acquire every hostile in the hunt radius and execute marked targets through a cascading combat lock.", 42_000, 1_000),
+        RAILSTORM_PROTOCOL("Railstorm Protocol", "Route reactor output through predictive targeting for a devastating long-range precision volley.", 44_000, 1_000),
+        SIEGE_ENGINE("Siege Engine", "Overdrive the heavy frame into an advancing weapons platform that crushes nearby resistance.", 48_000, 1_100),
+        NANITE_BLOOM("Nanite Bloom", "Release a self-propagating nanite cloud that repairs allies while dismantling hostile biology and machinery.", 38_000, 1_000),
+        EVENT_HORIZON("Event Horizon", "Generate a temporary gravity collapse that drags enemies inward and tears at trapped targets.", 46_000, 1_100);
 
         public final String displayName;
         public final String description;
@@ -34,11 +40,20 @@ public final class AndroidLoadout {
         }
     }
 
+    /**
+     * The original four enum constants stay first and in the same order for old-save ordinal compatibility.
+     * Their player-facing names now represent the first members of the 3x3 class matrix.
+     */
     public enum Specialization {
-        ASSAULT("Assault", "Aggressive ability damage, shockwave pressure and powered melee.", Ultimate.SINGULARITY_CASCADE),
-        CHASSIS("Chassis", "Front-line durability, force-field control and nanite survival.", Ultimate.CITADEL_PROTOCOL),
-        UTILITY("Utility", "Phase mobility, target acquisition and recursive energy support.", Ultimate.PHASE_DOMINION),
-        DRONE_COMMANDER("Drone Commander", "Command, sustain and overclock linked synthetic drones.", Ultimate.OVERMIND_ASCENDANT);
+        ASSAULT("Singularity Breaker", "Aggressive shockwave pressure, powered melee and close-range collapse effects.", Ultimate.SINGULARITY_CASCADE),
+        CHASSIS("Citadel", "Front-line durability, force-field control and nanite survival.", Ultimate.CITADEL_PROTOCOL),
+        UTILITY("Phase Stalker", "Phase mobility, cloak, target acquisition and recursive energy support.", Ultimate.PHASE_DOMINION),
+        DRONE_COMMANDER("Drone Commander", "Command, sustain and overclock linked synthetic drones.", Ultimate.OVERMIND_ASCENDANT),
+        HUNTER_KILLER("Hunter-Killer", "Marked-target pursuit, execution windows and aggressive target chaining.", Ultimate.EXECUTION_LATTICE),
+        PRECISION_FRAME("Precision Frame", "Long-range target prediction, disciplined positioning and high-value precision bursts.", Ultimate.RAILSTORM_PROTOCOL),
+        SIEGE_FRAME("Siege Frame", "Heavy ordnance, advancing pressure and sustained battlefield suppression.", Ultimate.SIEGE_ENGINE),
+        NANITE_WEAVER("Nanite Weaver", "Regeneration, corrosion and adaptive nanite control across allies and enemies.", Ultimate.NANITE_BLOOM),
+        GRAVITY_CORE("Gravity Core", "Mass manipulation, crowd control and localized gravitational collapse.", Ultimate.EVENT_HORIZON);
 
         public final String displayName;
         public final String description;
@@ -75,7 +90,27 @@ public final class AndroidLoadout {
         SWARM_LOGIC("Swarm Logic", "Drone Commander", 3,
                 "Multiple linked drones reinforce one another and recover faster near their operator."),
         GUARDIAN_DIRECTIVE("Guardian Directive", "Drone Commander", 2,
-                "Defensive drones prioritise protecting their operator and become harder to destroy.");
+                "Defensive drones prioritise protecting their operator and become harder to destroy."),
+        PREDATOR_CHAIN("Predator Chain", "Hunter-Killer", 3,
+                "Damaging marked targets amplifies follow-up attacks and recycles Android energy."),
+        EXECUTION_ROUTER("Execution Router", "Hunter-Killer", 2,
+                "Low-health or marked enemies are easier to finish and remain exposed longer."),
+        STABILIZED_OPTICS("Stabilized Optics", "Precision Frame", 3,
+                "Marked targets take increased damage while the Android maintains disciplined positioning."),
+        BALLISTIC_PREDICTION("Ballistic Prediction", "Precision Frame", 2,
+                "Standing steady periodically acquires distant targets and primes precision damage."),
+        HEAVY_ORDNANCE("Heavy Ordnance", "Siege Frame", 3,
+                "Powered attacks gain additional damage and stronger knockback at the cost of FE."),
+        MOBILE_FORTRESS("Mobile Fortress", "Siege Frame", 2,
+                "High charge continuously reinforces the frame while advancing through incoming fire."),
+        REPAIR_SWARM("Repair Swarm", "Nanite Weaver", 3,
+                "Nanites continuously repair the operator and nearby owned drones when damaged."),
+        CORROSIVE_CLOUD("Corrosive Cloud", "Nanite Weaver", 2,
+                "Android ability damage infects targets with a short corrosive nanite debuff."),
+        MASS_DRIVER("Mass Driver", "Gravity Core", 3,
+                "Ability impacts violently displace enemies and deal increased damage."),
+        GRAVITIC_WELL("Gravitic Well", "Gravity Core", 2,
+                "Nearby hostiles are periodically slowed and pulled toward the Android.");
 
         public final String displayName;
         public final String branch;
@@ -94,6 +129,11 @@ public final class AndroidLoadout {
                 case "Chassis" -> Specialization.CHASSIS;
                 case "Utility" -> Specialization.UTILITY;
                 case "Drone Commander" -> Specialization.DRONE_COMMANDER;
+                case "Hunter-Killer" -> Specialization.HUNTER_KILLER;
+                case "Precision Frame" -> Specialization.PRECISION_FRAME;
+                case "Siege Frame" -> Specialization.SIEGE_FRAME;
+                case "Nanite Weaver" -> Specialization.NANITE_WEAVER;
+                case "Gravity Core" -> Specialization.GRAVITY_CORE;
                 default -> Specialization.ASSAULT;
             };
         }
@@ -134,15 +174,16 @@ public final class AndroidLoadout {
         }
     }
 
+    /** Internal enum name retained for save/network compatibility; these are selectable passive protocols. */
     public enum Artifact {
-        NONE("No Artifact", "No seasonal artifact is equipped."),
-        OVERCLOCKED_RELAY("Overclocked Relay", "Ability damage +5%; passive loadout FE costs +10%."),
-        AEGIS_PRISM("Aegis Prism", "Incoming damage -5% while Force Field is active."),
-        NANITE_CROWN("Nanite Crown", "Low-health self repair is stronger and more efficient."),
-        HUNTER_LENS("Hunter Lens", "Hunter Array marks farther and marked targets take more drone damage."),
-        PHASE_ANCHOR("Phase Anchor", "Teleport and cloak movement bonuses last longer."),
-        SWARM_BEACON("Swarm Beacon", "Owned drones near you gain regeneration and attack support."),
-        CAPACITOR_HEART("Capacitor Heart", "Ability hits return additional FE while above half charge.");
+        NONE("No Passive", "No additional passive protocol is selected."),
+        OVERCLOCKED_RELAY("Overclock Protocol", "Ability damage +12%; ability hits recycle FE, while recurring loadout effects cost 8% more FE."),
+        AEGIS_PRISM("Aegis Protocol", "Reduce all incoming damage slightly and gain much stronger mitigation while Force Field is active."),
+        NANITE_CROWN("Nanite Recovery", "Low-health self-repair is substantially stronger, cheaper and periodically restores health."),
+        HUNTER_LENS("Hunter Protocol", "Target acquisition reaches farther; marked enemies take more player and drone damage."),
+        PHASE_ANCHOR("Phase Stability", "Cloak and teleport mobility bonuses last longer and grant stronger acceleration."),
+        SWARM_BEACON("Swarm Support", "Owned drones regenerate faster, resist damage and deal increased damage near their operator."),
+        CAPACITOR_HEART("Capacitor Feedback", "Ability hits return substantially more FE and high charge improves passive energy recovery.");
 
         public final String displayName;
         public final String description;
