@@ -4,6 +4,7 @@ import matteroverdrive.android.AndroidData;
 import matteroverdrive.event.CocktailQuestEvents;
 import matteroverdrive.event.ContractInteractionEvents;
 import matteroverdrive.network.ModNetwork;
+import matteroverdrive.quest.ResearchCampaignQuestFlow;
 import matteroverdrive.quest.ScientistStoryQuestFlow;
 import matteroverdrive.registry.ModEntities;
 import matteroverdrive.registry.ModItems;
@@ -30,7 +31,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import javax.annotation.Nullable;
 import java.util.List;
 
-/** Mad Scientist quest host with dialogue-driven legacy and conversion story progression. */
+/** Mad Scientist quest host for conversion, legacy recovery and the full technology research campaign. */
 public class MadScientistEntity extends Villager {
     private static final String JUNKIE="Junkie";
     public static final String QUEST_ACTIVE="MatterOverdrivePunyHumansActive",QUEST_DONE="MatterOverdrivePunyHumansDone",QUEST_PARTS_MODE="MatterOverdrivePunyHumansPartsMode";
@@ -39,16 +40,45 @@ public class MadScientistEntity extends Villager {
     @Nullable @Override public SpawnGroupData finalizeSpawn(ServerLevelAccessor level,DifficultyInstance difficulty,MobSpawnType spawnType,@Nullable SpawnGroupData spawnData,@Nullable CompoundTag dataTag){SpawnGroupData data=super.finalizeSpawn(level,difficulty,spawnType,spawnData,dataTag);junkie=getRandom().nextBoolean();updateName();return data;}
 
     @Override public InteractionResult mobInteract(Player player,InteractionHand hand){
-        if(level().isClientSide)return InteractionResult.SUCCESS;if(hand!=InteractionHand.MAIN_HAND)return InteractionResult.PASS;if(!(player instanceof ServerPlayer sp))return InteractionResult.CONSUME;
-        ContractInteractionEvents.recordConversation(sp,new ResourceLocation("matteroverdrive","mad_scientist"));CompoundTag persisted=player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);boolean active=persisted.getBoolean(QUEST_ACTIVE),done=persisted.getBoolean(QUEST_DONE);
-        if(!done&&active){if(hasAllRogueParts(player)){consumeRogueParts(player);if(!AndroidData.isAndroid(player))AndroidData.activate(player);completePunyHumans(sp,persisted,true);return InteractionResult.CONSUME;}if(!persisted.getBoolean(QUEST_PARTS_MODE)&&AndroidData.isAndroid(player)){completePunyHumans(sp,persisted,false);return InteractionResult.CONSUME;}dialogue(sp,"Puny Humans",List.of("Biology remains inefficient. Bring me one Head, Chest, Arms and Legs Rogue Android part.",partProgress(player),"Once I have a complete mechanical anatomy set, we can begin the conversion."));return InteractionResult.CONSUME;}
-        if(!done&&!active&&!AndroidData.isAndroid(player)){persisted.putBoolean(QUEST_ACTIVE,true);persisted.putBoolean(QUEST_PARTS_MODE,true);player.getPersistentData().put(Player.PERSISTED_NBT_TAG,persisted);level().playSound(null,blockPosition(),ModSounds.get("gui.quest_started").get(),net.minecraft.sounds.SoundSource.NEUTRAL,1,1);dialogue(sp,"Puny Humans",List.of("Humanity has had a very respectable trial period. The results are disappointing.","Recover one of each Rogue Android body part and return to me.","Head, Chest, Arms and Legs. Try not to damage the interesting bits."));return InteractionResult.CONSUME;}
-        if(done&&ScientistStoryQuestFlow.handle(sp))return InteractionResult.CONSUME;
-        if(junkie&&done)return handleCocktail(sp);
-        dialogue(sp,"Research Notes",List.of(ScientistStoryQuestFlow.status(sp),AndroidData.isAndroid(player)?"Your synthetic conversion appears stable. Continue field research.":"Bring me enough machine anatomy and perhaps biology can be corrected."));return InteractionResult.CONSUME;
+        if(level().isClientSide)return InteractionResult.SUCCESS;
+        if(hand!=InteractionHand.MAIN_HAND)return InteractionResult.PASS;
+        if(!(player instanceof ServerPlayer sp))return InteractionResult.CONSUME;
+        ContractInteractionEvents.recordConversation(sp,new ResourceLocation("matteroverdrive","mad_scientist"));
+        CompoundTag persisted=player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
+        boolean active=persisted.getBoolean(QUEST_ACTIVE),done=persisted.getBoolean(QUEST_DONE);
+
+        if(!done&&active){
+            if(hasAllRogueParts(player)){consumeRogueParts(player);if(!AndroidData.isAndroid(player))AndroidData.activate(player);completePunyHumans(sp,persisted,true);return InteractionResult.CONSUME;}
+            if(!persisted.getBoolean(QUEST_PARTS_MODE)&&AndroidData.isAndroid(player)){completePunyHumans(sp,persisted,false);return InteractionResult.CONSUME;}
+            dialogue(sp,"Puny Humans",List.of("Biology remains inefficient. Bring me one Head, Chest, Arms and Legs Rogue Android part.",partProgress(player),"Once I have a complete mechanical anatomy set, we can begin the conversion."));
+            return InteractionResult.CONSUME;
+        }
+
+        // Existing Android saves must not be trapped before the research campaign.
+        if(!done&&!active&&AndroidData.isAndroid(player)){
+            completePunyHumans(sp,persisted,false);
+            return InteractionResult.CONSUME;
+        }
+
+        if(!done&&!active){
+            persisted.putBoolean(QUEST_ACTIVE,true);
+            persisted.putBoolean(QUEST_PARTS_MODE,true);
+            player.getPersistentData().put(Player.PERSISTED_NBT_TAG,persisted);
+            level().playSound(null,blockPosition(),ModSounds.get("gui.quest_started").get(),net.minecraft.sounds.SoundSource.NEUTRAL,1,1);
+            dialogue(sp,"Puny Humans",List.of("Humanity has had a very respectable trial period. The results are disappointing.","Recover one of each Rogue Android body part and return to me.","Head, Chest, Arms and Legs. Try not to damage the interesting bits."));
+            return InteractionResult.CONSUME;
+        }
+
+        if(ScientistStoryQuestFlow.handle(sp))return InteractionResult.CONSUME;
+        if(ScientistStoryQuestFlow.complete(sp)){
+            if(ResearchCampaignQuestFlow.handle(sp))return InteractionResult.CONSUME;
+        }
+        if(junkie)return handleCocktail(sp);
+        dialogue(sp,"Research Notes",List.of(ResearchCampaignQuestFlow.status(sp),"Your field clearance remains active. Continue the programme."));
+        return InteractionResult.CONSUME;
     }
 
-    private void completePunyHumans(ServerPlayer p,CompoundTag d,boolean converted){d.putBoolean(QUEST_DONE,true);d.putBoolean(QUEST_ACTIVE,false);p.getPersistentData().put(Player.PERSISTED_NBT_TAG,d);give(p,new ItemStack(ModItems.get("battery").get()));give(p,new ItemStack(ModItems.get("android_pill_blue").get()));give(p,new ItemStack(ModItems.get("android_pill_yellow").get(),5));p.giveExperiencePoints(256);level().playSound(null,blockPosition(),ModSounds.get("gui.quest_complete").get(),net.minecraft.sounds.SoundSource.NEUTRAL,1,1);dialogue(p,"Puny Humans Complete",List.of(converted?"Conversion sequence complete. You are now considerably less disappointing.":"Your synthetic conversion is already stable. Convenient.","Reward: Battery, Android Pills, 256 XP","Your probationary research clearance is active. Return for field assignments."));}
+    private void completePunyHumans(ServerPlayer p,CompoundTag d,boolean converted){d.putBoolean(QUEST_DONE,true);d.putBoolean(QUEST_ACTIVE,false);d.putBoolean(QUEST_PARTS_MODE,false);p.getPersistentData().put(Player.PERSISTED_NBT_TAG,d);give(p,new ItemStack(ModItems.get("battery").get()));give(p,new ItemStack(ModItems.get("android_pill_blue").get()));give(p,new ItemStack(ModItems.get("android_pill_yellow").get(),5));p.giveExperiencePoints(256);level().playSound(null,blockPosition(),ModSounds.get("gui.quest_complete").get(),net.minecraft.sounds.SoundSource.NEUTRAL,1,1);dialogue(p,"Puny Humans Complete",List.of(converted?"Conversion sequence complete. You are now considerably less disappointing.":"Your synthetic conversion is already stable. Convenient.","Reward: Battery, Android Pills, 256 XP","Probationary research clearance active. Return for recovered field assignments."));}
 
     private InteractionResult handleCocktail(ServerPlayer p){CompoundTag d=CocktailQuestEvents.persisted(p);if(d.getBoolean(CocktailQuestEvents.DONE)){dialogue(p,"Cocktail of Ascension",List.of("The Cocktail experiment has already run its course. The paperwork remains classified as a biohazard."));return InteractionResult.CONSUME;}if(!d.getBoolean(CocktailQuestEvents.ACTIVE)){d.putBoolean(CocktailQuestEvents.ACTIVE,true);d.putInt(CocktailQuestEvents.CREEPER_KILLS,0);d.putInt(CocktailQuestEvents.GUNPOWDER,0);d.putInt(CocktailQuestEvents.MUSHROOMS,0);level().playSound(null,blockPosition(),ModSounds.get("gui.quest_started").get(),net.minecraft.sounds.SoundSource.NEUTRAL,1,.9F);dialogue(p,"Cocktail of Ascension",List.of("I have a formula. It is either transformative or explosively educational.","Kill 5 Creepers with a shovel, collect 5 gunpowder, and collect 5 red mushrooms in the Nether.","Do not ask why the shovel matters. Methodology matters."));return InteractionResult.CONSUME;}int k=d.getInt(CocktailQuestEvents.CREEPER_KILLS),g=d.getInt(CocktailQuestEvents.GUNPOWDER),m=d.getInt(CocktailQuestEvents.MUSHROOMS);if(k<5||g<5||m<5){dialogue(p,"Cocktail of Ascension",List.of("The mixture is still incomplete.","Shovel Creepers: "+k+"/5   Gunpowder: "+g+"/5   Nether red mushrooms: "+m+"/5"));return InteractionResult.CONSUME;}if(!(level() instanceof ServerLevel sl))return InteractionResult.CONSUME;MutantScientistEntity mutant=ModEntities.MUTANT_SCIENTIST.get().create(sl);if(mutant==null)return InteractionResult.CONSUME;mutant.moveTo(getX(),getY(),getZ(),getYRot(),getXRot());if(!sl.addFreshEntity(mutant)){mutant.discard();return InteractionResult.CONSUME;}d.putBoolean(CocktailQuestEvents.ACTIVE,false);d.putBoolean(CocktailQuestEvents.DONE,true);p.giveExperiencePoints(512);give(p,new ItemStack(ModItems.get("android_pill_blue").get()));give(p,new ItemStack(ModItems.get("android_pill_red").get()));give(p,new ItemStack(ModItems.get("android_pill_yellow").get()));level().playSound(null,blockPosition(),ModSounds.get("failed_animal_die").get(),net.minecraft.sounds.SoundSource.HOSTILE,1,.8F);dialogue(p,"Cocktail of Ascension Complete",List.of("The transformation succeeded according to the broadest possible definition of succeeded.","Reward: Android Pills, 512 XP","You may wish to move away from the experiment."));discard();return InteractionResult.CONSUME;}
 
