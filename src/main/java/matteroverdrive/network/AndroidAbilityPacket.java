@@ -1,6 +1,7 @@
 package matteroverdrive.network;
 
 import matteroverdrive.android.AndroidAbilities;
+import matteroverdrive.android.AndroidClassAbilities;
 import matteroverdrive.android.AndroidUltimates;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,6 +24,8 @@ public record AndroidAbilityPacket(int action) {
         if (sender != null) {
             context.enqueueWork(() -> {
                 if (packet.action == AndroidUltimates.ACTION_ACTIVATE_ULTIMATE) AndroidUltimates.activate(sender);
+                else if (packet.action == AndroidClassAbilities.ACTION_CLASS_ABILITY) AndroidClassAbilities.activateClassAbility(sender);
+                else if (packet.action == AndroidClassAbilities.ACTION_TECH_ABILITY) AndroidClassAbilities.activateTechAbility(sender);
                 else AndroidAbilities.handleAction(sender, packet.action);
             });
         }
