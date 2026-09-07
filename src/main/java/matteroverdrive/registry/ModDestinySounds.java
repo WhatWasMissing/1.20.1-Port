@@ -1,5 +1,6 @@
 package matteroverdrive.registry;
 
+import matteroverdrive.MatterOverdrive;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.registries.DeferredRegister;
@@ -9,31 +10,74 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/** Sound events bundled for the native Destiny-style Matter Overdrive weapons. */
 public final class ModDestinySounds {
-    public static final String NAMESPACE = "matteroverdrive_destiny";
-    public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, NAMESPACE);
+    public static final DeferredRegister<SoundEvent> SOUND_EVENTS =
+            DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, MatterOverdrive.MOD_ID);
     private static final Map<String, RegistryObject<SoundEvent>> SOUNDS = new LinkedHashMap<>();
 
     static {
-        register("destiny_aceofspades");
-        register("destiny_chaosdogma");
-        register("destiny_eyasluna");
-        register("destiny_hawkmoon");
+        register("destiny_khvostov_charge");
+        register("destiny_khvostov_draw");
+        register("destiny_khvostov_first");
+        register("destiny_khvostov_last");
+        register("destiny_khvostov_reload");
+        register("destiny_khvostov_unload");
         register("destiny_khvostov7g02");
         register("destiny_marshala1");
-        register("destiny_midamultitool");
-        register("destiny_montecarlo");
-        register("destiny_proximacentauriii");
-        register("destiny_sleepersimulant_fire");
+        register("destiny_marshal_unload");
+        register("destiny_marshal_reload");
+        register("destiny_marshal_charge");
+        register("destiny_eyasluna");
+        register("destiny_hawkmoon");
+        register("destiny_hawkmoon_close");
+        register("destiny_hawkmoon_draw");
+        register("destiny_hawkmoon_eject");
+        register("destiny_hawkmoon_insert");
+        register("destiny_hawkmoon_open");
+        register("destiny_hawkmoon_rest");
+        register("destiny_hawkmoon_up");
         register("destiny_surosregime");
-        register("destiny_thelastword");
-        register("destiny_thorn");
+        register("destiny_surosregime_charge");
+        register("destiny_surosregime_load");
+        register("destiny_montecarlo");
+        register("destiny_montecarlo_unload");
+        register("destiny_montecarlo_reload");
+        register("destiny_montecarlo_charge");
+        register("destiny_traxmallus1_charge");
+        register("destiny_traxmallus1_reload");
+        register("destiny_traxmallus1_unload");
         register("destiny_traxcallum1");
+        register("destiny_proximacentauriii");
+        register("destiny_midamultitool");
+        register("destiny_midamultitool_unload");
+        register("destiny_midamultitool_charge");
+        register("destiny_chaosdogma");
+        register("destiny_cd_charge");
+        register("destiny_cd_unload");
+        register("destiny_cd_reload");
+        register("destiny_thelastword");
+        register("destiny_aceofspades");
+        register("destiny_aos_spin");
+        register("destiny_aos_open");
+        register("destiny_aos_insert");
+        register("destiny_aos_close");
+        register("destiny_thorn");
+        register("destiny_thorn_close");
+        register("destiny_thorn_open");
+        register("destiny_thorn_reload");
+        register("destiny_thorn_unload");
+        register("destiny_sleepersimulant_draw");
+        register("destiny_sleepersimulant_charge");
+        register("destiny_sleepersimulant_fire");
+        register("destiny_sleepersimulant_hit");
+        register("destiny_sleepersimulant_reload");
+        register("destiny_sleepersimulant_unload");
     }
 
     private static void register(String id) {
         SOUNDS.put(id, SOUND_EVENTS.register(id,
-                () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(NAMESPACE, id))));
+                () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(MatterOverdrive.MOD_ID, id))));
     }
 
     public static SoundEvent get(String id) {
@@ -42,5 +86,6 @@ public final class ModDestinySounds {
         return sound.get();
     }
 
+    public static int size() { return SOUNDS.size(); }
     private ModDestinySounds() {}
 }
