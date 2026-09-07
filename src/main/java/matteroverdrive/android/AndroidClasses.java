@@ -15,10 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Three top-level Android combat identities inspired by the classic agile / frontline / technomancer RPG split.
- * Existing specialisations remain underneath these classes so older loadouts keep working.
- */
+/** Three top-level Android combat identities, each with three swappable subclasses. */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class AndroidClasses {
     public enum AndroidClass {
@@ -47,17 +44,26 @@ public final class AndroidClasses {
 
     public static AndroidClass fromSpecialization(AndroidLoadout.Specialization specialization) {
         return switch (specialization) {
-            case UTILITY -> AndroidClass.STRIDER;
-            case ASSAULT, CHASSIS -> AndroidClass.JUGGERNAUT;
-            case DRONE_COMMANDER -> AndroidClass.ARCHITECT;
+            case UTILITY, HUNTER_KILLER, PRECISION_FRAME -> AndroidClass.STRIDER;
+            case ASSAULT, CHASSIS, SIEGE_FRAME -> AndroidClass.JUGGERNAUT;
+            case DRONE_COMMANDER, NANITE_WEAVER, GRAVITY_CORE -> AndroidClass.ARCHITECT;
         };
     }
 
     public static AndroidLoadout.Specialization[] specializations(AndroidClass androidClass) {
         return switch (androidClass) {
-            case STRIDER -> new AndroidLoadout.Specialization[]{AndroidLoadout.Specialization.UTILITY};
-            case JUGGERNAUT -> new AndroidLoadout.Specialization[]{AndroidLoadout.Specialization.ASSAULT, AndroidLoadout.Specialization.CHASSIS};
-            case ARCHITECT -> new AndroidLoadout.Specialization[]{AndroidLoadout.Specialization.DRONE_COMMANDER};
+            case STRIDER -> new AndroidLoadout.Specialization[]{
+                    AndroidLoadout.Specialization.UTILITY,
+                    AndroidLoadout.Specialization.HUNTER_KILLER,
+                    AndroidLoadout.Specialization.PRECISION_FRAME};
+            case JUGGERNAUT -> new AndroidLoadout.Specialization[]{
+                    AndroidLoadout.Specialization.ASSAULT,
+                    AndroidLoadout.Specialization.CHASSIS,
+                    AndroidLoadout.Specialization.SIEGE_FRAME};
+            case ARCHITECT -> new AndroidLoadout.Specialization[]{
+                    AndroidLoadout.Specialization.DRONE_COMMANDER,
+                    AndroidLoadout.Specialization.NANITE_WEAVER,
+                    AndroidLoadout.Specialization.GRAVITY_CORE};
         };
     }
 
@@ -65,14 +71,12 @@ public final class AndroidClasses {
         return fromSpecialization(AndroidLoadout.getSpecialization(player));
     }
 
-    /** Lightweight intrinsic passives. Build perks and fragments remain the stronger modifiers. */
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || event.player.level().isClientSide || !(event.player instanceof ServerPlayer player)) return;
         if (!AndroidData.isAndroid(player) || player.tickCount % 20 != 0) return;
 
-        AndroidClass androidClass = current(player);
-        switch (androidClass) {
+        switch (current(player)) {
             case STRIDER -> {
                 if (AndroidData.getEnergy(player) >= 500 && AndroidData.tryConsumeEnergy(player, 30)) {
                     player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 50, 0, true, false, false));
@@ -84,7 +88,8 @@ public final class AndroidClasses {
                 }
             }
             case ARCHITECT -> {
-                AndroidData.receiveEnergy(player, 60);
+                int recovery = AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.CAPACITOR_HEART) ? 110 : 60;
+                AndroidData.receiveEnergy(player, recovery);
                 UUID owner = player.getUUID();
                 List<DroneEntity> drones = player.level().getEntitiesOfClass(DroneEntity.class,
                         player.getBoundingBox().inflate(16.0D), drone -> owner.equals(drone.getOwnerUuid()) && drone.isAlive());
@@ -95,7 +100,6 @@ public final class AndroidClasses {
         }
     }
 
-    /** Class identity also changes ordinary player combat rather than only active abilities. */
     @SubscribeEvent
     public static void onLivingDamage(LivingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer player) || !AndroidData.isAndroid(player)) return;
@@ -107,15 +111,19 @@ public final class AndroidClasses {
             case STRIDER -> {
                 float multiplier = target.hasEffect(MobEffects.GLOWING) ? 1.20F : 1.08F;
                 if (player.isSprinting()) multiplier += 0.07F;
+                if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.HUNTER_LENS)
+                        && target.hasEffect(MobEffects.GLOWING)) multiplier *= 1.12F;
                 event.setAmount(event.getAmount() * multiplier);
                 if (target.hasEffect(MobEffects.GLOWING)) AndroidData.receiveEnergy(player, 120);
             }
             case JUGGERNAUT -> {
-                if (AndroidData.tryConsumeEnergy(player, 220)) {
-                    event.setAmount(event.getAmount() + 3.0F);
+                int cost = AndroidLoadout.getSpecialization(player) == AndroidLoadout.Specialization.SIEGE_FRAME ? 180 : 220;
+                float bonus = AndroidLoadout.getSpecialization(player) == AndroidLoadout.Specialization.SIEGE_FRAME ? 4.5F : 3.0F;
+                if (AndroidData.tryConsumeEnergy(player, cost)) {
+                    event.setAmount(event.getAmount() + bonus);
                     Vec3 push = target.position().subtract(player.position());
                     if (push.lengthSqr() > 0.001D) {
-                        push = push.normalize().scale(0.65D);
+                        push = push.normalize().scale(AndroidLoadout.getSpecialization(player) == AndroidLoadout.Specialization.SIEGE_FRAME ? 0.9D : 0.65D);
                         target.push(push.x, 0.20D, push.z);
                     }
                 }
