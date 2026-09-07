@@ -16,7 +16,7 @@ import net.minecraft.util.FormattedCharSequence;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Unified Android build screen: class -> specialisation -> abilities -> Ultimate -> Aspects -> Fragments -> Passive. */
+/** Unified Android build screen: class -> subclass -> abilities -> Ultimate -> Aspects -> Fragments -> Passive. */
 public class AndroidClassLoadoutScreen extends Screen {
     private static final int BACKDROP = 0xF3080A0D;
     private static final int PANEL = 0xE015171B;
@@ -92,7 +92,7 @@ public class AndroidClassLoadoutScreen extends Screen {
         }
 
         AndroidLoadout.Specialization[] specializations = AndroidClasses.specializations(currentClass);
-        int specWidth = Math.max(132, Math.min(196, (right - 42) / Math.max(1, specializations.length)));
+        int specWidth = Math.max(112, Math.min(180, (right - 54) / 3));
         for (int i = 0; i < specializations.length; i++) {
             AndroidLoadout.Specialization specialization = specializations[i];
             boolean selected = AndroidClientState.specialization() == specialization;
@@ -187,7 +187,7 @@ public class AndroidClassLoadoutScreen extends Screen {
             boolean selected = AndroidClientState.artifactOrdinal() == i;
             int col = index % 2;
             int row = index / 2;
-            Button button = Button.builder(Component.literal((selected ? "✦ " : "◇ ") + passiveName(passive)), b ->
+            Button button = Button.builder(Component.literal((selected ? "✦ " : "◇ ") + passive.displayName), b ->
                     ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(3, passive.ordinal())))
                     .bounds(18 + col * (buttonWidth + 10), 100 + row * 36, buttonWidth, 26).build();
             addRenderableWidget(button);
@@ -197,32 +197,6 @@ public class AndroidClassLoadoutScreen extends Screen {
         addRenderableWidget(Button.builder(Component.literal("NO PASSIVE"), b ->
                 ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(3, AndroidLoadout.Artifact.NONE.ordinal())))
                 .bounds(18, 100 + ((index + 1) / 2) * 36 + 8, 160, 20).build());
-    }
-
-    private static String passiveName(AndroidLoadout.Artifact passive) {
-        return switch (passive) {
-            case OVERCLOCKED_RELAY -> "Overclock Protocol";
-            case AEGIS_PRISM -> "Aegis Protocol";
-            case NANITE_CROWN -> "Nanite Recovery";
-            case HUNTER_LENS -> "Hunter Protocol";
-            case PHASE_ANCHOR -> "Phase Stability";
-            case SWARM_BEACON -> "Swarm Support";
-            case CAPACITOR_HEART -> "Capacitor Feedback";
-            default -> "No Passive";
-        };
-    }
-
-    private static String passiveDescription(AndroidLoadout.Artifact passive) {
-        return switch (passive) {
-            case OVERCLOCKED_RELAY -> "Ability damage +5%, but recurring loadout effects consume 10% more FE.";
-            case AEGIS_PRISM -> "Take 5% less incoming damage while Force Field is active.";
-            case NANITE_CROWN -> "Low-health nanite repair heals more and recurring passive FE costs are slightly reduced.";
-            case HUNTER_LENS -> "Hunter Array scans 12 blocks farther and linked drones hit marked targets harder.";
-            case PHASE_ANCHOR -> "Cloak and teleport movement bonuses remain active for longer.";
-            case SWARM_BEACON -> "Nearby owned drones regenerate and gain additional attack support.";
-            case CAPACITOR_HEART -> "Android ability hits restore an additional 100 FE while above half charge.";
-            default -> "No additional passive protocol is selected.";
-        };
     }
 
     private static String shortName(String name) { return name.startsWith("Fragment of ") ? name.substring("Fragment of ".length()) : name; }
@@ -251,12 +225,12 @@ public class AndroidClassLoadoutScreen extends Screen {
         drawAtmosphere(g);
         AndroidClasses.AndroidClass androidClass = AndroidClasses.fromSpecialization(AndroidClientState.specialization());
         g.drawString(font, "ANDROID // CLASS MATRIX", 18, 14, TEXT, false);
-        g.drawString(font, "Class > Specialisation > Abilities > Ultimate > Aspects > Fragments > Passive", 18, 27, MUTED, false);
+        g.drawString(font, "3 classes × 3 subclasses · abilities · Ultimates · Aspects · Fragments · Passive", 18, 27, MUTED, false);
         g.drawString(font, "LEVEL " + AndroidClientState.level() + "   FE " + AndroidClientState.energy(), width - 175, 16, ACCENT, false);
 
         if (view == 0) {
             g.drawString(font, "CLASS // " + androidClass.displayName.toUpperCase(), 18, 104, GOLD, false);
-            g.drawString(font, AndroidClientState.specialization().displayName.toUpperCase() + " SPECIALISATION", 18, 136, MUTED, false);
+            g.drawString(font, AndroidClientState.specialization().displayName.toUpperCase() + " SUBCLASS", 18, 136, MUTED, false);
             g.drawString(font, "ACTIVE ABILITIES", 18, 174, ACCENT, false);
             AndroidLoadout.Ultimate ultimate = AndroidClientState.ultimate();
             int cooldown = AndroidClientState.ultimateCooldownTicks();
@@ -271,7 +245,7 @@ public class AndroidClassLoadoutScreen extends Screen {
             g.drawString(font, Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS + " nodes installed", 18, 92, MUTED, false);
         } else {
             g.drawString(font, "PASSIVE PROTOCOL", 18, 78, GOLD, false);
-            g.drawString(font, "Choose one always-on modifier · Current: " + passiveName(AndroidClientState.artifact()), 18, 92, MUTED, false);
+            g.drawString(font, "Choose one high-impact always-on modifier · Current: " + AndroidClientState.artifact().displayName, 18, 92, MUTED, false);
         }
 
         super.render(g, mouseX, mouseY, partialTick);
@@ -298,12 +272,14 @@ public class AndroidClassLoadoutScreen extends Screen {
             g.drawString(font, androidClass.displayName.toUpperCase(), x, y + 24, GOLD, false);
             g.drawString(font, androidClass.subtitle.toUpperCase(), x, y + 38, MUTED, false);
             drawWrapped(g, androidClass.description, x, y + 58, 230, TEXT);
-            g.drawString(font, "CLASS ABILITY · H", x, y + 104, MUTED, false);
-            g.drawString(font, AndroidClassAbilities.classAbilityName(androidClass), x, y + 118, ACCENT, false);
-            g.drawString(font, "TECH ABILITY · N", x, y + 142, MUTED, false);
-            g.drawString(font, AndroidClassAbilities.techAbilityName(androidClass), x, y + 156, ACCENT, false);
-            g.drawString(font, "ULTIMATE · G", x, y + 180, MUTED, false);
-            g.drawString(font, AndroidClientState.ultimate().displayName, x, y + 194, GOLD, false);
+            g.drawString(font, "SUBCLASS", x, y + 104, MUTED, false);
+            g.drawString(font, AndroidClientState.specialization().displayName, x, y + 118, ACCENT, false);
+            g.drawString(font, "CLASS ABILITY · H", x, y + 142, MUTED, false);
+            g.drawString(font, AndroidClassAbilities.classAbilityName(androidClass), x, y + 156, ACCENT, false);
+            g.drawString(font, "TECH ABILITY · N", x, y + 180, MUTED, false);
+            g.drawString(font, AndroidClassAbilities.techAbilityName(androidClass), x, y + 194, ACCENT, false);
+            g.drawString(font, "ULTIMATE · G", x, y + 218, MUTED, false);
+            g.drawString(font, AndroidClientState.ultimate().displayName, x, y + 232, GOLD, false);
             return;
         }
 
@@ -314,7 +290,7 @@ public class AndroidClassLoadoutScreen extends Screen {
         } else if (inspected instanceof AndroidLoadout.Specialization specialization) {
             g.drawString(font, specialization.displayName.toUpperCase(), x, y + 24, GOLD, false);
             drawWrapped(g, specialization.description, x, y + 44, 230, TEXT);
-            g.drawString(font, "ULTIMATE", x, y + 100, MUTED, false);
+            g.drawString(font, "UNIQUE ULTIMATE", x, y + 100, MUTED, false);
             g.drawString(font, specialization.ultimate.displayName, x, y + 114, ACCENT, false);
         } else if (inspected instanceof AbilityInfo ability) {
             g.drawString(font, ability.type, x, y + 24, MUTED, false);
@@ -339,9 +315,9 @@ public class AndroidClassLoadoutScreen extends Screen {
             g.drawString(font, "LEVEL " + perk.level, x, y + 38, MUTED, false);
             drawWrapped(g, perk.description, x, y + 58, 230, TEXT);
         } else if (inspected instanceof AndroidLoadout.Artifact passive) {
-            g.drawString(font, passiveName(passive).toUpperCase(), x, y + 24, GOLD, false);
+            g.drawString(font, passive.displayName.toUpperCase(), x, y + 24, GOLD, false);
             g.drawString(font, "SELECTABLE PASSIVE", x, y + 38, MUTED, false);
-            drawWrapped(g, passiveDescription(passive), x, y + 58, 230, TEXT);
+            drawWrapped(g, passive.description, x, y + 58, 230, TEXT);
         }
     }
 
