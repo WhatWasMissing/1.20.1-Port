@@ -58,7 +58,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
         @Override
         public boolean isItemValid(int slot, ItemStack stack) {
             return switch (slot) {
-                case INPUT_SLOT -> MatterValueRegistry.containsMatter(stack)
+                case INPUT_SLOT -> MatterValueRegistry.containsMatter(level, stack)
                         && (!(stack.getItem() instanceof MatterDustItem dust) || dust.isRefined());
                 case ENERGY_SLOT -> stack.getCapability(ForgeCapabilities.ENERGY)
                         .map(IEnergyStorage::canExtract).orElse(false);
@@ -192,7 +192,7 @@ public class DecomposerBlockEntity extends BlockEntity implements MenuProvider {
     }
     private int getFailureChancePartsPerMillion() { return Math.max(0, (int) Math.round(getFailChance() * 1_000_000.0D)); }
     public double getFailChance() { double multiplier = getUpgradeMultiplier(MachineUpgradeItem.Upgrade::failureChance); return FAIL_CHANCE * multiplier * multiplier; }
-    public int getCurrentMatterValue() { return MatterValueRegistry.getMatter(items.getStackInSlot(INPUT_SLOT)); }
+    public int getCurrentMatterValue() { return MatterValueRegistry.getMatter(level, items.getStackInSlot(INPUT_SLOT)); }
     public int getSpeed() {
         int matter = getCurrentMatterValue(); if (matter <= 0) return 0; double scaled = Math.log1p(matter); scaled *= scaled;
         return Math.max(1, (int) Math.round((scaled + 6.0D) * DECOMPOSE_SPEED_PER_MATTER * getUpgradeMultiplier(MachineUpgradeItem.Upgrade::speed)));
