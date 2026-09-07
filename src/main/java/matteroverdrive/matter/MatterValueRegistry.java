@@ -4,12 +4,21 @@ import matteroverdrive.item.MatterDustItem;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.Level;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public final class MatterValueRegistry {
     private static final Map<String, Integer> VALUES = new HashMap<>();
+    private static final Map<String, Integer> RECIPE_CACHE = new HashMap<>();
+    private static int cachedRecipeCount = -1;
+    private static final int MAX_RECIPE_DEPTH = 24;
 
     static {
         register("minecraft:dirt", 1);
@@ -110,6 +119,116 @@ public final class MatterValueRegistry {
     }
 
     public static int getMatter(ItemStack stack) {
+        return getBaseMatter(stack);
+    }
+
+    public static int getMatter(@Nullable Level level, ItemStack stack) {
+        if (level == null) {
+            return getBaseMatter(stack);
+        }
+        if (stack == null || stack.isEmpty()) {
+            return 0;
+        }
+        if (stack.getItem() instanceof MatterDustItem) {
+            return MatterDustItem.getMatter(stack);
+        }
+
+        int recipeCount = level.getRecipeManager().getRecipes().size();
+        if (recipeCount != cachedRecipeCount) {
+            RECIPE_CACHE.clear();
+            cachedRecipeCount = recipeCount;
+        }
+
+        String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        Integer cached = RECIPE_CACHE.get(id);
+        if (cached != null) {
+            return cached;
+        }
+
+        int resolved = resolveMatter(level, stack, new HashSet<>(), 0);
+        RECIPE_CACHE.put(id, resolved);
+        return resolved;
+    }
+
+    private static int resolveMatter(Level level, ItemStack stack, Set<String> resolving, int depth) {
+        if (stack == null || stack.isEmpty()) {
+            return 0;
+        }
+        if (stack.getItem() instanceof MatterDustItem) {
+            return MatterDustItem.getMatter(stack);
+        }
+
+        int base = getBaseMatter(stack);
+        if (depth >= MAX_RECIPE_DEPTH) {
+            return base;
+        }
+
+        String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        if (!resolving.add(id)) {
+            return base;
+        }
+
+        int bestRecipeValue = Integer.MAX_VALUE;
+        try {
+            for (Recipe<?> recipe : level.getRecipeManager().getRecipes()) {
+                if (recipe.isSpecial()) {
+                    continue;
+                }
+
+                ItemStack result = recipe.getResultItem(level.registryAccess());
+                if (result.isEmpty() || !ItemStack.isSameItem(result, stack)) {
+                    continue;
+                }
+
+                long subtotal = 0L;
+                boolean complete = true;
+                for (Ingredient ingredient : recipe.getIngredients()) {
+                    if (ingredient.isEmpty()) {
+                        continue;
+                    }
+
+                    int cheapest = Integer.MAX_VALUE;
+                    for (ItemStack option : ingredient.getItems()) {
+                        int optionValue = resolveMatter(level, option, resolving, depth + 1);
+                        if (optionValue > 0) {
+                            cheapest = Math.min(cheapest, optionValue);
+                        }
+                    }
+
+                    if (cheapest == Integer.MAX_VALUE) {
+                        complete = false;
+                        break;
+                    }
+                    subtotal += cheapest;
+                    if (subtotal >= Integer.MAX_VALUE) {
+                        subtotal = Integer.MAX_VALUE;
+                        break;
+                    }
+                }
+
+                if (!complete || subtotal <= 0) {
+                    continue;
+                }
+
+                int outputCount = Math.max(1, result.getCount());
+                int perItem = (int) Math.max(1L, Math.min(Integer.MAX_VALUE,
+                        (subtotal + outputCount - 1L) / outputCount));
+                bestRecipeValue = Math.min(bestRecipeValue, perItem);
+            }
+        } finally {
+            resolving.remove(id);
+        }
+
+        if (bestRecipeValue == Integer.MAX_VALUE) {
+            return base;
+        }
+        if (base > 0) {
+            return Math.min(base, bestRecipeValue);
+        }
+        return bestRecipeValue;
+    }
+
+    private static int getBaseMatter(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
             return 0;
         }
@@ -144,5 +263,9 @@ public final class MatterValueRegistry {
 
     public static boolean containsMatter(ItemStack stack) {
         return getMatter(stack) > 0;
+    }
+
+    public static boolean containsMatter(@Nullable Level level, ItemStack stack) {
+        return getMatter(level, stack) > 0;
     }
 }
