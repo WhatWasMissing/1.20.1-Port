@@ -6,7 +6,11 @@ on:
       - main
       - 'feature/**'
       - 'testing/**'
+      - 'work/**'
   pull_request:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -41,9 +45,30 @@ jobs:
           ./gradlew build --stacktrace
 
       - name: Upload test JAR
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: matteroverdrive-test-build
           path: build/libs/*.jar
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish work-branch test JAR
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/work/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          JAR=$(find build/libs -maxdepth 1 -type f -name '*.jar' ! -name '*-sources.jar' ! -name '*-dev.jar' | head -n 1)
+          if [ -z "$JAR" ]; then
+            echo "No release JAR found" >&2
+            exit 1
+          fi
+          OUT="MatterOverdrive-1.20.1-0.3-pointblank-test.jar"
+          cp "$JAR" "$OUT"
+          TAG="0.3-pointblank-test"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$OUT" --clobber
+            gh release edit "$TAG" --notes "Matter Overdrive 0.3 Point Blank/Destiny integration test build. Built from ${GITHUB_SHA}."
+          else
+            gh release create "$TAG" "$OUT" --prerelease --target "$GITHUB_SHA" --title "Matter Overdrive 0.3 Point Blank Test" --notes "Matter Overdrive 0.3 Point Blank/Destiny integration test build. Built from ${GITHUB_SHA}."
+          fi
