@@ -32,9 +32,13 @@ public record AndroidLoadoutSelectPacket(int category, int index) {
             } else if (packet.category == 2) {
                 AndroidLoadout.clear(player);
                 changed = true;
+            } else if (packet.category == 3 && packet.index >= 0 && packet.index < AndroidLoadout.Artifact.values().length) {
+                changed = AndroidLoadout.selectArtifact(player, AndroidLoadout.Artifact.values()[packet.index]);
+            } else if (packet.category == 4 && packet.index >= 0 && packet.index < AndroidLoadout.DronePerk.values().length) {
+                changed = AndroidLoadout.toggleDronePerk(player, AndroidLoadout.DronePerk.values()[packet.index]);
             }
             if (!changed) {
-                player.sendSystemMessage(Component.literal("Android loadout limit reached or selection unavailable.")
+                player.sendSystemMessage(Component.literal("Android loadout limit reached, prerequisite missing, or selection unavailable.")
                         .withStyle(ChatFormatting.RED));
             }
             ModNetwork.syncAndroidState(player);
