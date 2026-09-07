@@ -136,7 +136,7 @@ public final class MatterValueRegistry {
     }
 
     public static int getMatter(ItemStack stack) {
-        return getBaseValue(stack).value();
+        return getMatterValue(null, stack).value();
     }
 
     public static int getMatter(@Nullable Level level, ItemStack stack) {
