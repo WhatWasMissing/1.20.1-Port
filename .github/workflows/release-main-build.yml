@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '0.3'
+  VERSION: '0.4'
 
 jobs:
   release:
@@ -71,15 +71,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          NOTES="Matter Overdrive 1.20.1 release ${VERSION}. Includes the consolidated Android 3-class/3-subclass build system, class and tech abilities, nine Ultimates, Passive Protocols, expanded drone progression, quest tracking, Point Blank/native weapon integration work, GuideME/documentation updates, and ore mining/drop fixes. Built from commit $GITHUB_SHA."
           if gh release view "$VERSION" >/dev/null 2>&1; then
             gh release upload "$VERSION" "$RELEASE_JAR" --clobber
             gh release edit "$VERSION" \
               --target "$GITHUB_SHA" \
               --title "Matter Overdrive 1.20.1 ${VERSION}" \
-              --notes "Matter Overdrive 1.20.1 test release ${VERSION}. Built from commit $GITHUB_SHA."
+              --notes "$NOTES"
           else
             gh release create "$VERSION" "$RELEASE_JAR" \
               --target "$GITHUB_SHA" \
               --title "Matter Overdrive 1.20.1 ${VERSION}" \
-              --notes "Matter Overdrive 1.20.1 test release ${VERSION}. Built from commit $GITHUB_SHA."
+              --notes "$NOTES"
           fi
