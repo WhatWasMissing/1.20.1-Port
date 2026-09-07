@@ -2,6 +2,32 @@
 
 All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 
+## 0.6 — Matter economy, survival/world integration and release consolidation
+
+### Added
+
+- Recursive matter valuation across crafting/processing recipes, including output-count division, cheapest valid ingredient alternatives, cycle protection and bounded recursion depth.
+- Deterministic fallback matter values for items without explicit, tag-based or resolvable recipe values.
+- Matter-value source reporting through tooltips and diagnostic auditing.
+- `/matteroverdrive matter value`, `/matteroverdrive matter audit` and `/matteroverdrive matter clearcache` diagnostic commands.
+- Startup matter-value coverage auditing and dedicated matter-value coverage documentation.
+- Restored/expanded survival-facing legacy world content, including structure generation, persisted salvage/inhabitants and natural Gravitational Anomaly generation.
+- Expanded GuideME survival progression, current-feature and matter-technology documentation for the 0.6 release line.
+- 0.6 release workflow and release identity updates for the current `main` branch.
+
+### Changed
+
+- Matter Analyzer and Decomposer now use the level-aware matter-value resolver so recipes can participate in effective item value calculation.
+- Pattern Drives preserve analyzed matter values and Replicator uses the stored pattern value for production cost.
+- The legacy no-Level matter API now uses the same fallback-aware value path instead of returning zero for non-explicit items.
+- GuideME and repository feature/testing documentation now identify the current build as **Matter Overdrive 0.6** on `main` rather than the obsolete `testing/main` / `Alpha Version 3` identity.
+- GuideME is treated as the primary player-facing how-to manual when installed, while the repository reference/testing files remain the detailed implementation and verification sources.
+- Normal CI now also covers `release/**` branches and its legacy version-normalization step is idempotent.
+
+### Testing status
+
+A clean local Java 17 / Forge 1.20.1 build of the current 0.6 `main` head is still required before distribution. GitHub Actions attempts on the release line have previously failed before runner steps began, so those failures are not compile results. The 0.6 runtime checklist covers matter economy, reactor/anomaly, Android, weapons, networking/transporter, structures, Star Map, GUI and persistence regressions.
+
 ## 0.5 — Research campaign and progression overhaul
 
 ### Added
