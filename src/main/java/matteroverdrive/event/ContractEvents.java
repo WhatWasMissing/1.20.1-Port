@@ -5,6 +5,7 @@ import matteroverdrive.blockentity.GravitationalAnomalyBlockEntity;
 import matteroverdrive.blockentity.TransporterBlockEntity;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.item.MatterScannerItem;
+import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -81,6 +82,12 @@ public final class ContractEvents {
 
         if (hasIncompleteType(player, "anomaly") && insideAnomalyHorizon(player)) recordAnomalyHorizon(player);
         if (hasIncompleteType(player, "scan")) pollScanner(player);
+        if (player.tickCount % 20 == 0) ModNetwork.syncQuestTracker(player);
+    }
+
+    @SubscribeEvent
+    public static void loggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) ModNetwork.syncQuestTracker(player);
     }
 
     @SubscribeEvent
@@ -163,6 +170,7 @@ public final class ContractEvents {
         if (!changed) return;
         syncProgress(player);
         if (completed) notifyCompletion(player, latestTitle == null ? "Contract" : latestTitle);
+        ModNetwork.syncQuestTracker(player);
     }
 
     private static void notifyCompletion(ServerPlayer player, String title) {
