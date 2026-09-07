@@ -14,7 +14,8 @@ public final class AndroidLoadout {
     private static final String SPECIALIZATION = "Specialization";
     public static final int MAX_ASPECTS = 2;
     public static final int MAX_FRAGMENT_CAPACITY = 6;
-    public static final int MAX_DRONE_PERKS = 5;
+    /* Drone nodes are sequential progression, so the cap must allow the level-10 capstone to be reached. */
+    public static final int MAX_DRONE_PERKS = 9;
 
     public enum Ultimate {
         SINGULARITY_CASCADE("Singularity Cascade", "Collapse the local combat space into an explosive kinetic pulse.", 45_000, 900),
