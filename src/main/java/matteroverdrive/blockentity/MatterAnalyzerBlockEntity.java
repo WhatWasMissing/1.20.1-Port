@@ -49,7 +49,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override public boolean isItemValid(int slot, ItemStack stack) {
             return switch (slot) {
-                case INPUT_SLOT -> MatterValueRegistry.containsMatter(stack)
+                case INPUT_SLOT -> MatterValueRegistry.containsMatter(level, stack)
                         && (!(stack.getItem() instanceof MatterDustItem dust) || dust.isRefined());
                 case ENERGY_SLOT -> stack.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::canExtract).orElse(false);
                 case DRIVE_SLOT -> stack.is(ModItems.get("pattern_drive").get()) || stack.is(ModItems.get("creative_pattern_drive").get());
@@ -141,7 +141,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
 
     private boolean canAnalyze() {
         ItemStack input = items.getStackInSlot(INPUT_SLOT);
-        int matter = MatterValueRegistry.getMatter(input);
+        int matter = MatterValueRegistry.getMatter(level, input);
         if (input.isEmpty() || matter <= 0) return false;
         ItemStack drive = items.getStackInSlot(DRIVE_SLOT);
         if (!drive.isEmpty()) return PatternDriveItem.canRecordAnalysis(drive, input);
@@ -150,7 +150,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
 
     private void analyzeItem() {
         ItemStack input = items.getStackInSlot(INPUT_SLOT);
-        int matter = MatterValueRegistry.getMatter(input);
+        int matter = MatterValueRegistry.getMatter(level, input);
         if (matter <= 0 || !canAnalyze()) return;
         boolean recorded;
         ItemStack drive = items.getStackInSlot(DRIVE_SLOT);
@@ -187,7 +187,7 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         return 0;
     }
 
-    public int getInputMatter() { return MatterValueRegistry.getMatter(items.getStackInSlot(INPUT_SLOT)); }
+    public int getInputMatter() { return MatterValueRegistry.getMatter(level, items.getStackInSlot(INPUT_SLOT)); }
     public int getSpeed() { return Math.max(1, (int) Math.round(ANALYZE_SPEED * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::speed))); }
     public int getEnergyDrainPerTick() {
         int total = Math.max(1, (int) Math.round(ENERGY_DRAIN_PER_ITEM * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerUsage)));
