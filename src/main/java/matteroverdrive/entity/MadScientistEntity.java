@@ -3,6 +3,8 @@ package matteroverdrive.entity;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.event.CocktailQuestEvents;
 import matteroverdrive.event.ContractInteractionEvents;
+import matteroverdrive.network.ModNetwork;
+import matteroverdrive.quest.ScientistStoryQuestFlow;
 import matteroverdrive.registry.ModEntities;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModSounds;
@@ -27,8 +29,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
-/** Mad Scientist plus source-backed Puny Humans, Trade Route conversation and Cocktail of Ascension progression. */
+/** Mad Scientist quest host with dialogue-driven legacy and conversion story progression. */
 public class MadScientistEntity extends Villager {
     private static final String JUNKIE = "Junkie";
     public static final String QUEST_ACTIVE = "MatterOverdrivePunyHumansActive";
@@ -53,12 +56,9 @@ public class MadScientistEntity extends Villager {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (level().isClientSide) return InteractionResult.SUCCESS;
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
+        if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResult.CONSUME;
 
-        if (player instanceof ServerPlayer serverPlayer) {
-            ContractInteractionEvents.recordConversation(serverPlayer,
-                    new ResourceLocation("matteroverdrive", "mad_scientist"));
-        }
-
+        ContractInteractionEvents.recordConversation(serverPlayer, new ResourceLocation("matteroverdrive", "mad_scientist"));
         CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         boolean active = persisted.getBoolean(QUEST_ACTIVE);
         boolean done = persisted.getBoolean(QUEST_DONE);
@@ -67,16 +67,17 @@ public class MadScientistEntity extends Villager {
             if (hasAllRogueParts(player)) {
                 consumeRogueParts(player);
                 if (!AndroidData.isAndroid(player)) AndroidData.activate(player);
-                completePunyHumans(player, persisted, true);
+                completePunyHumans(serverPlayer, persisted, true);
                 return InteractionResult.CONSUME;
             }
             if (!persisted.getBoolean(QUEST_PARTS_MODE) && AndroidData.isAndroid(player)) {
-                completePunyHumans(player, persisted, false);
+                completePunyHumans(serverPlayer, persisted, false);
                 return InteractionResult.CONSUME;
             }
-            player.displayClientMessage(Component.literal("Puny Humans: bring one Head, Chest, Arms and Legs Rogue Android part.")
-                    .withStyle(ChatFormatting.AQUA), false);
-            player.displayClientMessage(Component.literal(partProgress(player)).withStyle(ChatFormatting.GRAY), false);
+            dialogue(serverPlayer, "Puny Humans", List.of(
+                    "Biology remains inefficient. Bring me one Head, Chest, Arms and Legs Rogue Android part.",
+                    partProgress(player),
+                    "Once I have a complete mechanical anatomy set, we can begin the conversion."));
             return InteractionResult.CONSUME;
         }
 
@@ -84,31 +85,30 @@ public class MadScientistEntity extends Villager {
             persisted.putBoolean(QUEST_ACTIVE, true);
             persisted.putBoolean(QUEST_PARTS_MODE, true);
             player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
-            level().playSound(null, blockPosition(), ModSounds.get("gui.quest_started").get(),
-                    net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
-            player.displayClientMessage(Component.literal("Quest started: Puny Humans").withStyle(ChatFormatting.AQUA), false);
-            player.displayClientMessage(Component.literal("Objective: recover one of each Rogue Android body part and return to a Mad Scientist.")
-                    .withStyle(ChatFormatting.GRAY), false);
+            level().playSound(null, blockPosition(), ModSounds.get("gui.quest_started").get(), net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
+            dialogue(serverPlayer, "Puny Humans", List.of(
+                    "Humanity has had a very respectable trial period. The results are disappointing.",
+                    "Recover one of each Rogue Android body part and return to me.",
+                    "Head, Chest, Arms and Legs. Try not to damage the interesting bits."));
             return InteractionResult.CONSUME;
         }
 
-        if (junkie && done) return handleCocktail(player);
+        if (done && ScientistStoryQuestFlow.handle(serverPlayer)) return InteractionResult.CONSUME;
+        if (junkie && done) return handleCocktail(serverPlayer);
 
         if (AndroidData.isAndroid(player)) {
-            player.displayClientMessage(Component.literal(junkie
-                    ? "Magnificent! The machine has finally improved the human."
-                    : "Your conversion appears stable. Try not to waste it.")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE), false);
+            dialogue(serverPlayer, "Research Notes", List.of(junkie
+                    ? "Magnificent. The machine has finally improved the human. I have several irresponsible follow-up experiments in mind."
+                    : "Your conversion appears stable. Try not to waste it."));
         } else {
-            player.displayClientMessage(Component.literal(junkie
+            dialogue(serverPlayer, "Research Notes", List.of(junkie
                     ? "Science demands sacrifice. Preferably yours."
-                    : "Bring me enough machine anatomy and perhaps biology can be corrected.")
-                    .withStyle(ChatFormatting.GRAY), false);
+                    : "Bring me enough machine anatomy and perhaps biology can be corrected."));
         }
         return InteractionResult.CONSUME;
     }
 
-    private void completePunyHumans(Player player, CompoundTag persisted, boolean convertedFromParts) {
+    private void completePunyHumans(ServerPlayer player, CompoundTag persisted, boolean convertedFromParts) {
         persisted.putBoolean(QUEST_DONE, true);
         persisted.putBoolean(QUEST_ACTIVE, false);
         player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
@@ -116,18 +116,17 @@ public class MadScientistEntity extends Villager {
         give(player, new ItemStack(ModItems.get("android_pill_blue").get()));
         give(player, new ItemStack(ModItems.get("android_pill_yellow").get(), 5));
         player.giveExperiencePoints(256);
-        level().playSound(null, blockPosition(), ModSounds.get("gui.quest_complete").get(),
-                net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
-        player.displayClientMessage(Component.literal("Puny Humans complete" + (convertedFromParts ? ": conversion sequence initiated." : "."))
-                .withStyle(ChatFormatting.GREEN), false);
-        player.displayClientMessage(Component.literal("Reward: Battery, Android Pills, 256 XP").withStyle(ChatFormatting.GOLD), false);
+        level().playSound(null, blockPosition(), ModSounds.get("gui.quest_complete").get(), net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
+        dialogue(player, "Puny Humans Complete", List.of(
+                convertedFromParts ? "Conversion sequence complete. You are now considerably less disappointing." : "Your synthetic conversion is already stable. Convenient.",
+                "Reward: Battery, Android Pills, 256 XP",
+                "Come back. There is older research work that still needs an operator."));
     }
 
-    private InteractionResult handleCocktail(Player player) {
+    private InteractionResult handleCocktail(ServerPlayer player) {
         CompoundTag data = CocktailQuestEvents.persisted(player);
         if (data.getBoolean(CocktailQuestEvents.DONE)) {
-            player.displayClientMessage(Component.literal("The Cocktail experiment has already run its course.")
-                    .withStyle(ChatFormatting.DARK_PURPLE), false);
+            dialogue(player, "Cocktail of Ascension", List.of("The Cocktail experiment has already run its course. The paperwork remains classified as a biohazard."));
             return InteractionResult.CONSUME;
         }
         if (!data.getBoolean(CocktailQuestEvents.ACTIVE)) {
@@ -135,13 +134,11 @@ public class MadScientistEntity extends Villager {
             data.putInt(CocktailQuestEvents.CREEPER_KILLS, 0);
             data.putInt(CocktailQuestEvents.GUNPOWDER, 0);
             data.putInt(CocktailQuestEvents.MUSHROOMS, 0);
-            level().playSound(null, blockPosition(), ModSounds.get("gui.quest_started").get(),
-                    net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 0.9F);
-            player.displayClientMessage(Component.literal("Quest started: Cocktail of Ascension")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE), false);
-            player.displayClientMessage(Component.literal(
-                    "Kill 5 Creepers with a shovel, collect 5 gunpowder, and collect 5 red mushrooms in the Nether.")
-                    .withStyle(ChatFormatting.GRAY), false);
+            level().playSound(null, blockPosition(), ModSounds.get("gui.quest_started").get(), net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 0.9F);
+            dialogue(player, "Cocktail of Ascension", List.of(
+                    "I have a formula. It is either transformative or explosively educational.",
+                    "Kill 5 Creepers with a shovel, collect 5 gunpowder, and collect 5 red mushrooms in the Nether.",
+                    "Do not ask why the shovel matters. Methodology matters."));
             return InteractionResult.CONSUME;
         }
 
@@ -149,23 +146,18 @@ public class MadScientistEntity extends Villager {
         int gunpowder = data.getInt(CocktailQuestEvents.GUNPOWDER);
         int mushrooms = data.getInt(CocktailQuestEvents.MUSHROOMS);
         if (kills < 5 || gunpowder < 5 || mushrooms < 5) {
-            player.displayClientMessage(Component.literal("Cocktail: shovel Creepers " + kills + "/5, gunpowder "
-                    + gunpowder + "/5, Nether red mushrooms " + mushrooms + "/5")
-                    .withStyle(ChatFormatting.AQUA), false);
+            dialogue(player, "Cocktail of Ascension", List.of(
+                    "The mixture is still incomplete.",
+                    "Shovel Creepers: " + kills + "/5   Gunpowder: " + gunpowder + "/5   Nether red mushrooms: " + mushrooms + "/5"));
             return InteractionResult.CONSUME;
         }
 
         if (!(level() instanceof ServerLevel serverLevel)) return InteractionResult.CONSUME;
         MutantScientistEntity mutant = ModEntities.MUTANT_SCIENTIST.get().create(serverLevel);
-        if (mutant == null) {
-            player.displayClientMessage(Component.literal("Cocktail transformation failed to initialize.").withStyle(ChatFormatting.RED), false);
-            return InteractionResult.CONSUME;
-        }
-
+        if (mutant == null) return InteractionResult.CONSUME;
         mutant.moveTo(getX(), getY(), getZ(), getYRot(), getXRot());
         if (!serverLevel.addFreshEntity(mutant)) {
             mutant.discard();
-            player.displayClientMessage(Component.literal("Cocktail transformation could not spawn safely.").withStyle(ChatFormatting.RED), false);
             return InteractionResult.CONSUME;
         }
 
@@ -175,19 +167,21 @@ public class MadScientistEntity extends Villager {
         give(player, new ItemStack(ModItems.get("android_pill_blue").get()));
         give(player, new ItemStack(ModItems.get("android_pill_red").get()));
         give(player, new ItemStack(ModItems.get("android_pill_yellow").get()));
-        level().playSound(null, blockPosition(), ModSounds.get("failed_animal_die").get(),
-                net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 0.8F);
-        player.displayClientMessage(Component.literal("Cocktail of Ascension complete. Something went very wrong.")
-                .withStyle(ChatFormatting.RED), false);
-        player.displayClientMessage(Component.literal("Reward: Android Pills, 512 XP").withStyle(ChatFormatting.GOLD), false);
+        level().playSound(null, blockPosition(), ModSounds.get("failed_animal_die").get(), net.minecraft.sounds.SoundSource.HOSTILE, 1.0F, 0.8F);
+        dialogue(player, "Cocktail of Ascension Complete", List.of(
+                "The transformation succeeded according to the broadest possible definition of succeeded.",
+                "Reward: Android Pills, 512 XP",
+                "You may wish to move away from the experiment."));
         discard();
         return InteractionResult.CONSUME;
     }
 
+    private static void dialogue(ServerPlayer player, String title, List<String> lines) {
+        ModNetwork.openDialogue(player, "Mad Scientist", title, lines);
+    }
+
     private static boolean hasAllRogueParts(Player player) {
-        for (AndroidData.Part part : AndroidData.Part.values()) {
-            if (player.getInventory().countItem(ModItems.get(part.itemId).get()) < 1) return false;
-        }
+        for (AndroidData.Part part : AndroidData.Part.values()) if (player.getInventory().countItem(ModItems.get(part.itemId).get()) < 1) return false;
         return true;
     }
 
@@ -196,7 +190,7 @@ public class MadScientistEntity extends Villager {
         for (int i = 0; i < AndroidData.Part.values().length; i++) {
             AndroidData.Part part = AndroidData.Part.values()[i];
             if (i > 0) text.append(", ");
-            text.append(part.name()).append(' ').append(player.getInventory().countItem(ModItems.get(part.itemId).get()) > 0 ? "✓" : "✗");
+            text.append(part.name()).append(' ').append(player.getInventory().countItem(ModItems.get(part.itemId).get()) > 0 ? "READY" : "MISSING");
         }
         return text.toString();
     }
