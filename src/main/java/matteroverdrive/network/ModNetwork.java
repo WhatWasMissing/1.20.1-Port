@@ -1,6 +1,7 @@
 package matteroverdrive.network;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.android.AndroidClassAbilities;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.android.AndroidUltimates;
@@ -14,7 +15,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "5";
+    private static final String PROTOCOL = "6";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -60,6 +61,7 @@ public final class ModNetwork {
                 AndroidData.getExperience(p), AndroidData.getLevel(p), AndroidData.getSelectedPerks(p),
                 AndroidLoadout.getAspectMask(p), AndroidLoadout.getFragmentMask(p),
                 AndroidLoadout.getArtifact(p).ordinal(), AndroidLoadout.getDronePerkMask(p),
-                AndroidLoadout.getSpecialization(p).ordinal(), AndroidUltimates.getRemainingCooldown(p)));
+                AndroidLoadout.getSpecialization(p).ordinal(), AndroidUltimates.getRemainingCooldown(p),
+                AndroidClassAbilities.getClassCooldown(p), AndroidClassAbilities.getTechCooldown(p)));
     }
 }
