@@ -16,6 +16,8 @@ public final class AndroidKeyMappings {
     public static final KeyMapping OPEN_LOADOUT = new KeyMapping("key.matteroverdrive.android_loadout", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_L, "key.categories.matteroverdrive");
     public static final KeyMapping ACTIVATE_ABILITY = new KeyMapping("key.matteroverdrive.android_activate_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.matteroverdrive");
     public static final KeyMapping ACTIVATE_ULTIMATE = new KeyMapping("key.matteroverdrive.android_activate_ultimate", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.matteroverdrive");
+    public static final KeyMapping ACTIVATE_CLASS_ABILITY = new KeyMapping("key.matteroverdrive.android_class_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "key.categories.matteroverdrive");
+    public static final KeyMapping ACTIVATE_TECH_ABILITY = new KeyMapping("key.matteroverdrive.android_tech_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, "key.categories.matteroverdrive");
 
     private AndroidKeyMappings() {}
 
@@ -23,6 +25,8 @@ public final class AndroidKeyMappings {
     public static void register(RegisterKeyMappingsEvent event) {
         event.register(CYCLE_ABILITY);
         event.register(ACTIVATE_ABILITY);
+        event.register(ACTIVATE_CLASS_ABILITY);
+        event.register(ACTIVATE_TECH_ABILITY);
         event.register(ACTIVATE_ULTIMATE);
         event.register(OPEN_SKILL_TREE);
         event.register(OPEN_LOADOUT);
