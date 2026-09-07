@@ -1,6 +1,7 @@
 package matteroverdrive.client;
 
 import matteroverdrive.android.AndroidData;
+import matteroverdrive.android.AndroidLoadout;
 
 /** Client mirror of the local player's Android state, updated by the server packet. */
 public final class AndroidClientState {
@@ -15,13 +16,15 @@ public final class AndroidClientState {
     private static long selectedPerks;
     private static int aspectMask;
     private static int fragmentMask;
+    private static int artifactOrdinal;
+    private static int dronePerkMask;
 
     private AndroidClientState() {}
 
     public static void set(boolean nextActive, int nextEnergy, int nextParts,
                            int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags,
                            int nextExperience, int nextLevel, long nextSelectedPerks,
-                           int nextAspectMask, int nextFragmentMask) {
+                           int nextAspectMask, int nextFragmentMask, int nextArtifactOrdinal, int nextDronePerkMask) {
         active = nextActive;
         energy = Math.max(0, nextEnergy);
         parts = nextParts & 15;
@@ -33,6 +36,8 @@ public final class AndroidClientState {
         selectedPerks = nextSelectedPerks;
         aspectMask = nextAspectMask;
         fragmentMask = nextFragmentMask;
+        artifactOrdinal = Math.max(0, Math.min(AndroidLoadout.Artifact.values().length - 1, nextArtifactOrdinal));
+        dronePerkMask = nextDronePerkMask;
     }
 
     public static boolean isActive() { return active; }
@@ -46,7 +51,11 @@ public final class AndroidClientState {
     public static long selectedPerks() { return selectedPerks; }
     public static int aspectMask() { return aspectMask; }
     public static int fragmentMask() { return fragmentMask; }
+    public static int artifactOrdinal() { return artifactOrdinal; }
+    public static AndroidLoadout.Artifact artifact() { return AndroidLoadout.Artifact.values()[artifactOrdinal]; }
+    public static int dronePerkMask() { return dronePerkMask; }
     public static boolean hasPerk(AndroidData.Perk perk) { return (selectedPerks & (1L << perk.ordinal())) != 0L; }
+    public static boolean hasDronePerk(AndroidLoadout.DronePerk perk) { return (dronePerkMask & (1 << perk.ordinal())) != 0; }
     public static boolean isCloakEnabled() { return (activeAbilityFlags & 1) != 0; }
     public static boolean isForceFieldEnabled() { return (activeAbilityFlags & 2) != 0; }
     public static boolean isSelectedAbilityActive() {
