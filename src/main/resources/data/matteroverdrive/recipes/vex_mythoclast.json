@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DID",
+    "PQP",
+    "DHD"
+  ],
+  "key": {
+    "D": {"item": "matteroverdrive:dilithium_crystal"},
+    "I": {"item": "matteroverdrive:integration_matrix"},
+    "P": {"item": "matteroverdrive:plasma_core"},
+    "Q": {"item": "matteroverdrive:quantum_fold_manipulator"},
+    "H": {"item": "matteroverdrive:weapon_handle"}
+  },
+  "result": {"item": "matteroverdrive:vex_mythoclast", "count": 1}
+}
