@@ -15,7 +15,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "6";
+    private static final String PROTOCOL = "7";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -38,10 +38,12 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, StarMapShipDispatchPacket.class, StarMapShipDispatchPacket::encode, StarMapShipDispatchPacket::decode, StarMapShipDispatchPacket::handle);
         CHANNEL.registerMessage(nextId++, ContractAbandonPacket.class, ContractAbandonPacket::encode, ContractAbandonPacket::decode, ContractAbandonPacket::handle);
         CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
+        CHANNEL.registerMessage(nextId++, NpcDialoguePacket.class, NpcDialoguePacket::encode, NpcDialoguePacket::decode, NpcDialoguePacket::handle);
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h)); }
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
+    public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines)); }
     public static void fireOmniTool() { CHANNEL.sendToServer(new OmniToolFirePacket()); }
     public static void requestStarMapTravel(BlockPos p, int q, int s, int pl) { CHANNEL.sendToServer(new StarMapTravelPacket(p, q, s, pl)); }
     public static void requestStarMapFleetAttack(BlockPos p) { CHANNEL.sendToServer(new StarMapFleetAttackPacket(p)); }
