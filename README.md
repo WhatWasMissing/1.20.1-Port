@@ -8,7 +8,7 @@ A Forge 1.20.1 port of Matter Overdrive Legacy Edition, maintained by MVQ1303.
 - Forge: 47.4.10
 - Java: 17
 - Mod ID: `matteroverdrive`
-- Current version: `0.4`
+- Current version: `0.6`
 - Development baseline: `main`
 
 Release builds are published from `main` after the normal build and release workflows complete successfully.
@@ -24,7 +24,21 @@ After pulling `main`:
 
 ## Current feature set
 
-Matter Overdrive 0.4 includes a broad playable implementation of the original mod's major systems, with additional progression and quality of life work for the 1.20.1 port.
+Matter Overdrive 0.6 consolidates the 0.5 campaign/world-content line with the current matter-economy work and the existing machine, Android, reactor, weapon and exploration systems.
+
+### Matter economy and diagnostics
+
+- Recursive recipe-derived matter values for craftable items.
+- Crafted outputs are valued from the subtotal of their resolved ingredients, accounting for recipe output count.
+- Explicit legacy/material values remain authoritative base values.
+- Tag-based material values support logs, planks, leaves, wool and saplings.
+- Conservative fallback valuation prevents ordinary obtainable items from silently resolving to zero matter.
+- Matter Analyzer and Decomposer use the same level-aware resolver, keeping newly analysed patterns and decomposition yields consistent.
+- Item tooltips show resolved matter values; hold Shift to see whether the source is explicit, tag-based, recipe-derived, dynamic or fallback.
+- Startup audit reports registry coverage by matter-value source.
+- `/matteroverdrive matter value` reports the held item value and source.
+- Operators can use `/matteroverdrive matter audit` and `/matteroverdrive matter clearcache` for economy verification.
+- Detailed resolver and test notes live in [`docs/reference/MATTER_VALUE_COVERAGE.md`](docs/reference/MATTER_VALUE_COVERAGE.md).
 
 ### Matter processing and machines
 
@@ -53,7 +67,7 @@ Matter Overdrive 0.4 includes a broad playable implementation of the original mo
 - Unique class ability, tech ability and Ultimate kits across the subclass matrix.
 - Nine distinct Ultimates.
 - Selectable Aspects and Fragments.
-- Selectable Passive Protocols with meaningful combat, mobility, defense, energy and drone benefits.
+- Selectable Passive Protocols with combat, mobility, defense, energy and drone benefits.
 - Android Mastery progression and permanent perks.
 - Drone Matrix progression through level 10.
 - Android HUD, keybinds, cooldown synchronization and loadout UI.
@@ -64,10 +78,10 @@ Matter Overdrive 0.4 includes a broad playable implementation of the original mo
 - Energy weapons, weapon batteries and weapon modules.
 - Weapon heat and reload behavior.
 - Weapon Station persistence and typed module slots.
-- Native weapon integration work alongside Point Blank compatibility support.
+- Native weapon integration alongside Point Blank compatibility support.
 - Android combat hooks for subclass abilities, passives and drone support.
 
-### Quests and world content
+### Campaign, quests and world content
 
 - Mad Scientist Android conversion flow.
 - Puny Humans progression.
@@ -75,6 +89,7 @@ Matter Overdrive 0.4 includes a broad playable implementation of the original mo
 - Legacy contract and conversation support.
 - Active quest tracker HUD for current contracts and special quest states.
 - Transporter and bound Transport Flash Drives.
+- Survival/world-structure feasibility work consolidated into the release baseline, including the forward structure/campaign branch history.
 
 ### Materials and equipment
 
@@ -85,8 +100,8 @@ Matter Overdrive 0.4 includes a broad playable implementation of the original mo
 
 ### Guides and integration
 
-- In game guide content for implemented and partially implemented systems.
-- Paged guides with index navigation and last page persistence.
+- In-game guide content for implemented and partially implemented systems.
+- Paged guides with index navigation and last-page persistence.
 - GuideME integration content for Matter Overdrive systems.
 - JEI development and runtime integration support.
 - Player and tester documentation under `docs/`.
@@ -99,6 +114,7 @@ For the most useful current references, see:
 
 - [`docs/testing/TO_TEST.md`](docs/testing/TO_TEST.md)
 - [`docs/reference/WORKING_FEATURES.md`](docs/reference/WORKING_FEATURES.md)
+- [`docs/reference/MATTER_VALUE_COVERAGE.md`](docs/reference/MATTER_VALUE_COVERAGE.md)
 - [`docs/README.md`](docs/README.md)
 
 ## Repository layout
