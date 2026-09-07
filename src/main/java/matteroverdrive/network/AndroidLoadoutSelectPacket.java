@@ -36,6 +36,8 @@ public record AndroidLoadoutSelectPacket(int category, int index) {
                 changed = AndroidLoadout.selectArtifact(player, AndroidLoadout.Artifact.values()[packet.index]);
             } else if (packet.category == 4 && packet.index >= 0 && packet.index < AndroidLoadout.DronePerk.values().length) {
                 changed = AndroidLoadout.toggleDronePerk(player, AndroidLoadout.DronePerk.values()[packet.index]);
+            } else if (packet.category == 5 && packet.index >= 0 && packet.index < AndroidLoadout.Specialization.values().length) {
+                changed = AndroidLoadout.selectSpecialization(player, AndroidLoadout.Specialization.values()[packet.index]);
             }
             if (!changed) {
                 player.sendSystemMessage(Component.literal("Android loadout limit reached, prerequisite missing, or selection unavailable.")
