@@ -28,7 +28,8 @@ public class AndroidClassLoadoutScreen extends Screen {
 
     private final Map<Button, Object> inspectables = new LinkedHashMap<>();
     private int view;
-    private int lastAspects, lastFragments, lastArtifact, lastDronePerks, lastSpecialization, lastUltimateCooldown;
+    private int lastAspects, lastFragments, lastArtifact, lastDronePerks, lastSpecialization;
+    private int lastUltimateCooldown, lastClassCooldown, lastTechCooldown;
 
     public AndroidClassLoadoutScreen() { super(Component.literal("ANDROID CLASS MATRIX")); }
 
@@ -41,6 +42,8 @@ public class AndroidClassLoadoutScreen extends Screen {
         lastDronePerks = AndroidClientState.dronePerkMask();
         lastSpecialization = AndroidClientState.specializationOrdinal();
         lastUltimateCooldown = AndroidClientState.ultimateCooldownTicks();
+        lastClassCooldown = AndroidClientState.classAbilityCooldownTicks();
+        lastTechCooldown = AndroidClientState.techAbilityCooldownTicks();
     }
 
     private int panelLeft() { return Math.max(350, width - 286); }
@@ -73,7 +76,6 @@ public class AndroidClassLoadoutScreen extends Screen {
     }
 
     private void buildClassView() {
-        int right = mainRight();
         AndroidLoadout.Specialization selectedSpec = AndroidClientState.specialization();
         AndroidClasses.AndroidClass currentClass = AndroidClasses.fromSpecialization(selectedSpec);
 
@@ -119,7 +121,7 @@ public class AndroidClassLoadoutScreen extends Screen {
 
         AndroidLoadout.Ultimate ultimate = selectedSpec.ultimate;
         Button g = Button.builder(Component.literal("G // ULTIMATE // " + ultimate.displayName), b -> {})
-                .bounds(18, 174, Math.max(260, mainWidth()), 26).build();
+                .bounds(18, 184, Math.max(260, mainWidth()), 26).build();
         g.active = false; addRenderableWidget(g); inspectables.put(g, ultimate);
 
         int aspectIndex = 0;
@@ -130,7 +132,7 @@ public class AndroidClassLoadoutScreen extends Screen {
             int x = 18 + aspectIndex * (aspectWidth + 5);
             Button button = Button.builder(Component.literal((selected ? "✦ " : "◇ ") + aspect.displayName), b ->
                     ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(0, aspect.ordinal())))
-                    .bounds(x, 222, aspectWidth, 20).build();
+                    .bounds(x, 242, aspectWidth, 20).build();
             addRenderableWidget(button); inspectables.put(button, aspect); aspectIndex++;
         }
 
@@ -138,7 +140,7 @@ public class AndroidClassLoadoutScreen extends Screen {
         int cols = width < 760 ? 3 : 4;
         int gap = 4;
         int fragmentWidth = Math.max(80, Math.min(125, (mainWidth() - gap * (cols - 1)) / cols));
-        int fragmentY = 270;
+        int fragmentY = 290;
         int rowHeight = 19;
         for (int i = 0; i < fragments.length; i++) {
             AndroidLoadout.Fragment fragment = fragments[i];
@@ -200,11 +202,20 @@ public class AndroidClassLoadoutScreen extends Screen {
         return Math.min(AndroidLoadout.MAX_FRAGMENT_CAPACITY, slots);
     }
 
+    private String abilityStatus(String key, int cooldown, int cost) {
+        if (AndroidClientState.level() < AndroidClassAbilities.REQUIRED_LEVEL) return key + " LOCKED L" + AndroidClassAbilities.REQUIRED_LEVEL;
+        if (cooldown > 0) return key + " " + String.format("%.1fs", cooldown / 20.0D);
+        if (AndroidClientState.energy() < cost) return key + " NEEDS " + cost + " FE";
+        return key + " READY";
+    }
+
     @Override public void tick() {
         if (lastAspects != AndroidClientState.aspectMask() || lastFragments != AndroidClientState.fragmentMask()
                 || lastArtifact != AndroidClientState.artifactOrdinal() || lastDronePerks != AndroidClientState.dronePerkMask()
                 || lastSpecialization != AndroidClientState.specializationOrdinal()
-                || lastUltimateCooldown != AndroidClientState.ultimateCooldownTicks()) {
+                || lastUltimateCooldown != AndroidClientState.ultimateCooldownTicks()
+                || lastClassCooldown != AndroidClientState.classAbilityCooldownTicks()
+                || lastTechCooldown != AndroidClientState.techAbilityCooldownTicks()) {
             cacheState(); rebuild();
         }
     }
@@ -220,16 +231,21 @@ public class AndroidClassLoadoutScreen extends Screen {
         if (view == 0) {
             AndroidLoadout.Specialization spec = AndroidClientState.specialization();
             AndroidLoadout.Ultimate ultimate = spec.ultimate;
-            int cooldown = AndroidClientState.ultimateCooldownTicks();
+            int ultimateCooldown = AndroidClientState.ultimateCooldownTicks();
+            int classCooldown = AndroidClientState.classAbilityCooldownTicks();
+            int techCooldown = AndroidClientState.techAbilityCooldownTicks();
             g.drawString(font, "CLASS // " + androidClass.displayName.toUpperCase(), 18, 97, GOLD, false);
             g.drawString(font, spec.displayName.toUpperCase() + " SUBCLASS", 18, 129, MUTED, false);
-            g.drawString(font, "SUBCLASS ABILITIES", 18, 166, ACCENT, false);
-            String status = AndroidClientState.level() < AndroidUltimates.REQUIRED_LEVEL ? "ULTIMATE LOCKED · LEVEL " + AndroidUltimates.REQUIRED_LEVEL
-                    : cooldown > 0 ? String.format("ULTIMATE RECHARGING %.1fs", cooldown / 20.0D)
+            String hStatus = abilityStatus("H", classCooldown, AndroidClassAbilities.classEnergyCost(spec));
+            String nStatus = abilityStatus("N", techCooldown, AndroidClassAbilities.techEnergyCost(spec));
+            g.drawString(font, hStatus + "   ·   " + nStatus, 20, 168,
+                    classCooldown <= 0 && techCooldown <= 0 ? ACCENT : MUTED, false);
+            String ultimateStatus = AndroidClientState.level() < AndroidUltimates.REQUIRED_LEVEL ? "ULTIMATE LOCKED · LEVEL " + AndroidUltimates.REQUIRED_LEVEL
+                    : ultimateCooldown > 0 ? String.format("ULTIMATE RECHARGING %.1fs", ultimateCooldown / 20.0D)
                     : AndroidClientState.energy() < ultimate.energyCost ? "ULTIMATE NEEDS " + ultimate.energyCost + " FE" : "ULTIMATE READY · G";
-            g.drawString(font, status, 20, 203, cooldown <= 0 ? ACCENT : MUTED, false);
-            g.drawString(font, "ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, 18, 208, GOLD, false);
-            g.drawString(font, "FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), 18, 252, ACCENT, false);
+            g.drawString(font, ultimateStatus, 20, 214, ultimateCooldown <= 0 ? ACCENT : MUTED, false);
+            g.drawString(font, "ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, 18, 228, GOLD, false);
+            g.drawString(font, "FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), 18, 274, ACCENT, false);
         } else if (view == 1) {
             g.drawString(font, "DRONE COMMAND MATRIX", 18, 78, GREEN, false);
             g.drawString(font, Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS + " nodes installed · level-gated progression", 18, 92, MUTED, false);
