@@ -1,4 +1,5 @@
 # Matter Overdrive original Vex Mythoclast material set
+# Solid colour maps are supplied because Forge's OBJ item renderer expects a diffuse texture.
 
 newmtl vex_bronze
 Ka 0.16 0.10 0.04
@@ -6,6 +7,7 @@ Kd 0.62 0.42 0.18
 Ks 0.20 0.14 0.06
 Ns 18.0
 illum 2
+map_Kd matteroverdrive:item/vex_mythoclast_bronze
 
 newmtl vex_dark
 Ka 0.025 0.030 0.028
@@ -13,6 +15,7 @@ Kd 0.095 0.115 0.105
 Ks 0.16 0.18 0.16
 Ns 24.0
 illum 2
+map_Kd matteroverdrive:item/vex_mythoclast_dark
 
 newmtl vex_ivory
 Ka 0.16 0.15 0.12
@@ -20,6 +23,7 @@ Kd 0.72 0.69 0.55
 Ks 0.18 0.17 0.13
 Ns 14.0
 illum 2
+map_Kd matteroverdrive:item/vex_mythoclast_ivory
 
 newmtl vex_glow
 Ka 0.18 0.42 0.42
@@ -28,3 +32,4 @@ Ks 0.65 1.00 1.00
 Ke 0.12 0.55 0.52
 Ns 64.0
 illum 2
+map_Kd matteroverdrive:item/vex_mythoclast_glow

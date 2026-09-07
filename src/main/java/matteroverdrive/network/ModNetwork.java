@@ -1,8 +1,10 @@
 package matteroverdrive.network;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.android.AndroidClassAbilities;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
+import matteroverdrive.android.AndroidUltimates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,7 +15,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "2";
+    private static final String PROTOCOL = "6";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -35,6 +37,7 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, StarMapEconomyPacket.class, StarMapEconomyPacket::encode, StarMapEconomyPacket::decode, StarMapEconomyPacket::handle);
         CHANNEL.registerMessage(nextId++, StarMapShipDispatchPacket.class, StarMapShipDispatchPacket::encode, StarMapShipDispatchPacket::decode, StarMapShipDispatchPacket::handle);
         CHANNEL.registerMessage(nextId++, ContractAbandonPacket.class, ContractAbandonPacket::encode, ContractAbandonPacket::decode, ContractAbandonPacket::handle);
+        CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h)); }
@@ -46,12 +49,19 @@ public final class ModNetwork {
     public static void requestStarMapShipDispatch(BlockPos p, int shipType, int q, int s, int pl) { CHANNEL.sendToServer(new StarMapShipDispatchPacket(p, shipType, q, s, pl)); }
     public static void requestContractAbandon(int slot) { CHANNEL.sendToServer(new ContractAbandonPacket(slot)); }
 
+    public static void syncQuestTracker(ServerPlayer p) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), QuestTrackerSyncPacket.from(p));
+    }
+
     public static void syncAndroidState(ServerPlayer p) {
         AndroidData.Ability a = AndroidData.getSelectedAbility(p);
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new AndroidStatePacket(
                 AndroidData.isAndroid(p), AndroidData.getEnergy(p), AndroidData.getParts(p), a.ordinal(),
                 AndroidData.getRemainingCooldown(p, a, p.level().getGameTime()), AndroidData.getActiveAbilityFlags(p),
                 AndroidData.getExperience(p), AndroidData.getLevel(p), AndroidData.getSelectedPerks(p),
-                AndroidLoadout.getAspectMask(p), AndroidLoadout.getFragmentMask(p)));
+                AndroidLoadout.getAspectMask(p), AndroidLoadout.getFragmentMask(p),
+                AndroidLoadout.getArtifact(p).ordinal(), AndroidLoadout.getDronePerkMask(p),
+                AndroidLoadout.getSpecialization(p).ordinal(), AndroidUltimates.getRemainingCooldown(p),
+                AndroidClassAbilities.getClassCooldown(p), AndroidClassAbilities.getTechCooldown(p)));
     }
 }

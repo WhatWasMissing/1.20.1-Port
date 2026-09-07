@@ -20,6 +20,7 @@ public final class ModCreativeTabs {
                         ModItems.BLOCK_ITEMS.values().forEach(item -> output.accept(item.get()));
                         ModItems.STANDALONE_ITEMS.values().forEach(item -> output.accept(item.get()));
                         output.accept(ModExoticItems.VEX_MYTHOCLAST.get());
+                        ModDestinyItems.WEAPONS.values().forEach(item -> output.accept(item.get()));
                     })
                     .build());
 
