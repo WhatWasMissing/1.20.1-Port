@@ -22,20 +22,17 @@ public final class ScientistStoryQuestFlow {
         CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         if (persisted.getBoolean(STORY_DONE)) return false;
 
-        ItemStack active = findLegacyContract(player);
+        int index = normalizeStoryIndex(player, persisted);
+        ItemStack active = findLegacyContract(player, index);
         if (!active.isEmpty()) {
             if (!ContractItem.complete(active)) {
-                ModNetwork.openDialogue(player, "Mad Scientist", ContractItem.title(active), List.of(
-                        storyLine(ContractItem.contractId(active)),
-                        ContractItem.objectiveText(active),
-                        "Progress: " + ContractItem.progress(active) + " / " + ContractItem.goal(active)));
+                showProgress(player, active);
                 return true;
             }
             redeem(player, active, persisted);
             return true;
         }
 
-        int index = Math.max(0, persisted.getInt(STORY_INDEX));
         if (index >= LegacyStoryContracts.QUEST_IDS.length) {
             persisted.putBoolean(STORY_DONE, true);
             save(player, persisted);
@@ -46,29 +43,35 @@ public final class ScientistStoryQuestFlow {
         ItemStack quest = LegacyStoryContracts.create(id, player.getRandom());
         if (quest.isEmpty()) return false;
         give(player, quest);
+        save(player, persisted);
         player.level().playSound(null, player.blockPosition(), ModSounds.get("gui.quest_started").get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         ModNetwork.openDialogue(player, "Mad Scientist", ContractItem.title(quest), List.of(
-                storyLine(id),
-                ContractItem.objectiveText(quest),
+                storyLine(id), objectiveLine(quest),
                 "Keep the contract with you. Return when the work is complete."));
         return true;
     }
 
+    private static void showProgress(ServerPlayer player, ItemStack active) {
+        ModNetwork.openDialogue(player, "Mad Scientist", ContractItem.title(active), List.of(
+                storyLine(ContractItem.contractId(active)), objectiveLine(active),
+                "Progress: " + ContractItem.progress(active) + " / " + ContractItem.goal(active)));
+    }
+
     private static void redeem(ServerPlayer player, ItemStack completed, CompoundTag persisted) {
         String id = ContractItem.contractId(completed);
+        int completedIndex = questIndex(id);
+        if (completedIndex < 0) return;
         for (ItemStack reward : ContractItem.rewardItems(completed)) give(player, reward.copy());
         for (ItemStack reward : LegacyStoryContracts.specialRewards(completed)) give(player, reward.copy());
         if (ContractItem.xp(completed) > 0) player.giveExperiencePoints(ContractItem.xp(completed));
         LegacyStoryContracts.applyWorldRewards(player, completed);
-
-        int slot = findStackSlot(player, completed);
-        if (slot >= 0) player.getInventory().setItem(slot, ItemStack.EMPTY);
-        int index = Math.max(0, persisted.getInt(STORY_INDEX)) + 1;
+        removeStack(player, completed);
+        removeDuplicateLegacyContracts(player, completedIndex);
+        int index = Math.max(Math.max(0, persisted.getInt(STORY_INDEX)), completedIndex + 1);
         persisted.putInt(STORY_INDEX, index);
         if (index >= LegacyStoryContracts.QUEST_IDS.length) persisted.putBoolean(STORY_DONE, true);
         save(player, persisted);
         player.level().playSound(null, player.blockPosition(), ModSounds.get("gui.quest_complete").get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
-
         if (index >= LegacyStoryContracts.QUEST_IDS.length) {
             ModNetwork.openDialogue(player, "Mad Scientist", "Research Chain Complete", List.of(
                     "Against several reasonable predictions, you survived the entire research programme.",
@@ -76,39 +79,68 @@ public final class ScientistStoryQuestFlow {
         } else {
             String next = LegacyStoryContracts.QUEST_IDS[index];
             ModNetwork.openDialogue(player, "Mad Scientist", ContractItem.title(completed) + " Complete", List.of(
-                    completionLine(id),
-                    "Return to me again when you are ready for " + displayQuest(next) + "."));
+                    completionLine(id), "Return to me again when you are ready for " + displayQuest(next) + "."));
         }
     }
 
-    private static ItemStack findLegacyContract(ServerPlayer player) {
+    private static int normalizeStoryIndex(ServerPlayer player, CompoundTag persisted) {
+        int stored = Math.max(0, persisted.getInt(STORY_INDEX));
+        int furthest = -1;
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem() instanceof ContractItem) furthest = Math.max(furthest, questIndex(ContractItem.contractId(stack)));
+        }
+        int normalized = Math.min(Math.max(stored, furthest), LegacyStoryContracts.QUEST_IDS.length);
+        if (normalized != stored) {
+            persisted.putInt(STORY_INDEX, normalized);
+            save(player, persisted);
+        }
+        return normalized;
+    }
+
+    private static ItemStack findLegacyContract(ServerPlayer player, int storyIndex) {
+        ItemStack fallback = ItemStack.EMPTY;
+        int fallbackIndex = -1;
         for (ItemStack stack : player.getInventory().items) {
             if (!(stack.getItem() instanceof ContractItem)) continue;
-            String id = ContractItem.contractId(stack);
-            for (String legacy : LegacyStoryContracts.QUEST_IDS) if (legacy.equals(id)) return stack;
+            int index = questIndex(ContractItem.contractId(stack));
+            if (index < 0) continue;
+            if (index == storyIndex) return stack;
+            if (index > fallbackIndex) { fallback = stack; fallbackIndex = index; }
         }
-        return ItemStack.EMPTY;
+        return fallback;
     }
 
-    private static int findStackSlot(ServerPlayer player, ItemStack target) {
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) if (player.getInventory().getItem(i) == target) return i;
+    private static void removeStack(ServerPlayer player, ItemStack target) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            if (player.getInventory().getItem(i) == target) { player.getInventory().setItem(i, ItemStack.EMPTY); return; }
+        }
+    }
+
+    private static void removeDuplicateLegacyContracts(ServerPlayer player, int throughIndex) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (!(stack.getItem() instanceof ContractItem)) continue;
+            int index = questIndex(ContractItem.contractId(stack));
+            if (index >= 0 && index <= throughIndex) player.getInventory().setItem(i, ItemStack.EMPTY);
+        }
+    }
+
+    private static int questIndex(String id) {
+        if (id == null || id.isBlank()) return -1;
+        for (int i = 0; i < LegacyStoryContracts.QUEST_IDS.length; i++) if (LegacyStoryContracts.QUEST_IDS[i].equals(id)) return i;
         return -1;
     }
 
-    private static void give(ServerPlayer player, ItemStack stack) {
-        if (!player.getInventory().add(stack)) player.drop(stack, false);
+    private static void give(ServerPlayer player, ItemStack stack) { if (!player.getInventory().add(stack)) player.drop(stack, false); }
+    private static void save(ServerPlayer player, CompoundTag persisted) { player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted); player.getInventory().setChanged(); }
+    private static String objectiveLine(ItemStack stack) {
+        String stage = ContractStageSupport.stageLabel(stack);
+        return stage.isBlank() ? ContractItem.objectiveText(stack) : stage + ": " + ContractItem.objectiveText(stack);
     }
-
-    private static void save(ServerPlayer player, CompoundTag persisted) {
-        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
-        player.getInventory().setChanged();
-    }
-
     private static String displayQuest(String id) {
         ItemStack stack = LegacyStoryContracts.create(id, net.minecraft.util.RandomSource.create(0L));
         return stack.isEmpty() ? id : ContractItem.title(stack);
     }
-
     private static String storyLine(String id) {
         return switch (id) {
             case "crash_landing" -> "A damaged research relay came down nearby. Rebuild the protocol hardware before its data decays.";
@@ -120,7 +152,6 @@ public final class ScientistStoryQuestFlow {
             default -> "There is work to do.";
         };
     }
-
     private static String completionLine(String id) {
         return switch (id) {
             case "crash_landing" -> "Good. The relay survived, which is more than I expected from its previous owner.";
