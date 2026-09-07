@@ -21,6 +21,7 @@ public final class AndroidClientInput {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        AndroidClientState.clientTickCooldowns();
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.screen != null || !AndroidClientState.isActive()) return;
         while (AndroidKeyMappings.OPEN_SKILL_TREE.consumeClick()) minecraft.setScreen(new AndroidSkillTreeScreen());
