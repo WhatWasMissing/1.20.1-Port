@@ -2,7 +2,7 @@
 
 > Auto-generated directly from `src/main/resources/data/matteroverdrive/recipes` on the current `main` branch. Do not hand-edit this file.
 
-**Crafting-table recipes:** 117  
+**Crafting-table recipes:** 118  
 **Smelting/blasting/cooking recipes:** 10  
 **Other/unknown recipe JSONs:** 0
 
@@ -2084,6 +2084,29 @@ GUG
 - `U` = `matteroverdrive:upgrade_base`
 - `E` = `minecraft:emerald`
 - `G` = `minecraft:glowstone_dust`
+
+---
+
+### `vex_mythoclast`
+
+**Result:** `matteroverdrive:vex_mythoclast`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+DID
+PQP
+DHD
+```
+
+**Key:**
+
+- `D` = `matteroverdrive:dilithium_crystal`
+- `I` = `matteroverdrive:integration_matrix`
+- `P` = `matteroverdrive:plasma_core`
+- `Q` = `matteroverdrive:quantum_fold_manipulator`
+- `H` = `matteroverdrive:weapon_handle`
 
 ---
 
