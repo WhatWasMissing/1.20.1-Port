@@ -7,32 +7,87 @@ navigation:
 ---
 # World Structures
 
-Matter Overdrive world content is reconstructed from the 1.12.2 structure classes and their embedded PNG templates. New structures use modern 1.20.1 terrain placement checks, while recovered dimensions, biome intent and source-backed population rules are preserved wherever the old code is authoritative.
+Matter Overdrive adds abandoned facilities, crashed spacecraft, Android sites and gravitational anomalies to normal survival exploration. These structures are **optional discoveries**: they can introduce the scientist campaign, provide loot, encounters and lore, but they do not lock the technology tree. Experienced players may craft and use Matter Overdrive technology without finding every structure or completing the quests.
 
-## Android House
+> World-generation changes only affect **new or unexplored chunks**. If you update an existing world, travel beyond previously generated terrain when looking for these sites.
 
-The legacy template is **21 x 21** with a **-2 Y offset**. A generated house contains its recovered Matter Overdrive machine palette and **3-5 ordinary Rogue Android defenders**. The old code chooses **60% ranged / 40% melee** for those defenders and always adds one **level-3 legendary ranged Rogue Android**. The port restores that guaranteed legendary defender.
+## What to look for
 
-## Crashed Space Ship
+| Structure | Where | Relative rarity | Why visit? |
+| --- | --- | --- | --- |
+| **Mad Scientist House** | Overworld surface | Common MO landmark | Best optional entry into scientist quests and research guidance. |
+| **Crashed Space Ship** | Overworld surface | Uncommon | Salvage, crates and occasional weapon technology. |
+| **Sand Pit** | Overworld surface | Uncommon | Legacy exploration site and salvage opportunity. |
+| **Android House** | Overworld surface | Rare | Dangerous Android encounter with a guaranteed high-tier defender. |
+| **Cargo Ship** | Overworld surface | Very rare | Large salvage site associated with contracts/logistics. |
+| **Underwater Base** | Ocean floor | Rare | Large submerged research/salvage site. Bring water-breathing equipment. |
+| **Gravitational Anomaly** | Overworld | Uncommon, dangerous | Natural route into anomaly research. Approach carefully. |
 
-The embedded template is **11 x 35** and legacy generation keeps crashed ships at least roughly **256 blocks apart**. The 1.12.2 generation hook does not spawn Android or Drone defenders. Crates use the `matteroverdrive:crashed_ship` loot table; the old table rolls once with 80% Tritanium Nugget, 10% Battery and 10% empty. Holo signs have legacy orientation/text handling, and Weapon Stations can rarely receive a generated decorated energy weapon.
-
-## Cargo Ship
-
-The embedded template is **58 x 23**. Legacy generation requires roughly **4096 blocks** between cargo ships and applies an additional **10% generation roll** after the distance check. Its generation hook inserts a generated contract into a designated Tritanium Crate; it does not create combat defenders.
-
-## Underwater Base
-
-The embedded template is **43 x 43**. The old generator requires the **deep_ocean** biome, more than 26 blocks of water depth at its validation points, and roughly **2048 blocks** between bases. Its population hook is empty: Rogue Androids and Drones are not automatically spawned by the authoritative structure class.
-
-## Sand Pit
-
-The embedded template is **24 x 24**, uses a **-9 Y offset**, and generates in the **desert** biome. Its authoritative generation hook is empty, so the structure itself does not create Android/Drone defenders.
+The rarity descriptions above are intentionally approximate. They are more useful during survival play than promising an exact distance, because Minecraft placement attempts, biome eligibility and terrain checks all affect what a player actually encounters.
 
 ## Mad Scientist House
 
-The Mad Scientist house is a separate village-piece lineage rather than one of the five standalone image-generated building classes above. The port retains its recovered scientist/failed-creature population until that separate village generator has an equally complete source audit.
+This is the structure a new player should be happiest to find early. Mad Scientists provide the optional guided research campaign and explain Matter Overdrive systems in a suggested order.
 
-## Modern placement versus legacy templates
+**You do not need to find one before using the mod.** If you already understand Matter Overdrive, normal recipes and material progression remain available without research clearance.
 
-The current 1.20.1 port uses modern terrain suitability and entrance cleanup around the recovered structure footprints. Exact old PNG-to-block decoding remains a distinct visual/layout parity layer: the original JAR contains `android_house.png`, `crashed_ship_1.png`, `cargo_ship.png`, `underwater_base_1.png` and `sand_pit.png`, and those assets remain the authority for future exact block-for-pixel reconstruction.
+The current survival tuning makes Scientist Houses substantially easier to encounter than before so the tutorial route can be discovered naturally rather than requiring a wiki or commands.
+
+## Crashed Space Ship
+
+The recovered ship template is **11 x 35**. Crashed ships are useful early exploration targets because their Tritanium Crates can contain Matter Overdrive salvage. The recovered population rules do not automatically add Android or Drone defenders, although the wreck itself may still be hazardous depending on terrain and nearby mobs.
+
+Weapon Stations can rarely contain generated energy weapon technology. Treat a wreck as a useful shortcut or bonus, not a mandatory progression step.
+
+## Android House
+
+The recovered template is **21 x 21** with a **-2 Y offset**. A generated house contains a Matter Overdrive machine palette and several Rogue Android defenders. The recovered rules use **3-5 ordinary defenders** and guarantee one stronger level-3 legendary ranged Rogue Android.
+
+This is deliberately a higher-risk structure than the Scientist House. Prepare for combat before entering rather than treating it as an early-game tutorial building.
+
+## Sand Pit
+
+The recovered template is **24 x 24** with a **-9 Y offset**. It is a legacy exploration/salvage location. Its authoritative generation hook does not automatically create Android or Drone defenders.
+
+## Cargo Ship
+
+The recovered template is **58 x 23**, making this one of the largest surface discoveries. Cargo Ships are intentionally much rarer than Scientist Houses or wrecks. Their legacy population logic is associated with contracts and cargo rather than automatic combat defenders.
+
+For the 1.20.1 survival pass the old extremely sparse placement has been relaxed so a player can realistically encounter one through long-distance exploration without making Cargo Ships commonplace.
+
+## Underwater Base
+
+The recovered template is **43 x 43** and generates on the ocean floor. This is a later exploration target simply because reaching and searching a large submerged facility is dangerous without preparation.
+
+Bring water breathing, doors/air management or suitable Android abilities. The recovered population hook does not automatically spawn Rogue Androids or Drones.
+
+## Natural Gravitational Anomaly
+
+Gravitational Anomalies can generate naturally in the Overworld. They are part of the **Anomaly Engineering** end of the suggested research path, but finding one early does not mean you have to interact with it.
+
+Anomalies exert dangerous gravitational effects and become increasingly relevant once you understand stabilizers, reactor technology and anomaly mass. Mark the coordinates of an early discovery and return when equipped for it.
+
+Natural anomalies are not intended to be the only route to late-game anomaly experimentation; the fusion/anomaly systems remain technology-driven rather than exploration-gated.
+
+## Suggested exploration order
+
+For a first playthrough, a comfortable order is:
+
+1. **Mad Scientist House** - learn what the mod can do and optionally begin the research campaign.
+2. **Crashed Ship / Sand Pit** - collect salvage while establishing Matter Technology.
+3. **Android House** - tackle a dangerous combat site once equipped.
+4. **Cargo Ship / Underwater Base** - pursue rarer large facilities during automation and advanced-power exploration.
+5. **Gravitational Anomaly** - investigate seriously once fusion/stabilizer technology is available.
+
+This is advice, **not an unlock chain**.
+
+## If you cannot find a structure
+
+- Make sure you are exploring **new chunks** after installing/updating the mod.
+- Scientist Houses, wrecks and most legacy sites are Overworld discoveries; Underwater Bases require ocean terrain.
+- Do not spend hours searching for one structure just to progress: all core technology should remain independently craftable.
+- If a new test world produces none of these structures over substantial exploration, report the world seed and approximate explored distance. That is useful world-generation test data.
+
+## Port/parity note
+
+The structures are reconstructed from the 1.12.2 structure classes and recovered templates. Modern 1.20.1 terrain placement is used where necessary while source-backed dimensions and population behaviour are retained where practical. Exact visual/layout parity can continue to improve independently of survival functionality.
