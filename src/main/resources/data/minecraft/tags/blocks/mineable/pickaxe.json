@@ -3,7 +3,6 @@
   "values": [
     "matteroverdrive:tritanium_ore",
     "matteroverdrive:dilithium_ore",
-    "matteroverdrive:tritanium_block",
-    "matteroverdrive:dilithium_block"
+    "matteroverdrive:tritanium_block"
   ]
 }
