@@ -20,6 +20,8 @@ public final class AndroidClientState {
     private static int dronePerkMask;
     private static int specializationOrdinal;
     private static int ultimateCooldownTicks;
+    private static int classAbilityCooldownTicks;
+    private static int techAbilityCooldownTicks;
 
     private AndroidClientState() {}
 
@@ -27,7 +29,8 @@ public final class AndroidClientState {
                            int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags,
                            int nextExperience, int nextLevel, long nextSelectedPerks,
                            int nextAspectMask, int nextFragmentMask, int nextArtifactOrdinal, int nextDronePerkMask,
-                           int nextSpecializationOrdinal, int nextUltimateCooldownTicks) {
+                           int nextSpecializationOrdinal, int nextUltimateCooldownTicks,
+                           int nextClassAbilityCooldownTicks, int nextTechAbilityCooldownTicks) {
         active = nextActive;
         energy = Math.max(0, nextEnergy);
         parts = nextParts & 15;
@@ -43,6 +46,16 @@ public final class AndroidClientState {
         dronePerkMask = nextDronePerkMask;
         specializationOrdinal = Math.max(0, Math.min(AndroidLoadout.Specialization.values().length - 1, nextSpecializationOrdinal));
         ultimateCooldownTicks = Math.max(0, nextUltimateCooldownTicks);
+        classAbilityCooldownTicks = Math.max(0, nextClassAbilityCooldownTicks);
+        techAbilityCooldownTicks = Math.max(0, nextTechAbilityCooldownTicks);
+    }
+
+    /** Keep screen/HUD cooldown readouts moving smoothly between authoritative server syncs. */
+    public static void clientTickCooldowns() {
+        if (cooldownTicks > 0) cooldownTicks--;
+        if (ultimateCooldownTicks > 0) ultimateCooldownTicks--;
+        if (classAbilityCooldownTicks > 0) classAbilityCooldownTicks--;
+        if (techAbilityCooldownTicks > 0) techAbilityCooldownTicks--;
     }
 
     public static boolean isActive() { return active; }
@@ -63,7 +76,11 @@ public final class AndroidClientState {
     public static AndroidLoadout.Specialization specialization() { return AndroidLoadout.Specialization.values()[specializationOrdinal]; }
     public static AndroidLoadout.Ultimate ultimate() { return specialization().ultimate; }
     public static int ultimateCooldownTicks() { return ultimateCooldownTicks; }
+    public static int classAbilityCooldownTicks() { return classAbilityCooldownTicks; }
+    public static int techAbilityCooldownTicks() { return techAbilityCooldownTicks; }
     public static boolean ultimateReady() { return level >= 4 && ultimateCooldownTicks <= 0; }
+    public static boolean classAbilityReady() { return level >= 2 && classAbilityCooldownTicks <= 0; }
+    public static boolean techAbilityReady() { return level >= 2 && techAbilityCooldownTicks <= 0; }
     public static boolean hasPerk(AndroidData.Perk perk) { return (selectedPerks & (1L << perk.ordinal())) != 0L; }
     public static boolean hasDronePerk(AndroidLoadout.DronePerk perk) { return (dronePerkMask & (1 << perk.ordinal())) != 0; }
     public static boolean isCloakEnabled() { return (activeAbilityFlags & 1) != 0; }
