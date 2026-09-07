@@ -4,15 +4,25 @@ navigation:
   position: 2
   icon: matteroverdrive:data_pad
 ---
-# Current Features
+# Current Features - 0.6
 
-This page is the compact in-game status reference for the current `testing/main` build. The individual GuideME system pages are the how-to guide; duplicating the full standalone System Guide here would make the manual harder to maintain.
+This page is the compact in-game status reference for the current **Matter Overdrive 0.6** `main` build, maintained by MVQ1303. The individual GuideME system pages are the how-to guide. The repository `docs/reference/WORKING_FEATURES.md` remains the detailed source-of-truth reference and this page mirrors its player-facing status.
+
+Implemented does not mean runtime-verified. Use the **M2 Testing Checklist** for the current 0.6 regression plan.
 
 ## Matter and machines
 
 Implemented: Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Molecular Inscriber, Matter Scanner, Portable Decomposer, Matter Containers, Matter Pipe, Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench.
 
 Major machines expose real server-backed operator pages and inventories rather than decorative controls. Machine redstone/configuration parity is restored where a real backend equivalent exists.
+
+### Matter economy in 0.6
+
+Matter values now resolve through dynamic Matter Dust values, explicit values, tag bases, recursive recipe derivation and deterministic fallbacks. Recipe resolution protects against cycles/depth explosions, accounts for recipe output counts and chooses the cheapest valid positive ingredient alternative. Analyzer and Decomposer use the level-aware value path, Pattern Drives preserve the analyzed value, and Replicator consumes that stored value.
+
+Matter tooltips expose the effective value and can show its source. Diagnostic commands are available under `/matteroverdrive matter` for value inspection, auditing and cache clearing. Pattern Drives made before this valuation pass may need to be analyzed again to refresh their stored value.
+
+See [Matter Technology](matter.md) for the normal player workflow.
 
 ## Fusion and gravity
 
@@ -24,7 +34,7 @@ Implemented: Network Pipe, Network Switch, Network Router and matching-channel P
 
 ## Androids and entities
 
-Implemented: Android conversion, FE/HUD, body parts, abilities, persistent skill tree, Rogue Android squads, Rogue/Ranged Rogue Androids, Failed creatures, Mad Scientist, Mutant Scientist and Drone. Linked Drones support FOLLOW, DEFENSIVE, PASSIVE and AGGRESSIVE modes.
+Implemented: Android conversion, FE/HUD, body parts, abilities, persistent skill tree, Android Spawner ownership/squad behavior, Rogue Android squads, Rogue/Ranged Rogue Androids, Failed creatures, Mad Scientist, Mutant Scientist and Drone. Linked Drones support FOLLOW, DEFENSIVE, PASSIVE and AGGRESSIVE modes.
 
 ## Weapons
 
@@ -36,7 +46,7 @@ Implemented structure families: crashed spacecraft, cargo ships, underwater base
 
 ## Star Map
 
-Implemented: Galaxy -> Quadrant -> Star -> Planet navigation, persistent journeys and encounters, fleet combat, planetary economy, colonies, four construction queues, Scout/Colonizer production and planet-local ship transfers.
+Implemented: Galaxy -> Quadrant -> Star -> Planet navigation, persistent journeys and encounters, fleet combat, planetary economy, colonies, four construction queues, Scout/Colonizer production, recovered legacy capacity rules and planet-local ship transfers.
 
 ## Dimensional Pylon
 
@@ -44,21 +54,21 @@ Implemented backend: source-backed 2x3x2 multiblock identity, shared energy/matt
 
 ## Security and quests
 
-Implemented: Empty/Claim/Access/Remove security protocols, security-aware wrench dismantling, contracts, staged objectives and restored story quest chains. The legacy cinematic conversation renderer remains presentation work rather than a quest-state blocker.
+Implemented: Empty/Claim/Access/Remove security protocols, security-aware wrench dismantling, contracts, staged objectives, restored legacy scientist quests and the modern research progression from Matter Technology through Anomaly Engineering. Quests guide progression but do not act as mandatory recipe/technology gates. Richer legacy-style cinematic dialogue remains presentation work.
 
 ## Optional integrations
 
-When GuideME is installed, this manual is the primary player-facing guide and the Data Pad remains the scanning/contract tool. When Applied Energistics 2 is installed, public Forge item capabilities allow normal Storage Bus/import/export-style automation on audited Matter Overdrive inventories without merging ME and Matter Overdrive networks or inventing AE-to-FE conversion.
+When GuideME is installed, this manual is the primary player-facing how-to guide and the Data Pad remains the scanning/contract tool. When Applied Energistics 2 is installed, public Forge item capabilities allow normal Storage Bus/import/export-style automation on audited Matter Overdrive inventories without merging ME and Matter Overdrive networks or inventing AE-to-FE conversion.
 
 ## Remaining high-value parity work
 
 - Exact legacy structure templates and deeper structure-specific scripted events.
-- Remaining Star Map source-backed strategic detail.
-- Remaining visual Drone/equipment polish.
+- Additional source-backed Star Map strategic detail.
+- Remaining Drone flying/renderer/equipment polish.
 - Remaining machine-specific GUI/detail parity where backed by real state.
 - Exact Dimensional Pylon visual effects.
 - Remaining weapon model placement and first-person animation choreography.
 - Deeper source-backed dispatcher/broadcaster network concepts where they map cleanly to the current routing core.
-- Richer dialogue presentation.
+- Richer dialogue presentation and remaining source-backed quest detail.
 
 For operating instructions, return to the [Matter Overdrive index](index.md) and choose the relevant system page.
