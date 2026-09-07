@@ -11,10 +11,17 @@ import java.util.List;
 
 /** Compact bottom dialogue box for scientist and story conversations. */
 public final class NpcDialogueScreen extends Screen {
+    private static final int BOX_HEIGHT = 132;
+    private static final int LINE_HEIGHT = 11;
+    private static final int TEXT_TOP = 47;
+    private static final int TEXT_BOTTOM_PADDING = 31;
+
     private final String speaker;
     private final String heading;
     private final List<String> sourceLines;
     private final List<FormattedCharSequence> wrapped = new ArrayList<>();
+    private int page;
+    private int linesPerPage;
 
     public NpcDialogueScreen(String speaker, String heading, List<String> lines) {
         super(Component.literal(heading == null ? "Dialogue" : heading));
@@ -31,8 +38,33 @@ public final class NpcDialogueScreen extends Screen {
             if (!wrapped.isEmpty()) wrapped.add(FormattedCharSequence.EMPTY);
             wrapped.addAll(font.split(Component.literal(line), textWidth));
         }
-        addRenderableWidget(Button.builder(Component.literal("Continue"), b -> onClose())
-                .bounds(width - 118, height - 39, 92, 20).build());
+        linesPerPage = Math.max(1, (BOX_HEIGHT - TEXT_TOP - TEXT_BOTTOM_PADDING) / LINE_HEIGHT + 1);
+        page = Math.min(page, pageCount() - 1);
+        rebuildButtons();
+    }
+
+    private void rebuildButtons() {
+        clearWidgets();
+        int pages = pageCount();
+        if (page > 0) {
+            addRenderableWidget(Button.builder(Component.literal("Back"), b -> {
+                page--;
+                rebuildButtons();
+            }).bounds(width - 218, height - 39, 92, 20).build());
+        }
+        String label = page + 1 < pages ? "Continue" : "Close";
+        addRenderableWidget(Button.builder(Component.literal(label), b -> {
+            if (page + 1 < pages) {
+                page++;
+                rebuildButtons();
+            } else {
+                onClose();
+            }
+        }).bounds(width - 118, height - 39, 92, 20).build());
+    }
+
+    private int pageCount() {
+        return Math.max(1, (wrapped.size() + Math.max(1, linesPerPage) - 1) / Math.max(1, linesPerPage));
     }
 
     @Override
@@ -41,16 +73,23 @@ public final class NpcDialogueScreen extends Screen {
         int boxX = 20;
         int boxY = Math.max(36, height - 168);
         int boxW = width - 40;
-        int boxH = 132;
-        graphics.fill(boxX, boxY, boxX + boxW, boxY + boxH, 0xE810141B);
+        graphics.fill(boxX, boxY, boxX + boxW, boxY + BOX_HEIGHT, 0xE810141B);
         graphics.fill(boxX, boxY, boxX + boxW, boxY + 2, 0xFF58C7D8);
         graphics.drawString(font, speaker, boxX + 14, boxY + 12, 0xFF58C7D8, false);
         if (!heading.isBlank()) graphics.drawString(font, heading, boxX + 14, boxY + 27, 0xFFE7EDF2, false);
-        int y = boxY + 47;
-        for (FormattedCharSequence line : wrapped) {
-            if (y > boxY + boxH - 31) break;
-            graphics.drawString(font, line, boxX + 14, y, 0xFFD3D8DD, false);
-            y += 11;
+
+        int pages = pageCount();
+        if (pages > 1) {
+            String marker = (page + 1) + " / " + pages;
+            graphics.drawString(font, marker, boxX + boxW - 14 - font.width(marker), boxY + 12, 0xFF89949D, false);
+        }
+
+        int y = boxY + TEXT_TOP;
+        int start = page * linesPerPage;
+        int end = Math.min(wrapped.size(), start + linesPerPage);
+        for (int i = start; i < end; i++) {
+            graphics.drawString(font, wrapped.get(i), boxX + 14, y, 0xFFD3D8DD, false);
+            y += LINE_HEIGHT;
         }
         super.render(graphics, mouseX, mouseY, partialTick);
     }
