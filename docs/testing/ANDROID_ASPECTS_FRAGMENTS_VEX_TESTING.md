@@ -33,6 +33,15 @@
 9. Confirm primary and linear beams use distinct visual intensity/pitch.
 10. Confirm the item appears in the Matter Overdrive creative tab and the crafting recipe resolves.
 
-## Known visual placeholder
+### Model / presentation checks
 
-The first pass deliberately uses Matter Overdrive's existing Phaser Rifle OBJ as the visible model. No model, texture, sound, animation, or configuration from the All Rights Reserved TACZ Destiny gun pack was copied. Replace this placeholder later with an original or properly licensed Mythoclast-compatible asset.
+- Confirm the exotic now renders `models/item/vex_mythoclast.obj`, not the Phaser Rifle placeholder.
+- Inventory/GUI: the entire stock, split muzzle prongs and side fins should remain inside the item preview without severe clipping.
+- First person: grip should sit near the player's hand and the twin forward prongs should point away from the camera.
+- Third person: rifle should sit across the player's hands rather than intersecting the torso.
+- Ground/fixed display: the longer Mythoclast silhouette should remain readable and not be oversized.
+- Confirm the central radiolarian chamber, muzzle channel and upper sight use the cyan glow material, with bronze, dark Vex metal and ivory sections remaining visibly distinct.
+
+## Asset provenance
+
+The Mythoclast mesh and material palette in this branch are an original low-poly Matter Overdrive implementation created specifically for this port. No mesh, texture, sound, animation or configuration was copied from Destiny, the TACZ Destiny gun pack, Sketchfab, Thingiverse or another third-party model. Existing public models were used only as general visual reference for the recognizable fusion-rifle silhouette.
