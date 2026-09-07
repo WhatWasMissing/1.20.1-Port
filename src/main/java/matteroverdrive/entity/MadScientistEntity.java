@@ -31,9 +31,9 @@ import javax.annotation.Nullable;
 /** Mad Scientist plus source-backed Puny Humans, Trade Route conversation and Cocktail of Ascension progression. */
 public class MadScientistEntity extends Villager {
     private static final String JUNKIE = "Junkie";
-    private static final String QUEST_ACTIVE = "MatterOverdrivePunyHumansActive";
-    private static final String QUEST_DONE = "MatterOverdrivePunyHumansDone";
-    private static final String QUEST_PARTS_MODE = "MatterOverdrivePunyHumansPartsMode";
+    public static final String QUEST_ACTIVE = "MatterOverdrivePunyHumansActive";
+    public static final String QUEST_DONE = "MatterOverdrivePunyHumansDone";
+    public static final String QUEST_PARTS_MODE = "MatterOverdrivePunyHumansPartsMode";
     private boolean junkie;
 
     public MadScientistEntity(EntityType<? extends Villager> type, Level level) { super(type, level); }
@@ -70,7 +70,6 @@ public class MadScientistEntity extends Villager {
                 completePunyHumans(player, persisted, true);
                 return InteractionResult.CONSUME;
             }
-            // Compatibility for saves that started the earlier port objective before the source-backed parts requirement was restored.
             if (!persisted.getBoolean(QUEST_PARTS_MODE) && AndroidData.isAndroid(player)) {
                 completePunyHumans(player, persisted, false);
                 return InteractionResult.CONSUME;
