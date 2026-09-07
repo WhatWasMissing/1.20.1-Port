@@ -6,11 +6,11 @@ navigation:
 item_ids:
   - matteroverdrive:data_pad
 ---
-# Matter Overdrive
+# Matter Overdrive 0.6
 
-Welcome to the Matter Overdrive field manual. This GuideME edition is the primary player-facing **how-to guide** when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
+Welcome to the Matter Overdrive field manual for the current **0.6 `main` release line**, maintained by MVQ1303. This GuideME edition is the primary player-facing **how-to guide** when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
 
-The system pages below replace the need to duplicate the full standalone System Guide inside GuideME. For a quick implementation/parity overview, see [Current Features](current_features.md).
+The system pages below are maintained alongside the repository feature/testing references. For a compact implementation/parity overview, see [Current Features](current_features.md). Implemented features may still require runtime verification in the 0.6 testing pass.
 
 ## Survival start
 
@@ -19,7 +19,9 @@ The system pages below replace the need to duplicate the full standalone System 
 3. Build a **Solar Panel** for early Forge Energy.
 4. Build a **Charging Station** and charge portable energy storage.
 5. Build a **Decomposer** to turn items into matter.
-6. Use analyzed patterns and a **Replicator** to manufacture matter-based items.
+6. Analyze an item, preserve its pattern, then use a **Replicator** with enough matter and FE to manufacture it.
+
+The scientist/research campaign is an optional guided progression path rather than a mandatory technology gate. See [Survival Progression](survival.md) for the recommended order.
 
 ## Reference
 
