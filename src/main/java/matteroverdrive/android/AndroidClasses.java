@@ -5,7 +5,10 @@ import matteroverdrive.entity.DroneEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -81,13 +84,49 @@ public final class AndroidClasses {
                 }
             }
             case ARCHITECT -> {
-                // Architect continuously recycles ambient system energy and reinforces nearby linked drones.
                 AndroidData.receiveEnergy(player, 60);
                 UUID owner = player.getUUID();
                 List<DroneEntity> drones = player.level().getEntitiesOfClass(DroneEntity.class,
                         player.getBoundingBox().inflate(16.0D), drone -> owner.equals(drone.getOwnerUuid()) && drone.isAlive());
                 for (DroneEntity drone : drones) {
                     drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 50, 0, true, false, false));
+                }
+            }
+        }
+    }
+
+    /** Class identity also changes ordinary player combat rather than only active abilities. */
+    @SubscribeEvent
+    public static void onLivingDamage(LivingDamageEvent event) {
+        if (!(event.getSource().getEntity() instanceof ServerPlayer player) || !AndroidData.isAndroid(player)) return;
+        if (!(event.getEntity() instanceof LivingEntity target) || target == player) return;
+        if (player.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG)) return;
+
+        switch (current(player)) {
+            case STRIDER -> {
+                float multiplier = target.hasEffect(MobEffects.GLOWING) ? 1.20F : 1.08F;
+                if (player.isSprinting()) multiplier += 0.07F;
+                event.setAmount(event.getAmount() * multiplier);
+                if (target.hasEffect(MobEffects.GLOWING)) AndroidData.receiveEnergy(player, 120);
+            }
+            case JUGGERNAUT -> {
+                if (AndroidData.tryConsumeEnergy(player, 220)) {
+                    event.setAmount(event.getAmount() + 3.0F);
+                    Vec3 push = target.position().subtract(player.position());
+                    if (push.lengthSqr() > 0.001D) {
+                        push = push.normalize().scale(0.65D);
+                        target.push(push.x, 0.20D, push.z);
+                    }
+                }
+            }
+            case ARCHITECT -> {
+                AndroidData.receiveEnergy(player, 180);
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 50, 0, true, false, false));
+                if (player.tickCount % 4 == 0) {
+                    UUID owner = player.getUUID();
+                    List<DroneEntity> drones = player.level().getEntitiesOfClass(DroneEntity.class,
+                            player.getBoundingBox().inflate(12.0D), drone -> owner.equals(drone.getOwnerUuid()) && drone.isAlive());
+                    for (DroneEntity drone : drones) drone.heal(0.5F);
                 }
             }
         }
