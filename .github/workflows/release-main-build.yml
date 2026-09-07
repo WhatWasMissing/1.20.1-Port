@@ -71,16 +71,68 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES="Matter Overdrive 1.20.1 release ${VERSION}. Includes the consolidated Android 3-class/3-subclass build system, class and tech abilities, nine Ultimates, Passive Protocols, expanded drone progression, quest tracking, Point Blank/native weapon integration work, GuideME/documentation updates, and ore mining/drop fixes. Built from commit $GITHUB_SHA."
+          cat > release-notes.md <<EOF
+          Matter Overdrive 1.20.1 release ${VERSION}.
+
+          ## Changed features in 0.4
+
+          ### Android progression and combat
+
+          - Added the full 3 by 3 Android class and subclass structure.
+          - Added Strider, Juggernaut and Architect as the three top level Android classes.
+          - Added nine subclasses with distinct class ability, tech ability and Ultimate combinations.
+          - Added nine unique Ultimates across the subclass matrix.
+          - Expanded Aspects and Fragments for subclass build customization.
+          - Reworked the old Artifact-facing choice into selectable Passive Protocols while preserving the existing internal save format for compatibility.
+          - Strengthened Passive Protocol benefits for combat, defense, mobility, energy recovery, nanite repair and drone support.
+          - Added synchronized class ability, tech ability and Ultimate cooldown status to the Android loadout UI.
+          - Polished the Android class screen layout and build readability.
+          - Expanded the Drone Matrix cap so all nine sequential drone perks through level 10 are reachable.
+          - Preserved permanent Android progression separately through the Android Mastery system.
+
+          ### Quests and tracking
+
+          - Added an active quest tracker HUD.
+          - Added tracker support for Puny Humans and Cocktail of Ascension progression.
+          - Added tracker support for incomplete ContractItem quests.
+          - Added quest state synchronization on login, progress updates and regular server ticks.
+
+          ### Weapons and integration
+
+          - Added further native weapon integration work alongside Point Blank compatibility support.
+          - Added supporting native weapon profiles, rendering hooks and visual library work.
+          - Continued Weapon Station and weapon module integration work already present in the port.
+
+          ### Reactor, energy and drones
+
+          - Preserved the reactor, stabilizer and shared ring power quality of life work from the 0.3 development line.
+          - Preserved drone healing, combat support and Android subclass interactions.
+
+          ### Mining and materials
+
+          - Fixed the Matter Overdrive pickaxe mining tag so registered ores are recognized as pickaxe-mineable.
+          - Removed an invalid Dilithium Block tag entry that could invalidate correct-tool checks.
+          - Restored expected mining-speed behavior for Matter Overdrive ores.
+          - Restored correct-tool ore drops for Tritanium and Dilithium ore blocks.
+
+          ### Guides and documentation
+
+          - Updated Android system documentation and handoff references for the completed class, subclass and passive system.
+          - Updated player and tester documentation for the consolidated 0.4 feature set.
+          - Updated the repository README to reflect the current 0.4 baseline and working systems.
+
+          Built from commit $GITHUB_SHA.
+          EOF
+
           if gh release view "$VERSION" >/dev/null 2>&1; then
             gh release upload "$VERSION" "$RELEASE_JAR" --clobber
             gh release edit "$VERSION" \
               --target "$GITHUB_SHA" \
               --title "Matter Overdrive 1.20.1 ${VERSION}" \
-              --notes "$NOTES"
+              --notes-file release-notes.md
           else
             gh release create "$VERSION" "$RELEASE_JAR" \
               --target "$GITHUB_SHA" \
               --title "Matter Overdrive 1.20.1 ${VERSION}" \
-              --notes "$NOTES"
+              --notes-file release-notes.md
           fi
