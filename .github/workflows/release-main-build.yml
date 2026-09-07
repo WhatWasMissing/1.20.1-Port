@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '0.5'
+  VERSION: '0.6'
 
 jobs:
   release:
@@ -44,9 +44,10 @@ jobs:
           text = path.read_text()
           old = "if (mod_version != '0.2.0-alpha') throw new GradleException(\"Unexpected M2 version: ${mod_version}\")"
           new = "if (!(mod_version ==~ /[0-9]+\\.[0-9]+/)) throw new GradleException(\"Unexpected M2 version: ${mod_version}\")"
-          if old not in text:
-              raise SystemExit('Expected legacy version verifier was not found')
-          path.write_text(text.replace(old, new, 1))
+          if old in text:
+              path.write_text(text.replace(old, new, 1))
+          elif new not in text:
+              raise SystemExit('Expected M2 version verifier was not found')
           PY
 
       - name: Build release JAR
@@ -68,62 +69,43 @@ jobs:
           cat > release-notes.md <<EOF
           # Matter Overdrive 1.20.1 ${VERSION}
 
-          Release 0.5 is the research-campaign update. It turns the restored systems in the port into one connected progression rather than leaving them as isolated machines.
+          Release 0.6 consolidates the forward 0.5 campaign/world-content line with the new recursive matter economy and a dedicated matter diagnostics toolset.
 
-          ## Scientist campaign
+          ## Matter economy
 
-          - Added a paginated NPC dialogue UI with wrapped dialogue, Back, Continue, Close and page indicators.
-          - Restored Crash Landing, We Must Know, G.M.O., Trade Route, Self-Sealing Stem Bolts and To the Power Of as a sequential scientist campaign.
-          - Added Dr. Voss, Dr. Sato, Dr. Kessler and Dr. Hale research identities and persistent research clearance.
-          - Added migration handling for existing Android characters and older quest-contract inventories.
+          - Added recursive recipe-derived matter values for craftable items.
+          - Crafted outputs inherit the subtotal of their component values with recipe output counts accounted for.
+          - Explicit legacy/material values remain authoritative and tag-based material seeds remain supported.
+          - Added conservative fallback valuation for obtainable items that have no resolvable normal recipe.
+          - Matter Analyzer and Decomposer now use the same level-aware resolver so newly analysed patterns and decomposition yields agree.
+          - Added recipe-cache invalidation using recipe count and recipe-ID fingerprinting.
 
-          ## New canonical progression
+          ## Player-facing matter information
 
-          Scientist Research → Matter Technology → Automation & Drones → Advanced Power → Fusion Research → Anomaly Engineering
+          - Matter values are shown in item tooltips.
+          - Holding Shift shows whether a value is dynamic, explicit, tag-based, recipe-derived or fallback.
+          - Added startup matter-registry coverage auditing.
 
-          Android class progression remains a parallel build system. Star Map content remains registered for save compatibility but is not part of this progression spine.
+          ## New 0.6 diagnostics feature set
 
-          ## 18 new research assignments
+          - Added `/matteroverdrive matter value` to inspect the held item's resolved value and source.
+          - Added operator `/matteroverdrive matter audit` to report registry coverage by value source.
+          - Added operator `/matteroverdrive matter clearcache` for recipe/datapack economy testing.
+          - Added `docs/reference/MATTER_VALUE_COVERAGE.md` with resolver rules, safeguards and runtime tests.
 
-          ### Matter Technology
-          - The Value of Everything
-          - Break It Down
-          - Matter Reserve
-          - Pattern Recognition
-          - Make Something From Nothing
+          ## Consolidated forward work
 
-          ### Automation & Drones
-          - Network Backbone
-          - Matter Logistics
-          - Instant Freight
+          - Includes the current scientist/research campaign progression from the 0.5 line.
+          - Includes the forward survival/world-structure feasibility branch.
+          - Preserves the current Android, reactor, anomaly, networking, weapons, machine GUI, quest and world-content work on main.
 
-          ### Advanced Power
-          - A Stable Baseline
-          - Stored Potential
-          - Heavy Distribution
+          ## Testing focus
 
-          ### Fusion Research
-          - Containment First
-          - Build the Impossible
-          - Feed and Draw
-          - Sustained Experiment
-
-          ### Anomaly Engineering
-          - Across the Horizon
-          - Spacetime Control
-          - Anomaly Engineering
-
-          ## Research journal and quest quality of life
-
-          - The Data Pad now displays the current research stage, active assignment and complete six-stage research roadmap alongside scan history.
-          - Multi-part quests expose Stage X/Y.
-          - Scientist redemption cleans up stale duplicate research contracts and advances persistent campaign state.
-          - Quest rewards now deliberately feed the next system being taught, including matter storage, pattern, networking, power, reactor and spacetime equipment.
-          - Cocktail of Ascension remains available as a special project after the main campaign.
-
-          ## Testing note
-
-          The earlier dialogue/legacy-quest foundation passed CI. At the time this release branch was prepared, later GitHub Actions jobs were terminating before checkout with zero runner steps, so those failed runs did not produce a Gradle compile result. Runtime testing of the full 18-assignment campaign is still recommended.
+          - Verify raw explicit values and tag values.
+          - Verify simple and recursive recipe subtotals, alternative ingredients and multi-output recipes.
+          - Verify Analyzer -> Pattern Storage -> Replicator agrees with Decomposer yield.
+          - Check fallback-valued items from the startup audit for balance candidates.
+          - Re-test reactor, Android, weapons, campaign and structure generation after the branch consolidation.
 
           Built from commit $GITHUB_SHA.
           EOF
