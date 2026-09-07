@@ -1,4 +1,9 @@
 {
-  "feature":"matteroverdrive:mad_scientist_house",
-  "placement":[{"type":"minecraft:rarity_filter","chance":768},{"type":"minecraft:in_square"},{"type":"minecraft:heightmap","heightmap":"WORLD_SURFACE_WG"},{"type":"minecraft:biome"}]
+  "feature": "matteroverdrive:mad_scientist_house",
+  "placement": [
+    {"type": "minecraft:rarity_filter", "chance": 192},
+    {"type": "minecraft:in_square"},
+    {"type": "minecraft:heightmap", "heightmap": "WORLD_SURFACE_WG"},
+    {"type": "minecraft:biome"}
+  ]
 }
