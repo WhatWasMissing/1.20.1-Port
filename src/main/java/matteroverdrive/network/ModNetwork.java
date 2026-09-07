@@ -13,7 +13,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "2";
+    private static final String PROTOCOL = "3";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -52,6 +52,7 @@ public final class ModNetwork {
                 AndroidData.isAndroid(p), AndroidData.getEnergy(p), AndroidData.getParts(p), a.ordinal(),
                 AndroidData.getRemainingCooldown(p, a, p.level().getGameTime()), AndroidData.getActiveAbilityFlags(p),
                 AndroidData.getExperience(p), AndroidData.getLevel(p), AndroidData.getSelectedPerks(p),
-                AndroidLoadout.getAspectMask(p), AndroidLoadout.getFragmentMask(p)));
+                AndroidLoadout.getAspectMask(p), AndroidLoadout.getFragmentMask(p),
+                AndroidLoadout.getArtifact(p).ordinal(), AndroidLoadout.getDronePerkMask(p)));
     }
 }
