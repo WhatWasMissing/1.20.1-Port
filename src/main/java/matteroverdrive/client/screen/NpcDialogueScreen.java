@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public final class NpcDialogueScreen extends Screen {
     private final String speaker;
     private final String heading;
     private final List<String> sourceLines;
-    private final List<Component> wrapped = new ArrayList<>();
+    private final List<FormattedCharSequence> wrapped = new ArrayList<>();
 
     public NpcDialogueScreen(String speaker, String heading, List<String> lines) {
         super(Component.literal(heading == null ? "Dialogue" : heading));
@@ -27,7 +28,7 @@ public final class NpcDialogueScreen extends Screen {
         wrapped.clear();
         int textWidth = Math.max(180, Math.min(520, width - 72));
         for (String line : sourceLines) {
-            if (!wrapped.isEmpty()) wrapped.add(Component.empty());
+            if (!wrapped.isEmpty()) wrapped.add(FormattedCharSequence.EMPTY);
             wrapped.addAll(font.split(Component.literal(line), textWidth));
         }
         addRenderableWidget(Button.builder(Component.literal("Continue"), b -> onClose())
@@ -46,7 +47,7 @@ public final class NpcDialogueScreen extends Screen {
         graphics.drawString(font, speaker, boxX + 14, boxY + 12, 0xFF58C7D8, false);
         if (!heading.isBlank()) graphics.drawString(font, heading, boxX + 14, boxY + 27, 0xFFE7EDF2, false);
         int y = boxY + 47;
-        for (Component line : wrapped) {
+        for (FormattedCharSequence line : wrapped) {
             if (y > boxY + boxH - 31) break;
             graphics.drawString(font, line, boxX + 14, y, 0xFFD3D8DD, false);
             y += 11;
