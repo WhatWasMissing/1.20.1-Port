@@ -99,7 +99,8 @@ public final class AndroidClasses {
     @SubscribeEvent
     public static void onLivingDamage(LivingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer player) || !AndroidData.isAndroid(player)) return;
-        if (!(event.getEntity() instanceof LivingEntity target) || target == player) return;
+        LivingEntity target = event.getEntity();
+        if (target == player) return;
         if (player.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG)) return;
 
         switch (current(player)) {
