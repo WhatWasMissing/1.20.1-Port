@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 public record AndroidStatePacket(boolean active, int energy, int parts,
                                  int selectedAbility, int cooldownTicks, int activeAbilityFlags, int experience, int level,
-                                 long selectedPerks) {
+                                 long selectedPerks, int aspectMask, int fragmentMask) {
     public static void encode(AndroidStatePacket packet, FriendlyByteBuf buffer) {
         buffer.writeBoolean(packet.active);
         buffer.writeVarInt(packet.energy);
@@ -21,36 +21,22 @@ public record AndroidStatePacket(boolean active, int energy, int parts,
         buffer.writeVarInt(packet.experience);
         buffer.writeByte(packet.level);
         buffer.writeVarLong(packet.selectedPerks);
+        buffer.writeVarInt(packet.aspectMask);
+        buffer.writeVarInt(packet.fragmentMask);
     }
 
     public static AndroidStatePacket decode(FriendlyByteBuf buffer) {
-        return new AndroidStatePacket(
-                buffer.readBoolean(),
-                buffer.readVarInt(),
-                buffer.readUnsignedByte(),
-                buffer.readUnsignedByte(),
-                buffer.readVarInt(),
-                buffer.readUnsignedByte(),
-                buffer.readVarInt(),
-                buffer.readUnsignedByte(),
-                buffer.readVarLong()
-        );
+        return new AndroidStatePacket(buffer.readBoolean(), buffer.readVarInt(), buffer.readUnsignedByte(),
+                buffer.readUnsignedByte(), buffer.readVarInt(), buffer.readUnsignedByte(), buffer.readVarInt(),
+                buffer.readUnsignedByte(), buffer.readVarLong(), buffer.readVarInt(), buffer.readVarInt());
     }
 
     public static void handle(AndroidStatePacket packet, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
-        context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> () -> AndroidClientState.set(
-                        packet.active,
-                        packet.energy,
-                        packet.parts,
-                        packet.selectedAbility,
-                        packet.cooldownTicks,
-                        packet.activeAbilityFlags,
-                        packet.experience,
-                        packet.level,
-                        packet.selectedPerks
-                )));
+        context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> AndroidClientState.set(
+                packet.active, packet.energy, packet.parts, packet.selectedAbility, packet.cooldownTicks,
+                packet.activeAbilityFlags, packet.experience, packet.level, packet.selectedPerks,
+                packet.aspectMask, packet.fragmentMask)));
         context.setPacketHandled(true);
     }
 }
