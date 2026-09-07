@@ -13,13 +13,15 @@ public final class AndroidClientState {
     private static int experience;
     private static int level;
     private static long selectedPerks;
+    private static int aspectMask;
+    private static int fragmentMask;
 
-    private AndroidClientState() {
-    }
+    private AndroidClientState() {}
 
     public static void set(boolean nextActive, int nextEnergy, int nextParts,
-                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags, int nextExperience, int nextLevel,
-                           long nextSelectedPerks) {
+                           int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags,
+                           int nextExperience, int nextLevel, long nextSelectedPerks,
+                           int nextAspectMask, int nextFragmentMask) {
         active = nextActive;
         energy = Math.max(0, nextEnergy);
         parts = nextParts & 15;
@@ -29,56 +31,24 @@ public final class AndroidClientState {
         experience = Math.max(0, nextExperience);
         level = Math.max(1, Math.min(AndroidData.MAX_LEVEL, nextLevel));
         selectedPerks = nextSelectedPerks;
+        aspectMask = nextAspectMask;
+        fragmentMask = nextFragmentMask;
     }
 
-    public static boolean isActive() {
-        return active;
-    }
-
-    public static int energy() {
-        return energy;
-    }
-
-    public static int parts() {
-        return parts;
-    }
-
-    public static int selectedAbility() {
-        return selectedAbility;
-    }
-
-    public static String abilityName() {
-        return AndroidData.Ability.values()[selectedAbility].displayName;
-    }
-
-    public static int cooldownTicks() {
-        return cooldownTicks;
-    }
-
-    public static int experience() {
-        return experience;
-    }
-
-    public static int level() {
-        return level;
-    }
-
-    public static long selectedPerks() {
-        return selectedPerks;
-    }
-
-    public static boolean hasPerk(AndroidData.Perk perk) {
-        return (selectedPerks & (1L << perk.ordinal())) != 0L;
-    }
-
-    public static boolean isCloakEnabled() {
-        return (activeAbilityFlags & 1) != 0;
-    }
-
-    public static boolean isForceFieldEnabled() {
-        return (activeAbilityFlags & 2) != 0;
-    }
-
+    public static boolean isActive() { return active; }
+    public static int energy() { return energy; }
+    public static int parts() { return parts; }
+    public static int selectedAbility() { return selectedAbility; }
+    public static String abilityName() { return AndroidData.Ability.values()[selectedAbility].displayName; }
+    public static int cooldownTicks() { return cooldownTicks; }
+    public static int experience() { return experience; }
+    public static int level() { return level; }
+    public static long selectedPerks() { return selectedPerks; }
+    public static int aspectMask() { return aspectMask; }
+    public static int fragmentMask() { return fragmentMask; }
+    public static boolean hasPerk(AndroidData.Perk perk) { return (selectedPerks & (1L << perk.ordinal())) != 0L; }
+    public static boolean isCloakEnabled() { return (activeAbilityFlags & 1) != 0; }
+    public static boolean isForceFieldEnabled() { return (activeAbilityFlags & 2) != 0; }
     public static boolean isSelectedAbilityActive() {
         return (selectedAbility == AndroidData.Ability.CLOAK.ordinal() && isCloakEnabled())
                 || (selectedAbility == AndroidData.Ability.FORCE_FIELD.ordinal() && isForceFieldEnabled());
