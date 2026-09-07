@@ -1,6 +1,7 @@
 package matteroverdrive.client.screen;
 
 import matteroverdrive.android.AndroidLoadout;
+import matteroverdrive.android.AndroidUltimates;
 import matteroverdrive.client.AndroidClientState;
 import matteroverdrive.network.AndroidLoadoutSelectPacket;
 import matteroverdrive.network.ModNetwork;
@@ -8,60 +9,62 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Constellation-style build screen for Android Aspects, Fragments, Artifacts and Drone Commander specialisation. */
+/** Destiny-inspired Android subclass screen with class, Ultimate, Aspect and Fragment loadout slots. */
 public class AndroidLoadoutScreen extends Screen {
     private static final int BACKDROP = 0xF3080A0D;
-    private static final int PANEL = 0xD915171B;
+    private static final int PANEL = 0xE015171B;
     private static final int TEXT = 0xFFF0EEE8;
     private static final int MUTED = 0xFF8F979F;
     private static final int ACCENT = 0xFF73D9E6;
     private static final int GOLD = 0xFFE9C46A;
-    private static final int SELECTED = 0xFFFFFFFF;
     private static final int LOCKED = 0xFF3E454C;
     private static final int DRONE = 0xFFB7D57A;
 
-    private final Map<Button, AndroidLoadout.Aspect> aspectButtons = new LinkedHashMap<>();
-    private final Map<Button, AndroidLoadout.Fragment> fragmentButtons = new LinkedHashMap<>();
-    private final Map<Button, AndroidLoadout.Artifact> artifactButtons = new LinkedHashMap<>();
-    private final Map<Button, AndroidLoadout.DronePerk> droneButtons = new LinkedHashMap<>();
+    private final Map<Button, Object> inspectables = new LinkedHashMap<>();
     private int lastAspects;
     private int lastFragments;
     private int lastArtifact;
     private int lastDronePerks;
+    private int lastSpecialization;
+    private int lastUltimateCooldown;
     private int view;
 
     public AndroidLoadoutScreen() {
-        super(Component.literal("ANDROID MATRIX"));
+        super(Component.literal("ANDROID SUBCLASS"));
     }
 
     @Override
     protected void init() {
+        cacheState();
+        rebuild();
+    }
+
+    private void cacheState() {
         lastAspects = AndroidClientState.aspectMask();
         lastFragments = AndroidClientState.fragmentMask();
         lastArtifact = AndroidClientState.artifactOrdinal();
         lastDronePerks = AndroidClientState.dronePerkMask();
-        rebuild();
+        lastSpecialization = AndroidClientState.specializationOrdinal();
+        lastUltimateCooldown = AndroidClientState.ultimateCooldownTicks();
     }
 
     private void rebuild() {
         clearWidgets();
-        aspectButtons.clear();
-        fragmentButtons.clear();
-        artifactButtons.clear();
-        droneButtons.clear();
+        inspectables.clear();
 
-        int top = 42;
-        addRenderableWidget(tab("MATRIX", 18, top, 0));
-        addRenderableWidget(tab("DRONE COMMANDER", 92, top, 1));
-        addRenderableWidget(tab("ARTIFACT", 222, top, 2));
+        int top = 43;
+        addRenderableWidget(viewTab("SUBCLASS", 18, top, 0, 86));
+        addRenderableWidget(viewTab("DRONE COMMANDER", 108, top, 1, 126));
+        addRenderableWidget(viewTab("ARTIFACT", 238, top, 2, 78));
 
-        if (view == 0) buildMatrixNodes();
-        else if (view == 1) buildDroneTree();
-        else buildArtifactNodes();
+        if (view == 0) buildSubclassView();
+        else if (view == 1) buildDroneView();
+        else buildArtifactView();
 
         addRenderableWidget(Button.builder(Component.literal("RESET LOADOUT"), b ->
                 ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(2, 0)))
@@ -70,94 +73,119 @@ public class AndroidLoadoutScreen extends Screen {
                 .bounds(width - 90, height - 30, 72, 20).build());
     }
 
-    private Button tab(String label, int x, int y, int target) {
-        Button b = Button.builder(Component.literal((view == target ? "◆ " : "◇ ") + label), button -> {
+    private Button viewTab(String label, int x, int y, int target, int width) {
+        Button button = Button.builder(Component.literal((view == target ? "◆ " : "◇ ") + label), b -> {
             view = target;
             rebuild();
-        }).bounds(x, y, target == 1 ? 122 : 68, 20).build();
-        b.active = view != target;
-        return b;
+        }).bounds(x, y, width, 20).build();
+        button.active = view != target;
+        return button;
     }
 
-    private void buildMatrixNodes() {
-        int cx = Math.min(width / 2 - 70, 470);
-        int cy = height / 2 + 10;
-        AndroidLoadout.Aspect[] aspects = AndroidLoadout.Aspect.values();
-        int[][] aspectPos = {
-                {-165,-92},{-105,-118},{-45,-92},
-                {-165,70},{-105,96},{-45,70},
-                {45,-92},{105,-118},{165,-92},
-                {45,70},{105,96},{165,70}
-        };
-        for (int i = 0; i < aspects.length; i++) {
-            AndroidLoadout.Aspect aspect = aspects[i];
-            int x = cx + aspectPos[i][0];
-            int y = cy + aspectPos[i][1];
-            boolean selected = (AndroidClientState.aspectMask() & (1 << i)) != 0;
-            Button node = Button.builder(Component.literal(selected ? "✦" : "◇"), b ->
-                    ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(0, aspect.ordinal())))
-                    .bounds(x - 12, y - 12, 24, 24).build();
-            addRenderableWidget(node);
-            aspectButtons.put(node, aspect);
+    private void buildSubclassView() {
+        int mainRight = Math.max(430, width - 304);
+        int subclassY = 78;
+        int available = Math.max(360, mainRight - 36);
+        int classWidth = Math.max(82, Math.min(122, (available - 18) / 4));
+        int startX = 18;
+        AndroidLoadout.Specialization[] classes = AndroidLoadout.Specialization.values();
+        for (int i = 0; i < classes.length; i++) {
+            AndroidLoadout.Specialization specialization = classes[i];
+            boolean selected = AndroidClientState.specializationOrdinal() == i;
+            Button classButton = Button.builder(Component.literal((selected ? "◆ " : "◇ ") + specialization.displayName), b ->
+                    ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(5, specialization.ordinal())))
+                    .bounds(startX + i * (classWidth + 6), subclassY, classWidth, 22).build();
+            classButton.active = !selected;
+            addRenderableWidget(classButton);
+            inspectables.put(classButton, specialization);
         }
 
+        AndroidLoadout.Specialization selectedClass = AndroidClientState.specialization();
+        AndroidLoadout.Ultimate ultimate = selectedClass.ultimate;
+        int ultimateY = 122;
+        Button ultimateNode = Button.builder(Component.literal("ULTIMATE // " + ultimate.displayName), b -> {})
+                .bounds(18, ultimateY, Math.max(250, mainRight - 36), 28).build();
+        ultimateNode.active = false;
+        addRenderableWidget(ultimateNode);
+        inspectables.put(ultimateNode, ultimate);
+
+        int aspectY = 180;
+        int aspectIndex = 0;
+        for (AndroidLoadout.Aspect aspect : AndroidLoadout.Aspect.values()) {
+            if (aspect.specialization() != selectedClass) continue;
+            boolean selected = (AndroidClientState.aspectMask() & (1 << aspect.ordinal())) != 0;
+            int x = 18 + aspectIndex * 150;
+            Button node = Button.builder(Component.literal((selected ? "✦ " : "◇ ") + aspect.displayName), b ->
+                    ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(0, aspect.ordinal())))
+                    .bounds(x, aspectY, 144, 24).build();
+            addRenderableWidget(node);
+            inspectables.put(node, aspect);
+            aspectIndex++;
+        }
+
+        int fragmentY = 236;
         AndroidLoadout.Fragment[] fragments = AndroidLoadout.Fragment.values();
-        int left = 18;
-        int startY = 92;
+        int cols = 4;
+        int gap = 5;
+        int buttonWidth = Math.max(90, Math.min(130, (mainRight - 36 - gap * (cols - 1)) / cols));
         for (int i = 0; i < fragments.length; i++) {
             AndroidLoadout.Fragment fragment = fragments[i];
             boolean selected = (AndroidClientState.fragmentMask() & (1 << i)) != 0;
-            int col = i / 12;
-            int row = i % 12;
-            int x = left + col * 146;
-            int y = startY + row * 20;
+            int col = i % cols;
+            int row = i / cols;
+            int x = 18 + col * (buttonWidth + gap);
+            int y = fragmentY + row * 23;
             Button node = Button.builder(Component.literal((selected ? "✦ " : "◇ ") + shortName(fragment.displayName)), b ->
                     ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(1, fragment.ordinal())))
-                    .bounds(x, y, 140, 18).build();
+                    .bounds(x, y, buttonWidth, 19).build();
             addRenderableWidget(node);
-            fragmentButtons.put(node, fragment);
+            inspectables.put(node, fragment);
         }
     }
 
-    private void buildDroneTree() {
-        int left = 52;
-        int right = Math.min(width - 310, 600);
-        int y = height / 2;
+    private void buildDroneView() {
+        int mainRight = Math.max(430, width - 304);
+        int centerY = height / 2;
         AndroidLoadout.DronePerk[] perks = AndroidLoadout.DronePerk.values();
-        int step = Math.max(48, (right - left) / Math.max(1, perks.length - 1));
+        int left = 42;
+        int usable = Math.max(340, mainRight - 72);
+        int step = Math.max(38, usable / Math.max(1, perks.length - 1));
         for (int i = 0; i < perks.length; i++) {
             AndroidLoadout.DronePerk perk = perks[i];
-            int x = left + i * step;
-            int py = y + ((i & 1) == 0 ? -28 : 28);
             boolean selected = AndroidClientState.hasDronePerk(perk);
+            int x = left + i * step;
+            int y = centerY + ((i & 1) == 0 ? -34 : 34);
             Button node = Button.builder(Component.literal(selected ? "✦" : "◇"), b ->
                     ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(4, perk.ordinal())))
-                    .bounds(x - 13, py - 13, 26, 26).build();
+                    .bounds(x - 13, y - 13, 26, 26).build();
             node.active = selected || AndroidClientState.level() >= perk.level;
             addRenderableWidget(node);
-            droneButtons.put(node, perk);
+            inspectables.put(node, perk);
         }
     }
 
-    private void buildArtifactNodes() {
-        int cx = Math.min(width / 2 - 70, 430);
-        int cy = height / 2 + 12;
-        AndroidLoadout.Artifact[] artifacts = AndroidLoadout.Artifact.values();
-        for (int i = 1; i < artifacts.length; i++) {
-            double angle = (Math.PI * 2.0D * (i - 1)) / (artifacts.length - 1) - Math.PI / 2.0D;
-            int x = cx + (int)(Math.cos(angle) * 142.0D);
-            int y = cy + (int)(Math.sin(angle) * 92.0D);
-            AndroidLoadout.Artifact artifact = artifacts[i];
+    private void buildArtifactView() {
+        int mainRight = Math.max(430, width - 304);
+        int cols = 2;
+        int buttonWidth = Math.max(150, Math.min(220, (mainRight - 54) / cols));
+        int index = 0;
+        for (int i = 1; i < AndroidLoadout.Artifact.values().length; i++) {
+            AndroidLoadout.Artifact artifact = AndroidLoadout.Artifact.values()[i];
             boolean selected = AndroidClientState.artifactOrdinal() == i;
-            Button node = Button.builder(Component.literal(selected ? "✦" : "◇"), b ->
+            int col = index % cols;
+            int row = index / cols;
+            int x = 18 + col * (buttonWidth + 12);
+            int y = 104 + row * 38;
+            Button node = Button.builder(Component.literal((selected ? "✦ " : "◇ ") + artifact.displayName), b ->
                     ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(3, artifact.ordinal())))
-                    .bounds(x - 14, y - 14, 28, 28).build();
+                    .bounds(x, y, buttonWidth, 28).build();
             addRenderableWidget(node);
-            artifactButtons.put(node, artifact);
+            inspectables.put(node, artifact);
+            index++;
         }
         addRenderableWidget(Button.builder(Component.literal("UNEQUIP ARTIFACT"), b ->
                 ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(3, AndroidLoadout.Artifact.NONE.ordinal())))
-                .bounds(cx - 62, cy - 10, 124, 20).build());
+                .bounds(18, 104 + ((index + 1) / 2) * 38 + 8, 160, 20).build());
     }
 
     private static String shortName(String name) {
@@ -177,11 +205,10 @@ public class AndroidLoadoutScreen extends Screen {
     @Override
     public void tick() {
         if (lastAspects != AndroidClientState.aspectMask() || lastFragments != AndroidClientState.fragmentMask()
-                || lastArtifact != AndroidClientState.artifactOrdinal() || lastDronePerks != AndroidClientState.dronePerkMask()) {
-            lastAspects = AndroidClientState.aspectMask();
-            lastFragments = AndroidClientState.fragmentMask();
-            lastArtifact = AndroidClientState.artifactOrdinal();
-            lastDronePerks = AndroidClientState.dronePerkMask();
+                || lastArtifact != AndroidClientState.artifactOrdinal() || lastDronePerks != AndroidClientState.dronePerkMask()
+                || lastSpecialization != AndroidClientState.specializationOrdinal()
+                || lastUltimateCooldown != AndroidClientState.ultimateCooldownTicks()) {
+            cacheState();
             rebuild();
         }
     }
@@ -190,13 +217,13 @@ public class AndroidLoadoutScreen extends Screen {
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         g.fill(0, 0, width, height, BACKDROP);
         drawAtmosphere(g);
-        g.drawString(font, "ANDROID // CONSTELLATION MATRIX", 18, 14, TEXT, false);
-        g.drawString(font, "Build identity through connected systems", 18, 27, MUTED, false);
-        g.drawString(font, "LEVEL " + AndroidClientState.level() + "   FE " + AndroidClientState.energy(), width - 150, 16, ACCENT, false);
+        g.drawString(font, "ANDROID // SUBCLASS MATRIX", 18, 14, TEXT, false);
+        g.drawString(font, "Define role, Ultimate, Aspects and Fragments", 18, 27, MUTED, false);
+        g.drawString(font, "LEVEL " + AndroidClientState.level() + "   FE " + AndroidClientState.energy(), width - 175, 16, ACCENT, false);
 
-        if (view == 0) renderMatrixLines(g);
-        else if (view == 1) renderDroneLines(g);
-        else renderArtifactLines(g);
+        if (view == 0) renderSubclassLabels(g);
+        else if (view == 1) renderDroneLabels(g);
+        else renderArtifactLabels(g);
 
         super.render(g, mouseX, mouseY, partialTick);
         renderInspectionPanel(g);
@@ -209,114 +236,97 @@ public class AndroidLoadoutScreen extends Screen {
         g.fill(width - 283, 65, width - 21, height - 45, 0x261AEEF2);
     }
 
-    private void renderMatrixLines(GuiGraphics g) {
-        int cx = Math.min(width / 2 - 70, 470);
-        int cy = height / 2 + 10;
-        g.fill(cx - 34, cy - 34, cx + 34, cy + 34, 0x551AEEF2);
-        g.fill(cx - 18, cy - 18, cx + 18, cy + 18, 0xAA20262C);
-        g.drawCenteredString(font, "CORE", cx, cy - 4, GOLD);
-        for (Button button : aspectButtons.keySet()) {
-            drawLine(g, cx, cy, button.getX() + 12, button.getY() + 12, 0x665D6871);
-        }
-        g.drawString(font, "ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, 18, 70, GOLD, false);
-        g.drawString(font, "FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), 164, 70, ACCENT, false);
+    private void renderSubclassLabels(GuiGraphics g) {
+        AndroidLoadout.Ultimate ultimate = AndroidClientState.ultimate();
+        int cooldown = AndroidClientState.ultimateCooldownTicks();
+        g.drawString(font, "SUBCLASS // " + AndroidClientState.specialization().displayName.toUpperCase(), 18, 108, GOLD, false);
+        String status = AndroidClientState.level() < AndroidUltimates.REQUIRED_LEVEL ? "LOCKED · LEVEL " + AndroidUltimates.REQUIRED_LEVEL
+                : cooldown > 0 ? String.format("RECHARGING %.1fs", cooldown / 20.0D)
+                : AndroidClientState.energy() < ultimate.energyCost ? "NEEDS " + ultimate.energyCost + " FE" : "READY · PRESS G";
+        g.drawString(font, status, 22, 154, cooldown <= 0 && AndroidClientState.level() >= AndroidUltimates.REQUIRED_LEVEL ? ACCENT : MUTED, false);
+        g.drawString(font, "ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, 18, 166, GOLD, false);
+        g.drawString(font, "FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), 18, 218, ACCENT, false);
     }
 
-    private void renderDroneLines(GuiGraphics g) {
-        Button previous = null;
-        for (Map.Entry<Button, AndroidLoadout.DronePerk> entry : droneButtons.entrySet()) {
-            Button button = entry.getKey();
-            if (previous != null) drawLine(g, previous.getX() + 13, previous.getY() + 13, button.getX() + 13, button.getY() + 13, 0x887A9164);
-            previous = button;
-            g.drawCenteredString(font, Integer.toString(entry.getValue().level), button.getX() + 13, button.getY() - 12,
-                    AndroidClientState.level() >= entry.getValue().level ? DRONE : LOCKED);
-        }
-        g.drawString(font, "DRONE COMMANDER SPECIALISATION", 18, 70, DRONE, false);
-        g.drawString(font, Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS + " nodes installed · sequential progression", 18, 82, MUTED, false);
+    private void renderDroneLabels(GuiGraphics g) {
+        g.drawString(font, "DRONE COMMANDER SPECIALISATION", 18, 78, DRONE, false);
+        g.drawString(font, Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS
+                + " nodes installed · sequential progression", 18, 91, MUTED, false);
     }
 
-    private void renderArtifactLines(GuiGraphics g) {
-        int cx = Math.min(width / 2 - 70, 430);
-        int cy = height / 2 + 12;
-        for (Button button : artifactButtons.keySet()) {
-            drawLine(g, cx, cy, button.getX() + 14, button.getY() + 14, 0x77796B48);
-        }
-        g.drawString(font, "ARTIFACT CORE", 18, 70, GOLD, false);
-        g.drawString(font, "Equip one build-defining artifact. Current: " + AndroidClientState.artifact().displayName, 18, 82, MUTED, false);
+    private void renderArtifactLabels(GuiGraphics g) {
+        g.drawString(font, "ARTIFACT CORE", 18, 78, GOLD, false);
+        g.drawString(font, "One build-defining artifact · Current: " + AndroidClientState.artifact().displayName, 18, 91, MUTED, false);
     }
 
     private void renderInspectionPanel(GuiGraphics g) {
         Object inspected = null;
-        for (Map.Entry<Button, AndroidLoadout.Aspect> e : aspectButtons.entrySet()) if (e.getKey().isHoveredOrFocused()) { inspected = e.getValue(); break; }
-        if (inspected == null) for (Map.Entry<Button, AndroidLoadout.Fragment> e : fragmentButtons.entrySet()) if (e.getKey().isHoveredOrFocused()) { inspected = e.getValue(); break; }
-        if (inspected == null) for (Map.Entry<Button, AndroidLoadout.Artifact> e : artifactButtons.entrySet()) if (e.getKey().isHoveredOrFocused()) { inspected = e.getValue(); break; }
-        if (inspected == null) for (Map.Entry<Button, AndroidLoadout.DronePerk> e : droneButtons.entrySet()) if (e.getKey().isHoveredOrFocused()) { inspected = e.getValue(); break; }
-
+        for (Map.Entry<Button, Object> entry : inspectables.entrySet()) {
+            if (entry.getKey().isHoveredOrFocused()) {
+                inspected = entry.getValue();
+                break;
+            }
+        }
         int x = width - 268;
         int y = 82;
         g.drawString(font, "SYSTEM INSPECTION", x, y, MUTED, false);
         if (inspected == null) {
-            g.drawString(font, view == 0 ? "Hover an Aspect or Fragment" : view == 1 ? "Hover a Drone Commander node" : "Hover an Artifact node", x, y + 24, TEXT, false);
-            g.drawString(font, "to inspect its exact function.", x, y + 37, MUTED, false);
+            g.drawString(font, view == 0 ? AndroidClientState.specialization().displayName.toUpperCase() : view == 1 ? "DRONE COMMANDER" : "ARTIFACT CORE", x, y + 24, TEXT, false);
             if (view == 0) {
-                g.drawString(font, "ASPECTS", x, y + 70, MUTED, false);
-                g.drawString(font, aspectCount() + " / " + AndroidLoadout.MAX_ASPECTS, x, y + 83, GOLD, false);
-                g.drawString(font, "FRAGMENTS", x, y + 106, MUTED, false);
-                g.drawString(font, fragmentCount() + " / " + fragmentCapacity(), x, y + 119, ACCENT, false);
+                drawWrapped(g, AndroidClientState.specialization().description, x, y + 42, 230, TEXT);
+                g.drawString(font, "ULTIMATE", x, y + 92, MUTED, false);
+                g.drawString(font, AndroidClientState.ultimate().displayName, x, y + 105, GOLD, false);
+                drawWrapped(g, AndroidClientState.ultimate().description, x, y + 122, 230, TEXT);
+                g.drawString(font, "COST " + AndroidClientState.ultimate().energyCost + " FE", x, y + 174, ACCENT, false);
             } else if (view == 1) {
-                g.drawString(font, "SPECIALISATION", x, y + 70, MUTED, false);
-                g.drawString(font, Integer.bitCount(AndroidClientState.dronePerkMask()) + " / " + AndroidLoadout.MAX_DRONE_PERKS, x, y + 83, DRONE, false);
-                drawWrapped(g, "Drone Commander nodes unlock by Android level and must be taken in sequence. They are a separate specialist layer from Ascension Points.", x, y + 110, 230, TEXT);
+                drawWrapped(g, "A separate five-node specialist layer for owned drones. Nodes unlock by Android level and must be progressed in sequence.", x, y + 42, 230, TEXT);
             } else {
-                g.drawString(font, "EQUIPPED ARTIFACT", x, y + 70, MUTED, false);
-                g.drawString(font, AndroidClientState.artifact().displayName, x, y + 83, GOLD, false);
-                drawWrapped(g, AndroidClientState.artifact().description, x, y + 108, 230, TEXT);
+                g.drawString(font, AndroidClientState.artifact().displayName, x, y + 24, GOLD, false);
+                drawWrapped(g, AndroidClientState.artifact().description, x, y + 42, 230, TEXT);
             }
             return;
         }
 
-        if (inspected instanceof AndroidLoadout.Aspect aspect) {
-            boolean selected = (AndroidClientState.aspectMask() & (1 << aspect.ordinal())) != 0;
-            g.drawString(font, aspect.displayName.toUpperCase(), x, y + 24, selected ? SELECTED : GOLD, false);
-            g.drawString(font, "ASPECT · " + aspect.branch.toUpperCase(), x, y + 38, ACCENT, false);
-            g.drawString(font, "+" + aspect.fragmentSlots + " FRAGMENT CAPACITY", x, y + 58, GOLD, false);
-            drawWrapped(g, aspect.description, x, y + 82, 230, TEXT);
+        if (inspected instanceof AndroidLoadout.Specialization specialization) {
+            g.drawString(font, specialization.displayName.toUpperCase(), x, y + 24, GOLD, false);
+            drawWrapped(g, specialization.description, x, y + 42, 230, TEXT);
+            g.drawString(font, "ULTIMATE", x, y + 94, MUTED, false);
+            g.drawString(font, specialization.ultimate.displayName, x, y + 107, ACCENT, false);
+            drawWrapped(g, specialization.ultimate.description, x, y + 124, 230, TEXT);
+        } else if (inspected instanceof AndroidLoadout.Ultimate ultimate) {
+            g.drawString(font, ultimate.displayName.toUpperCase(), x, y + 24, GOLD, false);
+            drawWrapped(g, ultimate.description, x, y + 42, 230, TEXT);
+            g.drawString(font, "ENERGY COST " + ultimate.energyCost + " FE", x, y + 100, ACCENT, false);
+            g.drawString(font, "BASE COOLDOWN " + String.format("%.0fs", ultimate.cooldownTicks / 20.0D), x, y + 114, MUTED, false);
+        } else if (inspected instanceof AndroidLoadout.Aspect aspect) {
+            g.drawString(font, aspect.displayName.toUpperCase(), x, y + 24, GOLD, false);
+            g.drawString(font, aspect.branch.toUpperCase() + " ASPECT · " + aspect.fragmentSlots + " FRAGMENT SLOTS", x, y + 39, MUTED, false);
+            drawWrapped(g, aspect.description, x, y + 60, 230, TEXT);
         } else if (inspected instanceof AndroidLoadout.Fragment fragment) {
-            boolean selected = (AndroidClientState.fragmentMask() & (1 << fragment.ordinal())) != 0;
-            g.drawString(font, fragment.displayName.toUpperCase(), x, y + 24, selected ? SELECTED : ACCENT, false);
-            g.drawString(font, "FRAGMENT · 1 SLOT", x, y + 38, ACCENT, false);
-            drawWrapped(g, fragment.description, x, y + 66, 230, TEXT);
+            g.drawString(font, shortName(fragment.displayName).toUpperCase(), x, y + 24, ACCENT, false);
+            g.drawString(font, "FRAGMENT", x, y + 39, MUTED, false);
+            drawWrapped(g, fragment.description, x, y + 60, 230, TEXT);
         } else if (inspected instanceof AndroidLoadout.Artifact artifact) {
-            boolean selected = AndroidClientState.artifactOrdinal() == artifact.ordinal();
-            g.drawString(font, artifact.displayName.toUpperCase(), x, y + 24, selected ? SELECTED : GOLD, false);
-            g.drawString(font, "ARTIFACT · " + (selected ? "EQUIPPED" : "AVAILABLE"), x, y + 38, GOLD, false);
-            drawWrapped(g, artifact.description, x, y + 66, 230, TEXT);
+            g.drawString(font, artifact.displayName.toUpperCase(), x, y + 24, GOLD, false);
+            g.drawString(font, "ARTIFACT", x, y + 39, MUTED, false);
+            drawWrapped(g, artifact.description, x, y + 60, 230, TEXT);
         } else if (inspected instanceof AndroidLoadout.DronePerk perk) {
-            boolean selected = AndroidClientState.hasDronePerk(perk);
-            boolean locked = AndroidClientState.level() < perk.level;
-            g.drawString(font, perk.displayName.toUpperCase(), x, y + 24, selected ? SELECTED : DRONE, false);
-            g.drawString(font, "DRONE NODE · LEVEL " + perk.level + (selected ? " · INSTALLED" : locked ? " · LOCKED" : " · AVAILABLE"), x, y + 38, selected ? DRONE : locked ? LOCKED : TEXT, false);
-            drawWrapped(g, perk.description, x, y + 66, 230, TEXT);
+            g.drawString(font, perk.displayName.toUpperCase(), x, y + 24, DRONE, false);
+            g.drawString(font, "DRONE NODE · LEVEL " + perk.level, x, y + 39, MUTED, false);
+            drawWrapped(g, perk.description, x, y + 60, 230, TEXT);
         }
     }
 
-    private void drawWrapped(GuiGraphics g, String text, int x, int y, int maxWidth, int color) {
-        for (var line : font.split(Component.literal(text), maxWidth)) {
-            g.drawString(font, line, x, y, color, false);
-            y += 11;
-        }
-    }
-
-    private void drawLine(GuiGraphics g, int x1, int y1, int x2, int y2, int color) {
-        int steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
-        if (steps <= 0) return;
-        for (int i = 0; i <= steps; i++) {
-            int x = x1 + (x2 - x1) * i / steps;
-            int y = y1 + (y2 - y1) * i / steps;
-            g.fill(x, y, x + 1, y + 1, color);
+    private void drawWrapped(GuiGraphics g, String text, int x, int y, int width, int color) {
+        int lineY = y;
+        for (FormattedCharSequence line : font.split(Component.literal(text), width)) {
+            g.drawString(font, line, x, lineY, color, false);
+            lineY += 11;
         }
     }
 
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen() {
+        return false;
+    }
 }
