@@ -6,6 +6,7 @@ import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModCreativeTabs;
 import matteroverdrive.registry.ModEntities;
+import matteroverdrive.registry.ModExoticItems;
 import matteroverdrive.registry.ModExtraBlockEntities;
 import matteroverdrive.registry.ModFeatures;
 import matteroverdrive.registry.ModItems;
@@ -33,6 +34,7 @@ public final class MatterOverdrive {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        ModExoticItems.ITEMS.register(modBus);
         ModCreativeTabs.CREATIVE_TABS.register(modBus);
         ModSounds.SOUND_EVENTS.register(modBus);
         ModEntities.ENTITY_TYPES.register(modBus);
@@ -45,9 +47,6 @@ public final class MatterOverdrive {
         modBus.addListener(ModCapabilities::register);
         modBus.addListener(this::commonSetup);
 
-        // GuideME builds its static guide page map during the first client resource
-        // reload. Register MO's guide from the mod constructor, matching GuideME's
-        // intended static-guide lifecycle, rather than waiting for client setup.
         if (FMLEnvironment.dist == Dist.CLIENT && ModList.get().isLoaded("guideme")) {
             matteroverdrive.client.GuideMeCompatEvents.bootstrap();
         }
