@@ -3,16 +3,53 @@ package matteroverdrive.android;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 
-/** Swappable Aspect/Fragment/Artifact/Drone-specialisation layer over permanent Android progression. */
+/** Swappable subclass/Aspect/Fragment/Artifact/Drone-specialisation layer over permanent Android progression. */
 public final class AndroidLoadout {
     private static final String ROOT = "MatterOverdriveAndroidLoadout";
     private static final String ASPECTS = "Aspects";
     private static final String FRAGMENTS = "Fragments";
     private static final String ARTIFACT = "Artifact";
     private static final String DRONE_PERKS = "DronePerks";
+    private static final String SPECIALIZATION = "Specialization";
     public static final int MAX_ASPECTS = 2;
     public static final int MAX_FRAGMENT_CAPACITY = 6;
     public static final int MAX_DRONE_PERKS = 5;
+
+    public enum Ultimate {
+        SINGULARITY_CASCADE("Singularity Cascade", "Collapse the local combat space into an explosive kinetic pulse.", 45_000, 900),
+        CITADEL_PROTOCOL("Citadel Protocol", "Become a mobile fortress with heavy resistance, absorption and nanite repair.", 35_000, 1_200),
+        PHASE_DOMINION("Phase Dominion", "Enter an accelerated phase state while suppressing and exposing nearby hostiles.", 40_000, 1_000),
+        OVERMIND_ASCENDANT("Overmind Ascendant", "Fully repair and overclock linked drones while exposing targets across the command radius.", 30_000, 900);
+
+        public final String displayName;
+        public final String description;
+        public final int energyCost;
+        public final int cooldownTicks;
+
+        Ultimate(String displayName, String description, int energyCost, int cooldownTicks) {
+            this.displayName = displayName;
+            this.description = description;
+            this.energyCost = energyCost;
+            this.cooldownTicks = cooldownTicks;
+        }
+    }
+
+    public enum Specialization {
+        ASSAULT("Assault", "Aggressive ability damage, shockwave pressure and powered melee.", Ultimate.SINGULARITY_CASCADE),
+        CHASSIS("Chassis", "Front-line durability, force-field control and nanite survival.", Ultimate.CITADEL_PROTOCOL),
+        UTILITY("Utility", "Phase mobility, target acquisition and recursive energy support.", Ultimate.PHASE_DOMINION),
+        DRONE_COMMANDER("Drone Commander", "Command, sustain and overclock linked synthetic drones.", Ultimate.OVERMIND_ASCENDANT);
+
+        public final String displayName;
+        public final String description;
+        public final Ultimate ultimate;
+
+        Specialization(String displayName, String description, Ultimate ultimate) {
+            this.displayName = displayName;
+            this.description = description;
+            this.ultimate = ultimate;
+        }
+    }
 
     public enum Aspect {
         VANGUARD_PROTOCOL("Vanguard Protocol", "Assault", 2,
@@ -50,6 +87,15 @@ public final class AndroidLoadout {
             this.branch = branch;
             this.fragmentSlots = fragmentSlots;
             this.description = description;
+        }
+
+        public Specialization specialization() {
+            return switch (branch) {
+                case "Chassis" -> Specialization.CHASSIS;
+                case "Utility" -> Specialization.UTILITY;
+                case "Drone Commander" -> Specialization.DRONE_COMMANDER;
+                default -> Specialization.ASSAULT;
+            };
         }
     }
 
@@ -162,6 +208,40 @@ public final class AndroidLoadout {
         return Artifact.values()[ordinal];
     }
 
+    public static Specialization getSpecialization(Player player) {
+        CompoundTag state = data(player);
+        if (state.contains(SPECIALIZATION)) {
+            int ordinal = state.getInt(SPECIALIZATION);
+            if (ordinal >= 0 && ordinal < Specialization.values().length) return Specialization.values()[ordinal];
+        }
+        int mask = getAspectMask(player);
+        if (mask != 0) {
+            for (Aspect aspect : Aspect.values()) {
+                if ((mask & (1 << aspect.ordinal())) != 0) return aspect.specialization();
+            }
+        }
+        return Specialization.ASSAULT;
+    }
+
+    public static boolean selectSpecialization(Player player, Specialization specialization) {
+        if (!AndroidData.isAndroid(player) || specialization == null) return false;
+        CompoundTag state = data(player);
+        Specialization current = getSpecialization(player);
+        state.putInt(SPECIALIZATION, specialization.ordinal());
+        if (current != specialization) {
+            int nextMask = 0;
+            for (Aspect aspect : Aspect.values()) {
+                if (aspect.specialization() == specialization && (getAspectMask(player) & (1 << aspect.ordinal())) != 0) {
+                    nextMask |= 1 << aspect.ordinal();
+                }
+            }
+            state.putInt(ASPECTS, nextMask);
+            trimFragmentsToCapacity(state, fragmentCapacityForMask(nextMask));
+        }
+        save(player, state);
+        return true;
+    }
+
     public static boolean hasAspect(Player player, Aspect aspect) {
         return (getAspectMask(player) & (1 << aspect.ordinal())) != 0;
     }
@@ -187,7 +267,7 @@ public final class AndroidLoadout {
     }
 
     public static boolean toggleAspect(Player player, Aspect aspect) {
-        if (!AndroidData.isAndroid(player)) return false;
+        if (!AndroidData.isAndroid(player) || aspect.specialization() != getSpecialization(player)) return false;
         CompoundTag state = data(player);
         int mask = getAspectMask(player);
         int bit = 1 << aspect.ordinal();
@@ -234,7 +314,11 @@ public final class AndroidLoadout {
         int mask = getDronePerkMask(player);
         int bit = 1 << perk.ordinal();
         if ((mask & bit) != 0) {
-            state.putInt(DRONE_PERKS, mask & ~bit);
+            int nextMask = mask;
+            for (DronePerk candidate : DronePerk.values()) {
+                if (candidate.level >= perk.level) nextMask &= ~(1 << candidate.ordinal());
+            }
+            state.putInt(DRONE_PERKS, nextMask);
             save(player, state);
             return true;
         }
