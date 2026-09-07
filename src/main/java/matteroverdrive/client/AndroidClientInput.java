@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.android.AndroidAbilities;
+import matteroverdrive.android.AndroidUltimates;
 import matteroverdrive.client.screen.AndroidLoadoutScreen;
 import matteroverdrive.client.screen.AndroidSkillTreeScreen;
 import matteroverdrive.network.AndroidAbilityPacket;
@@ -25,5 +26,6 @@ public final class AndroidClientInput {
         while (AndroidKeyMappings.OPEN_LOADOUT.consumeClick()) minecraft.setScreen(new AndroidLoadoutScreen());
         while (AndroidKeyMappings.CYCLE_ABILITY.consumeClick()) ModNetwork.CHANNEL.sendToServer(new AndroidAbilityPacket(AndroidAbilities.ACTION_CYCLE));
         while (AndroidKeyMappings.ACTIVATE_ABILITY.consumeClick()) ModNetwork.CHANNEL.sendToServer(new AndroidAbilityPacket(AndroidAbilities.ACTION_ACTIVATE));
+        while (AndroidKeyMappings.ACTIVATE_ULTIMATE.consumeClick()) ModNetwork.CHANNEL.sendToServer(new AndroidAbilityPacket(AndroidUltimates.ACTION_ACTIVATE_ULTIMATE));
     }
 }
