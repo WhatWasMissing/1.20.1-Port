@@ -14,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "4";
+    private static final String PROTOCOL = "5";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -36,6 +36,7 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, StarMapEconomyPacket.class, StarMapEconomyPacket::encode, StarMapEconomyPacket::decode, StarMapEconomyPacket::handle);
         CHANNEL.registerMessage(nextId++, StarMapShipDispatchPacket.class, StarMapShipDispatchPacket::encode, StarMapShipDispatchPacket::decode, StarMapShipDispatchPacket::handle);
         CHANNEL.registerMessage(nextId++, ContractAbandonPacket.class, ContractAbandonPacket::encode, ContractAbandonPacket::decode, ContractAbandonPacket::handle);
+        CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h)); }
@@ -46,6 +47,10 @@ public final class ModNetwork {
     public static void requestStarMapEconomy(BlockPos p, int action) { CHANNEL.sendToServer(new StarMapEconomyPacket(p, action)); }
     public static void requestStarMapShipDispatch(BlockPos p, int shipType, int q, int s, int pl) { CHANNEL.sendToServer(new StarMapShipDispatchPacket(p, shipType, q, s, pl)); }
     public static void requestContractAbandon(int slot) { CHANNEL.sendToServer(new ContractAbandonPacket(slot)); }
+
+    public static void syncQuestTracker(ServerPlayer p) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), QuestTrackerSyncPacket.from(p));
+    }
 
     public static void syncAndroidState(ServerPlayer p) {
         AndroidData.Ability a = AndroidData.getSelectedAbility(p);
