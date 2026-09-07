@@ -1,7 +1,6 @@
 package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
-import matteroverdrive.compat.PointBlankDestinyCompat;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -21,9 +20,7 @@ public final class ModCreativeTabs {
                         ModItems.BLOCK_ITEMS.values().forEach(item -> output.accept(item.get()));
                         ModItems.STANDALONE_ITEMS.values().forEach(item -> output.accept(item.get()));
                         output.accept(ModExoticItems.VEX_MYTHOCLAST.get());
-
-                        // Optional Point Blank Destiny pack bridge. Missing packs simply contribute no items.
-                        PointBlankDestinyCompat.availableWeapons().forEach(output::accept);
+                        ModDestinyItems.WEAPONS.values().forEach(item -> output.accept(item.get()));
                     })
                     .build());
 
