@@ -53,16 +53,21 @@ These are deliberately stronger than Fragments so selecting one changes how a bu
 
 - Class Matrix now shows subclass-specific H/N/G kits rather than only class-wide H/N actions.
 - Inspection panel includes FE cost and cooldown for H/N/G abilities.
+- H and N cooldowns are now part of the authoritative Android state sync, alongside the Ultimate cooldown.
+- Client cooldown mirrors tick locally between server updates, so H/N/G countdowns remain smooth while the Class Matrix is open.
+- The class page now shows H/N READY, cooldown, level-lock and insufficient-FE states directly without requiring a failed activation attempt.
 - Main class UI was tightened and made more tolerant of smaller GUI sizes; fragment buttons no longer blindly draw through the footer.
 - Nanite visuals were moved away from villager-heart-style particles to a more neutral synthetic particle effect.
 - Drone Matrix progression cap was corrected from five to nine nodes. The chain is sequential from Android level 2 through the level-10 Synthetic Overmind capstone, so the former five-node cap made levels 7-10 unreachable.
 - Existing first-four subclass enum ordinals and the internal Artifact NBT key remain unchanged to protect old saves.
+- Android network protocol is now **6** because `AndroidStatePacket` carries the two additional subclass cooldown fields.
 
 ## Final manual verification checklist
 
 - Convert through the Mad Scientist Puny Humans quest and confirm the player starts as an Android without quest-state loss.
 - Open `L`; switch between all three classes and all nine subclasses.
 - For every subclass, use H, N and G and verify FE cost, cooldown, effects and status text.
+- Keep the Class Matrix open after using H/N/G and confirm all three countdowns visibly decrease.
 - Verify switching subclass removes incompatible Aspects but keeps valid fragment limits.
 - Select each Passive Protocol and confirm the described gameplay benefit.
 - Progress Drone Matrix from Command Authority through Synthetic Overmind at levels 2-10 and verify all nine can now be installed sequentially.
@@ -73,3 +78,5 @@ These are deliberately stronger than Fragments so selecting one changes how a bu
 ## Status
 
 The Android system should now be treated as feature-complete for the current 0.3 testing scope. Further work should be balance fixes, bug fixes, text/visual polish or changes driven by testing rather than additional progression layers.
+
+The last code build before this document update passed GitHub Actions run `34141893767` on commit `1193082957ff0d67ec022f367bf7e02bd81d27d3`, including the full mod build and test-JAR publication.
