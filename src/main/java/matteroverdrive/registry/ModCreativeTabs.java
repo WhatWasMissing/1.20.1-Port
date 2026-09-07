@@ -19,9 +19,9 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         ModItems.BLOCK_ITEMS.values().forEach(item -> output.accept(item.get()));
                         ModItems.STANDALONE_ITEMS.values().forEach(item -> output.accept(item.get()));
+                        output.accept(ModExoticItems.VEX_MYTHOCLAST.get());
                     })
                     .build());
 
-    private ModCreativeTabs() {
-    }
+    private ModCreativeTabs() {}
 }
