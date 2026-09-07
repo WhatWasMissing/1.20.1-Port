@@ -68,7 +68,22 @@ jobs:
           TAG="0.3-pointblank-test"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$OUT" --clobber
-            gh release edit "$TAG" --notes "Matter Overdrive 0.3 Point Blank/Destiny integration test build. Built from ${GITHUB_SHA}."
+            gh release edit "$TAG" --notes "Matter Overdrive 0.3 native Destiny integration test build. Built from ${GITHUB_SHA}."
           else
-            gh release create "$TAG" "$OUT" --prerelease --target "$GITHUB_SHA" --title "Matter Overdrive 0.3 Point Blank Test" --notes "Matter Overdrive 0.3 Point Blank/Destiny integration test build. Built from ${GITHUB_SHA}."
+            gh release create "$TAG" "$OUT" --prerelease --target "$GITHUB_SHA" --title "Matter Overdrive 0.3 Native Destiny Test" --notes "Matter Overdrive 0.3 native Destiny integration test build. Built from ${GITHUB_SHA}."
           fi
+
+      - name: Emit signed test JAR URL
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/work/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="0.3-pointblank-test"
+          NAME="MatterOverdrive-1.20.1-0.3-pointblank-test.jar"
+          ASSET_ID=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG}" --jq ".assets[] | select(.name == \"${NAME}\") | .id")
+          curl -sS --max-redirs 0 -D /tmp/asset_headers -o /dev/null \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/octet-stream" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/assets/${ASSET_ID}"
+          SIGNED_URL=$(awk 'BEGIN{IGNORECASE=1} /^location:/ {$1=""; sub(/^ /,""); sub(/\r$/,""); print; exit}' /tmp/asset_headers)
+          echo "SIGNED_ASSET_URL=${SIGNED_URL}"
