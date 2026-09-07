@@ -52,7 +52,7 @@ public final class AndroidLoadout {
         SURGE("Fragment of Surge", "Above 75% Android FE, weapon and melee damage are increased by 5%."),
         CONSERVATION("Fragment of Conservation", "Passive Android loadout effects consume less FE."),
         SYNAPSE("Fragment of Synapse", "Ability damage has a chance to briefly accelerate movement."),
-        BULWARK("Fragment of Bulwark", "While Force Field is active, gain knockback resistance through Resistance."));
+        BULWARK("Fragment of Bulwark", "While Force Field is active, gain knockback resistance through Resistance.");
 
         public final String displayName;
         public final String description;
