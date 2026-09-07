@@ -11,156 +11,42 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
-/** Connects the source-backed legacy quests into one scientist-driven campaign. */
+/** Connects the source-backed legacy quests into one scientist-driven research campaign. */
 public final class ScientistStoryQuestFlow {
-    public static final String STORY_INDEX = "MatterOverdriveScientistStoryIndex";
-    public static final String STORY_DONE = "MatterOverdriveScientistStoryDone";
-
+    public static final String STORY_INDEX="MatterOverdriveScientistStoryIndex", STORY_DONE="MatterOverdriveScientistStoryDone", RESEARCH_RANK="MatterOverdriveScientistResearchRank";
     private ScientistStoryQuestFlow() {}
 
     public static boolean handle(ServerPlayer player) {
-        CompoundTag persisted = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
-        if (persisted.getBoolean(STORY_DONE)) return false;
-
-        int index = normalizeStoryIndex(player, persisted);
-        ItemStack active = findLegacyContract(player, index);
-        if (!active.isEmpty()) {
-            if (!ContractItem.complete(active)) {
-                showProgress(player, active);
-                return true;
-            }
-            redeem(player, active, persisted);
-            return true;
-        }
-
-        if (index >= LegacyStoryContracts.QUEST_IDS.length) {
-            persisted.putBoolean(STORY_DONE, true);
-            save(player, persisted);
-            return false;
-        }
-
-        String id = LegacyStoryContracts.QUEST_IDS[index];
-        ItemStack quest = LegacyStoryContracts.create(id, player.getRandom());
-        if (quest.isEmpty()) return false;
-        give(player, quest);
-        save(player, persisted);
-        player.level().playSound(null, player.blockPosition(), ModSounds.get("gui.quest_started").get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
-        ModNetwork.openDialogue(player, "Mad Scientist", ContractItem.title(quest), List.of(
-                storyLine(id), objectiveLine(quest),
-                "Keep the contract with you. Return when the work is complete."));
-        return true;
+        CompoundTag persisted=persisted(player); if(persisted.getBoolean(STORY_DONE)){showEpilogue(player,persisted);return true;}
+        int index=normalizeStoryIndex(player,persisted); ItemStack active=findLegacyContract(player,index);
+        if(!active.isEmpty()){if(!ContractItem.complete(active)){showProgress(player,active,persisted);return true;}redeem(player,active,persisted);return true;}
+        if(index>=LegacyStoryContracts.QUEST_IDS.length){persisted.putBoolean(STORY_DONE,true);save(player,persisted);showEpilogue(player,persisted);return true;}
+        String id=LegacyStoryContracts.QUEST_IDS[index]; ItemStack quest=LegacyStoryContracts.create(id,player.getRandom()); if(quest.isEmpty())return false;
+        give(player,quest); save(player,persisted); player.level().playSound(null,player.blockPosition(),ModSounds.get("gui.quest_started").get(),SoundSource.NEUTRAL,1,1);
+        ModNetwork.openDialogue(player,scientistName(index),ContractItem.title(quest),List.of(introductionLine(index),storyLine(id),objectiveLine(quest),"Research clearance: "+rankName(persisted.getInt(RESEARCH_RANK)),"Keep the contract with you. Return when the work is complete.")); return true;
     }
 
-    private static void showProgress(ServerPlayer player, ItemStack active) {
-        ModNetwork.openDialogue(player, "Mad Scientist", ContractItem.title(active), List.of(
-                storyLine(ContractItem.contractId(active)), objectiveLine(active),
-                "Progress: " + ContractItem.progress(active) + " / " + ContractItem.goal(active)));
-    }
+    public static String status(ServerPlayer player){CompoundTag p=persisted(player);int index=Math.min(Math.max(0,p.getInt(STORY_INDEX)),LegacyStoryContracts.QUEST_IDS.length);if(p.getBoolean(STORY_DONE)||index>=LegacyStoryContracts.QUEST_IDS.length)return "Research campaign complete - "+rankName(p.getInt(RESEARCH_RANK));ItemStack active=findLegacyContract(player,index);return active.isEmpty()?"Next assignment: "+displayQuest(LegacyStoryContracts.QUEST_IDS[index]):ContractItem.title(active)+" - "+objectiveLine(active)+" ("+ContractItem.progress(active)+"/"+ContractItem.goal(active)+")";}
 
-    private static void redeem(ServerPlayer player, ItemStack completed, CompoundTag persisted) {
-        String id = ContractItem.contractId(completed);
-        int completedIndex = questIndex(id);
-        if (completedIndex < 0) return;
-        for (ItemStack reward : ContractItem.rewardItems(completed)) give(player, reward.copy());
-        for (ItemStack reward : LegacyStoryContracts.specialRewards(completed)) give(player, reward.copy());
-        if (ContractItem.xp(completed) > 0) player.giveExperiencePoints(ContractItem.xp(completed));
-        LegacyStoryContracts.applyWorldRewards(player, completed);
-        removeStack(player, completed);
-        removeDuplicateLegacyContracts(player, completedIndex);
-        int index = Math.max(Math.max(0, persisted.getInt(STORY_INDEX)), completedIndex + 1);
-        persisted.putInt(STORY_INDEX, index);
-        if (index >= LegacyStoryContracts.QUEST_IDS.length) persisted.putBoolean(STORY_DONE, true);
-        save(player, persisted);
-        player.level().playSound(null, player.blockPosition(), ModSounds.get("gui.quest_complete").get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
-        if (index >= LegacyStoryContracts.QUEST_IDS.length) {
-            ModNetwork.openDialogue(player, "Mad Scientist", "Research Chain Complete", List.of(
-                    "Against several reasonable predictions, you survived the entire research programme.",
-                    "The old field work is complete. Future experiments will be considerably less supervised."));
-        } else {
-            String next = LegacyStoryContracts.QUEST_IDS[index];
-            ModNetwork.openDialogue(player, "Mad Scientist", ContractItem.title(completed) + " Complete", List.of(
-                    completionLine(id), "Return to me again when you are ready for " + displayQuest(next) + "."));
-        }
-    }
+    private static void showProgress(ServerPlayer player,ItemStack active,CompoundTag persisted){int index=Math.max(0,questIndex(ContractItem.contractId(active)));ModNetwork.openDialogue(player,scientistName(index),ContractItem.title(active),List.of(progressLine(index),storyLine(ContractItem.contractId(active)),objectiveLine(active),"Progress: "+ContractItem.progress(active)+" / "+ContractItem.goal(active),"Research clearance: "+rankName(persisted.getInt(RESEARCH_RANK))));}
 
-    private static int normalizeStoryIndex(ServerPlayer player, CompoundTag persisted) {
-        int stored = Math.max(0, persisted.getInt(STORY_INDEX));
-        int furthest = -1;
-        for (ItemStack stack : player.getInventory().items) {
-            if (stack.getItem() instanceof ContractItem) furthest = Math.max(furthest, questIndex(ContractItem.contractId(stack)));
-        }
-        int normalized = Math.min(Math.max(stored, furthest), LegacyStoryContracts.QUEST_IDS.length);
-        if (normalized != stored) {
-            persisted.putInt(STORY_INDEX, normalized);
-            save(player, persisted);
-        }
-        return normalized;
-    }
+    private static void redeem(ServerPlayer player,ItemStack completed,CompoundTag persisted){String id=ContractItem.contractId(completed);int completedIndex=questIndex(id);if(completedIndex<0)return;for(ItemStack r:ContractItem.rewardItems(completed))give(player,r.copy());for(ItemStack r:LegacyStoryContracts.specialRewards(completed))give(player,r.copy());if(ContractItem.xp(completed)>0)player.giveExperiencePoints(ContractItem.xp(completed));LegacyStoryContracts.applyWorldRewards(player,completed);removeStack(player,completed);removeDuplicateLegacyContracts(player,completedIndex);int index=Math.max(Math.max(0,persisted.getInt(STORY_INDEX)),completedIndex+1);persisted.putInt(STORY_INDEX,index);persisted.putInt(RESEARCH_RANK,Math.max(persisted.getInt(RESEARCH_RANK),researchRankFor(index)));if(index>=LegacyStoryContracts.QUEST_IDS.length)persisted.putBoolean(STORY_DONE,true);save(player,persisted);player.level().playSound(null,player.blockPosition(),ModSounds.get("gui.quest_complete").get(),SoundSource.NEUTRAL,1,1);if(index>=LegacyStoryContracts.QUEST_IDS.length){ModNetwork.openDialogue(player,"Dr. Voss","Research Programme Complete",List.of(completionLine(id),"You now hold "+rankName(persisted.getInt(RESEARCH_RANK))+" clearance.","Matter processing, field power and anomaly research are no longer theoretical exercises. Build with them.","The old programme is complete. Further experiments are yours to define."));}else{String next=LegacyStoryContracts.QUEST_IDS[index];ModNetwork.openDialogue(player,scientistName(completedIndex),ContractItem.title(completed)+" Complete",List.of(completionLine(id),unlockLine(index),"Research clearance: "+rankName(persisted.getInt(RESEARCH_RANK)),"Next assignment: "+displayQuest(next)+". Return when ready."));}}
 
-    private static ItemStack findLegacyContract(ServerPlayer player, int storyIndex) {
-        ItemStack fallback = ItemStack.EMPTY;
-        int fallbackIndex = -1;
-        for (ItemStack stack : player.getInventory().items) {
-            if (!(stack.getItem() instanceof ContractItem)) continue;
-            int index = questIndex(ContractItem.contractId(stack));
-            if (index < 0) continue;
-            if (index == storyIndex) return stack;
-            if (index > fallbackIndex) { fallback = stack; fallbackIndex = index; }
-        }
-        return fallback;
-    }
+    private static void showEpilogue(ServerPlayer player,CompoundTag p){ModNetwork.openDialogue(player,"Dr. Voss","Independent Research",List.of("The formal programme is finished. Your laboratory is now the experiment.","Clearance: "+rankName(p.getInt(RESEARCH_RANK)),"Use matter processing to sustain your machines, drones to automate dangerous work, and the reactor only when you understand what its anomaly is doing.","I will continue to pretend this was all adequately supervised."));}
+    private static int researchRankFor(int completed){return completed>=6?4:completed>=4?3:completed>=2?2:completed>=1?1:0;}
+    private static String rankName(int rank){return switch(Math.max(0,Math.min(4,rank))){case 1->"FIELD ASSISTANT";case 2->"RESEARCH OPERATOR";case 3->"SYSTEMS SPECIALIST";case 4->"INDEPENDENT RESEARCHER";default->"PROBATIONARY SUBJECT";};}
+    private static String scientistName(int index){return switch(index){case 0,1->"Dr. Voss - Systems Research";case 2->"Dr. Sato - Matter Biology";case 3,4->"Dr. Kessler - Applied Logistics";case 5->"Dr. Hale - Energy Systems";default->"Mad Scientist";};}
+    private static String introductionLine(int index){return switch(index){case 0->"Voss sent for you. Apparently surviving conversion qualifies you to repair everyone else's mistakes.";case 1->"The relay has a voice again. Now we find out whether it has anything useful to say.";case 2->"Sato wants samples from matter-exposed crops. She insists the mutations are scientifically interesting rather than alarming.";case 3->"Kessler has lost a supply route and, somehow, this has become your problem.";case 4->"The agreement was only the first layer. There is another authentication handshake buried in it.";case 5->"Hale refuses to approve further field work until you can power your own laboratory.";default->"There is another assignment.";};}
+    private static String progressLine(int index){return switch(index){case 0->"The relay is still dead. I require fewer explanations and more repaired hardware.";case 1->"No useful signal yet. Check the field installation.";case 2->"Sato is waiting for a statistically irresponsible quantity of crop scans.";case 3->"Supply chain still broken. Follow the agreement trail exactly.";case 4->"The authentication sequence is incomplete.";case 5->"Independent power first. Catastrophic reactor research later.";default->"The assignment remains incomplete.";};}
+    private static String unlockLine(int nextIndex){return switch(nextIndex){case 1->"Relay diagnostics are now part of your field remit.";case 2->"Matter analysis clearance granted. Biological scans are authorised.";case 3->"Logistics clearance granted. You may handle secured research shipments.";case 4->"Network authentication clearance granted. Do not make me regret that sentence.";case 5->"Energy systems clearance granted. Establish a renewable baseline before touching high-energy research.";default->"Independent research clearance granted. Matter machines, drones and reactor work are now your responsibility.";};}
 
-    private static void removeStack(ServerPlayer player, ItemStack target) {
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            if (player.getInventory().getItem(i) == target) { player.getInventory().setItem(i, ItemStack.EMPTY); return; }
-        }
-    }
-
-    private static void removeDuplicateLegacyContracts(ServerPlayer player, int throughIndex) {
-        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            ItemStack stack = player.getInventory().getItem(i);
-            if (!(stack.getItem() instanceof ContractItem)) continue;
-            int index = questIndex(ContractItem.contractId(stack));
-            if (index >= 0 && index <= throughIndex) player.getInventory().setItem(i, ItemStack.EMPTY);
-        }
-    }
-
-    private static int questIndex(String id) {
-        if (id == null || id.isBlank()) return -1;
-        for (int i = 0; i < LegacyStoryContracts.QUEST_IDS.length; i++) if (LegacyStoryContracts.QUEST_IDS[i].equals(id)) return i;
-        return -1;
-    }
-
-    private static void give(ServerPlayer player, ItemStack stack) { if (!player.getInventory().add(stack)) player.drop(stack, false); }
-    private static void save(ServerPlayer player, CompoundTag persisted) { player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted); player.getInventory().setChanged(); }
-    private static String objectiveLine(ItemStack stack) {
-        String stage = ContractStageSupport.stageLabel(stack);
-        return stage.isBlank() ? ContractItem.objectiveText(stack) : stage + ": " + ContractItem.objectiveText(stack);
-    }
-    private static String displayQuest(String id) {
-        ItemStack stack = LegacyStoryContracts.create(id, net.minecraft.util.RandomSource.create(0L));
-        return stack.isEmpty() ? id : ContractItem.title(stack);
-    }
-    private static String storyLine(String id) {
-        return switch (id) {
-            case "crash_landing" -> "A damaged research relay came down nearby. Rebuild the protocol hardware before its data decays.";
-            case "we_must_know" -> "The relay is speaking again. I need a field coil placed so we can hear what it was trying to report.";
-            case "gmo" -> "Scan the agricultural samples. I want to know what prolonged matter exposure is doing to ordinary crops.";
-            case "trade_route" -> "Our suppliers have become unreliable. Follow the agreement trail, inspect the crate, and speak to one of my colleagues.";
-            case "stem_bolts" -> "The agreement copy contains the final authentication sequence. Use it and see what the network sends back.";
-            case "to_the_power_of" -> "Every laboratory eventually runs out of power. Prove you can establish independent generation.";
-            default -> "There is work to do.";
-        };
-    }
-    private static String completionLine(String id) {
-        return switch (id) {
-            case "crash_landing" -> "Good. The relay survived, which is more than I expected from its previous owner.";
-            case "we_must_know" -> "The signal is coherent. Unfortunately, that means we now have to investigate it.";
-            case "gmo" -> "Useful samples. Disturbing samples, but useful is the important part.";
-            case "trade_route" -> "The route is open again. Ignore anything unusual that followed you back.";
-            case "stem_bolts" -> "Authentication accepted. I am choosing to interpret the response as encouraging.";
-            case "to_the_power_of" -> "Independent power confirmed. You are becoming inconveniently competent.";
-            default -> "The experiment is complete.";
-        };
-    }
+    private static int normalizeStoryIndex(ServerPlayer player,CompoundTag p){int stored=Math.max(0,p.getInt(STORY_INDEX)),furthest=-1;for(ItemStack s:player.getInventory().items)if(s.getItem() instanceof ContractItem)furthest=Math.max(furthest,questIndex(ContractItem.contractId(s)));int n=Math.min(Math.max(stored,furthest),LegacyStoryContracts.QUEST_IDS.length);if(n!=stored){p.putInt(STORY_INDEX,n);save(player,p);}return n;}
+    private static ItemStack findLegacyContract(ServerPlayer player,int storyIndex){ItemStack fallback=ItemStack.EMPTY;int fi=-1;for(ItemStack s:player.getInventory().items){if(!(s.getItem() instanceof ContractItem))continue;int i=questIndex(ContractItem.contractId(s));if(i<0)continue;if(i==storyIndex)return s;if(i>fi){fallback=s;fi=i;}}return fallback;}
+    private static void removeStack(ServerPlayer p,ItemStack target){for(int i=0;i<p.getInventory().getContainerSize();i++)if(p.getInventory().getItem(i)==target){p.getInventory().setItem(i,ItemStack.EMPTY);return;}}
+    private static void removeDuplicateLegacyContracts(ServerPlayer p,int through){for(int i=0;i<p.getInventory().getContainerSize();i++){ItemStack s=p.getInventory().getItem(i);if(!(s.getItem() instanceof ContractItem))continue;int q=questIndex(ContractItem.contractId(s));if(q>=0&&q<=through)p.getInventory().setItem(i,ItemStack.EMPTY);}}
+    private static int questIndex(String id){if(id==null||id.isBlank())return-1;for(int i=0;i<LegacyStoryContracts.QUEST_IDS.length;i++)if(LegacyStoryContracts.QUEST_IDS[i].equals(id))return i;return-1;}
+    private static CompoundTag persisted(ServerPlayer p){return p.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);} private static void give(ServerPlayer p,ItemStack s){if(!p.getInventory().add(s))p.drop(s,false);} private static void save(ServerPlayer p,CompoundTag d){p.getPersistentData().put(Player.PERSISTED_NBT_TAG,d);p.getInventory().setChanged();}
+    private static String objectiveLine(ItemStack s){String stage=ContractStageSupport.stageLabel(s);return stage.isBlank()?ContractItem.objectiveText(s):stage+": "+ContractItem.objectiveText(s);} private static String displayQuest(String id){ItemStack s=LegacyStoryContracts.create(id,net.minecraft.util.RandomSource.create(0));return s.isEmpty()?id:ContractItem.title(s);}
+    private static String storyLine(String id){return switch(id){case"crash_landing"->"A damaged research relay came down nearby. Rebuild the protocol hardware before its data decays.";case"we_must_know"->"The relay is speaking again. Place the field coil so we can hear what it was trying to report.";case"gmo"->"Scan the agricultural samples. We need to know what prolonged matter exposure is doing to ordinary crops.";case"trade_route"->"Our suppliers have become unreliable. Follow the agreement trail, inspect the crate, and speak to a scientist.";case"stem_bolts"->"The agreement copy contains the final authentication sequence. Use it and see what the network sends back.";case"to_the_power_of"->"Every laboratory eventually runs out of power. Prove you can establish independent generation.";default->"There is work to do.";};}
+    private static String completionLine(String id){return switch(id){case"crash_landing"->"Good. The relay survived, which is more than I expected from its previous owner.";case"we_must_know"->"The signal is coherent. Unfortunately, that means we now have to investigate it.";case"gmo"->"Useful samples. Disturbing samples, but useful is the important part.";case"trade_route"->"The route is open again. Ignore anything unusual that followed you back.";case"stem_bolts"->"Authentication accepted. I am choosing to interpret the response as encouraging.";case"to_the_power_of"->"Independent power confirmed. You are becoming inconveniently competent.";default->"The experiment is complete.";};}
 }
