@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "matteroverdrive:integration_matrix"},
+    {"item": "matteroverdrive:upgrade_speed"},
+    {"item": "matteroverdrive:tritanium_plate"}
+  ],
+  "result": {"item": "matteroverdrive:chassis_frame_lightweight"}
+}
