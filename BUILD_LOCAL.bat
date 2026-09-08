@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal EnableExtensions EnableDelayedExpansion
 
 cd /d "%~dp0"
 
@@ -37,9 +37,32 @@ if not %BUILD_RESULT%==0 (
     exit /b %BUILD_RESULT%
 )
 
+set JAR_COUNT=0
 echo.
 echo ============================================================
 echo BUILD PASSED
-echo Production JAR(s) are in build\libs\
+echo ============================================================
+echo Production JAR output:
+for %%F in ("build\libs\*.jar") do (
+    if exist "%%~fF" (
+        set /a JAR_COUNT+=1
+        echo   %%~fF
+        for %%S in ("%%~fF") do echo     size: %%~zS bytes
+        where certutil >nul 2>nul
+        if !errorlevel!==0 (
+            echo     SHA-256:
+            certutil -hashfile "%%~fF" SHA256 | findstr /R /V /C:"hash of file" /C:"CertUtil"
+        )
+    )
+)
+
+if !JAR_COUNT!==0 (
+    echo.
+    echo ERROR: Gradle reported success but no JAR exists in build\libs\.
+    exit /b 3
+)
+
+echo.
+echo Built !JAR_COUNT! JAR file(s). Copy the production MatterOverdrive JAR from build\libs\ into the test instance mods folder.
 echo ============================================================
 exit /b 0
