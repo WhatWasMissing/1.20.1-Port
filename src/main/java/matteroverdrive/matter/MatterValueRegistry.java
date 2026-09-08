@@ -171,6 +171,35 @@ public final class MatterValueRegistry {
         return resolved;
     }
 
+    /**
+     * Lightweight value lookup for UI/tooltips. This deliberately never walks
+     * the recipe graph because Minecraft rebuilds its creative/search index by
+     * generating tooltips for a very large number of item stacks on the render
+     * thread. Recursive recipe valuation from that callback can freeze the
+     * client while joining a world.
+     *
+     * <p>Explicit/tag/dynamic values are returned immediately. A recipe-derived
+     * value is used when it has already been resolved by normal gameplay or a
+     * diagnostic command; otherwise the cheap fallback is shown until then.</p>
+     */
+    public static MatterValue getMatterValueForTooltip(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return new MatterValue(0, ValueSource.NONE);
+        }
+        if (stack.getItem() instanceof MatterDustItem) {
+            return new MatterValue(MatterDustItem.getMatter(stack), ValueSource.DYNAMIC);
+        }
+
+        MatterValue base = getBaseValue(stack);
+        if (base.hasMatter()) {
+            return base;
+        }
+
+        String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        MatterValue cached = RECIPE_CACHE.get(id);
+        return cached != null ? cached : fallbackValue(stack);
+    }
+
     public static void clearRecipeCache() {
         RECIPE_CACHE.clear();
         cachedRecipeCount = -1;
