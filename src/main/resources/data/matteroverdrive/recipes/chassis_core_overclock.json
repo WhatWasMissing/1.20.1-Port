@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "matteroverdrive:integration_matrix"},
+    {"item": "matteroverdrive:upgrade_power"},
+    {"item": "matteroverdrive:isolinear_circuit_mk4"}
+  ],
+  "result": {"item": "matteroverdrive:chassis_core_overclock"}
+}
