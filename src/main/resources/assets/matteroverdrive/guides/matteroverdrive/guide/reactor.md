@@ -32,6 +32,24 @@ Anomaly mass is not decorative. Feeding valid matter-bearing entities/items into
 
 Because the event horizon is destructive, keep ordinary storage, players and loose items away from it unless you intend to feed them into the anomaly.
 
+## Moving an anomaly
+
+The **Anomaly Containment Unit** lets you relocate an existing Gravitational Anomaly instead of permanently building a base around wherever world generation happened to place one.
+
+Use an **empty** containment unit directly on a Gravitational Anomaly. The device records the anomaly's accumulated mass, removes the anomaly from the world and marks itself as loaded. Its tooltip reports that it contains an anomaly and shows the preserved mass.
+
+To redeploy it, use the loaded unit on the face of a solid block with an empty adjacent block. A new Gravitational Anomaly is placed in that adjacent position and receives the preserved mass. The same containment unit becomes empty again and can be reused.
+
+Important rules:
+
+- one containment unit holds one anomaly at a time;
+- you cannot overwrite a solid block when redeploying;
+- accumulated anomaly mass is preserved across the move;
+- suppressor links are intentionally not transported, because they belong to stabilizers at the old location;
+- move the anomaly **before** constructing the reactor ring when practical.
+
+This means a naturally generated anomaly can be transported to a purpose-built reactor room, underground facility or existing base without losing the mass you have already fed into it.
+
 ## Energy storage and output
 
 The reactor controller has **100,000,000 FE** of internal capacity. Output scales from a restored base generation model and anomaly mass rather than being permanently limited to the old cable-sized 512 FE/t behavior.
