@@ -5,7 +5,6 @@ import matteroverdrive.android.AndroidClassAbilities;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.android.AndroidUltimates;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkRegistry;
@@ -15,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "8";
+    private static final String PROTOCOL = "9";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -32,10 +31,6 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, DataPadOpenPacket.class, DataPadOpenPacket::encode, DataPadOpenPacket::decode, DataPadOpenPacket::handle);
         CHANNEL.registerMessage(nextId++, DocumentationOpenPacket.class, DocumentationOpenPacket::encode, DocumentationOpenPacket::decode, DocumentationOpenPacket::handle);
         CHANNEL.registerMessage(nextId++, OmniToolFirePacket.class, OmniToolFirePacket::encode, OmniToolFirePacket::decode, OmniToolFirePacket::handle);
-        CHANNEL.registerMessage(nextId++, StarMapTravelPacket.class, StarMapTravelPacket::encode, StarMapTravelPacket::decode, StarMapTravelPacket::handle);
-        CHANNEL.registerMessage(nextId++, StarMapFleetAttackPacket.class, StarMapFleetAttackPacket::encode, StarMapFleetAttackPacket::decode, StarMapFleetAttackPacket::handle);
-        CHANNEL.registerMessage(nextId++, StarMapEconomyPacket.class, StarMapEconomyPacket::encode, StarMapEconomyPacket::decode, StarMapEconomyPacket::handle);
-        CHANNEL.registerMessage(nextId++, StarMapShipDispatchPacket.class, StarMapShipDispatchPacket::encode, StarMapShipDispatchPacket::decode, StarMapShipDispatchPacket::handle);
         CHANNEL.registerMessage(nextId++, ContractAbandonPacket.class, ContractAbandonPacket::encode, ContractAbandonPacket::decode, ContractAbandonPacket::handle);
         CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
         CHANNEL.registerMessage(nextId++, NpcDialoguePacket.class, NpcDialoguePacket::encode, NpcDialoguePacket::decode, NpcDialoguePacket::handle);
@@ -47,10 +42,6 @@ public final class ModNetwork {
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
     public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines)); }
     public static void fireOmniTool() { CHANNEL.sendToServer(new OmniToolFirePacket()); }
-    public static void requestStarMapTravel(BlockPos p, int q, int s, int pl) { CHANNEL.sendToServer(new StarMapTravelPacket(p, q, s, pl)); }
-    public static void requestStarMapFleetAttack(BlockPos p) { CHANNEL.sendToServer(new StarMapFleetAttackPacket(p)); }
-    public static void requestStarMapEconomy(BlockPos p, int action) { CHANNEL.sendToServer(new StarMapEconomyPacket(p, action)); }
-    public static void requestStarMapShipDispatch(BlockPos p, int shipType, int q, int s, int pl) { CHANNEL.sendToServer(new StarMapShipDispatchPacket(p, shipType, q, s, pl)); }
     public static void requestContractAbandon(int slot) { CHANNEL.sendToServer(new ContractAbandonPacket(slot)); }
     public static void requestDroneStatus() { CHANNEL.sendToServer(DroneCommandPacket.requestStatus()); }
 
