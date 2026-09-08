@@ -10,8 +10,10 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +35,7 @@ public final class MatterValueRegistry {
 
     private static final Map<String, Integer> VALUES = new HashMap<>();
     private static final Map<String, MatterValue> RECIPE_CACHE = new HashMap<>();
+    private static final Map<String, List<Recipe<?>>> RECIPE_INDEX = new HashMap<>();
     private static int cachedRecipeCount = -1;
     private static int cachedRecipeFingerprint;
     private static final int MAX_RECIPE_DEPTH = 24;
@@ -202,6 +205,7 @@ public final class MatterValueRegistry {
 
     public static void clearRecipeCache() {
         RECIPE_CACHE.clear();
+        RECIPE_INDEX.clear();
         cachedRecipeCount = -1;
         cachedRecipeFingerprint = 0;
     }
@@ -214,6 +218,18 @@ public final class MatterValueRegistry {
         }
         if (recipeCount != cachedRecipeCount || fingerprint != cachedRecipeFingerprint) {
             RECIPE_CACHE.clear();
+            RECIPE_INDEX.clear();
+            for (Recipe<?> recipe : level.getRecipeManager().getRecipes()) {
+                if (recipe.isSpecial()) {
+                    continue;
+                }
+                ItemStack result = recipe.getResultItem(level.registryAccess());
+                if (result.isEmpty()) {
+                    continue;
+                }
+                String resultId = BuiltInRegistries.ITEM.getKey(result.getItem()).toString();
+                RECIPE_INDEX.computeIfAbsent(resultId, ignored -> new ArrayList<>()).add(recipe);
+            }
             cachedRecipeCount = recipeCount;
             cachedRecipeFingerprint = fingerprint;
         }
@@ -242,50 +258,49 @@ public final class MatterValueRegistry {
 
         int bestRecipeValue = Integer.MAX_VALUE;
         try {
-            for (Recipe<?> recipe : level.getRecipeManager().getRecipes()) {
-                if (recipe.isSpecial()) {
-                    continue;
-                }
-
-                ItemStack result = recipe.getResultItem(level.registryAccess());
-                if (result.isEmpty() || !ItemStack.isSameItem(result, stack)) {
-                    continue;
-                }
-
-                long subtotal = 0L;
-                boolean complete = true;
-                for (Ingredient ingredient : recipe.getIngredients()) {
-                    if (ingredient.isEmpty()) {
+            List<Recipe<?>> candidates = RECIPE_INDEX.get(id);
+            if (candidates != null) {
+                for (Recipe<?> recipe : candidates) {
+                    ItemStack result = recipe.getResultItem(level.registryAccess());
+                    if (result.isEmpty() || !ItemStack.isSameItem(result, stack)) {
                         continue;
                     }
 
-                    int cheapest = Integer.MAX_VALUE;
-                    for (ItemStack option : ingredient.getItems()) {
-                        MatterValue optionValue = resolveMatter(level, option, resolving, depth + 1);
-                        if (optionValue.hasMatter()) {
-                            cheapest = Math.min(cheapest, optionValue.value());
+                    long subtotal = 0L;
+                    boolean complete = true;
+                    for (Ingredient ingredient : recipe.getIngredients()) {
+                        if (ingredient.isEmpty()) {
+                            continue;
+                        }
+
+                        int cheapest = Integer.MAX_VALUE;
+                        for (ItemStack option : ingredient.getItems()) {
+                            MatterValue optionValue = resolveMatter(level, option, resolving, depth + 1);
+                            if (optionValue.hasMatter()) {
+                                cheapest = Math.min(cheapest, optionValue.value());
+                            }
+                        }
+
+                        if (cheapest == Integer.MAX_VALUE) {
+                            complete = false;
+                            break;
+                        }
+                        subtotal += cheapest;
+                        if (subtotal >= Integer.MAX_VALUE) {
+                            subtotal = Integer.MAX_VALUE;
+                            break;
                         }
                     }
 
-                    if (cheapest == Integer.MAX_VALUE) {
-                        complete = false;
-                        break;
+                    if (!complete || subtotal <= 0) {
+                        continue;
                     }
-                    subtotal += cheapest;
-                    if (subtotal >= Integer.MAX_VALUE) {
-                        subtotal = Integer.MAX_VALUE;
-                        break;
-                    }
-                }
 
-                if (!complete || subtotal <= 0) {
-                    continue;
+                    int outputCount = Math.max(1, result.getCount());
+                    int perItem = (int) Math.max(1L, Math.min(Integer.MAX_VALUE,
+                            (subtotal + outputCount - 1L) / outputCount));
+                    bestRecipeValue = Math.min(bestRecipeValue, perItem);
                 }
-
-                int outputCount = Math.max(1, result.getCount());
-                int perItem = (int) Math.max(1L, Math.min(Integer.MAX_VALUE,
-                        (subtotal + outputCount - 1L) / outputCount));
-                bestRecipeValue = Math.min(bestRecipeValue, perItem);
             }
         } finally {
             resolving.remove(id);
