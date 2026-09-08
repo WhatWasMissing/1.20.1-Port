@@ -1,22 +1,35 @@
-# Matter Overdrive 1.20.1 - Alpha Runtime Testing Checklist
+# Matter Overdrive 1.20.1 - 0.6 Runtime Testing Checklist
 
-Branch: `testing/main`
+Branch: `main`
+Release line: `0.6`
 Legacy references:
 - Matter Overdrive 1.7.10 `0.4.2` jar.
 - Matter Overdrive 1.12.2 `0.7.1.0` universal jar.
 
 The 0.8 alpha jar is intentionally excluded from parity decisions.
-Build identity: `Alpha Version 3`, made by MVQ1303
+Build identity: `Matter Overdrive 0.6`, maintained by MVQ1303
 
-This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions compilation is not a substitute for runtime verification.
+This file is bundled in-game as the **M2 Testing Checklist**. GitHub Actions compilation is not a substitute for runtime verification. A clean local 0.6 build and the checks below are required before the release is considered runtime-verified.
 
 ## Highest-priority regression
-- [ ] Matter production/storage/analysis/replication works end-to-end.
+- [ ] Matter production/storage/analysis/replication works end-to-end, including recursive/fallback matter values introduced for 0.6.
 - [ ] Reactor ring, IO, anomaly mass, stabilizers, shared ring power, remote and overlay remain functional.
 - [ ] Weapons require valid FE, heat/reload correctly and do not drain unrelated weapons.
 - [ ] Android HUD, V cycle, B activate, K tree and perk persistence/refunds work.
 - [ ] Security Claim/Access/Remove still gates normal interaction and wrench dismantling.
 - [ ] Network Router/Switch routing and Transporter exact-FE operation remain correct.
+
+## 0.6 matter economy
+- [ ] Common explicitly-valued items retain their intended matter values.
+- [ ] Recipe-derived values resolve for simple and multi-stage recipes.
+- [ ] Multi-output recipes divide input matter across their output count without producing zero-value results.
+- [ ] Ingredient alternatives choose the cheapest valid positive matter path.
+- [ ] Cyclic/reversible recipes terminate safely rather than recursing forever or inflating value.
+- [ ] Items without an explicit or resolvable recipe value receive a deterministic fallback value.
+- [ ] Matter Analyzer, Decomposer, Pattern Drive and Replicator agree on the effective matter value.
+- [ ] Matter tooltips show the effective value; Shift exposes the value source where supported.
+- [ ] `/matteroverdrive matter value`, `/matteroverdrive matter audit` and `/matteroverdrive matter clearcache` execute without errors.
+- [ ] Recipe/datapack changes do not leave stale cached matter values after cache invalidation/reload.
 
 ## Android Spawner / Drone
 - [ ] Spawner caps at six owned Androids with intended 30% melee / 70% ranged mix and ignores unrelated Androids.
@@ -170,7 +183,8 @@ Recovered 1.7 base capacities are **building / fleet**: Normal **6/6**, Gas Gian
 - [ ] Switching pages never moves/hides a real inventory slot or causes ghost-clicks.
 
 ## GUI / persistence / release sanity
-- [ ] System Guide index opens correct sections and remembers last page.
+- [ ] GuideME index opens every current system page and all internal links resolve.
+- [ ] GuideME Current Features identifies the build as 0.6 and matches the repository feature reference.
 - [ ] Current Feature Reference matches this build.
 - [ ] M2 Testing Checklist matches this file.
 - [ ] Save/reload preserves machine inventories, FE, matter, upgrades, contracts, patrol drives, Android state, colony state, planet construction/capacities and ship travel state.
