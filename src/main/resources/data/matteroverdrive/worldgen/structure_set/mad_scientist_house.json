@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "matteroverdrive:mad_scientist_house",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 17290434,
+    "spacing": 96,
+    "separation": 32
+  }
+}
