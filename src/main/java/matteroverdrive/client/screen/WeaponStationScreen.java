@@ -22,9 +22,9 @@ public class WeaponStationScreen extends AbstractContainerScreen<WeaponStationMe
 
     public WeaponStationScreen(WeaponStationMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 350;
-        imageHeight = 176;
-        inventoryLabelY = 84;
+        imageWidth = 370;
+        imageHeight = 184;
+        inventoryLabelY = 92;
     }
 
     @Override protected void init() { super.init(); rebuildButtons(); }
@@ -34,90 +34,141 @@ public class WeaponStationScreen extends AbstractContainerScreen<WeaponStationMe
         for (int i = 0; i < PAGES.length; i++) {
             final int target = i;
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> { page = target; rebuildButtons(); })
-                    .bounds(leftPos + 176 + i * 55, topPos + 28, 52, 15).build();
+                    .bounds(leftPos + 190 + i * 57, topPos + 28, 54, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics); super.render(graphics, mouseX, mouseY, partialTick); renderTooltip(graphics, mouseX, mouseY);
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        renderTooltip(graphics, mouseX, mouseY);
     }
 
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 27, 142, 54);
-        MachineScreenStyle.drawSection(graphics, leftPos + 170, topPos + 25, 171, 142);
-        for (int[] position : STATION_SLOT_POSITIONS) MachineScreenStyle.drawSlot(graphics, leftPos + position[0] - 1, topPos + position[1] - 1);
+        MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight,
+                inventoryLabelY, MachineScreenStyle.CYAN);
+        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 27, 151, 62);
+        MachineScreenStyle.drawSection(graphics, leftPos + 181, topPos + 25, 180, 150);
+        for (int[] position : STATION_SLOT_POSITIONS) {
+            MachineScreenStyle.drawSlot(graphics, leftPos + position[0] - 1, topPos + position[1] - 1);
+        }
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Weapon", 20, 26, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Battery Color Barrel", 59, 26, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Sights  Utility", 59, 67, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "WEAPON", 20, 26, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "BAT CLR BAR", 59, 26, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "SIGHT  UTIL A/B", 59, 67, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
-        switch (page) { case 1 -> renderModules(graphics); case 2 -> renderStats(graphics); default -> renderHome(graphics); }
+        switch (page) {
+            case 1 -> renderModules(graphics);
+            case 2 -> renderStats(graphics);
+            default -> renderHome(graphics);
+        }
     }
 
     private ItemStack snapshot() {
         ItemStack weapon = menu.getSlot(0).getItem();
         if (weapon.isEmpty()) return ItemStack.EMPTY;
         ItemStack copy = weapon.copy();
-        for (int i = 0; i < WeaponSystem.MODULE_SLOT_COUNT; i++) WeaponSystem.setModule(copy, i, menu.getSlot(i + 1).getItem());
+        for (int i = 0; i < WeaponSystem.MODULE_SLOT_COUNT; i++) {
+            WeaponSystem.setModule(copy, i, menu.getSlot(i + 1).getItem());
+        }
         return copy;
     }
 
     private void renderHome(GuiGraphics graphics) {
         ItemStack weapon = snapshot();
-        graphics.drawString(font, "WEAPON STATUS", 216, 51, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "LIVE WEAPON STATUS", 218, 51, MachineScreenStyle.CYAN, false);
         if (!(weapon.getItem() instanceof EnergyWeaponItem gun)) {
-            graphics.drawString(font, "Insert an energy weapon", 185, 72, MachineScreenStyle.MUTED, false);
-            graphics.drawString(font, "All seven physical slots", 185, 87, MachineScreenStyle.MUTED, false);
-            graphics.drawString(font, "remain accessible on every page.", 185, 99, MachineScreenStyle.MUTED, false);
+            graphics.drawString(font, "Insert a Matter Overdrive energy weapon.", 194, 72, MachineScreenStyle.MUTED, false);
+            graphics.drawString(font, "All seven physical slots stay live", 194, 89, MachineScreenStyle.TEXT, false);
+            graphics.drawString(font, "while changing station pages.", 194, 102, MachineScreenStyle.TEXT, false);
             return;
         }
-        int energy = gun.getEnergyStored(weapon), capacity = gun.getCapacity(weapon);
-        int heat = Math.round(gun.getHeat(weapon)), maxHeat = gun.getMaxHeat(weapon);
-        graphics.drawString(font, trim(weapon.getHoverName().getString(), 25), 185, 68, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Type " + gun.getWeaponType().name().replace('_', ' '), 185, 82, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Energy " + (energy == Integer.MAX_VALUE ? "INFINITE" : energy + " / " + capacity + " FE"), 185, 98, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Heat " + heat + " / " + maxHeat + (gun.isOverheated(weapon) ? " OVERHEATED" : ""), 185, 112, gun.isOverheated(weapon) ? MachineScreenStyle.DANGER : MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Modules " + WeaponSystem.installedModuleCount(weapon) + " / 6", 185, 128, MachineScreenStyle.GREEN, false);
-        String sight = WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.SNIPER_SCOPE) ? "Sniper Scope" : WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.HOLO_SIGHTS) ? "Holo Sights" : "Standard sights";
-        graphics.drawString(font, "Sight " + sight, 185, 142, MachineScreenStyle.MUTED, false);
+        int energy = gun.getEnergyStored(weapon);
+        int capacity = gun.getCapacity(weapon);
+        int heat = Math.round(gun.getHeat(weapon));
+        int maxHeat = gun.getMaxHeat(weapon);
+        boolean overheated = gun.isOverheated(weapon);
+        int energyColor = energy <= 0 ? MachineScreenStyle.DANGER : MachineScreenStyle.CYAN;
+
+        graphics.drawString(font, trim(weapon.getHoverName().getString(), 27), 194, 68, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Frame: " + friendlyType(gun.getWeaponType()), 194, 81, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "FE: " + (energy == Integer.MAX_VALUE ? "INFINITE" : energy + " / " + capacity), 194, 96, energyColor, false);
+        graphics.drawString(font, "Heat: " + heat + " / " + maxHeat + (overheated ? "  OVERHEATED" : ""),
+                194, 109, overheated ? MachineScreenStyle.DANGER : MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Modules: " + WeaponSystem.installedModuleCount(weapon) + " / 6", 194, 124, MachineScreenStyle.GREEN, false);
+        graphics.drawString(font, "Sight: " + sightName(weapon), 194, 137, MachineScreenStyle.PURPLE, false);
+        String readiness = overheated ? "COOL WEAPON BEFORE FIRING"
+                : energy <= 0 ? "RELOAD FROM ENERGY PACK / BATTERY"
+                : "COMBAT READY";
+        graphics.drawString(font, readiness, 194, 154,
+                overheated || energy <= 0 ? MachineScreenStyle.AMBER : MachineScreenStyle.GREEN, false);
     }
 
     private void renderModules(GuiGraphics graphics) {
         ItemStack weapon = menu.getSlot(0).getItem();
-        graphics.drawString(font, "MODULE LAYOUT", 216, 51, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "MODULE LAYOUT", 225, 51, MachineScreenStyle.CYAN, false);
         if (weapon.isEmpty()) {
-            graphics.drawString(font, "Insert an energy weapon", 185, 70, MachineScreenStyle.MUTED, false);
-            graphics.drawString(font, "Modules unpack into the", 185, 84, MachineScreenStyle.MUTED, false);
-            graphics.drawString(font, "legacy six-role layout.", 185, 96, MachineScreenStyle.MUTED, false);
+            graphics.drawString(font, "Insert an energy weapon first.", 194, 72, MachineScreenStyle.MUTED, false);
+            graphics.drawString(font, "Modules map into six functional roles", 194, 89, MachineScreenStyle.TEXT, false);
+            graphics.drawString(font, "and remain physically editable here.", 194, 102, MachineScreenStyle.TEXT, false);
             return;
         }
         String[] names = {"Battery", "Color", "Barrel", "Sights", "Utility A", "Utility B"};
         for (int i = 0; i < 6; i++) {
             ItemStack module = menu.getSlot(i + 1).getItem();
             int color = module.isEmpty() ? MachineScreenStyle.MUTED : MachineScreenStyle.GREEN;
-            graphics.drawString(font, names[i] + ": " + (module.isEmpty() ? "empty" : trim(module.getHoverName().getString(), 17)), 185, 68 + i * 14, color, false);
+            String value = module.isEmpty() ? "EMPTY" : trim(module.getHoverName().getString(), 18);
+            graphics.drawString(font, names[i], 194, 68 + i * 15, MachineScreenStyle.MUTED, false);
+            graphics.drawString(font, value, 253, 68 + i * 15, color, false);
         }
+        graphics.drawString(font, "Changes apply to the effective weapon snapshot immediately.",
+                194, 158, MachineScreenStyle.CYAN, false);
     }
 
     private void renderStats(GuiGraphics graphics) {
         ItemStack weapon = snapshot();
-        graphics.drawString(font, "EFFECTIVE STATS", 211, 51, MachineScreenStyle.CYAN, false);
-        if (weapon.isEmpty()) { graphics.drawString(font, "Insert a weapon to inspect", 185, 72, MachineScreenStyle.MUTED, false); return; }
-        graphics.drawString(font, String.format(Locale.ROOT, "Damage x%.2f", WeaponSystem.damageMultiplier(weapon)), 185, 70, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Energy use x%.2f", WeaponSystem.energyMultiplier(weapon)), 185, 85, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Cooldown x%.2f", WeaponSystem.cooldownMultiplier(weapon)), 185, 100, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Range x%.2f", WeaponSystem.rangeMultiplier(weapon)), 185, 115, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "EFFECTIVE MODIFIERS", 214, 51, MachineScreenStyle.CYAN, false);
+        if (!(weapon.getItem() instanceof EnergyWeaponItem gun)) {
+            graphics.drawString(font, "Insert a weapon to inspect real stats.", 194, 72, MachineScreenStyle.MUTED, false);
+            return;
+        }
+        graphics.drawString(font, String.format(Locale.ROOT, "Damage       x%.2f", WeaponSystem.damageMultiplier(weapon)), 194, 69, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, String.format(Locale.ROOT, "Energy/shot  x%.2f", WeaponSystem.energyMultiplier(weapon)), 194, 83, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, String.format(Locale.ROOT, "Cooldown     x%.2f", WeaponSystem.cooldownMultiplier(weapon)), 194, 97, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, String.format(Locale.ROOT, "Range        x%.2f", WeaponSystem.rangeMultiplier(weapon)), 194, 111, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Capacity     " + gun.getCapacity(weapon) + " FE", 194, 125, MachineScreenStyle.CYAN, false);
         boolean scope = WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.SNIPER_SCOPE);
-        graphics.drawString(font, scope ? "Scope zoom x0.85 while aiming" : "Scope zoom: none", 185, 130, scope ? MachineScreenStyle.PURPLE : MachineScreenStyle.MUTED, false);
+        String zoom = scope ? "0.85x override"
+                : gun.getWeaponType() == EnergyWeaponItem.WeaponType.ION_SNIPER ? "0.40x Ion base" : "1.00x base";
+        graphics.drawString(font, "Aim zoom     " + zoom, 194, 139, scope ? MachineScreenStyle.PURPLE : MachineScreenStyle.MUTED, false);
         ItemStack barrel = menu.getSlot(WeaponSystem.BARREL_SLOT + 1).getItem();
-        graphics.drawString(font, "Barrel " + (barrel.getItem() instanceof WeaponModuleItem module ? module.getEffect().name() : "STANDARD"), 185, 145, barrel.isEmpty() ? MachineScreenStyle.MUTED : MachineScreenStyle.PURPLE, false);
+        String barrelName = barrel.getItem() instanceof WeaponModuleItem module ? module.getEffect().name() : "STANDARD";
+        graphics.drawString(font, "Barrel       " + barrelName, 194, 153,
+                barrel.isEmpty() ? MachineScreenStyle.MUTED : MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, "All numbers above come from installed modules.", 194, 166, MachineScreenStyle.GREEN, false);
     }
 
-    private String trim(String value, int max) { return value.length() <= max ? value : value.substring(0, Math.max(0, max - 1)) + "…"; }
+    private String sightName(ItemStack weapon) {
+        if (WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.SNIPER_SCOPE)) return "Sniper Scope";
+        if (WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.HOLO_SIGHTS)) return "Holo Sights";
+        return "Standard";
+    }
+
+    private String friendlyType(EnergyWeaponItem.WeaponType type) {
+        return switch (type) {
+            case PHASER -> "Phaser";
+            case PHASER_RIFLE -> "Phaser Rifle";
+            case ION_SNIPER -> "Ion Sniper";
+            case PLASMA_SHOTGUN -> "Plasma Shotgun";
+        };
+    }
+
+    private String trim(String value, int max) {
+        return value.length() <= max ? value : value.substring(0, Math.max(0, max - 1)) + "…";
+    }
 }
