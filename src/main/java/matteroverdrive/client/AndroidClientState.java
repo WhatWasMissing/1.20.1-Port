@@ -69,6 +69,8 @@ public final class AndroidClientState {
     public static long selectedPerks() { return selectedPerks; }
     public static int aspectMask() { return aspectMask; }
     public static int fragmentMask() { return fragmentMask; }
+    public static int aspectCount() { return Integer.bitCount(aspectMask); }
+    public static int fragmentCount() { return Integer.bitCount(fragmentMask); }
     public static int artifactOrdinal() { return artifactOrdinal; }
     public static AndroidLoadout.Artifact artifact() { return AndroidLoadout.Artifact.values()[artifactOrdinal]; }
     public static int dronePerkMask() { return dronePerkMask; }
@@ -82,6 +84,8 @@ public final class AndroidClientState {
     public static boolean classAbilityReady() { return level >= 2 && classAbilityCooldownTicks <= 0; }
     public static boolean techAbilityReady() { return level >= 2 && techAbilityCooldownTicks <= 0; }
     public static boolean hasPerk(AndroidData.Perk perk) { return (selectedPerks & (1L << perk.ordinal())) != 0L; }
+    public static boolean hasAspect(AndroidLoadout.Aspect aspect) { return (aspectMask & (1 << aspect.ordinal())) != 0; }
+    public static boolean hasFragment(AndroidLoadout.Fragment fragment) { return (fragmentMask & (1 << fragment.ordinal())) != 0; }
     public static boolean hasDronePerk(AndroidLoadout.DronePerk perk) { return (dronePerkMask & (1 << perk.ordinal())) != 0; }
     public static boolean isCloakEnabled() { return (activeAbilityFlags & 1) != 0; }
     public static boolean isForceFieldEnabled() { return (activeAbilityFlags & 2) != 0; }
