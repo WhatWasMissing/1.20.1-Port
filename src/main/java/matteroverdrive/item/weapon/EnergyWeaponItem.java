@@ -141,8 +141,12 @@ public class EnergyWeaponItem extends Item {
 
         if (!canAttemptFire(weapon, player)) {
             if (!level.isClientSide) {
-                player.sendSystemMessage(Component.literal(isOverheated(weapon)
-                        ? "Weapon overheated" : "Weapon is recharging").withStyle(ChatFormatting.RED));
+                String message = isOverheated(weapon)
+                        ? "Weapon overheated"
+                        : !hasEnoughEnergy(weapon, player, getEnergyCost(weapon))
+                        ? "No internal weapon energy - Shift+Use to reload"
+                        : "Weapon is recharging";
+                player.sendSystemMessage(Component.literal(message).withStyle(ChatFormatting.RED));
             }
             return InteractionResultHolder.fail(weapon);
         }
@@ -200,8 +204,8 @@ public class EnergyWeaponItem extends Item {
 
     private boolean fire(Level level, Player shooter, ItemStack weapon, int pellets, float spread, float damageScale) {
         int energyCost = getEnergyCost(weapon);
-        if (!hasEnoughEnergy(weapon, shooter, energyCost) && !tryReload(weapon, shooter, energyCost)) {
-            shooter.sendSystemMessage(Component.literal("No weapon energy - carry an Energy Pack or charged battery")
+        if (!hasEnoughEnergy(weapon, shooter, energyCost)) {
+            shooter.sendSystemMessage(Component.literal("No internal weapon energy - Shift+Use to reload")
                     .withStyle(ChatFormatting.RED));
             return false;
         }
@@ -336,7 +340,9 @@ public class EnergyWeaponItem extends Item {
     }
 
     private boolean canAttemptFire(ItemStack weapon, Player player) {
-        return !player.isSpectator() && !isOverheated(weapon);
+        return !player.isSpectator()
+                && !isOverheated(weapon)
+                && hasEnoughEnergy(weapon, player, getEnergyCost(weapon));
     }
 
     private boolean shotDelayPassed(Level level, ItemStack weapon) {
