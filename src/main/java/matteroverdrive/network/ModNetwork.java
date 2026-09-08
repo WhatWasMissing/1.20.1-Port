@@ -15,7 +15,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "7";
+    private static final String PROTOCOL = "8";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -39,6 +39,8 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, ContractAbandonPacket.class, ContractAbandonPacket::encode, ContractAbandonPacket::decode, ContractAbandonPacket::handle);
         CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
         CHANNEL.registerMessage(nextId++, NpcDialoguePacket.class, NpcDialoguePacket::encode, NpcDialoguePacket::decode, NpcDialoguePacket::handle);
+        CHANNEL.registerMessage(nextId++, DroneCommandPacket.class, DroneCommandPacket::encode, DroneCommandPacket::decode, DroneCommandPacket::handle);
+        CHANNEL.registerMessage(nextId++, DroneStatusPacket.class, DroneStatusPacket::encode, DroneStatusPacket::decode, DroneStatusPacket::handle);
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h)); }
@@ -50,9 +52,14 @@ public final class ModNetwork {
     public static void requestStarMapEconomy(BlockPos p, int action) { CHANNEL.sendToServer(new StarMapEconomyPacket(p, action)); }
     public static void requestStarMapShipDispatch(BlockPos p, int shipType, int q, int s, int pl) { CHANNEL.sendToServer(new StarMapShipDispatchPacket(p, shipType, q, s, pl)); }
     public static void requestContractAbandon(int slot) { CHANNEL.sendToServer(new ContractAbandonPacket(slot)); }
+    public static void requestDroneStatus() { CHANNEL.sendToServer(DroneCommandPacket.requestStatus()); }
 
     public static void syncQuestTracker(ServerPlayer p) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), QuestTrackerSyncPacket.from(p));
+    }
+
+    public static void sendDroneStatus(ServerPlayer p) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), DroneStatusPacket.from(p));
     }
 
     public static void syncAndroidState(ServerPlayer p) {
