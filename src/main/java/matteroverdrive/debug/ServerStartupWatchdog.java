@@ -7,6 +7,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
@@ -16,21 +17,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Temporary diagnostics for the 0.6 integrated-server loading and post-login stalls.
+ * Diagnostics for integrated-server startup and runtime stalls.  The continuous
+ * heartbeat monitor is intentionally cheap and is particularly useful while the
+ * restored native structures are being reintroduced: if a structure generation
+ * task deadlocks a worldgen worker or blocks the server tick, the log captures the
+ * relevant stacks without requiring a debugger.
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ServerStartupWatchdog {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final AtomicBoolean STARTED = new AtomicBoolean(false);
+    private static final AtomicBoolean STOPPING = new AtomicBoolean(false);
     private static final AtomicBoolean WATCHDOG_ARMED = new AtomicBoolean(false);
     private static final AtomicBoolean POST_LOGIN_WATCHDOG_ARMED = new AtomicBoolean(false);
+    private static final AtomicBoolean CONTINUOUS_WATCHDOG_RUNNING = new AtomicBoolean(false);
+    private static final AtomicBoolean STALL_REPORTED = new AtomicBoolean(false);
     private static final AtomicLong LAST_SERVER_TICK_NANOS = new AtomicLong(System.nanoTime());
+    private static final long RUNTIME_STALL_NANOS = 5_000_000_000L;
 
     private ServerStartupWatchdog() {}
 
     @SubscribeEvent
     public static void onAboutToStart(ServerAboutToStartEvent event) {
         STARTED.set(false);
+        STOPPING.set(false);
+        STALL_REPORTED.set(false);
         LAST_SERVER_TICK_NANOS.set(System.nanoTime());
         LOGGER.warn("M2 STARTUP TRACE: ServerAboutToStartEvent reached");
     }
@@ -63,13 +74,22 @@ public final class ServerStartupWatchdog {
     public static void onStarted(ServerStartedEvent event) {
         STARTED.set(true);
         LAST_SERVER_TICK_NANOS.set(System.nanoTime());
-        LOGGER.warn("M2 STARTUP TRACE: ServerStartedEvent reached successfully");
+        LOGGER.warn("M2 STARTUP TRACE: ServerStartedEvent reached successfully; continuous runtime watchdog active");
+        startContinuousWatchdog();
+    }
+
+    @SubscribeEvent
+    public static void onStopping(ServerStoppingEvent event) {
+        STOPPING.set(true);
+        STARTED.set(false);
+        STALL_REPORTED.set(false);
     }
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             LAST_SERVER_TICK_NANOS.set(System.nanoTime());
+            STALL_REPORTED.set(false);
         }
     }
 
@@ -83,8 +103,6 @@ public final class ServerStartupWatchdog {
 
         Thread watchdog = new Thread(() -> {
             try {
-                // The reported freeze happens immediately after joining. Give the
-                // server enough time for normal login work, then verify ticks are advancing.
                 Thread.sleep(6500L);
                 long stalledMillis = (System.nanoTime() - LAST_SERVER_TICK_NANOS.get()) / 1_000_000L;
                 if (stalledMillis >= 4000L) {
@@ -99,6 +117,30 @@ public final class ServerStartupWatchdog {
                 POST_LOGIN_WATCHDOG_ARMED.set(false);
             }
         }, "M2 Post Login Watchdog");
+        watchdog.setDaemon(true);
+        watchdog.start();
+    }
+
+    private static void startContinuousWatchdog() {
+        if (!CONTINUOUS_WATCHDOG_RUNNING.compareAndSet(false, true)) return;
+        Thread watchdog = new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    Thread.sleep(1000L);
+                    if (!STARTED.get() || STOPPING.get()) continue;
+                    long stalledNanos = System.nanoTime() - LAST_SERVER_TICK_NANOS.get();
+                    if (stalledNanos < RUNTIME_STALL_NANOS) continue;
+                    if (!STALL_REPORTED.compareAndSet(false, true)) continue;
+                    long stalledMillis = stalledNanos / 1_000_000L;
+                    LOGGER.error("M2 CONTINUOUS WATCHDOG: no completed server tick for {} ms. This may indicate chunk/structure generation deadlock or another blocking task.", stalledMillis);
+                    dumpRelevantThreads("M2 CONTINUOUS WATCHDOG THREAD");
+                }
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            } finally {
+                CONTINUOUS_WATCHDOG_RUNNING.set(false);
+            }
+        }, "M2 Continuous Runtime Watchdog");
         watchdog.setDaemon(true);
         watchdog.start();
     }
