@@ -7,59 +7,98 @@ navigation:
 ---
 # Android System
 
-The Android Station manages conversion and Android progression. Androids have persistent progression, body systems, energy and a selectable skill tree. The Android HUD reports combat state in play, while the Class Matrix and skill-tree interfaces configure the build.
+The Android Station manages conversion, installed body systems and Android progression. The 0.6 Android system is split into four layers: core abilities, Ascension perks, a specialization loadout, and H/N/G subclass abilities. Gameplay state is server-authoritative and designed to persist across normal saves, relogs and death/respawn.
+
+## Progression and Ascension Points
+
+Android level is driven by the backend XP curve rather than a flat 100 XP per level. The HUD now reads those real thresholds. Ascension Points are also not one point per level: you earn a total of five by level 10, with the available total derived from `level / 2`.
+
+Perks are selected in branching paths. Higher-tier perks require prior investment in the same branch, so a level-10 capstone cannot be selected without building toward it first. The selected perk mask is preserved when XP changes and has a backup copy to protect against accidental progression loss.
 
 ## Core abilities
 
-The legacy core cycle remains available alongside subclass abilities. The current 0.6 combat pass intentionally makes these abilities noticeable rather than tiny background bonuses:
+Cycle the installed core abilities, then activate the selected one. Each core ability requires its associated bionic part and minimum Android level.
 
-- **Cloak** drains 80 FE/t while active, breaks nearby hostile target locks, grants movement on entry and gives an ambush movement/Strength window when you leave cloak. Phase Navigator and related fragments/passives strengthen this further.
-- **Force Field** drains 20 FE/t while idle and 48 FE per absorbed damage point before perk scaling. It absorbs 65% of incoming damage by default and 85% with Adamant Chassis, with additional defensive layers available from the loadout.
-- **Sonic Shockwave** costs 3,000 FE, has a 4s base cooldown, deals 12 base damage in a 7-block radius and applies strong knockback/control. Shockwave perks and Singularity Lattice substantially increase it.
-- **Ender Teleport** costs 2,800 FE, has a 2.5s base cooldown and 12-block base range. It grants post-blink mobility/resistance and disrupts nearby enemies; Phase Navigator, Translocation and Singularity Lattice add real gameplay effects.
+- **Cloak**: 80 FE/t base drain while active. It grants entry mobility/defence, repeatedly breaks nearby hostile target locks and gives an ambush Strength/mobility window when disabled. Ghost Protocol and Silent Cloak reduce the FE burden; Phase Navigator improves the exit payoff.
+- **Force Field**: 20 FE/t idle drain plus 48 FE per absorbed damage point before perk scaling. It mitigates 65% of incoming damage by default and **75% with Adamant Chassis**. The field also gives activation feedback/absorption and collapses automatically when FE can no longer sustain it.
+- **Sonic Shockwave**: 3,000 FE base cost, 4-second base cooldown, 12 base damage and 7-block base radius. It applies knockback, Slowness and Weakness. Wideband Pulse, Resonant/Overcharged Pulse, Shock Momentum, Singularity Lattice and cooldown/efficiency perks can materially alter the result.
+- **Ender Teleport**: 2,800 FE base cost, 2.5-second base cooldown and 12-block base range. It searches backward along the view ray for a collision-free destination, resets fall distance and grants post-blink mobility/resistance. Phase Navigator, Translocation, Singularity Lattice and blink perks extend or modify the move.
 
-## Subclass abilities
+If Teleport reports that no safe destination exists, aim at a more open area rather than repeatedly activating into a solid wall.
 
-Every subclass equips three dedicated actions in addition to the core ability cycle:
+## Classes and specializations
 
-- **H** - class ability. Lower-cost movement, defence, sustain or close-combat action.
-- **N** - tech ability. Stronger battlefield-control, damage, marking or fleet-support action.
-- **G** - subclass ultimate. High-impact ability with the largest FE commitment and cooldown.
+The three top-level Android identities are:
 
-The Class Matrix inspection panel reports the exact FE cost and cooldown for H and N, and the descriptions state concrete ranges, durations, damage, healing and effect levels. G ultimates show their FE cost and cooldown as well.
+- **Strider**: mobility, cloak, target acquisition and precision positioning.
+- **Juggernaut**: shockwave pressure, force fields, powered melee and durability.
+- **Architect**: energy recursion, nanites, battlefield control and drone command.
 
-Damaging H/N/G actions are tagged as Android ability damage. This is important: damage Aspects, Fragments and passive protocols such as Vanguard Protocol, Amplitude, Feedback, Corrosive Cloud and Mass Driver now modify those attacks instead of silently missing them.
+Each class contains three specializations, for nine current specializations total:
 
-## HUD
+- Strider: **Singularity Breaker / Utility**, **Hunter-Killer**, **Precision Frame**.
+- Juggernaut: **Citadel / Chassis**, **Singularity Breaker / Assault**, **Siege Frame**.
+- Architect: **Drone Commander**, **Nanite Weaver**, **Gravity Core**.
 
-The in-world Android HUD is designed to answer the important combat questions without reopening the Matrix:
+The Class Matrix is the best place to inspect the currently selected specialization, its Aspect/Fragment loadout, passive protocol and the exact H/N/G ability descriptions.
 
-- current specialization;
-- Android FE and low-energy warning;
-- level, XP and unspent progression points;
-- equipped Aspect/Fragment counts and passive protocol;
-- selected core ability and current state;
-- dedicated **H / N / G** slots with ability name, FE cost, level lock, READY state or remaining cooldown;
-- a live cooldown progress strip for each subclass slot.
+## H / N / G abilities
+
+Every specialization equips three dedicated actions in addition to the core cycle:
+
+- **H** - class ability: generally the lower-cost movement, defence, sustain or close-combat tool.
+- **N** - tech ability: stronger battlefield control, marking, damage or fleet support.
+- **G** - ultimate: the highest-impact action with the largest FE commitment and cooldown.
+
+The HUD shows each slot separately with ability name, FE cost, level lock, READY state or remaining cooldown. Damaging H/N/G actions are tagged as Android ability damage, allowing combat Aspects, Fragments and passive protocols to modify them consistently.
+
+A 0.6 safety rule prevents abilities that require a real target/fleet effect from spending FE and starting cooldown when their primary effect cannot occur. For example, **Drone Commander Swarm Surge requires at least one linked drone within 24 blocks**.
 
 ## Aspects, Fragments and passive protocols
 
-Descriptions in the Class Matrix are intended to match the runtime values. The 0.6 combat audit specifically wires previously underimplemented choices such as **Singularity Lattice**, **Reactive Exoshell**, **Phase Navigator** and **Fragment of Translocation** to real effects. Percentage-only bonuses were also raised so a committed build has a noticeable combat identity.
+These are intended to change real runtime behavior, not only text descriptions.
 
-Reactive Exoshell, for example, now triggers a six-second Resistance III + Absorption II defensive window when damaged, with an eight-second retrigger gate. Phase Navigator changes Teleport range/cooldown/post-blink effects and improves cloak exit rather than existing only as descriptive text.
+- **Singularity Lattice** strengthens Shockwave and gives Teleport a damaging/control arrival burst.
+- **Reactive Exoshell** provides a timed Resistance/Absorption response when damaged and has its own retrigger timer.
+- **Phase Navigator** modifies Teleport range/cooldown/post-blink effects and improves the cloak-exit window.
+- **Fragment of Translocation** increases the post-Teleport mobility package.
+- **Feedback / Harmonics / Recursive Core** return FE from tagged ability damage under their configured conditions.
+- **Corrosive Cloud** adds poison/weakness pressure to qualifying ability damage.
+- **Mass Driver** increases ability damage/knockback behavior.
+- Defensive fragments and protocols stack with the normal Android mitigation calculation rather than replacing Force Field.
 
-## Drone fleets
+## HUD
 
-Linked drones recognise drones belonging to the same operator, and allied operators, as friendlies. Friendly drones are excluded from target selection and friendly drone damage is rejected as a second safety layer.
+The in-world Android HUD reports:
 
-Following drones use stable escort formation slots behind and beside their operator rather than all steering toward the same point. Fleet separation keeps nearby drones apart, and long-distance catch-up only repositions a drone into a collision-free slot that is not already occupied by another fleet drone.
+- active specialization;
+- Android FE and low-energy warning;
+- real level and XP progress using the backend XP thresholds;
+- real unspent Ascension Points;
+- equipped Aspect/Fragment counts and passive protocol;
+- selected core ability and active/cooldown state;
+- distinct H/N/G slots with FE cost, lock state and cooldown progress.
 
-Drone Commander progression now materially scales the fleet: damage multipliers, marked-target bonuses, repair, resistance and command radius all have runtime hooks. **Command Authority** extends the active support envelope to 48 blocks, and **Overmind Ascendant** actually boosts drone offence in addition to repair/defence.
+If the HUD appears stale after changing the build, close the configuration screen and perform a normal ability selection/action so the server state syncs again.
+
+## Linked drone fleet
+
+Linked drones store their owner UUID, fleet slot/count and command mode. FOLLOW, PASSIVE, DEFENSIVE and AGGRESSIVE are persistent commands.
+
+Friendly-fire protection exists at more than one layer. Drones consider the owner and same-owner drones allied, and drone-origin direct or indirect projectile damage to the owner/fleet is cancelled. This prevents a ranged drone arrow already in flight from bypassing the entity-level ally check.
+
+FOLLOW uses deterministic formation positions plus separation so multiple drones do not deliberately stack into one location. Catch-up positions are collision checked. If the owner is offline or cannot be resolved, linked drones now damp residual movement instead of drifting indefinitely.
+
+### Drone Commander
+
+Drone Commander progression can affect fleet damage, repairs, resistance, marked-target bonuses and command radius. **Command Authority** extends the support envelope to 48 blocks. **Swarm Surge** buffs linked drones in its operating radius and will refuse activation with no eligible drone. **Overmind Ascendant** restores/overclocks nearby owned drones and improves offence as well as defence/sustain.
 
 ## Android Spawner squads
 
-The Android Spawner maintains up to six owned synthetic soldiers with the intended 30% melee / 70% ranged mix and six Transport Flash Drive patrol slots. Squad color, PATROL/GUARD/HOLD/ESCORT mode and commander state persist.
+The Android Spawner maintains up to six owned synthetic soldiers, with the intended population weighted roughly 30% melee / 70% ranged. It provides six Transport Flash Drive patrol slots.
 
-ESCORT now assigns deterministic formation slots by squad membership rather than hash-based positions that can collide. If a squad member falls far behind it may use a collision-checked catch-up position rather than clipping into blocks or another squad member.
+Persistent spawner state includes squad color, PATROL/GUARD/HOLD/ESCORT mode, commander identity, patrol drives and the owned-unit list. ESCORT uses stable formation slots and collision-checked catch-up behavior. GUARD pulls units back toward the spawner, HOLD stops idle navigation, and Dismiss Squad should only remove Androids owned by that spawner.
 
-Android features are server-authoritative where gameplay state is concerned, so relogging or changing dimensions should not reset legitimate progression.
+## Persistence checklist
+
+For a serious progression test, configure a specialization, perks, Aspects, Fragments and passive protocol; put H/N/G on cooldown; deploy linked drones; then save and quit Minecraft completely. After relaunch, verify the loadout, progression, drone modes and cooldown state. Repeat once across player death/respawn. The 0.6 persistence layer explicitly preserves the class/tech/ultimate cooldown timestamps and Reactive Exoshell timer in addition to the main Android/loadout roots.
