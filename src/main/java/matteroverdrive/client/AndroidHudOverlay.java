@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.android.AndroidClassAbilities;
+import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.android.AndroidUltimates;
 import net.minecraft.client.Minecraft;
@@ -48,12 +49,18 @@ public final class AndroidHudOverlay {
                 barX, barY + 8, energy < 15_000 ? 0xFFFFB45B : 0xFFB5DFFF, false);
 
         int level = AndroidClientState.level();
-        int levelStart = (level - 1) * 100;
-        int unspent = Math.max(0, level - Long.bitCount(AndroidClientState.selectedPerks()));
-        String progression = level >= 10
-                ? "LEVEL 10 // MAX XP"
-                : String.format("LEVEL %d // XP %d/100", level,
-                        Math.max(0, AndroidClientState.experience() - levelStart));
+        int spent = Long.bitCount(AndroidClientState.selectedPerks());
+        int unspent = Math.max(0, AndroidData.skillPointsForLevel(level) - spent);
+        String progression;
+        if (level >= AndroidData.MAX_LEVEL) {
+            progression = "LEVEL " + AndroidData.MAX_LEVEL + " // MAX XP";
+        } else {
+            int currentThreshold = AndroidData.experienceForLevel(level);
+            int nextThreshold = AndroidData.experienceForLevel(level + 1);
+            int intoLevel = Math.max(0, AndroidClientState.experience() - currentThreshold);
+            int levelSpan = Math.max(1, nextThreshold - currentThreshold);
+            progression = "LEVEL " + level + " // XP " + intoLevel + "/" + levelSpan;
+        }
         if (unspent > 0) progression += " // " + unspent + " POINT" + (unspent == 1 ? "" : "S");
         graphics.drawString(minecraft.font, progression, barX, y + 36, 0xFFFFD27A, false);
 
