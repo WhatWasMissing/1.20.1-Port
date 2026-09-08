@@ -14,6 +14,7 @@ public final class AndroidKeyMappings {
     public static final KeyMapping CYCLE_ABILITY = new KeyMapping("key.matteroverdrive.android_cycle_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.matteroverdrive");
     public static final KeyMapping OPEN_SKILL_TREE = new KeyMapping("key.matteroverdrive.android_skill_tree", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "key.categories.matteroverdrive");
     public static final KeyMapping OPEN_LOADOUT = new KeyMapping("key.matteroverdrive.android_loadout", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_L, "key.categories.matteroverdrive");
+    public static final KeyMapping OPEN_DRONE_MANAGEMENT = new KeyMapping("key.matteroverdrive.drone_management", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_M, "key.categories.matteroverdrive");
     public static final KeyMapping ACTIVATE_ABILITY = new KeyMapping("key.matteroverdrive.android_activate_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.matteroverdrive");
     public static final KeyMapping ACTIVATE_ULTIMATE = new KeyMapping("key.matteroverdrive.android_activate_ultimate", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.matteroverdrive");
     public static final KeyMapping ACTIVATE_CLASS_ABILITY = new KeyMapping("key.matteroverdrive.android_class_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "key.categories.matteroverdrive");
@@ -30,5 +31,6 @@ public final class AndroidKeyMappings {
         event.register(ACTIVATE_ULTIMATE);
         event.register(OPEN_SKILL_TREE);
         event.register(OPEN_LOADOUT);
+        event.register(OPEN_DRONE_MANAGEMENT);
     }
 }
