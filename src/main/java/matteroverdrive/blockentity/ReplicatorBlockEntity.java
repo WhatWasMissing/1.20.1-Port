@@ -10,6 +10,7 @@ import matteroverdrive.item.MatterDustItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.MachineUpgradeInventory;
 import matteroverdrive.item.PatternDriveItem;
+import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.menu.ReplicatorMenu;
 import matteroverdrive.network.PatternData;
 import matteroverdrive.registry.ModBlockEntities;
@@ -165,18 +166,20 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
 
     public boolean queueNetworkReplication(PatternData pattern, int amount, @Nullable BlockPos sourceMonitor) {
         if (pattern == null || pattern.stack().isEmpty() || pattern.matter() <= 0 || pattern.progress() <= 0 || amount <= 0) return false;
+        int liveMatter = resolveLiveMatter(pattern.stack(), pattern.matter());
         if (hasNetworkTask()) {
             boolean samePattern = ItemStack.isSameItemSameTags(networkPattern, pattern.stack())
-                    && networkPatternMatter == pattern.matter() && networkPatternProgress == pattern.progress();
+                    && networkPatternProgress == pattern.progress();
             boolean sameSource = Objects.equals(networkTaskSource, sourceMonitor);
             if (!samePattern || !sameSource || networkTaskAmount > Integer.MAX_VALUE - amount) return false;
+            networkPatternMatter = liveMatter;
             networkTaskAmount += amount;
             setChanged();
             return true;
         }
         networkPattern = pattern.stack().copy();
         networkPattern.setCount(1);
-        networkPatternMatter = pattern.matter();
+        networkPatternMatter = liveMatter;
         networkPatternProgress = pattern.progress();
         networkTaskAmount = amount;
         networkTaskSource = sourceMonitor == null ? null : sourceMonitor.immutable();
@@ -188,7 +191,18 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
     public boolean hasNetworkTask() { return networkTaskAmount > 0 && !networkPattern.isEmpty(); }
 
     private ItemStack getCurrentPattern() { return hasNetworkTask() ? networkPattern.copy() : PatternDriveItem.getPatternStack(items.getStackInSlot(DRIVE_SLOT)); }
-    private int getCurrentMatterCost() { return hasNetworkTask() ? networkPatternMatter : PatternDriveItem.getMatter(items.getStackInSlot(DRIVE_SLOT)); }
+    private int getCurrentMatterCost() {
+        ItemStack pattern = getCurrentPattern();
+        int storedMatter = hasNetworkTask() ? networkPatternMatter : PatternDriveItem.getMatter(items.getStackInSlot(DRIVE_SLOT));
+        return resolveLiveMatter(pattern, storedMatter);
+    }
+    private int resolveLiveMatter(ItemStack pattern, int fallback) {
+        if (level != null && !pattern.isEmpty()) {
+            int live = MatterValueRegistry.getMatter(level, pattern);
+            if (live > 0) return live;
+        }
+        return Math.max(0, fallback);
+    }
     private int getCurrentPatternProgress() { return hasNetworkTask() ? networkPatternProgress : PatternDriveItem.getProgress(items.getStackInSlot(DRIVE_SLOT)); }
 
     private boolean canReplicate() {
@@ -307,7 +321,7 @@ public class ReplicatorBlockEntity extends BlockEntity implements MenuProvider {
             CompoundTag stackTag = new CompoundTag();
             networkPattern.save(stackTag);
             tag.put("NetworkPattern", stackTag);
-            tag.putInt("NetworkPatternMatter", networkPatternMatter);
+            tag.putInt("NetworkPatternMatter", getCurrentMatterCost());
             tag.putInt("NetworkPatternProgress", networkPatternProgress);
             tag.putInt("NetworkTaskAmount", networkTaskAmount);
             if (networkTaskSource != null) tag.putLong("NetworkTaskSource", networkTaskSource.asLong());
