@@ -13,27 +13,23 @@ public class GravitationalStabilizerScreen extends AbstractContainerScreen<Gravi
 
     public GravitationalStabilizerScreen(GravitationalStabilizerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 330;
-        imageHeight = 202;
-        inventoryLabelY = 89;
+        imageWidth = 344;
+        imageHeight = 210;
+        inventoryLabelY = 97;
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        rebuildButtons();
-    }
+    @Override protected void init() { super.init(); rebuildButtons(); }
 
     private void rebuildButtons() {
         clearWidgets();
         addRenderableWidget(Button.builder(Component.literal("RS MODE"), button -> clickMenu(1))
-                .bounds(leftPos + 252, topPos + 5, 69, 16).build());
+                .bounds(leftPos + 266, topPos + 5, 69, 16).build());
         for (int i = 0; i < PAGES.length; i++) {
             final int target = i;
             Button tab = Button.builder(Component.literal(PAGES[i]), b -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 183 + i * 45, topPos + 29, 43, 15).build();
+            }).bounds(leftPos + 190 + i * 47, topPos + 29, 45, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -57,25 +53,25 @@ public class GravitationalStabilizerScreen extends AbstractContainerScreen<Gravi
         int x = leftPos, y = topPos;
         MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
                 MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawSection(graphics, x + 17, y + 25, 142, 39);
-        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 66, 142, 20);
-        MachineScreenStyle.drawSection(graphics, x + 176, y + 25, 145, 61);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 25, 150, 47);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 75, 150, 19);
+        MachineScreenStyle.drawSection(graphics, x + 181, y + 25, 154, 69);
         for (int slot = 0; slot < 4; slot++) {
-            MachineScreenStyle.drawSlot(graphics, x + 52 + slot * 18, y + 36);
+            MachineScreenStyle.drawSlot(graphics, x + 54 + slot * 18, y + 39);
         }
-        MachineScreenStyle.drawHorizontalBar(graphics, x + 25, y + 56, 126, 5,
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 25, y + 62, 134, 5,
                 menu.energy(), menu.energyCapacity(), MachineScreenStyle.CYAN);
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Power upgrades", 25, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "UPGRADE BUS", 25, 29, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, menu.energy() + " / " + menu.energyCapacity() + " FE",
-                25, 45, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Draw " + menu.powerUsed() + " / " + menu.requiredPower() + " FE/t",
-                20, 69, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, status(), 20, 78, MachineScreenStyle.TEXT, false);
+                25, 49, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "DRAW " + menu.powerUsed() + " / " + menu.requiredPower() + " FE/t",
+                20, 78, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, compactStatus(), 20, 87, statusColor(), false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
 
         switch (page) {
@@ -86,40 +82,52 @@ public class GravitationalStabilizerScreen extends AbstractContainerScreen<Gravi
     }
 
     private void renderHome(GuiGraphics graphics) {
-        graphics.drawString(font, "STABILIZER STATUS", 202, 52, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, menu.isPowered() ? "POWERED" : "NO REACTOR POWER", 188, 66,
+        graphics.drawString(font, "STABILIZER STATUS", 207, 52, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, menu.isPowered() ? "POWER LINK: ONLINE" : "POWER LINK: OFFLINE", 193, 67,
                 menu.isPowered() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, "Redstone " + redstoneLabel(), 188, 78,
-                menu.redstoneAllowsOperation() ? MachineScreenStyle.CYAN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "Redstone: " + redstoneLabel()
+                        + (menu.redstoneAllowsOperation() ? " / ALLOW" : " / PAUSE"),
+                193, 80, menu.redstoneAllowsOperation() ? MachineScreenStyle.CYAN : MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, menu.anomalyDistance() >= 0
+                        ? "Anomaly lock: " + menu.anomalyDistance() + " blocks"
+                        : "Anomaly lock: NONE",
+                193, 93, menu.anomalyDistance() >= 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
     }
 
     private void renderBeam(GuiGraphics graphics) {
-        graphics.drawString(font, "BEAM TELEMETRY", 205, 52, MachineScreenStyle.CYAN, false);
-        if (menu.anomalyDistance() >= 0) {
-            graphics.drawString(font, "Anomaly lock " + menu.anomalyDistance() + " blocks", 188, 66,
-                    MachineScreenStyle.GREEN, false);
-        } else {
-            graphics.drawString(font, "No anomaly lock", 188, 66, MachineScreenStyle.MUTED, false);
-        }
+        graphics.drawString(font, "BEAM TELEMETRY", 210, 52, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, menu.anomalyDistance() >= 0
+                        ? "LOCKED // " + menu.anomalyDistance() + " blocks"
+                        : "LOCK // NONE",
+                193, 67, menu.anomalyDistance() >= 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
         graphics.drawString(font, menu.isBeamBlocked()
-                        ? "Blocked at " + menu.beamBlockedDistance() + " blocks" : "Beam path clear",
-                188, 78, menu.isBeamBlocked() ? MachineScreenStyle.DANGER : MachineScreenStyle.CYAN, false);
+                        ? "PATH // BLOCKED @ " + menu.beamBlockedDistance()
+                        : "PATH // CLEAR",
+                193, 80, menu.isBeamBlocked() ? MachineScreenStyle.DANGER : MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "POWER // " + menu.powerUsed() + " / " + menu.requiredPower() + " FE/t",
+                193, 93, menu.isPowered() ? MachineScreenStyle.TEXT : MachineScreenStyle.AMBER, false);
+        graphics.drawString(font, "A clear beam + FE + allowed RS is required.", 193, 109, MachineScreenStyle.MUTED, false);
     }
 
     private void renderUpgrades(GuiGraphics graphics) {
-        graphics.drawString(font, "UPGRADES", 218, 52, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "4 physical slots shown left", 188, 66,
-                MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Required " + menu.requiredPower() + " FE/t", 188, 78,
-                MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "UPGRADES", 225, 52, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "4 physical slots remain active", 193, 68, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Required draw: " + menu.requiredPower() + " FE/t", 193, 82, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Use range/power upgrades to tune", 193, 98, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "beam reach and reactor-side support.", 193, 111, MachineScreenStyle.MUTED, false);
     }
 
-    private String status() {
-        if (!menu.redstoneAllowsOperation()) return "Paused by redstone (" + redstoneLabel() + ")";
-        if (!menu.isPowered()) return "Waiting for reactor power";
-        if (menu.anomalyDistance() >= 0) return "Locked: anomaly " + menu.anomalyDistance() + " blocks";
-        if (menu.isBeamBlocked()) return "Beam blocked: " + menu.beamBlockedDistance() + " blocks";
-        return "Powered: no anomaly in beam";
+    private String compactStatus() {
+        if (!menu.redstoneAllowsOperation()) return "PAUSED: REDSTONE " + redstoneLabel();
+        if (!menu.isPowered()) return "WAITING: REACTOR POWER";
+        if (menu.isBeamBlocked()) return "BLOCKED @ " + menu.beamBlockedDistance() + " BLOCKS";
+        if (menu.anomalyDistance() >= 0) return "STABILIZING @ " + menu.anomalyDistance() + " BLOCKS";
+        return "READY: NO ANOMALY IN BEAM";
+    }
+
+    private int statusColor() {
+        if (!menu.redstoneAllowsOperation() || !menu.isPowered() || menu.isBeamBlocked()) return MachineScreenStyle.DANGER;
+        return menu.anomalyDistance() >= 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.AMBER;
     }
 
     private String redstoneLabel() {
