@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "matteroverdrive:block/facility_network_controller" }
+  }
+}
