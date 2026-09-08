@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["TST", "IQI", "TMT"],
+  "key": {
+    "T": {"item": "matteroverdrive:tritanium_plate"},
+    "S": {"item": "matteroverdrive:spacetime_equalizer"},
+    "I": {"item": "matteroverdrive:isolinear_circuit_mk4"},
+    "Q": {"item": "matteroverdrive:quantum_fold_manipulator"},
+    "M": {"item": "matteroverdrive:integration_matrix"}
+  },
+  "result": {"item": "matteroverdrive:anomaly_containment_unit"}
+}
