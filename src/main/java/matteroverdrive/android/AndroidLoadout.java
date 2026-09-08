@@ -14,19 +14,18 @@ public final class AndroidLoadout {
     private static final String SPECIALIZATION = "Specialization";
     public static final int MAX_ASPECTS = 2;
     public static final int MAX_FRAGMENT_CAPACITY = 6;
-    /* Drone nodes are sequential progression, so the cap must allow the level-10 capstone to be reached. */
     public static final int MAX_DRONE_PERKS = 9;
 
     public enum Ultimate {
-        SINGULARITY_CASCADE("Singularity Cascade", "Collapse the local combat space into an explosive kinetic pulse.", 45_000, 900),
-        CITADEL_PROTOCOL("Citadel Protocol", "Become a mobile fortress with heavy resistance, absorption and nanite repair.", 35_000, 1_200),
-        PHASE_DOMINION("Phase Dominion", "Enter an accelerated phase state while suppressing and exposing nearby hostiles.", 40_000, 1_000),
-        OVERMIND_ASCENDANT("Overmind Ascendant", "Fully repair and overclock linked drones while exposing targets across the command radius.", 30_000, 900),
-        EXECUTION_LATTICE("Execution Lattice", "Acquire every hostile in the hunt radius and execute marked targets through a cascading combat lock.", 42_000, 1_000),
-        RAILSTORM_PROTOCOL("Railstorm Protocol", "Route reactor output through predictive targeting for a devastating long-range precision volley.", 44_000, 1_000),
-        SIEGE_ENGINE("Siege Engine", "Overdrive the heavy frame into an advancing weapons platform that crushes nearby resistance.", 48_000, 1_100),
-        NANITE_BLOOM("Nanite Bloom", "Release a self-propagating nanite cloud that repairs allies while dismantling hostile biology and machinery.", 38_000, 1_000),
-        EVENT_HORIZON("Event Horizon", "Generate a temporary gravity collapse that drags enemies inward and tears at trapped targets.", 46_000, 1_100);
+        SINGULARITY_CASCADE("Singularity Cascade", "12-block kinetic detonation: 16-33 damage by distance, heavy launch, Weakness III and Slowness II.", 34_000, 800),
+        CITADEL_PROTOCOL("Citadel Protocol", "25s Resistance IV, Absorption V, Regeneration III and Fire Resistance; 15s Strength II plus an 8-block defensive repulse.", 28_000, 1_000),
+        PHASE_DOMINION("Phase Dominion", "20s Speed IV, cloak and Resistance II; suppress enemies in 24 blocks and immediately restore 4,000 FE.", 30_000, 850),
+        OVERMIND_ASCENDANT("Overmind Ascendant", "Fully heal drones in 40 blocks and grant 30s Strength IV, Resistance IV, Regeneration III, Speed III and Absorption III.", 26_000, 800),
+        EXECUTION_LATTICE("Execution Lattice", "Strike every hostile within 28 blocks for 18 base damage plus marked-target and missing-health execution damage; refund FE per target.", 32_000, 850),
+        RAILSTORM_PROTOCOL("Railstorm Protocol", "40-block forward precision volley dealing 40 damage, or 52 to marked targets, then grants 10s Strength III.", 34_000, 850),
+        SIEGE_ENGINE("Siege Engine", "20s Resistance III, Strength III and Absorption IV plus a 12-block 24-damage breach blast.", 36_000, 900),
+        NANITE_BLOOM("Nanite Bloom", "20-block corrosion field: 12 damage, Poison IV, Weakness III and allied repair; heals you 12 HP and empowers drones.", 30_000, 850),
+        EVENT_HORIZON("Event Horizon", "22-block gravity collapse: drag enemies inward, deal 22 damage, apply Slowness V + Weakness III, and gain 12s Resistance III.", 35_000, 900);
 
         public final String displayName;
         public final String description;
@@ -41,14 +40,10 @@ public final class AndroidLoadout {
         }
     }
 
-    /**
-     * The original four enum constants stay first and in the same order for old-save ordinal compatibility.
-     * Their player-facing names now represent the first members of the 3x3 class matrix.
-     */
     public enum Specialization {
         ASSAULT("Singularity Breaker", "Aggressive shockwave pressure, powered melee and close-range collapse effects.", Ultimate.SINGULARITY_CASCADE),
         CHASSIS("Citadel", "Front-line durability, force-field control and nanite survival.", Ultimate.CITADEL_PROTOCOL),
-        UTILITY("Phase Stalker", "Phase mobility, cloak, target acquisition and recursive energy support.", Ultimate.PHASE_DOMINION),
+        UTILITY("Phase Stalker", "Phase mobility, cloak, target acquisition and energy recovery.", Ultimate.PHASE_DOMINION),
         DRONE_COMMANDER("Drone Commander", "Command, sustain and overclock linked synthetic drones.", Ultimate.OVERMIND_ASCENDANT),
         HUNTER_KILLER("Hunter-Killer", "Marked-target pursuit, execution windows and aggressive target chaining.", Ultimate.EXECUTION_LATTICE),
         PRECISION_FRAME("Precision Frame", "Long-range target prediction, disciplined positioning and high-value precision bursts.", Ultimate.RAILSTORM_PROTOCOL),
@@ -69,49 +64,49 @@ public final class AndroidLoadout {
 
     public enum Aspect {
         VANGUARD_PROTOCOL("Vanguard Protocol", "Assault", 2,
-                "Ability damage is increased and powered melee hits strike harder."),
+                "Android ability damage +25%; other direct player damage +15%."),
         TEMPORAL_OVERDRIVE("Temporal Overdrive", "Assault", 3,
-                "At high Android charge, combat systems overclock movement and damage."),
+                "Above 75% FE, spend about 100 FE/s to maintain Speed III and Strength II."),
         SINGULARITY_LATTICE("Singularity Lattice", "Assault", 2,
-                "Shockwave and teleport effects gain stronger offensive follow-through."),
+                "Shockwave gains +4 damage, +2 blocks radius and stronger control; Teleport creates a 6-block 8-damage arrival burst."),
         AEGIS_WEAVE("Aegis Weave", "Chassis", 3,
-                "Incoming damage is reduced; Force Field gains an additional defensive layer."),
+                "Reduce all incoming damage by 18%, stacking with Force Field and other defensive fragments."),
         NANITE_BASTION("Nanite Bastion", "Chassis", 2,
-                "Critical health activates an efficient powered self-repair routine."),
+                "Below 55% health, spend about 240 FE/s to repair 3 HP/s before Recovery/Nanite passive bonuses."),
         REACTIVE_EXOSHELL("Reactive Exoshell", "Chassis", 2,
-                "Taking repeated damage hardens the synthetic frame for a short period."),
+                "When damaged, trigger 6s Resistance III + Absorption II; can retrigger every 8s."),
         HUNTER_ARRAY("Hunter-Killer Array", "Utility", 3,
-                "Periodically marks nearby hostile targets through terrain."),
+                "Every 2s, scan 26 blocks and mark hostiles for 4.5s while applying 3s Weakness I."),
         RECURSIVE_CORE("Recursive Core", "Utility", 2,
-                "Improves auxiliary charging and rewards ability damage with recovered FE."),
+                "Held-battery crouch charging gains +512 FE/t; every damaging Android ability hit restores 250 FE."),
         PHASE_NAVIGATOR("Phase Navigator", "Utility", 3,
-                "Movement systems become more efficient after teleporting or cloaking."),
+                "Teleport gains +6 blocks range, 20% shorter cooldown, stronger post-blink buffs and +1,000 FE; cloak exit is also stronger."),
         COMMAND_UPLINK("Command Uplink", "Drone Commander", 3,
-                "Linked drones inherit combat telemetry and gain improved targeting support."),
+                "Owned drone damage +15% and command-support effects are reinforced."),
         SWARM_LOGIC("Swarm Logic", "Drone Commander", 3,
-                "Multiple linked drones reinforce one another and recover faster near their operator."),
+                "With multiple drones, fleet damage scales up and nearby drone repair is strengthened."),
         GUARDIAN_DIRECTIVE("Guardian Directive", "Drone Commander", 2,
-                "Defensive drones prioritise protecting their operator and become harder to destroy."),
+                "Nearby owned drones continuously receive at least Resistance II."),
         PREDATOR_CHAIN("Predator Chain", "Hunter-Killer", 3,
-                "Damaging marked targets amplifies follow-up attacks and recycles Android energy."),
+                "Damage against glowing targets +20% and each hit restores 250 FE."),
         EXECUTION_ROUTER("Execution Router", "Hunter-Killer", 2,
-                "Low-health or marked enemies are easier to finish and remain exposed longer."),
+                "Deal +20% damage to glowing targets or enemies at/below 40% health."),
         STABILIZED_OPTICS("Stabilized Optics", "Precision Frame", 3,
-                "Marked targets take increased damage while the Android maintains disciplined positioning."),
+                "Deal +22% damage to glowing targets."),
         BALLISTIC_PREDICTION("Ballistic Prediction", "Precision Frame", 2,
-                "Standing steady periodically acquires distant targets and primes precision damage."),
+                "While nearly stationary, every 2s scan 36 blocks to mark targets and apply Weakness II."),
         HEAVY_ORDNANCE("Heavy Ordnance", "Siege Frame", 3,
-                "Powered attacks gain additional damage and stronger knockback at the cost of FE."),
+                "Non-ability weapon/melee damage +20%."),
         MOBILE_FORTRESS("Mobile Fortress", "Siege Frame", 2,
-                "High charge continuously reinforces the frame while advancing through incoming fire."),
+                "Above 50% FE, maintain Resistance II and periodically refresh Absorption I."),
         REPAIR_SWARM("Repair Swarm", "Nanite Weaver", 3,
-                "Nanites continuously repair the operator and nearby owned drones when damaged."),
+                "Repair yourself for 2 HP every 2s when hurt; nearby drones repair 1.5 HP/s."),
         CORROSIVE_CLOUD("Corrosive Cloud", "Nanite Weaver", 2,
-                "Android ability damage infects targets with a short corrosive nanite debuff."),
+                "Damaging Android abilities apply 6s Poison II and 5s Weakness I."),
         MASS_DRIVER("Mass Driver", "Gravity Core", 3,
-                "Ability impacts violently displace enemies and deal increased damage."),
+                "Android ability damage +22% and ability hits strongly displace enemies."),
         GRAVITIC_WELL("Gravitic Well", "Gravity Core", 2,
-                "Nearby hostiles are periodically slowed and pulled toward the Android.");
+                "Every 2s, hostiles within 11 blocks are pulled inward and receive 3.5s Slowness III.");
 
         public final String displayName;
         public final String branch;
@@ -141,30 +136,30 @@ public final class AndroidLoadout {
     }
 
     public enum Fragment {
-        AMPLITUDE("Fragment of Amplitude", "Ability hits deal 8% more damage."),
-        WARDING("Fragment of Warding", "Reduce incoming damage by 5%."),
-        BARRIER("Fragment of the Barrier", "Force Field reduces incoming damage by an additional 10%."),
-        INDUCTION("Fragment of Induction", "Crouch-charging from held batteries gains an additional 256 FE/t."),
-        FEEDBACK("Fragment of Feedback", "Damaging an enemy with an Android ability restores 150 FE."),
-        RECOVERY("Fragment of Recovery", "Nanite repair restores additional health."),
-        PREDATION("Fragment of Predation", "Hostile-target scans gain 8 blocks of range."),
-        MOBILITY("Fragment of Mobility", "Powered Androids receive a persistent movement-speed boost."),
-        RESOLVE("Fragment of Resolve", "Take 10% less damage while below 35% health."),
-        VEIL("Fragment of the Veil", "Cloaking also increases movement speed."),
-        SURGE("Fragment of Surge", "Above 75% Android FE, weapon and melee damage are increased by 5%."),
-        CONSERVATION("Fragment of Conservation", "Passive Android loadout effects consume less FE."),
-        SYNAPSE("Fragment of Synapse", "Ability damage can briefly accelerate movement."),
-        BULWARK("Fragment of Bulwark", "Force Field grants stronger knockback resistance through Resistance."),
-        AFTERSHOCK("Fragment of Aftershock", "Shockwave ability damage is increased by a further 10%."),
-        TRANSLOCATION("Fragment of Translocation", "Teleporting grants a short burst of speed."),
-        OVERFLOW("Fragment of Overflow", "High Android FE improves passive regeneration efficiency."),
-        HARMONICS("Fragment of Harmonics", "Ability hits have a chance to return additional FE."),
-        SENTINEL("Fragment of the Sentinel", "Owned drones near you gain Resistance."),
-        PACK_TACTICS("Fragment of Pack Tactics", "Owned drones deal more damage when several are deployed."),
+        AMPLITUDE("Fragment of Amplitude", "Android ability damage +15%."),
+        WARDING("Fragment of Warding", "Reduce incoming damage by 10%."),
+        BARRIER("Fragment of the Barrier", "While Force Field is active, reduce remaining incoming damage by another 15%."),
+        INDUCTION("Fragment of Induction", "Held-battery crouch charging gains +384 FE/t."),
+        FEEDBACK("Fragment of Feedback", "Every damaging Android ability hit restores 350 FE."),
+        RECOVERY("Fragment of Recovery", "Nanite Bastion repair increases from 3 to 4.5 HP/s before other bonuses."),
+        PREDATION("Fragment of Predation", "Hunter Array scan range gains 10 blocks."),
+        MOBILITY("Fragment of Mobility", "Powered Androids continuously receive Speed II."),
+        RESOLVE("Fragment of Resolve", "Reduce incoming damage by another 18% while at/below 35% health."),
+        VEIL("Fragment of the Veil", "While cloaked, maintain Speed III; Phase Stability raises this to Speed IV."),
+        SURGE("Fragment of Surge", "Above 75% Android FE, player damage +10%."),
+        CONSERVATION("Fragment of Conservation", "Recurring Android loadout effects cost 35% less FE."),
+        SYNAPSE("Fragment of Synapse", "Damaging ability hits have a 45% chance to grant 3.5s Speed III."),
+        BULWARK("Fragment of Bulwark", "While Force Field is active, continuously gain Resistance III."),
+        AFTERSHOCK("Fragment of Aftershock", "Damaging Android abilities deal +15% damage."),
+        TRANSLOCATION("Fragment of Translocation", "Teleport-related movement effects are enhanced by the core teleport system."),
+        OVERFLOW("Fragment of Overflow", "Above 75% FE, Nanite Bastion repairs an additional 1 HP/s."),
+        HARMONICS("Fragment of Harmonics", "Every damaging Android ability hit restores 200 FE."),
+        SENTINEL("Fragment of the Sentinel", "Owned drones near you continuously gain Resistance II or better."),
+        PACK_TACTICS("Fragment of Pack Tactics", "With multiple drones deployed, fleet damage scales upward with drone count."),
         REPAIR_BEACON("Fragment of Repair Beacon", "Owned drones regenerate while close to their operator."),
-        TARGET_LINK("Fragment of Target Link", "Owned drones deal increased damage to glowing targets."),
-        ESCORT("Fragment of Escort", "You take slightly less damage while an owned drone is nearby."),
-        ORDNANCE("Fragment of Ordnance", "Owned drone ranged attacks deal additional damage.");
+        TARGET_LINK("Fragment of Target Link", "Owned drones deal +20% damage to glowing targets."),
+        ESCORT("Fragment of Escort", "Take 10% less damage while an owned drone is nearby."),
+        ORDNANCE("Fragment of Ordnance", "Owned drone damage +20%.");
 
         public final String displayName;
         public final String description;
@@ -178,13 +173,13 @@ public final class AndroidLoadout {
     /** Internal enum name retained for save/network compatibility; these are selectable passive protocols. */
     public enum Artifact {
         NONE("No Passive", "No additional passive protocol is selected."),
-        OVERCLOCKED_RELAY("Overclock Protocol", "Ability damage +12%; ability hits recycle FE, while recurring loadout effects cost 8% more FE."),
-        AEGIS_PRISM("Aegis Protocol", "Reduce all incoming damage slightly and gain much stronger mitigation while Force Field is active."),
-        NANITE_CROWN("Nanite Recovery", "Low-health self-repair is substantially stronger, cheaper and periodically restores health."),
-        HUNTER_LENS("Hunter Protocol", "Target acquisition reaches farther; marked enemies take more player and drone damage."),
-        PHASE_ANCHOR("Phase Stability", "Cloak and teleport mobility bonuses last longer and grant stronger acceleration."),
-        SWARM_BEACON("Swarm Support", "Owned drones regenerate faster, resist damage and deal increased damage near their operator."),
-        CAPACITOR_HEART("Capacitor Feedback", "Ability hits return substantially more FE and high charge improves passive energy recovery.");
+        OVERCLOCKED_RELAY("Overclock Protocol", "Ability damage +18% and each damaging ability hit restores 150 FE; recurring loadout effects cost 8% more FE."),
+        AEGIS_PRISM("Aegis Protocol", "Reduce all incoming damage by 8%; while Force Field is active, reduce the remaining damage by another 18%."),
+        NANITE_CROWN("Nanite Recovery", "Makes recurring repair cheaper and substantially stronger; below 70% health it also repairs 2 HP every 2s for 100 FE."),
+        HUNTER_LENS("Hunter Protocol", "Hunter Array range +18 blocks; marked targets take +15% player damage and +20% drone damage."),
+        PHASE_ANCHOR("Phase Stability", "Cloak movement from Fragment of the Veil becomes Speed IV and lasts longer."),
+        SWARM_BEACON("Swarm Support", "Nearby drones gain stronger resistance and repair, plus +18% damage."),
+        CAPACITOR_HEART("Capacitor Feedback", "Damaging ability hits restore 400 FE at high charge; while above 50% FE, regenerate 250 FE/s."));
 
         public final String displayName;
         public final String description;
@@ -196,15 +191,15 @@ public final class AndroidLoadout {
     }
 
     public enum DronePerk {
-        COMMAND_AUTHORITY(2, "Command Authority", "Owned drones remain effective at greater range."),
-        TARGETING_SUITE(3, "Targeting Suite", "Owned drone attacks deal 12% more damage."),
-        REINFORCED_DRONES(4, "Reinforced Drones", "Owned drones gain periodic Resistance near you."),
-        FIELD_REPAIR(5, "Field Repair", "Owned drones slowly regenerate near their operator."),
-        HUNTER_NETWORK(6, "Hunter Network", "Owned drones deal more damage to glowing targets."),
-        SWARM_COHESION(7, "Swarm Cohesion", "Deploying multiple drones increases their damage."),
-        ESCORT_PROTOCOL(8, "Escort Protocol", "Nearby owned drones slightly reduce damage you take."),
-        ORDNANCE_LINK(9, "Ordnance Link", "Drone ranged attacks gain a further damage multiplier."),
-        OVERMIND(10, "Synthetic Overmind", "DRONE CAPSTONE: linked drones gain damage, Resistance and regeneration near you.");
+        COMMAND_AUTHORITY(2, "Command Authority", "Extends the effective command/support envelope for your owned drone fleet."),
+        TARGETING_SUITE(3, "Targeting Suite", "Owned drone damage +18%."),
+        REINFORCED_DRONES(4, "Reinforced Drones", "Owned drones near you continuously gain Resistance II."),
+        FIELD_REPAIR(5, "Field Repair", "Owned drones regenerate near their operator."),
+        HUNTER_NETWORK(6, "Hunter Network", "Owned drones gain the marked-target damage bonus against glowing enemies."),
+        SWARM_COHESION(7, "Swarm Cohesion", "Multiple deployed drones increase fleet damage, scaling with fleet size."),
+        ESCORT_PROTOCOL(8, "Escort Protocol", "Take 10% less damage while an owned drone is nearby."),
+        ORDNANCE_LINK(9, "Ordnance Link", "Owned drone damage gains another +22% multiplier."),
+        OVERMIND(10, "Synthetic Overmind", "DRONE CAPSTONE: drone damage +25% and nearby drones gain stronger Resistance and regeneration.");
 
         public final int level;
         public final String displayName;
@@ -273,9 +268,7 @@ public final class AndroidLoadout {
         if (current != specialization) {
             int nextMask = 0;
             for (Aspect aspect : Aspect.values()) {
-                if (aspect.specialization() == specialization && (getAspectMask(player) & (1 << aspect.ordinal())) != 0) {
-                    nextMask |= 1 << aspect.ordinal();
-                }
+                if (aspect.specialization() == specialization && (getAspectMask(player) & (1 << aspect.ordinal())) != 0) nextMask |= 1 << aspect.ordinal();
             }
             state.putInt(ASPECTS, nextMask);
             trimFragmentsToCapacity(state, fragmentCapacityForMask(nextMask));
@@ -284,29 +277,14 @@ public final class AndroidLoadout {
         return true;
     }
 
-    public static boolean hasAspect(Player player, Aspect aspect) {
-        return (getAspectMask(player) & (1 << aspect.ordinal())) != 0;
-    }
-
-    public static boolean hasFragment(Player player, Fragment fragment) {
-        return (getFragmentMask(player) & (1 << fragment.ordinal())) != 0;
-    }
-
-    public static boolean hasArtifact(Player player, Artifact artifact) {
-        return artifact != Artifact.NONE && getArtifact(player) == artifact;
-    }
-
-    public static boolean hasDronePerk(Player player, DronePerk perk) {
-        return (getDronePerkMask(player) & (1 << perk.ordinal())) != 0;
-    }
-
+    public static boolean hasAspect(Player player, Aspect aspect) { return (getAspectMask(player) & (1 << aspect.ordinal())) != 0; }
+    public static boolean hasFragment(Player player, Fragment fragment) { return (getFragmentMask(player) & (1 << fragment.ordinal())) != 0; }
+    public static boolean hasArtifact(Player player, Artifact artifact) { return artifact != Artifact.NONE && getArtifact(player) == artifact; }
+    public static boolean hasDronePerk(Player player, DronePerk perk) { return (getDronePerkMask(player) & (1 << perk.ordinal())) != 0; }
     public static int aspectCount(Player player) { return Integer.bitCount(getAspectMask(player)); }
     public static int fragmentCount(Player player) { return Integer.bitCount(getFragmentMask(player)); }
     public static int dronePerkCount(Player player) { return Integer.bitCount(getDronePerkMask(player)); }
-
-    public static int fragmentCapacity(Player player) {
-        return fragmentCapacityForMask(getAspectMask(player));
-    }
+    public static int fragmentCapacity(Player player) { return fragmentCapacityForMask(getAspectMask(player)); }
 
     public static boolean toggleAspect(Player player, Aspect aspect) {
         if (!AndroidData.isAndroid(player) || aspect.specialization() != getSpecialization(player)) return false;
@@ -357,37 +335,27 @@ public final class AndroidLoadout {
         int bit = 1 << perk.ordinal();
         if ((mask & bit) != 0) {
             int nextMask = mask;
-            for (DronePerk candidate : DronePerk.values()) {
-                if (candidate.level >= perk.level) nextMask &= ~(1 << candidate.ordinal());
-            }
+            for (DronePerk candidate : DronePerk.values()) if (candidate.level >= perk.level) nextMask &= ~(1 << candidate.ordinal());
             state.putInt(DRONE_PERKS, nextMask);
             save(player, state);
             return true;
         }
         if (Integer.bitCount(mask) >= MAX_DRONE_PERKS) return false;
-        for (DronePerk prior : DronePerk.values()) {
-            if (prior.level < perk.level && (mask & (1 << prior.ordinal())) == 0) return false;
-        }
+        for (DronePerk prior : DronePerk.values()) if (prior.level < perk.level && (mask & (1 << prior.ordinal())) == 0) return false;
         state.putInt(DRONE_PERKS, mask | bit);
         save(player, state);
         return true;
     }
 
-    public static void clear(Player player) {
-        player.getPersistentData().remove(ROOT);
-    }
+    public static void clear(Player player) { player.getPersistentData().remove(ROOT); }
 
     public static void copyTo(Player original, Player clone) {
-        if (original.getPersistentData().contains(ROOT)) {
-            clone.getPersistentData().put(ROOT, original.getPersistentData().getCompound(ROOT).copy());
-        }
+        if (original.getPersistentData().contains(ROOT)) clone.getPersistentData().put(ROOT, original.getPersistentData().getCompound(ROOT).copy());
     }
 
     private static int fragmentCapacityForMask(int aspectMask) {
         int slots = 0;
-        for (Aspect aspect : Aspect.values()) {
-            if ((aspectMask & (1 << aspect.ordinal())) != 0) slots += aspect.fragmentSlots;
-        }
+        for (Aspect aspect : Aspect.values()) if ((aspectMask & (1 << aspect.ordinal())) != 0) slots += aspect.fragmentSlots;
         return Math.min(MAX_FRAGMENT_CAPACITY, slots);
     }
 
