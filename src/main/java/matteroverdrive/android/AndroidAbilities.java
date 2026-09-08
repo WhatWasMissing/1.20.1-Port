@@ -96,7 +96,7 @@ public final class AndroidAbilities {
         if (!AndroidData.isAndroid(player) || !AndroidData.isShieldEnabled(player)
                 || !AndroidData.isAbilityUnlocked(player, AndroidData.Ability.FORCE_FIELD) || event.getAmount() <= 0.0F) return;
         int shieldCostPerDamage = AndroidData.scaleAbilityEnergy(player, SHIELD_ENERGY_PER_DAMAGE, AndroidData.Perk.BARRIER_MATRIX);
-        float absorptionRatio = AndroidData.hasPerk(player, AndroidData.Perk.ADAMANT_CHASSIS) ? 0.85F : 0.65F;
+        float absorptionRatio = AndroidData.hasPerk(player, AndroidData.Perk.ADAMANT_CHASSIS) ? 0.75F : 0.65F;
         float desiredAbsorption = event.getAmount() * absorptionRatio;
         float affordableAbsorption = AndroidData.getEnergy(player) / (float)shieldCostPerDamage;
         float absorbed = Math.min(desiredAbsorption, affordableAbsorption);
@@ -148,7 +148,8 @@ public final class AndroidAbilities {
                 if (push.lengthSqr() > 0.001D) { push = push.normalize().scale(1.25D); target.push(push.x, 0.3D, push.z); }
             }
         }
-        status(player, "Force Field " + (enabled ? "enabled: 65% mitigation + 4 absorption hearts." : "disabled."), enabled ? ChatFormatting.GREEN : ChatFormatting.YELLOW);
+        int mitigation = AndroidData.hasPerk(player, AndroidData.Perk.ADAMANT_CHASSIS) ? 75 : 65;
+        status(player, "Force Field " + (enabled ? "enabled: " + mitigation + "% mitigation + 4 absorption hearts." : "disabled."), enabled ? ChatFormatting.GREEN : ChatFormatting.YELLOW);
     }
 
     private static void activateShockwave(ServerPlayer player) {
