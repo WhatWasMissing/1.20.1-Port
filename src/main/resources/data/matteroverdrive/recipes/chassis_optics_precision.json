@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "matteroverdrive:integration_matrix"},
+    {"item": "matteroverdrive:sniper_scope"},
+    {"item": "matteroverdrive:rogue_android_part_head"}
+  ],
+  "result": {"item": "matteroverdrive:chassis_optics_precision"}
+}
