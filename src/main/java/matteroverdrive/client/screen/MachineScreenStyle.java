@@ -38,15 +38,22 @@ public final class MachineScreenStyle {
     private static final int FRAME_TOP = 42;
     private static final int FRAME_BOTTOM = 34;
 
-    private MachineScreenStyle() {
-    }
+    private MachineScreenStyle() {}
 
     public static void drawFrame(GuiGraphics graphics, int x, int y, int width, int height,
                                  int inventoryLabelY, int accent) {
         if (width >= FRAME_LEFT + FRAME_RIGHT + 1 && height >= FRAME_TOP + FRAME_BOTTOM + 1) {
             drawLegacyNineSlice(graphics, x, y, width, height);
+            // Keep the recovered legacy frame, but give every modernized machine a consistent readable chrome.
+            graphics.fill(x + 4, y + 4, x + width - 4, y + 22, 0xA8121B22);
         } else {
             drawStandaloneFrame(graphics, x, y, width, height, accent);
+        }
+        int accentColor = 0xFF000000 | accent;
+        graphics.fill(x + 4, y + 4, x + 7, y + 23, accentColor);
+        graphics.fill(x + 7, y + 21, x + Math.min(width - 5, 58), y + 23, accentColor);
+        if (inventoryLabelY > 0 && inventoryLabelY + 1 < height) {
+            graphics.fill(x + 7, y + inventoryLabelY - 5, x + width - 7, y + inventoryLabelY - 4, 0x804A5A63);
         }
     }
 
@@ -103,20 +110,20 @@ public final class MachineScreenStyle {
     }
 
     public static void drawSection(GuiGraphics graphics, int x, int y, int width, int height) {
-        graphics.fill(x, y, x + width, y + height, 0xB81A242C);
-        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xB80B1116);
+        graphics.fill(x, y, x + width, y + height, 0xB82B3943);
+        graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xD80B1116);
+        graphics.fill(x + 2, y + 2, x + width - 2, y + 3, 0x80394A55);
     }
 
     public static void drawSlot(GuiGraphics graphics, int x, int y) {
+        graphics.fill(x - 1, y - 1, x + 19, y + 19, 0x80465B66);
         graphics.blit(LEGACY_SLOT, x, y, 0, 0, 18, 18, 18, 18);
     }
 
     public static void drawLegacyProgressArrow(GuiGraphics graphics, int x, int y, int value, int max) {
         graphics.blit(LEGACY_PROGRESS, x, y, 0, 0, 24, 16, 48, 16);
         int amount = scale(value, max, 24);
-        if (amount > 0) {
-            graphics.blit(LEGACY_PROGRESS, x, y, 24, 0, amount, 16, 48, 16);
-        }
+        if (amount > 0) graphics.blit(LEGACY_PROGRESS, x, y, 24, 0, amount, 16, 48, 16);
     }
 
     public static void drawLegacyEnergyMeter(GuiGraphics graphics, int x, int y, int value, int max) {
@@ -142,9 +149,7 @@ public final class MachineScreenStyle {
         graphics.fill(x, y, x + width, y + height, BAR_BACK);
         graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, 0xFF0A0F13);
         int amount = scale(value, max, Math.max(0, width - 2));
-        if (amount > 0) {
-            graphics.fill(x + 1, y + 1, x + 1 + amount, y + height - 1, 0xFF000000 | color);
-        }
+        if (amount > 0) graphics.fill(x + 1, y + 1, x + 1 + amount, y + height - 1, 0xFF000000 | color);
     }
 
     public static void drawVerticalBar(GuiGraphics graphics, int x, int y, int width, int height,
@@ -164,9 +169,7 @@ public final class MachineScreenStyle {
     }
 
     private static int scale(int value, int max, int pixels) {
-        if (max <= 0 || value <= 0 || pixels <= 0) {
-            return 0;
-        }
+        if (max <= 0 || value <= 0 || pixels <= 0) return 0;
         return Math.min(pixels, Math.max(1, (int) Math.round((double) value * pixels / max)));
     }
 }
