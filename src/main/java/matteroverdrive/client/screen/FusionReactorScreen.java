@@ -14,29 +14,26 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
 
     public FusionReactorScreen(FusionReactorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 360;
-        imageHeight = 286;
-        inventoryLabelY = 189;
+        imageWidth = 376;
+        imageHeight = 296;
+        inventoryLabelY = 199;
     }
 
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-            }
-        }).bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
-        addRenderableWidget(Button.builder(Component.literal("RUN / SCRAM"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 2);
-            }
-        }).bounds(leftPos + 151, topPos + 5, 74, 16).build());
-        addRenderableWidget(Button.builder(Component.literal("RS MODE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) {
-                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 3);
-            }
-        }).bounds(leftPos + 227, topPos + 5, 70, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("INF FE"), button -> click(1))
+                .bounds(leftPos + imageWidth - 57, topPos + 5, 52, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("RUN / SCRAM"), button -> click(2))
+                .bounds(leftPos + 157, topPos + 5, 78, 16).build());
+        addRenderableWidget(Button.builder(Component.literal("RS MODE"), button -> click(3))
+                .bounds(leftPos + 237, topPos + 5, 70, 16).build());
+    }
+
+    private void click(int id) {
+        if (minecraft != null && minecraft.gameMode != null) {
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+        }
     }
 
     @Override
@@ -53,79 +50,84 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
         MachineScreenStyle.drawFrame(graphics, x, y, imageWidth, imageHeight, inventoryLabelY,
                 MachineScreenStyle.PURPLE);
 
-        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 326, 43);
-        MachineScreenStyle.drawSection(graphics, x + 17, y + 76, 326, 75);
-        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 155, 326, 29);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 29, 342, 43);
+        MachineScreenStyle.drawSection(graphics, x + 17, y + 76, 342, 79);
+        MachineScreenStyle.drawDebugPanel(graphics, x + 17, y + 159, 342, 35);
 
-        MachineScreenStyle.drawHorizontalBar(graphics, x + 18, y + 43, 110, 5,
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 18, y + 43, 118, 5,
                 menu.energy(), menu.capacity(), MachineScreenStyle.RED);
-        MachineScreenStyle.drawHorizontalBar(graphics, x + 232, y + 43, 110, 5,
+        MachineScreenStyle.drawHorizontalBar(graphics, x + 240, y + 43, 118, 5,
                 menu.matter(), menu.matterCapacity(), MachineScreenStyle.BLUE);
 
         for (int slot = 0; slot < 4; slot++) {
             MachineScreenStyle.drawSlot(graphics,
-                    x + SLOT_X_OFFSET + 51 + slot * 18,
+                    x + SLOT_X_OFFSET + 59 + slot * 18,
                     y + 51);
         }
 
-        LegacyGuiPrimitives.drawDualRing(graphics, x + 180, y + 112, 31,
+        LegacyGuiPrimitives.drawDualRing(graphics, x + 188, y + 114, 32,
                 menu.energy(), menu.capacity(), menu.matter(), menu.matterCapacity());
-        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 88,
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 89,
                 menu.valid(), MachineScreenStyle.GREEN);
-        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 101,
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 103,
                 menu.reactorEnabled(), MachineScreenStyle.PURPLE);
-        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 114,
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 117,
                 menu.redstoneAllowsOperation(), MachineScreenStyle.CYAN);
-        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 127,
+        LegacyGuiPrimitives.drawStatusLamp(graphics, x + 28, y + 131,
                 menu.stabilizerCount() > 0, MachineScreenStyle.BLUE);
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Energy " + menu.energy() + " / " + menu.capacity() + " FE",
+        graphics.drawString(font, "BUFFER " + menu.energy() + " / " + menu.capacity() + " FE",
                 18, 31, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Matter " + menu.matter() + " / " + menu.matterCapacity() + " kM",
-                232, 31, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "MATTER " + menu.matter() + " / " + menu.matterCapacity() + " kM",
+                240, 31, MachineScreenStyle.MUTED, false);
 
         graphics.drawString(font, "STRUCTURE", 40, 85,
                 menu.valid() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, menu.valid() ? "VALID" : faultText(), 40, 94,
+        graphics.drawString(font, menu.valid() ? "VALID" : faultText(), 40, 95,
                 menu.valid() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, "REACTOR", 40, 107, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.reactorEnabled() ? "RUNNING" : "SCRAMMED", 40, 116,
+        graphics.drawString(font, "REACTOR", 40, 109, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, menu.reactorEnabled() ? "RUN ENABLED" : "SCRAMMED", 40, 119,
                 menu.reactorEnabled() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, "REDSTONE " + redstoneText(), 40, 129,
+        graphics.drawString(font, "REDSTONE", 40, 133, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, redstoneText(), 40, 143,
                 menu.redstoneAllowsOperation() ? MachineScreenStyle.CYAN : MachineScreenStyle.DANGER, false);
 
         graphics.drawCenteredString(font, Math.round(menu.efficiency() * 100) + "%",
-                180, 104, MachineScreenStyle.TEXT);
-        graphics.drawCenteredString(font, "EFF", 180, 115, MachineScreenStyle.MUTED);
+                188, 104, MachineScreenStyle.TEXT);
+        graphics.drawCenteredString(font, "EFFICIENCY", 188, 116, MachineScreenStyle.MUTED);
         graphics.drawCenteredString(font, "+" + menu.generatedLastTick() + " FE/t",
-                180, 126, MachineScreenStyle.RED);
+                188, 129, menu.generatedLastTick() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED);
+        graphics.drawCenteredString(font, "ACTUAL", 188, 141, MachineScreenStyle.MUTED);
 
-        graphics.drawString(font, "OUTPUT", 247, 85, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Potential " + menu.output() + " FE/t", 247, 96, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Demand " + menu.connectedUsage() + " FE/t", 247, 107, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Ring " + menu.internalPowerLastTick() + " FE/t", 247, 118, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Drain " + format(menu.matterDrain()) + " kM/t", 247, 129, MachineScreenStyle.BLUE, false);
-        graphics.drawString(font, "IO " + menu.ioCount() + " | Stabilizers " + menu.stabilizerCount(),
-                247, 140, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "OUTPUT BUS", 262, 85, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, "Potential  " + menu.output() + " FE/t", 252, 98, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Generated  " + menu.generatedLastTick() + " FE/t", 252, 111,
+                menu.generatedLastTick() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, "Demand     " + menu.connectedUsage() + " FE/t", 252, 124, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Ring bus   " + menu.internalPowerLastTick() + " FE/t", 252, 137, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "IO " + menu.ioCount() + " / Stabilizers " + menu.stabilizerCount(),
+                252, 148, MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "ANOMALY  mass " + format(menu.unsuppressedMass())
-                        + " | gravity " + format(menu.anomalyRange())
-                        + " | horizon " + format(menu.eventHorizon()),
-                20, 158, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Suppression " + Math.round((1.0D - menu.anomalySuppression()) * 100)
-                        + "% | affected " + menu.affectedEntityCount()
-                        + " | inside " + menu.horizonEntityCount()
-                        + " | last feed " + menu.lastConsumedMatter() + " kM / " + menu.lastConsumedEntityCount(),
-                20, 169, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Hazard range " + format(menu.blockHazardRange())
-                        + " | broken " + menu.destroyedBlocksLastCycle()
-                        + " | ring " + menu.ringDirection().getName().toUpperCase(Locale.ROOT)
-                        + " | anomaly offset " + menu.anomalyDistance(),
-                20, 180, MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, "ANOMALY // raw mass " + format(menu.unsuppressedMass())
+                        + " // gravity " + format(menu.anomalyRange())
+                        + " // horizon " + format(menu.eventHorizon()),
+                20, 162, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "SUPPRESSION " + Math.round((1.0D - menu.anomalySuppression()) * 100)
+                        + "% // affected " + menu.affectedEntityCount()
+                        + " // inside horizon " + menu.horizonEntityCount(),
+                20, 173, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "LAST FEED " + menu.lastConsumedMatter() + " kM / " + menu.lastConsumedEntityCount()
+                        + " entities // blocks broken " + menu.destroyedBlocksLastCycle(),
+                20, 184, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, "HAZARD " + format(menu.blockHazardRange())
+                        + " blocks // ring " + menu.ringDirection().getName().toUpperCase(Locale.ROOT)
+                        + " // anomaly offset " + menu.anomalyDistance()
+                        + " // matter drain " + format(menu.matterDrain()) + " kM/t",
+                20, 195, MachineScreenStyle.DANGER, false);
 
         graphics.drawString(font, playerInventoryTitle,
                 SLOT_X_OFFSET + 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
@@ -133,7 +135,7 @@ public class FusionReactorScreen extends AbstractContainerScreen<FusionReactorMe
 
     private String faultText() {
         return switch (menu.fault()) {
-            case 3 -> "wrong coil/IO";
+            case 3 -> "wrong coil / IO";
             case 4 -> "wrong hull";
             case 5 -> "no anomaly";
             case 6 -> "no matter";
