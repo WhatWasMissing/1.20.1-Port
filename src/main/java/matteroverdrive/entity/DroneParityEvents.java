@@ -62,6 +62,21 @@ public final class DroneParityEvents {
             drone.getPersistentData().putBoolean(LEGACY_STATS_APPLIED, true);
         }
 
+        // A linked drone can outlive its operator's presence in this dimension.
+        // With no resolved owner the main flight AI has no formation target, so
+        // damp residual velocity here to keep the persisted fleet parked rather
+        // than drifting indefinitely while its owner is offline or elsewhere.
+        if (!drone.level().isClientSide
+                && drone.getOwnerUuid() != null
+                && drone.getOwner() == null
+                && drone.getTarget() == null) {
+            Vec3 motion = drone.getDeltaMovement();
+            Vec3 parked = new Vec3(motion.x * 0.70D, motion.y * 0.45D, motion.z * 0.70D);
+            if (parked.lengthSqr() < 0.0004D) parked = Vec3.ZERO;
+            drone.setDeltaMovement(parked);
+            drone.hurtMarked = true;
+        }
+
         if (!drone.level().isClientSide || (drone.tickCount & 1) != 0) return;
         Vec3 motion = drone.getDeltaMovement();
         double speed = motion.length();
