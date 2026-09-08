@@ -23,10 +23,17 @@ public final class AndroidClientInput {
         if (event.phase != TickEvent.Phase.END) return;
         AndroidClientState.clientTickCooldowns();
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null || minecraft.screen != null || !AndroidClientState.isActive()) return;
+        if (minecraft.player == null || !AndroidClientState.isActive()) return;
+
+        // Drone management is also available while the Class Matrix is open so the Drone Matrix
+        // can act as a natural jumping-off point without forcing the player back into the world first.
+        if (minecraft.screen == null || minecraft.screen instanceof AndroidClassLoadoutScreen) {
+            while (AndroidKeyMappings.OPEN_DRONE_MANAGEMENT.consumeClick()) ModNetwork.requestDroneStatus();
+        }
+        if (minecraft.screen != null) return;
+
         while (AndroidKeyMappings.OPEN_SKILL_TREE.consumeClick()) minecraft.setScreen(new AndroidSkillTreeScreen());
         while (AndroidKeyMappings.OPEN_LOADOUT.consumeClick()) minecraft.setScreen(new AndroidClassLoadoutScreen());
-        while (AndroidKeyMappings.OPEN_DRONE_MANAGEMENT.consumeClick()) ModNetwork.requestDroneStatus();
         while (AndroidKeyMappings.CYCLE_ABILITY.consumeClick()) ModNetwork.CHANNEL.sendToServer(new AndroidAbilityPacket(AndroidAbilities.ACTION_CYCLE));
         while (AndroidKeyMappings.ACTIVATE_ABILITY.consumeClick()) ModNetwork.CHANNEL.sendToServer(new AndroidAbilityPacket(AndroidAbilities.ACTION_ACTIVATE));
         while (AndroidKeyMappings.ACTIVATE_CLASS_ABILITY.consumeClick()) ModNetwork.CHANNEL.sendToServer(new AndroidAbilityPacket(AndroidClassAbilities.ACTION_CLASS_ABILITY));
