@@ -33,9 +33,7 @@ public final class AndroidLoadoutEvents {
     private AndroidLoadoutEvents() {}
 
     @SubscribeEvent
-    public static void onClone(PlayerEvent.Clone event) {
-        AndroidLoadout.copyTo(event.getOriginal(), event.getEntity());
-    }
+    public static void onClone(PlayerEvent.Clone event) { AndroidLoadout.copyTo(event.getOriginal(), event.getEntity()); }
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
@@ -43,7 +41,6 @@ public final class AndroidLoadoutEvents {
                 || !(event.player instanceof ServerPlayer player) || !AndroidData.isAndroid(player)) return;
 
         bonusBatteryCharge(player);
-
         if (player.tickCount % 20 != 0 || AndroidData.getEnergy(player) <= 0) return;
 
         boolean conserve = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.CONSERVATION);
@@ -52,9 +49,7 @@ public final class AndroidLoadoutEvents {
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.NANITE_CROWN)) costMultiplier *= 0.80D;
 
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.CAPACITOR_HEART)
-                && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY / 2) {
-            AndroidData.receiveEnergy(player, 250);
-        }
+                && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY / 2) AndroidData.receiveEnergy(player, 250);
 
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.TEMPORAL_OVERDRIVE)
                 && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY * 3 / 4
@@ -74,32 +69,23 @@ public final class AndroidLoadoutEvents {
         }
 
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.NANITE_CROWN)
-                && player.getHealth() < player.getMaxHealth() * 0.70F
-                && player.tickCount % 40 == 0
-                && AndroidData.tryConsumeEnergy(player, 100)) {
-            player.heal(2.0F);
-        }
+                && player.getHealth() < player.getMaxHealth() * 0.70F && player.tickCount % 40 == 0
+                && AndroidData.tryConsumeEnergy(player, 100)) player.heal(2.0F);
 
-        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.MOBILITY)) {
+        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.MOBILITY))
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 30, 1, true, false, false));
-        }
-        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.VEIL)
-                && AndroidData.isCloakEnabled(player)) {
+        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.VEIL) && AndroidData.isCloakEnabled(player)) {
             int duration = AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.PHASE_ANCHOR) ? 80 : 35;
             int amplifier = AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.PHASE_ANCHOR) ? 3 : 2;
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, duration, amplifier, true, false, false));
         }
-        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.BULWARK)
-                && AndroidData.isShieldEnabled(player)) {
+        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.BULWARK) && AndroidData.isShieldEnabled(player))
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 30, 2, true, false, false));
-        }
 
-        if (player.tickCount % 40 == 0
-                && AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.HUNTER_ARRAY)) {
+        if (player.tickCount % 40 == 0 && AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.HUNTER_ARRAY)) {
             double radius = 26.0D + (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.PREDATION) ? 10.0D : 0.0D);
             if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.HUNTER_LENS)) radius += 18.0D;
-            var targets = player.level().getEntitiesOfClass(Monster.class,
-                    player.getBoundingBox().inflate(radius), Monster::isAlive);
+            var targets = player.level().getEntitiesOfClass(Monster.class, player.getBoundingBox().inflate(radius), Monster::isAlive);
             int cost = (int)Math.ceil(180 * costMultiplier);
             if (!targets.isEmpty() && AndroidData.tryConsumeEnergy(player, cost)) {
                 for (Monster target : targets) {
@@ -111,8 +97,7 @@ public final class AndroidLoadoutEvents {
 
         if (player.tickCount % 40 == 0 && AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.BALLISTIC_PREDICTION)
                 && player.getDeltaMovement().horizontalDistanceSqr() < 0.02D) {
-            List<Monster> targets = player.level().getEntitiesOfClass(Monster.class,
-                    player.getBoundingBox().inflate(36.0D), Monster::isAlive);
+            List<Monster> targets = player.level().getEntitiesOfClass(Monster.class, player.getBoundingBox().inflate(36.0D), Monster::isAlive);
             if (!targets.isEmpty() && AndroidData.tryConsumeEnergy(player, (int)Math.ceil(140 * costMultiplier))) {
                 for (Monster target : targets) {
                     target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 90, 0, true, false, false));
@@ -130,19 +115,15 @@ public final class AndroidLoadoutEvents {
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.REPAIR_SWARM)) {
             if (player.getHealth() < player.getMaxHealth() && player.tickCount % 40 == 0
                     && AndroidData.tryConsumeEnergy(player, (int)Math.ceil(140 * costMultiplier))) player.heal(2.0F);
-            if (player.tickCount % 20 == 0) {
+            if (player.tickCount % 20 == 0)
                 for (DroneEntity drone : ownedDrones(player, 20.0D)) if (drone.getHealth() < drone.getMaxHealth()) drone.heal(1.5F);
-            }
         }
 
         if (player.tickCount % 40 == 0 && AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.GRAVITIC_WELL)) {
             for (Monster target : player.level().getEntitiesOfClass(Monster.class, player.getBoundingBox().inflate(11.0D), Monster::isAlive)) {
                 target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 70, 2, true, false, false));
                 Vec3 pull = player.position().subtract(target.position());
-                if (pull.lengthSqr() > 0.001D) {
-                    pull = pull.normalize().scale(0.55D);
-                    target.push(pull.x, 0.12D, pull.z);
-                }
+                if (pull.lengthSqr() > 0.001D) { pull = pull.normalize().scale(0.55D); target.push(pull.x, 0.12D, pull.z); }
             }
         }
 
@@ -150,20 +131,21 @@ public final class AndroidLoadoutEvents {
     }
 
     private static void applyDroneSupport(ServerPlayer player) {
-        List<DroneEntity> drones = ownedDrones(player, 30.0D);
+        boolean commandAuthority = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.COMMAND_AUTHORITY);
+        double supportRadius = commandAuthority ? 48.0D : 30.0D;
+        List<DroneEntity> drones = ownedDrones(player, supportRadius);
         if (drones.isEmpty()) return;
 
         boolean swarmPassive = AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.SWARM_BEACON);
         boolean sentinel = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.SENTINEL) || swarmPassive;
         boolean repair = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.REPAIR_BEACON)
-                || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.FIELD_REPAIR)
-                || swarmPassive;
+                || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.FIELD_REPAIR) || swarmPassive;
         boolean reinforced = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.REINFORCED_DRONES)
                 || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.OVERMIND)
-                || AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.GUARDIAN_DIRECTIVE)
-                || swarmPassive;
+                || AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.GUARDIAN_DIRECTIVE) || swarmPassive;
 
         for (DroneEntity drone : drones) {
+            if (commandAuthority) drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 35, 1, true, false, false));
             if (sentinel || reinforced) {
                 int amplifier = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.OVERMIND) || swarmPassive ? 2 : 1;
                 drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 35, amplifier, true, false, false));
@@ -187,7 +169,6 @@ public final class AndroidLoadoutEvents {
         if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.INDUCTION)) bonus += 384;
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.RECURSIVE_CORE)) bonus += 512;
         if (bonus <= 0 || !player.isCrouching() || AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY) return;
-
         int remaining = Math.min(bonus, AndroidData.ENERGY_CAPACITY - AndroidData.getEnergy(player));
         for (InteractionHand hand : InteractionHand.values()) {
             if (remaining <= 0) break;
@@ -218,19 +199,15 @@ public final class AndroidLoadoutEvents {
                     && (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.HUNTER_NETWORK)
                     || AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.TARGET_LINK)
                     || AndroidLoadout.hasArtifact(owner, AndroidLoadout.Artifact.HUNTER_LENS))) multiplier *= 1.20F;
-            int nearby = ownedDrones(owner, 30.0D).size();
+            int nearby = ownedDrones(owner, AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.COMMAND_AUTHORITY) ? 48.0D : 30.0D).size();
             if (nearby >= 2 && (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.SWARM_COHESION)
                     || AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.PACK_TACTICS)
-                    || AndroidLoadout.hasAspect(owner, AndroidLoadout.Aspect.SWARM_LOGIC))) {
-                multiplier *= 1.0F + Math.min(0.35F, nearby * 0.055F);
-            }
+                    || AndroidLoadout.hasAspect(owner, AndroidLoadout.Aspect.SWARM_LOGIC))) multiplier *= 1.0F + Math.min(0.35F, nearby * 0.055F);
             event.setAmount(event.getAmount() * multiplier);
             return;
         }
 
-        if (!(event.getSource().getEntity() instanceof ServerPlayer attacker)
-                || !AndroidData.isAndroid(attacker) || event.getAmount() <= 0.0F) return;
-
+        if (!(event.getSource().getEntity() instanceof ServerPlayer attacker) || !AndroidData.isAndroid(attacker) || event.getAmount() <= 0.0F) return;
         boolean abilityDamage = attacker.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG);
         float multiplier = 1.0F;
         if (abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.VANGUARD_PROTOCOL)) multiplier *= 1.25F;
@@ -240,18 +217,15 @@ public final class AndroidLoadoutEvents {
         if (AndroidLoadout.hasFragment(attacker, AndroidLoadout.Fragment.SURGE)
                 && AndroidData.getEnergy(attacker) >= AndroidData.ENERGY_CAPACITY * 3 / 4) multiplier *= 1.10F;
         if (!abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.VANGUARD_PROTOCOL)) multiplier *= 1.15F;
-
         if (event.getEntity().hasEffect(MobEffects.GLOWING)) {
             if (AndroidLoadout.hasArtifact(attacker, AndroidLoadout.Artifact.HUNTER_LENS)) multiplier *= 1.15F;
             if (AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.PREDATOR_CHAIN)) multiplier *= 1.20F;
             if (AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.STABILIZED_OPTICS)) multiplier *= 1.22F;
         }
         if (AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.EXECUTION_ROUTER)
-                && (event.getEntity().hasEffect(MobEffects.GLOWING)
-                || event.getEntity().getHealth() <= event.getEntity().getMaxHealth() * 0.40F)) multiplier *= 1.20F;
+                && (event.getEntity().hasEffect(MobEffects.GLOWING) || event.getEntity().getHealth() <= event.getEntity().getMaxHealth() * 0.40F)) multiplier *= 1.20F;
         if (!abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.HEAVY_ORDNANCE)) multiplier *= 1.20F;
         if (abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.MASS_DRIVER)) multiplier *= 1.22F;
-
         event.setAmount(event.getAmount() * multiplier);
 
         if (abilityDamage && AndroidLoadout.hasFragment(attacker, AndroidLoadout.Fragment.FEEDBACK)) AndroidData.receiveEnergy(attacker, 350);
@@ -261,42 +235,32 @@ public final class AndroidLoadoutEvents {
         if (abilityDamage && AndroidLoadout.hasArtifact(attacker, AndroidLoadout.Artifact.OVERCLOCKED_RELAY)) AndroidData.receiveEnergy(attacker, 150);
         if (abilityDamage && AndroidLoadout.hasArtifact(attacker, AndroidLoadout.Artifact.CAPACITOR_HEART)
                 && AndroidData.getEnergy(attacker) >= AndroidData.ENERGY_CAPACITY / 2) AndroidData.receiveEnergy(attacker, 400);
-        if (abilityDamage && AndroidLoadout.hasFragment(attacker, AndroidLoadout.Fragment.SYNAPSE)
-                && attacker.getRandom().nextFloat() < 0.45F) {
+        if (abilityDamage && AndroidLoadout.hasFragment(attacker, AndroidLoadout.Fragment.SYNAPSE) && attacker.getRandom().nextFloat() < 0.45F)
             attacker.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 70, 2, true, false, false));
-        }
         if (abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.CORROSIVE_CLOUD)) {
             event.getEntity().addEffect(new MobEffectInstance(MobEffects.POISON, 120, 1, true, false, false));
             event.getEntity().addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0, true, false, false));
         }
         if (abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.MASS_DRIVER)) {
             Vec3 push = event.getEntity().position().subtract(attacker.position());
-            if (push.lengthSqr() > 0.001D) {
-                push = push.normalize().scale(0.90D);
-                event.getEntity().push(push.x, 0.30D, push.z);
-            }
+            if (push.lengthSqr() > 0.001D) { push = push.normalize().scale(0.90D); event.getEntity().push(push.x, 0.30D, push.z); }
         }
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingDamage(LivingDamageEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)
-                || !AndroidData.isAndroid(player) || event.getAmount() <= 0.0F) return;
+        if (!(event.getEntity() instanceof ServerPlayer player) || !AndroidData.isAndroid(player) || event.getAmount() <= 0.0F) return;
         float multiplier = 1.0F;
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.AEGIS_WEAVE)) multiplier *= 0.82F;
         if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.WARDING)) multiplier *= 0.90F;
-        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.BARRIER)
-                && AndroidData.isShieldEnabled(player)) multiplier *= 0.85F;
+        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.BARRIER) && AndroidData.isShieldEnabled(player)) multiplier *= 0.85F;
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.AEGIS_PRISM)) {
             multiplier *= 0.92F;
             if (AndroidData.isShieldEnabled(player)) multiplier *= 0.82F;
         }
-        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.RESOLVE)
-                && player.getHealth() <= player.getMaxHealth() * 0.35F) multiplier *= 0.82F;
-        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.ESCORT)
-                || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.ESCORT_PROTOCOL)) {
+        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.RESOLVE) && player.getHealth() <= player.getMaxHealth() * 0.35F) multiplier *= 0.82F;
+        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.ESCORT) || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.ESCORT_PROTOCOL))
             if (!ownedDrones(player, 20.0D).isEmpty()) multiplier *= 0.90F;
-        }
 
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.REACTIVE_EXOSHELL)) {
             long now = player.level().getGameTime();
