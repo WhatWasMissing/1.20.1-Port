@@ -13,6 +13,18 @@ This checklist covers the September 8 systems pass only. **Star Map and all worl
 - [ ] No return of the startup matter-audit hang.
 - [ ] No return of the tooltip/search-tree recursive matter freeze.
 
+## Matter values / recipe economy
+- [ ] Crafted items with resolvable recipes use `RECIPE` values even when an older explicit value exists.
+- [ ] Recipe value equals the subtotal of the cheapest valid ingredient alternatives divided across the produced stack.
+- [ ] Multi-output recipes round down rather than up, so crafting cannot create matter through integer rounding.
+- [ ] Reversible compression recipes (ingot/block, ingot/nugget, etc.) terminate without recursive hangs or value inflation.
+- [ ] Raw iron -> iron ingot remains anchored at 32 matter per item.
+- [ ] Raw gold -> gold ingot remains anchored at 42 matter per item.
+- [ ] Raw copper -> copper ingot remains anchored at 16 matter per item.
+- [ ] Recipe-derived values shown by tooltips match the cached runtime value after the item has been resolved.
+- [ ] Items with no usable recipe still receive their explicit, tag-base or fallback value.
+- [ ] Decomposing a crafted stack and recreating it cannot return more matter than the ingredients consumed solely because of recipe rounding.
+
 ## Android core ability audit
 - [ ] Cloak drains FE while active and becomes visibly active on the HUD.
 - [ ] Cloak breaks hostile target locks in its intended radius.
