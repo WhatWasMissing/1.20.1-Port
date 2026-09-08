@@ -21,8 +21,10 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +35,7 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
     private final MachineEnergyStorage energy = new MachineEnergyStorage(BUFFER_CAPACITY, TRANSFER_PER_SIDE, TRANSFER_PER_SIDE, this::setChanged);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energy);
     private int lastOutput;
+    private long routeSequence;
     private final ContainerData data = new ContainerData() {
         @Override public int get(int index) {
             return switch (index) {
@@ -51,7 +54,7 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
     public EnergyPipeBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.ENERGY_PIPE.get(), pos, state); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, EnergyPipeBlockEntity pipe) {
-        // Reactor IO performs the source-side handoff.  The cable only relays its
+        // Reactor IO performs the source-side handoff. The cable only relays its
         // own buffer here, so placement order cannot race two source paths.
         pipe.lastOutput = pipe.pushEnergy();
     }
@@ -85,13 +88,18 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
         if (received < extracted) {
             energy.setEnergyStored(energy.getEnergyStored() + extracted - received);
         }
+        if (received > 0) {
+            routeSequence++;
+            setChanged();
+        }
         return received;
     }
 
     /**
-     * Finds the first hop toward an actual energy receiver. This prevents a cable
-     * from sending power back into the cable it came from when a chain has more
-     * than one cable.
+     * Finds a first hop toward an actual energy receiver. All reachable receiver
+     * branches are collected first, then the starting pipe rotates between their
+     * distinct first hops. This avoids a stable BFS/direction-order bias where the
+     * same endpoint can monopolise a branched cable network forever.
      */
     @Nullable
     private BlockPos findNextHopToReceiver() {
@@ -100,6 +108,7 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
         Set<BlockPos> visited = new HashSet<>();
         Map<BlockPos, BlockPos> firstHop = new HashMap<>();
+        List<BlockPos> receiverHops = new ArrayList<>();
         pending.add(worldPosition);
         visited.add(worldPosition);
 
@@ -127,11 +136,17 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
                 IEnergyStorage receiver = neighbor.getCapability(
                         ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
                 if (receiver != null && receiver.canReceive()) {
-                    return current.equals(worldPosition) ? candidate : firstHop.get(current);
+                    BlockPos hop = current.equals(worldPosition) ? candidate : firstHop.get(current);
+                    if (hop != null && !receiverHops.contains(hop)) {
+                        receiverHops.add(hop.immutable());
+                    }
                 }
             }
         }
-        return null;
+
+        if (receiverHops.isEmpty()) return null;
+        int index = (int) Math.floorMod(routeSequence, (long) receiverHops.size());
+        return receiverHops.get(index);
     }
 
     private Direction directionTo(BlockPos target) {
@@ -147,10 +162,12 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
     @Override protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("Energy", energy.getEnergyStored());
+        tag.putLong("RouteSequence", routeSequence);
     }
     @Override public void load(CompoundTag tag) {
         super.load(tag);
         energy.setEnergyStored(tag.getInt("Energy"));
+        routeSequence = Math.max(0L, tag.getLong("RouteSequence"));
     }
     @Override public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
         if (capability == ForgeCapabilities.ENERGY) return energyCapability.cast();
