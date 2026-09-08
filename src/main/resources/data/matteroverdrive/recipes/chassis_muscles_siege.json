@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "matteroverdrive:integration_matrix"},
+    {"item": "matteroverdrive:upgrade_power"},
+    {"item": "matteroverdrive:rogue_android_part_arms"}
+  ],
+  "result": {"item": "matteroverdrive:chassis_muscles_siege"}
+}
