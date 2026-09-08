@@ -23,9 +23,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
@@ -171,9 +173,7 @@ public class RogueAndroidEntity extends Zombie {
     public int getSquadMode() { return squadMode; }
     @Nullable public UUID getCommanderUuid() { return commanderUuid; }
 
-    public void setSquad(int color, int mode) {
-        setSquad(color, mode, commanderUuid);
-    }
+    public void setSquad(int color, int mode) { setSquad(color, mode, commanderUuid); }
 
     public void setSquad(int color, int mode, @Nullable UUID commander) {
         squadColor = Math.floorMod(color, 8);
@@ -287,25 +287,85 @@ public class RogueAndroidEntity extends Zombie {
     }
 
     private static final class EscortCommanderGoal extends Goal {
+        private static final double CATCH_UP_DISTANCE_SQR = 48.0D * 48.0D;
         private final RogueAndroidEntity android;
         @Nullable private Player commander;
-        private EscortCommanderGoal(RogueAndroidEntity android) { this.android = android; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
+
+        private EscortCommanderGoal(RogueAndroidEntity android) {
+            this.android = android;
+            setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
         @Override public boolean canUse() {
             commander = android.getCommander();
-            return android.squadMode == MODE_ESCORT && android.getTarget() == null && commander != null && !commander.isSpectator();
+            return android.squadMode == MODE_ESCORT && android.getTarget() == null
+                    && commander != null && !commander.isSpectator();
         }
-        @Override public boolean canContinueToUse() { return android.squadMode == MODE_ESCORT && android.getTarget() == null && commander != null && commander.isAlive(); }
+
+        @Override public boolean canContinueToUse() {
+            return android.squadMode == MODE_ESCORT && android.getTarget() == null
+                    && commander != null && commander.isAlive();
+        }
+
         @Override public void tick() {
             if (commander == null) return;
             android.getLookControl().setLookAt(commander, 10F, android.getMaxHeadXRot());
-            int slot = Math.floorMod(android.getUUID().hashCode(), 6);
-            double angle = Math.toRadians(slot * 60.0D + commander.getYRot());
-            double radius = slot < 2 ? 2.25D : 3.25D;
-            double tx = commander.getX() - Math.sin(angle) * radius;
-            double tz = commander.getZ() + Math.cos(angle) * radius;
-            double d2 = android.distanceToSqr(tx, commander.getY(), tz);
-            if (d2 > 6.25D || android.getNavigation().isDone()) android.getNavigation().moveTo(tx, commander.getY(), tz, 1.18D);
+            Vec3 target = formationTarget();
+            if (android.distanceToSqr(commander) > CATCH_UP_DISTANCE_SQR && trySafeCatchUp(target)) return;
+            double d2 = android.distanceToSqr(target.x, target.y, target.z);
+            if (d2 > 4.0D || android.getNavigation().isDone()) {
+                android.getNavigation().moveTo(target.x, target.y, target.z, d2 > 144.0D ? 1.35D : 1.18D);
+            }
         }
-        @Override public void stop() { commander = null; android.getNavigation().stop(); }
+
+        private Vec3 formationTarget() {
+            if (commander == null || android.spawnerPosition == null) return android.position();
+            List<RogueAndroidEntity> squad = commander.level().getEntitiesOfClass(RogueAndroidEntity.class,
+                    commander.getBoundingBox().inflate(64.0D),
+                    other -> other.spawnerPosition != null && other.spawnerPosition.equals(android.spawnerPosition)
+                            && other.squadMode == MODE_ESCORT && other.isAlive());
+            squad.sort(Comparator.comparing(other -> other.getUUID().toString()));
+            int index = Math.max(0, squad.indexOf(android));
+            int row = index / 2;
+            int column = index % 2;
+
+            Vec3 look = commander.getLookAngle();
+            Vec3 forward = new Vec3(look.x, 0.0D, look.z);
+            if (forward.lengthSqr() < 0.001D) forward = new Vec3(0.0D, 0.0D, 1.0D);
+            else forward = forward.normalize();
+            Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
+
+            double lateral = column == 0 ? -1.65D : 1.65D;
+            double trailing = 2.75D + row * 2.1D;
+            return commander.position().add(forward.scale(-trailing)).add(right.scale(lateral));
+        }
+
+        private boolean trySafeCatchUp(Vec3 target) {
+            if (commander == null) return false;
+            Vec3[] offsets = {
+                    Vec3.ZERO,
+                    new Vec3(1.0D, 0.0D, 0.0D), new Vec3(-1.0D, 0.0D, 0.0D),
+                    new Vec3(0.0D, 0.0D, 1.0D), new Vec3(0.0D, 0.0D, -1.0D),
+                    new Vec3(0.0D, 1.0D, 0.0D)
+            };
+            for (Vec3 offset : offsets) {
+                Vec3 candidate = target.add(offset);
+                AABB moved = android.getBoundingBox().move(candidate.subtract(android.position()));
+                if (!android.level().noCollision(android, moved)) continue;
+                boolean occupied = !android.level().getEntitiesOfClass(RogueAndroidEntity.class, moved.inflate(0.3D),
+                        other -> other != android && other.spawnerPosition != null
+                                && other.spawnerPosition.equals(android.spawnerPosition)).isEmpty();
+                if (occupied) continue;
+                android.teleportTo(candidate.x, candidate.y, candidate.z);
+                android.getNavigation().stop();
+                return true;
+            }
+            return false;
+        }
+
+        @Override public void stop() {
+            commander = null;
+            android.getNavigation().stop();
+        }
     }
 }
