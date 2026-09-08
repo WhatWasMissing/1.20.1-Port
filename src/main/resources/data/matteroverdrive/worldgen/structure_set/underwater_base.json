@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "matteroverdrive:underwater_base",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 17290433,
+    "spacing": 128,
+    "separation": 40
+  }
+}
