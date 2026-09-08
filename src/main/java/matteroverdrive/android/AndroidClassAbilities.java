@@ -138,6 +138,10 @@ public final class AndroidClassAbilities {
 
     public static void activateTechAbility(ServerPlayer player) {
         AndroidLoadout.Specialization spec = AndroidLoadout.getSpecialization(player);
+        if (spec == AndroidLoadout.Specialization.DRONE_COMMANDER && ownedDrones(player, 24.0D).isEmpty()) {
+            status(player, "Swarm Surge requires a linked drone within 24 blocks.", ChatFormatting.RED);
+            return;
+        }
         if (!ready(player, TECH_COOLDOWN, techCooldownTicks(spec), techEnergyCost(spec), techAbilityName(spec))) return;
         switch (spec) {
             case UTILITY -> phaseSnare(player);
