@@ -9,6 +9,19 @@ navigation:
 
 The Android Station manages conversion and Android progression. Androids have persistent progression, body systems, energy and a selectable skill tree. The Android HUD reports combat state in play, while the Class Matrix and skill-tree interfaces configure the build.
 
+## Quick controls
+
+- **V** - cycle the selected legacy core ability.
+- **B** - activate the selected core ability.
+- **H** - use the equipped class ability.
+- **N** - use the equipped tech ability.
+- **G** - use the subclass ultimate.
+- **K** - open the Android skill tree.
+- **L** - open the Android Class Matrix.
+- **M** - open **Drone Management** and request a fresh list of loaded linked drones.
+
+If a key conflicts with another mod, change it in Minecraft's Controls menu.
+
 ## Core abilities
 
 The legacy core cycle remains available alongside subclass abilities. The current 0.6 combat pass intentionally makes these abilities noticeable rather than tiny background bonuses:
@@ -42,11 +55,47 @@ The in-world Android HUD is designed to answer the important combat questions wi
 - dedicated **H / N / G** slots with ability name, FE cost, level lock, READY state or remaining cooldown;
 - a live cooldown progress strip for each subclass slot.
 
+## Skill tree and build points
+
+Android level progression is persistent. The skill tree grants a limited number of points, so it is intended to create a build rather than let one character own every node simultaneously. Branch investment unlocks higher tiers and capstones. Use the inspection pane before spending a point: it reports node requirements, branch investment and whether the node is currently available.
+
+The reset control deliberately has a confirmation step and an FE cost. This keeps respecs available without making build choice meaningless.
+
 ## Aspects, Fragments and passive protocols
 
 Descriptions in the Class Matrix are intended to match the runtime values. The 0.6 combat audit specifically wires previously underimplemented choices such as **Singularity Lattice**, **Reactive Exoshell**, **Phase Navigator** and **Fragment of Translocation** to real effects. Percentage-only bonuses were also raised so a committed build has a noticeable combat identity.
 
 Reactive Exoshell, for example, now triggers a six-second Resistance III + Absorption II defensive window when damaged, with an eight-second retrigger gate. Phase Navigator changes Teleport range/cooldown/post-blink effects and improves cloak exit rather than existing only as descriptive text.
+
+## Linking and commanding drones
+
+Interact with an unowned drone to link it to your player. Linked drones remember their owner and command mode. Sneak-interacting with your own drone releases the link.
+
+Normal interaction cycles the command state in a useful field order:
+
+1. **FOLLOW** - escort the operator in formation and avoid attacking.
+2. **HOLD** - stop escorting and hover at the current position. This is the mode to use when you want a drone to stay behind instead of permanently sitting behind your character.
+3. **DEFENSIVE** - escort the operator and retaliate against valid attackers.
+4. **PASSIVE** - escort without acquiring combat targets.
+5. **AGGRESSIVE** - escort and actively engage valid hostile mobs.
+
+**HOLD is persistent.** A held drone does not resume following merely because you walk away; change its mode back to FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE when you want it moving with you again.
+
+## Drone Management screen
+
+Press **M** while Android systems are active to open the operator console. The request is server-authoritative and reports loaded linked drones within **192 blocks**.
+
+The screen shows, for each active drone:
+
+- drone name;
+- current command mode;
+- current/max health;
+- approximate distance from the operator;
+- a **MODE** button for cycling that individual drone.
+
+The top row contains fleet-wide **FOLLOW ALL**, **HOLD ALL**, **DEFEND ALL**, **PASSIVE ALL** and **AGGRESSIVE** commands. **REFRESH** requests another server snapshot. This means you no longer need to physically catch a drone flying behind you just to change its command state.
+
+The management list intentionally represents **loaded nearby drones**, not every drone that has ever been linked in unloaded chunks. If a drone is absent, move closer to its area and refresh.
 
 ## Drone fleets
 
@@ -54,12 +103,12 @@ Linked drones recognise drones belonging to the same operator, and allied operat
 
 Following drones use stable escort formation slots behind and beside their operator rather than all steering toward the same point. Fleet separation keeps nearby drones apart, and long-distance catch-up only repositions a drone into a collision-free slot that is not already occupied by another fleet drone.
 
-Drone Commander progression now materially scales the fleet: damage multipliers, marked-target bonuses, repair, resistance and command radius all have runtime hooks. **Command Authority** extends the active support envelope to 48 blocks, and **Overmind Ascendant** actually boosts drone offence in addition to repair/defence.
+Drone Commander progression materially scales the fleet: damage multipliers, marked-target bonuses, repair, resistance and command radius all have runtime hooks. **Command Authority** extends the active support envelope to 48 blocks, and **Overmind Ascendant** boosts drone offence in addition to repair/defence.
 
 ## Android Spawner squads
 
 The Android Spawner maintains up to six owned synthetic soldiers with the intended 30% melee / 70% ranged mix and six Transport Flash Drive patrol slots. Squad color, PATROL/GUARD/HOLD/ESCORT mode and commander state persist.
 
-ESCORT now assigns deterministic formation slots by squad membership rather than hash-based positions that can collide. If a squad member falls far behind it may use a collision-checked catch-up position rather than clipping into blocks or another squad member.
+ESCORT assigns deterministic formation slots by squad membership rather than hash-based positions that can collide. If a squad member falls far behind it may use a collision-checked catch-up position rather than clipping into blocks or another squad member.
 
 Android features are server-authoritative where gameplay state is concerned, so relogging or changing dimensions should not reset legitimate progression.
