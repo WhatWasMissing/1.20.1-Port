@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["CNC", "RMR", "CFC"],
+  "key": {
+    "C": {"item": "matteroverdrive:isolinear_circuit_mk3"},
+    "N": {"item": "matteroverdrive:network_flash_drive"},
+    "R": {"item": "matteroverdrive:network_router"},
+    "M": {"item": "matteroverdrive:machine_casing"},
+    "F": {"item": "matteroverdrive:flash_drive"}
+  },
+  "result": {"item": "matteroverdrive:facility_network_controller"}
+}
