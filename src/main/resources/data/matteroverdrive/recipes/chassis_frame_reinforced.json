@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "matteroverdrive:integration_matrix"},
+    {"item": "matteroverdrive:h_compensator"},
+    {"item": "matteroverdrive:tritanium_block"}
+  ],
+  "result": {"item": "matteroverdrive:chassis_frame_reinforced"}
+}
