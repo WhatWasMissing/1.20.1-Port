@@ -8,7 +8,6 @@ import matteroverdrive.client.screen.NetworkRouterScreen;
 import matteroverdrive.client.screen.NetworkSwitchScreen;
 import matteroverdrive.client.screen.PylonScreen;
 import matteroverdrive.client.screen.ContractMarketScreen;
-import matteroverdrive.client.screen.StarMapScreen;
 import matteroverdrive.client.screen.ChargingStationScreen;
 import matteroverdrive.client.screen.EnergyPipeScreen;
 import matteroverdrive.client.screen.InscriberScreen;
@@ -53,7 +52,6 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.NETWORK_SWITCH.get(), NetworkSwitchScreen::new);
             MenuScreens.register(ModMenus.PYLON.get(), PylonScreen::new);
             MenuScreens.register(ModMenus.CONTRACT_MARKET.get(), ContractMarketScreen::new);
-            MenuScreens.register(ModMenus.STAR_MAP.get(), StarMapScreen::new);
             MenuScreens.register(ModMenus.ENERGY_PIPE.get(), EnergyPipeScreen::new);
             MenuScreens.register(ModMenus.CHARGING_STATION.get(), ChargingStationScreen::new);
             MenuScreens.register(ModMenus.FUSION_REACTOR_CONTROLLER.get(), FusionReactorScreen::new);
