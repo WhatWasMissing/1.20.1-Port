@@ -143,11 +143,13 @@ public final class AndroidAbilities {
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 30, 0, true, false));
             player.serverLevel().sendParticles(ParticleTypes.PORTAL, player.getX(), player.getY() + 1.0D, player.getZ(), 36, 0.6D, 0.8D, 0.6D, 0.08D);
         } else {
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, 1, true, true));
-            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 80, 1, true, true));
+            int amp = AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.PHASE_NAVIGATOR) ? 2 : 1;
+            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 80, amp, true, true));
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 80, amp, true, true));
+            if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.PHASE_NAVIGATOR)) AndroidData.receiveEnergy(player, 750);
             player.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 1.0D, player.getZ(), 28, 0.5D, 0.6D, 0.5D, 0.05D);
         }
-        status(player, "Cloak " + (enabled ? "enabled: target locks broken, Speed II for 3s." : "disabled: ambush Strength II + Speed II for 4s."),
+        status(player, "Cloak " + (enabled ? "enabled: target locks broken, Speed II for 3s." : "disabled: ambush Strength/Speed for 4s."),
                 enabled ? ChatFormatting.GREEN : ChatFormatting.YELLOW);
     }
 
@@ -179,82 +181,69 @@ public final class AndroidAbilities {
     private static void activateShockwave(ServerPlayer player) {
         long gameTime = player.level().getGameTime();
         int energyCost = AndroidData.scaleAbilityEnergy(player, SHOCKWAVE_ENERGY, AndroidData.Perk.SHOCK_RECYCLER);
-        double radius = SHOCKWAVE_RADIUS + (AndroidData.hasPerk(player, AndroidData.Perk.WIDEBAND_PULSE) ? 4.0D : 0.0D);
+        boolean lattice = AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.SINGULARITY_LATTICE);
+        double radius = SHOCKWAVE_RADIUS + (AndroidData.hasPerk(player, AndroidData.Perk.WIDEBAND_PULSE) ? 4.0D : 0.0D) + (lattice ? 2.0D : 0.0D);
         float damage = SHOCKWAVE_DAMAGE
                 + (AndroidData.hasPerk(player, AndroidData.Perk.RESONANT_PULSE) ? 5.0F : 0.0F)
-                + (AndroidData.hasPerk(player, AndroidData.Perk.OVERCHARGED_PULSE) ? 7.0F : 0.0F);
+                + (AndroidData.hasPerk(player, AndroidData.Perk.OVERCHARGED_PULSE) ? 7.0F : 0.0F)
+                + (lattice ? 4.0F : 0.0F);
         int cooldownTicks = AndroidData.hasPerk(player, AndroidData.Perk.APEX_CORE)
                 ? Math.max(1, (int)Math.ceil(SHOCKWAVE_COOLDOWN * 0.50D)) : SHOCKWAVE_COOLDOWN;
-        if (AndroidData.hasPerk(player, AndroidData.Perk.COOLDOWN_ROUTER)) {
-            cooldownTicks = Math.max(1, (int)Math.ceil(cooldownTicks * 0.80D));
-        }
+        if (AndroidData.hasPerk(player, AndroidData.Perk.COOLDOWN_ROUTER)) cooldownTicks = Math.max(1, (int)Math.ceil(cooldownTicks * 0.80D));
         int cooldown = AndroidData.getRemainingCooldown(player, AndroidData.Ability.SHOCKWAVE, gameTime);
-        if (cooldown > 0) {
-            status(player, "Sonic Shockwave cooldown: " + formatSeconds(cooldown), ChatFormatting.RED);
-            return;
-        }
-        if (AndroidData.getEnergy(player) < energyCost) {
-            status(player, "Sonic Shockwave needs " + energyCost + " FE.", ChatFormatting.RED);
-            return;
-        }
+        if (cooldown > 0) { status(player, "Sonic Shockwave cooldown: " + formatSeconds(cooldown), ChatFormatting.RED); return; }
+        if (AndroidData.getEnergy(player) < energyCost) { status(player, "Sonic Shockwave needs " + energyCost + " FE.", ChatFormatting.RED); return; }
 
         AABB area = player.getBoundingBox().inflate(radius, 3.5D, radius);
         List<LivingEntity> targets = player.level().getEntitiesOfClass(LivingEntity.class, area,
                 target -> target != player && target.isAlive() && !target.isAlliedTo(player));
-        boolean previousAbilityDamage = player.getPersistentData().getBoolean(ABILITY_DAMAGE_TAG);
-        int recycledEnergy = 0;
-        player.getPersistentData().putBoolean(ABILITY_DAMAGE_TAG, true);
-        try {
+        int[] recycledEnergy = {0};
+        final float finalDamage = damage;
+        withAbilityDamage(player, () -> {
             for (LivingEntity target : targets) {
                 Vec3 offset = target.position().subtract(player.position());
                 Vec3 horizontal = new Vec3(offset.x, 0.0D, offset.z);
                 if (horizontal.lengthSqr() < 0.001D) horizontal = player.getLookAngle();
                 horizontal = horizontal.normalize();
-                target.hurt(player.damageSources().playerAttack(player), damage);
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 1));
-                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100,
+                target.hurt(player.damageSources().playerAttack(player), finalDamage);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, lattice ? 120 : 80, lattice ? 2 : 1));
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, lattice ? 140 : 100,
                         AndroidData.hasPerk(player, AndroidData.Perk.OVERCHARGED_PULSE) ? 1 : 0));
-                if (!target.isAlive() && AndroidData.hasPerk(player, AndroidData.Perk.APEX_CORE)) recycledEnergy += 1_500;
+                if (!target.isAlive() && AndroidData.hasPerk(player, AndroidData.Perk.APEX_CORE)) recycledEnergy[0] += 1_500;
                 double push = AndroidData.hasPerk(player, AndroidData.Perk.SHOCK_MOMENTUM) ? 2.6D : 1.75D;
-                target.push(horizontal.x * push, 0.65D, horizontal.z * push);
+                if (lattice) push += 0.55D;
+                target.push(horizontal.x * push, lattice ? 0.85D : 0.65D, horizontal.z * push);
             }
-        } finally {
-            if (previousAbilityDamage) player.getPersistentData().putBoolean(ABILITY_DAMAGE_TAG, true);
-            else player.getPersistentData().remove(ABILITY_DAMAGE_TAG);
-        }
+        });
 
         AndroidData.tryConsumeEnergy(player, energyCost);
-        if (recycledEnergy > 0) AndroidData.receiveEnergy(player, recycledEnergy);
+        if (recycledEnergy[0] > 0) AndroidData.receiveEnergy(player, recycledEnergy[0]);
         AndroidData.setCooldownUntil(player, AndroidData.Ability.SHOCKWAVE, gameTime + cooldownTicks);
         AndroidData.addExperience(player, 25);
-        player.serverLevel().sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 0.8D, player.getZ(), 12, radius * 0.45D, 0.8D, radius * 0.45D, 0.04D);
-        player.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 0.8D, player.getZ(), 90, radius * 0.5D, 1.0D, radius * 0.5D, 0.12D);
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, 1.2F);
+        player.serverLevel().sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 0.8D, player.getZ(), lattice ? 18 : 12, radius * 0.45D, 0.8D, radius * 0.45D, 0.04D);
+        player.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 0.8D, player.getZ(), lattice ? 130 : 90, radius * 0.5D, 1.0D, radius * 0.5D, 0.12D);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.0F, lattice ? 0.9F : 1.2F);
         status(player, "Sonic Shockwave: " + damage + " damage / " + String.format("%.0f", radius) + " blocks / " + targets.size() + " target(s)"
-                + (recycledEnergy > 0 ? " / +" + recycledEnergy + " FE" : ""), ChatFormatting.AQUA);
+                + (recycledEnergy[0] > 0 ? " / +" + recycledEnergy[0] + " FE" : ""), ChatFormatting.AQUA);
     }
 
     private static void activateTeleport(ServerPlayer player) {
         long gameTime = player.level().getGameTime();
         int energyCost = AndroidData.scaleAbilityEnergy(player, TELEPORT_ENERGY, AndroidData.Perk.BLINK_RECYCLER);
+        boolean navigator = AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.PHASE_NAVIGATOR);
+        boolean lattice = AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.SINGULARITY_LATTICE);
         double teleportRange = TELEPORT_RANGE
                 + (AndroidData.hasPerk(player, AndroidData.Perk.PHASE_CAPACITOR) ? 6.0D : 0.0D)
                 + (AndroidData.hasPerk(player, AndroidData.Perk.PHASE_STABILIZER) ? 6.0D : 0.0D)
-                + (AndroidData.hasPerk(player, AndroidData.Perk.LONG_RANGE_BLINK) ? 16.0D : 0.0D);
+                + (AndroidData.hasPerk(player, AndroidData.Perk.LONG_RANGE_BLINK) ? 16.0D : 0.0D)
+                + (navigator ? 6.0D : 0.0D);
         int cooldownTicks = AndroidData.hasPerk(player, AndroidData.Perk.RAPID_BLINK)
                 ? Math.max(1, (int)Math.ceil(TELEPORT_COOLDOWN * 0.75D)) : TELEPORT_COOLDOWN;
-        if (AndroidData.hasPerk(player, AndroidData.Perk.COOLDOWN_ROUTER)) {
-            cooldownTicks = Math.max(1, (int)Math.ceil(cooldownTicks * 0.80D));
-        }
+        if (AndroidData.hasPerk(player, AndroidData.Perk.COOLDOWN_ROUTER)) cooldownTicks = Math.max(1, (int)Math.ceil(cooldownTicks * 0.80D));
+        if (navigator) cooldownTicks = Math.max(1, (int)Math.ceil(cooldownTicks * 0.80D));
         int cooldown = AndroidData.getRemainingCooldown(player, AndroidData.Ability.TELEPORT, gameTime);
-        if (cooldown > 0) {
-            status(player, "Ender Teleport cooldown: " + formatSeconds(cooldown), ChatFormatting.RED);
-            return;
-        }
-        if (AndroidData.getEnergy(player) < energyCost) {
-            status(player, "Ender Teleport needs " + energyCost + " FE.", ChatFormatting.RED);
-            return;
-        }
+        if (cooldown > 0) { status(player, "Ender Teleport cooldown: " + formatSeconds(cooldown), ChatFormatting.RED); return; }
+        if (AndroidData.getEnergy(player) < energyCost) { status(player, "Ender Teleport needs " + energyCost + " FE.", ChatFormatting.RED); return; }
 
         ServerLevel level = player.serverLevel();
         Vec3 origin = player.position();
@@ -271,41 +260,54 @@ public final class AndroidAbilities {
         for (double distance = clearDistance; distance >= 0.75D; distance -= 0.25D) {
             Vec3 sightPoint = eye.add(look.scale(distance));
             Vec3 candidate = new Vec3(sightPoint.x, sightPoint.y - eyeOffset, sightPoint.z);
-            if (isSafeTeleportDestination(player, level, candidate)) {
-                destination = candidate;
-                break;
-            }
+            if (isSafeTeleportDestination(player, level, candidate)) { destination = candidate; break; }
         }
-
-        if (destination == null) {
-            status(player, "No safe Ender Teleport destination on the view ray.", ChatFormatting.RED);
-            return;
-        }
+        if (destination == null) { status(player, "No safe Ender Teleport destination on the view ray.", ChatFormatting.RED); return; }
 
         level.sendParticles(ParticleTypes.PORTAL, origin.x, origin.y + player.getBbHeight() * 0.5D, origin.z,
                 dimensional ? 72 : 44, 0.45D, 0.75D, 0.45D, 0.18D);
-        level.playSound(null, origin.x, origin.y, origin.z,
-                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.9F, dimensional ? 0.8F : 1.15F);
+        level.playSound(null, origin.x, origin.y, origin.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.9F, dimensional ? 0.8F : 1.15F);
         player.teleportTo(destination.x, destination.y, destination.z);
         player.fallDistance = 0.0F;
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 70, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 50, 0, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, navigator ? 100 : 70, navigator ? 2 : 1, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, navigator ? 80 : 50, navigator ? 1 : 0, true, true));
+        if (navigator) AndroidData.receiveEnergy(player, 1_000);
         level.sendParticles(ParticleTypes.PORTAL, destination.x, destination.y + player.getBbHeight() * 0.5D, destination.z,
                 dimensional ? 72 : 44, 0.45D, 0.75D, 0.45D, 0.18D);
-        level.playSound(null, destination.x, destination.y, destination.z,
-                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.9F, dimensional ? 0.8F : 1.15F);
+        level.playSound(null, destination.x, destination.y, destination.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 0.9F, dimensional ? 0.8F : 1.15F);
 
-        for (LivingEntity target : level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(4.5D),
-                target -> target != player && target.isAlive() && !target.isAlliedTo(player))) {
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 70, 2));
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 70, 0));
-        }
+        List<LivingEntity> arrivalTargets = level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(lattice ? 6.0D : 4.5D),
+                target -> target != player && target.isAlive() && !target.isAlliedTo(player));
+        withAbilityDamage(player, () -> {
+            for (LivingEntity target : arrivalTargets) {
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, lattice ? 110 : 70, lattice ? 3 : 2));
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, lattice ? 110 : 70, lattice ? 1 : 0));
+                if (lattice) {
+                    target.hurt(player.damageSources().playerAttack(player), 8.0F);
+                    Vec3 push = target.position().subtract(player.position());
+                    if (push.lengthSqr() > 0.001D) {
+                        push = push.normalize().scale(1.1D);
+                        target.push(push.x, 0.35D, push.z);
+                    }
+                }
+            }
+        });
 
         AndroidData.tryConsumeEnergy(player, energyCost);
         AndroidData.setCooldownUntil(player, AndroidData.Ability.TELEPORT, gameTime + cooldownTicks);
         AndroidData.addExperience(player, 25);
-        status(player, String.format("Ender Teleport: %.1f blocks / Speed II 3.5s / Resistance 2.5s%s.", origin.distanceTo(destination),
-                dimensional ? " / phased" : ""), ChatFormatting.AQUA);
+        status(player, String.format("Ender Teleport: %.1f blocks / mobility + resistance%s%s.", origin.distanceTo(destination),
+                navigator ? " / Phase Navigator +1,000 FE" : "", lattice ? " / Lattice arrival burst" : ""), ChatFormatting.AQUA);
+    }
+
+    public static void withAbilityDamage(ServerPlayer player, Runnable action) {
+        boolean previous = player.getPersistentData().getBoolean(ABILITY_DAMAGE_TAG);
+        player.getPersistentData().putBoolean(ABILITY_DAMAGE_TAG, true);
+        try { action.run(); }
+        finally {
+            if (previous) player.getPersistentData().putBoolean(ABILITY_DAMAGE_TAG, true);
+            else player.getPersistentData().remove(ABILITY_DAMAGE_TAG);
+        }
     }
 
     private static boolean isSafeTeleportDestination(ServerPlayer player, ServerLevel level, Vec3 candidate) {
@@ -323,8 +325,7 @@ public final class AndroidAbilities {
                 player.getX(), player.getY() + player.getBbHeight() * 0.5D, player.getZ(),
                 AndroidData.hasPerk(player, AndroidData.Perk.ADAMANT_CHASSIS) ? 40 : 24,
                 0.55D, 0.85D, 0.55D, 0.07D);
-        level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 0.7F, 1.25F);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 0.7F, 1.25F);
     }
 
     private static String formatSeconds(int ticks) { return String.format("%.1fs", ticks / 20.0D); }
