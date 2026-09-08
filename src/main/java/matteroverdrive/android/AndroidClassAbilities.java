@@ -42,17 +42,18 @@ public final class AndroidClassAbilities {
         };
     }
 
+    /** Player-facing descriptions deliberately use the same values as the gameplay implementation below. */
     public static String classAbilityDescription(AndroidLoadout.Specialization spec) {
         return switch (spec) {
-            case UTILITY -> "Rapid evasive burst with short cloak and acceleration.";
-            case HUNTER_KILLER -> "Dash toward your aim direction; marked targets nearby extend the hunter overclock.";
-            case PRECISION_FRAME -> "Short controlled reposition that grants brief resistance and a stable firing window.";
-            case ASSAULT -> "Launch forward as a powered battering ram and stagger enemies in your path.";
-            case CHASSIS -> "Brace the chassis, gain heavy protection and repel nearby hostiles.";
-            case SIEGE_FRAME -> "Advance under reinforced plating with strength and knockback resistance.";
-            case DRONE_COMMANDER -> "Repair and reinforce linked drones while refreshing their combat telemetry.";
-            case NANITE_WEAVER -> "Deploy a synthetic recovery field that repairs you and linked drones.";
-            case GRAVITY_CORE -> "Reduce your own inertia, gain mobility and repel nearby enemies with a gravity shear.";
+            case UTILITY -> "Burst forward. Gain 3s cloak, 6s Speed III and 3s Resistance II.";
+            case HUNTER_KILLER -> "Fast pursuit dash. Gain 6s Speed III; if a glowing target is within 10 blocks, gain 10s Speed III and 8s Strength II.";
+            case PRECISION_FRAME -> "Controlled step with 5s Resistance II, 4s Speed II and 10s Night Vision for a safer firing window.";
+            case ASSAULT -> "Powered ram: dash forward and deal 9 damage to hostiles within 4.5 blocks, launching them away.";
+            case CHASSIS -> "Brace for 10s with Resistance III and Absorption III, then repel hostiles within 6 blocks.";
+            case SIEGE_FRAME -> "Advance under 10s Resistance III, Strength II and Absorption III while surging forward.";
+            case DRONE_COMMANDER -> "Within 20 blocks, heal owned drones by 8 HP and grant 15s Resistance II + Speed III. Refund up to 4,000 FE from linked drones.";
+            case NANITE_WEAVER -> "Gain 14s Regeneration III + Absorption III. Owned drones within 12 blocks heal 10 HP and gain regeneration + resistance.";
+            case GRAVITY_CORE -> "High-mobility dash with 8s Slow Falling + Speed III, followed by a 5-block gravity repulse.";
         };
     }
 
@@ -72,47 +73,47 @@ public final class AndroidClassAbilities {
 
     public static String techAbilityDescription(AndroidLoadout.Specialization spec) {
         return switch (spec) {
-            case UTILITY -> "Phase-lock nearby hostiles, slowing and exposing them while you cloak briefly.";
-            case HUNTER_KILLER -> "Expose and weaken nearby hostiles, feeding pursuit against marked prey.";
-            case PRECISION_FRAME -> "Acquire distant targets in your forward arc and prime them for precision follow-up.";
-            case ASSAULT -> "Detonate a close-range kinetic burst that damages and launches enemies.";
-            case CHASSIS -> "Emit a defensive pulse that weakens nearby enemies and reinforces your frame.";
-            case SIEGE_FRAME -> "Fire a radial heavy-ordnance shock that damages, weakens and throws enemies back.";
-            case DRONE_COMMANDER -> "Overclock nearby owned drones with speed, strength and regeneration.";
-            case NANITE_WEAVER -> "Corrupt nearby hostiles with nanites while repairing and reinforcing linked drones.";
-            case GRAVITY_CORE -> "Pull nearby hostiles inward, damage them and leave them heavily slowed.";
+            case UTILITY -> "Mark hostiles within 14 blocks for 10s and apply Slowness IV for 8s; you cloak for 5s.";
+            case HUNTER_KILLER -> "Mark hostiles within 18 blocks for 14s, apply Weakness II for 10s and gain Speed III for 8s. Refund 1,500 FE.";
+            case PRECISION_FRAME -> "Mark targets in a wide forward cone out to 36 blocks for 16s and apply Weakness II for 8s. Refund 500 FE per target, up to 4,000.";
+            case ASSAULT -> "Detonate an 8-block kinetic burst for 14 damage with strong horizontal and vertical knockback.";
+            case CHASSIS -> "Gain 10s Resistance III + Absorption III; enemies within 8 blocks suffer Weakness II and are repelled.";
+            case SIEGE_FRAME -> "Heavy 10-block radial blast for 16 damage, strong knockback and 6s Weakness II.";
+            case DRONE_COMMANDER -> "Overclock owned drones within 24 blocks for 16s with Strength III, Speed III and Regeneration II. Refund up to 4,000 FE.";
+            case NANITE_WEAVER -> "Hostiles within 12 blocks take 10s Poison III + Weakness II. Nearby drones heal 6 HP and gain 10s combat regeneration.";
+            case GRAVITY_CORE -> "Pull hostiles within 13 blocks inward, deal 10 damage and apply Slowness IV for 9s.";
         };
     }
 
     public static int classEnergyCost(AndroidLoadout.Specialization spec) {
         return switch (spec) {
-            case UTILITY -> 5_000; case HUNTER_KILLER -> 5_500; case PRECISION_FRAME -> 5_000;
-            case ASSAULT -> 6_500; case CHASSIS -> 6_500; case SIEGE_FRAME -> 7_000;
-            case DRONE_COMMANDER -> 5_500; case NANITE_WEAVER -> 6_000; case GRAVITY_CORE -> 6_500;
+            case UTILITY -> 3_000; case HUNTER_KILLER -> 3_250; case PRECISION_FRAME -> 2_750;
+            case ASSAULT -> 4_000; case CHASSIS -> 4_250; case SIEGE_FRAME -> 4_500;
+            case DRONE_COMMANDER -> 3_500; case NANITE_WEAVER -> 4_000; case GRAVITY_CORE -> 3_750;
         };
     }
 
     public static int classCooldownTicks(AndroidLoadout.Specialization spec) {
         return switch (spec) {
-            case UTILITY -> 200; case HUNTER_KILLER -> 220; case PRECISION_FRAME -> 180;
-            case ASSAULT -> 260; case CHASSIS -> 320; case SIEGE_FRAME -> 300;
-            case DRONE_COMMANDER -> 300; case NANITE_WEAVER -> 360; case GRAVITY_CORE -> 260;
+            case UTILITY -> 140; case HUNTER_KILLER -> 150; case PRECISION_FRAME -> 120;
+            case ASSAULT -> 180; case CHASSIS -> 220; case SIEGE_FRAME -> 200;
+            case DRONE_COMMANDER -> 200; case NANITE_WEAVER -> 240; case GRAVITY_CORE -> 180;
         };
     }
 
     public static int techEnergyCost(AndroidLoadout.Specialization spec) {
         return switch (spec) {
-            case UTILITY -> 7_000; case HUNTER_KILLER -> 7_000; case PRECISION_FRAME -> 8_000;
-            case ASSAULT -> 9_000; case CHASSIS -> 8_000; case SIEGE_FRAME -> 10_000;
-            case DRONE_COMMANDER -> 7_500; case NANITE_WEAVER -> 8_000; case GRAVITY_CORE -> 9_000;
+            case UTILITY -> 4_500; case HUNTER_KILLER -> 4_750; case PRECISION_FRAME -> 5_000;
+            case ASSAULT -> 6_000; case CHASSIS -> 5_500; case SIEGE_FRAME -> 6_500;
+            case DRONE_COMMANDER -> 5_000; case NANITE_WEAVER -> 5_250; case GRAVITY_CORE -> 5_750;
         };
     }
 
     public static int techCooldownTicks(AndroidLoadout.Specialization spec) {
         return switch (spec) {
-            case UTILITY -> 340; case HUNTER_KILLER -> 360; case PRECISION_FRAME -> 380;
-            case ASSAULT -> 400; case CHASSIS -> 360; case SIEGE_FRAME -> 420;
-            case DRONE_COMMANDER -> 360; case NANITE_WEAVER -> 400; case GRAVITY_CORE -> 400;
+            case UTILITY -> 240; case HUNTER_KILLER -> 260; case PRECISION_FRAME -> 260;
+            case ASSAULT -> 300; case CHASSIS -> 280; case SIEGE_FRAME -> 320;
+            case DRONE_COMMANDER -> 260; case NANITE_WEAVER -> 300; case GRAVITY_CORE -> 300;
         };
     }
 
@@ -185,171 +186,171 @@ public final class AndroidClassAbilities {
     }
 
     private static void reflexShift(ServerPlayer player) {
-        dash(player, 1.75D, 0.18D);
-        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 45, 0, true, false));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 90, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 35, 0, true, false));
+        dash(player, 1.95D, 0.20D);
+        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 60, 0, true, false));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 1, true, false));
         particles(player, ParticleTypes.PORTAL, 42, 0.7D, 0.18D);
         sound(player, SoundEvents.ENDERMAN_TELEPORT, 0.7F, 1.55F);
     }
 
     private static void pursuitDash(ServerPlayer player) {
-        dash(player, 2.05D, 0.20D);
+        dash(player, 2.35D, 0.22D);
         boolean prey = !player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(10), e -> hostile(player,e) && e.hasEffect(MobEffects.GLOWING)).isEmpty();
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, prey ? 140 : 80, 1, true, true));
-        if (prey) player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 100, 0, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, prey ? 200 : 120, 2, true, true));
+        if (prey) player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 160, 1, true, true));
         particles(player, ParticleTypes.ELECTRIC_SPARK, 40, 0.8D, 0.12D);
     }
 
     private static void focusStep(ServerPlayer player) {
-        dash(player, 1.15D, 0.08D);
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 70, 0, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 55, 0, true, false));
-        player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 120, 0, true, false));
+        dash(player, 1.35D, 0.10D);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100, 1, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 80, 1, true, false));
+        player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 200, 0, true, false));
         particles(player, ParticleTypes.END_ROD, 24, 0.5D, 0.04D);
     }
 
     private static void kineticRam(ServerPlayer player) {
-        dash(player, 1.65D, 0.25D);
-        for (LivingEntity target : hostiles(player, 3.5D)) {
-            target.hurt(player.damageSources().playerAttack(player), 6.0F);
+        dash(player, 1.85D, 0.28D);
+        for (LivingEntity target : hostiles(player, 4.5D)) {
+            target.hurt(player.damageSources().playerAttack(player), 9.0F);
             Vec3 push = target.position().subtract(player.position());
-            if (push.lengthSqr() > 0.001D) { push = push.normalize().scale(1.2D); target.push(push.x, 0.4D, push.z); }
+            if (push.lengthSqr() > 0.001D) { push = push.normalize().scale(1.45D); target.push(push.x, 0.5D, push.z); }
         }
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 50, 0, true, true));
-        particles(player, ParticleTypes.EXPLOSION, 5, 1.0D, 0.02D);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 70, 1, true, true));
+        particles(player, ParticleTypes.EXPLOSION, 7, 1.2D, 0.02D);
     }
 
     private static void bastionFrame(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 160, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 160, 1, true, true));
-        repel(player, 5.0D, 1.15D, 0.35D);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 2, true, true));
+        repel(player, 6.0D, 1.35D, 0.4D);
         particles(player, ParticleTypes.ELECTRIC_SPARK, 72, 1.3D, 0.12D);
         sound(player, SoundEvents.SHIELD_BLOCK, 1.0F, 0.7F);
     }
 
     private static void breachAdvance(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 140, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 140, 0, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 140, 1, true, true));
-        dash(player, 1.0D, 0.08D);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 2, true, true));
+        dash(player, 1.25D, 0.10D);
         particles(player, ParticleTypes.SMOKE, 50, 1.0D, 0.04D);
     }
 
     private static void commandRelay(ServerPlayer player) {
         List<DroneEntity> drones = ownedDrones(player, 20.0D);
         for (DroneEntity drone : drones) {
-            drone.heal(4.0F);
-            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 180, 1, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 180, 1, true, true));
+            drone.heal(8.0F);
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 300, 1, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 2, true, true));
         }
-        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 0, true, true));
-        AndroidData.receiveEnergy(player, Math.min(2500, drones.size() * 500));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 140, 1, true, true));
+        AndroidData.receiveEnergy(player, Math.min(4_000, drones.size() * 750));
         particles(player, ParticleTypes.ELECTRIC_SPARK, 64, 2.0D, 0.08D);
     }
 
     private static void restorationWell(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 220, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 220, 1, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 280, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 280, 2, true, true));
         for (DroneEntity drone : ownedDrones(player, 12.0D)) {
-            drone.heal(6.0F);
-            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 220, 1, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 220, 0, true, true));
+            drone.heal(10.0F);
+            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 280, 1, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 280, 1, true, true));
         }
         particles(player, ParticleTypes.END_ROD, 84, 2.2D, 0.06D);
         sound(player, SoundEvents.BEACON_ACTIVATE, 0.85F, 1.3F);
     }
 
     private static void inertialShift(ServerPlayer player) {
-        dash(player, 1.45D, 0.28D);
-        player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 120, 0, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 100, 1, true, true));
-        repel(player, 4.0D, 0.9D, 0.25D);
+        dash(player, 1.80D, 0.32D);
+        player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 160, 0, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 2, true, true));
+        repel(player, 5.0D, 1.05D, 0.3D);
         particles(player, ParticleTypes.PORTAL, 56, 1.4D, 0.12D);
     }
 
     private static void phaseSnare(ServerPlayer player) {
-        for (LivingEntity target : hostiles(player, 12.0D)) {
-            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0));
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 2));
+        for (LivingEntity target : hostiles(player, 14.0D)) {
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 160, 3));
         }
-        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 70, 0, true, false));
+        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 100, 0, true, false));
         particles(player, ParticleTypes.PORTAL, 70, 3.0D, 0.12D);
     }
 
     private static void predatorSweep(ServerPlayer player) {
-        for (LivingEntity target : hostiles(player, 15.0D)) {
-            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 220, 0));
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140, 0));
+        for (LivingEntity target : hostiles(player, 18.0D)) {
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 280, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
         }
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 120, 1, true, true));
-        AndroidData.receiveEnergy(player, 750);
-        particles(player, ParticleTypes.ELECTRIC_SPARK, 64, 4.0D, 0.04D);
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 2, true, true));
+        AndroidData.receiveEnergy(player, 1_500);
+        particles(player, ParticleTypes.ELECTRIC_SPARK, 72, 4.5D, 0.04D);
     }
 
     private static void targetDesignator(ServerPlayer player) {
         Vec3 look = player.getLookAngle().normalize();
         int marked = 0;
-        for (LivingEntity target : hostiles(player, 30.0D)) {
+        for (LivingEntity target : hostiles(player, 36.0D)) {
             Vec3 to = target.getEyePosition().subtract(player.getEyePosition()).normalize();
-            if (look.dot(to) < 0.72D) continue;
-            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 260, 0));
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
+            if (look.dot(to) < 0.62D) continue;
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 320, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 160, 1));
             marked++;
         }
-        AndroidData.receiveEnergy(player, Math.min(2000, marked * 300));
-        particles(player, ParticleTypes.END_ROD, 36, 1.0D, 0.03D);
+        AndroidData.receiveEnergy(player, Math.min(4_000, marked * 500));
+        particles(player, ParticleTypes.END_ROD, 42, 1.0D, 0.03D);
     }
 
-    private static void seismicCharge(ServerPlayer player) { damageBurst(player, 6.5D, 10.0F, 1.65D, 0.65D); }
+    private static void seismicCharge(ServerPlayer player) { damageBurst(player, 8.0D, 14.0F, 1.85D, 0.75D); }
 
     private static void aegisPulse(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 140, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 140, 1, true, true));
-        for (LivingEntity target : hostiles(player, 7.0D)) target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140, 1));
-        repel(player, 7.0D, 0.8D, 0.2D);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, 2, true, true));
+        for (LivingEntity target : hostiles(player, 8.0D)) target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+        repel(player, 8.0D, 1.0D, 0.25D);
         particles(player, ParticleTypes.ELECTRIC_SPARK, 80, 2.0D, 0.08D);
     }
 
     private static void ordnanceBurst(ServerPlayer player) {
-        damageBurst(player, 8.0D, 12.0F, 1.8D, 0.55D);
-        for (LivingEntity target : hostiles(player, 8.0D)) target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
+        damageBurst(player, 10.0D, 16.0F, 2.0D, 0.65D);
+        for (LivingEntity target : hostiles(player, 10.0D)) target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 120, 1));
     }
 
     private static void swarmSurge(ServerPlayer player) {
         List<DroneEntity> drones = ownedDrones(player, 24.0D);
         for (DroneEntity drone : drones) {
-            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 220, 1, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 220, 1, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 220, 0, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 320, 2, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 320, 2, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 320, 1, true, true));
         }
-        AndroidData.receiveEnergy(player, Math.min(3000, drones.size() * 600));
+        AndroidData.receiveEnergy(player, Math.min(4_000, drones.size() * 750));
         particles(player, ParticleTypes.ELECTRIC_SPARK, 90, 2.5D, 0.10D);
     }
 
     private static void naniteSurge(ServerPlayer player) {
-        List<LivingEntity> targets = hostiles(player, 10.0D);
+        List<LivingEntity> targets = hostiles(player, 12.0D);
         for (LivingEntity target : targets) {
-            target.addEffect(new MobEffectInstance(MobEffects.POISON, 140, 1));
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140, 0));
-            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 140, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.POISON, 200, 2));
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 200, 0));
         }
         for (DroneEntity drone : ownedDrones(player, 16.0D)) {
-            drone.heal(4.0F);
-            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 160, 0, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 160, 0, true, true));
+            drone.heal(6.0F);
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1, true, true));
         }
-        AndroidData.receiveEnergy(player, Math.min(4_000, targets.size() * 500));
+        AndroidData.receiveEnergy(player, Math.min(5_000, targets.size() * 600));
         particles(player, ParticleTypes.COMPOSTER, 72, 3.0D, 0.08D);
         sound(player, SoundEvents.BEACON_POWER_SELECT, 0.8F, 1.5F);
     }
 
     private static void gravityPulse(ServerPlayer player) {
-        for (LivingEntity target : hostiles(player, 11.0D)) {
+        for (LivingEntity target : hostiles(player, 13.0D)) {
             Vec3 pull = player.position().add(0, 1, 0).subtract(target.position());
-            if (pull.lengthSqr() > 0.001D) { pull = pull.normalize().scale(1.1D); target.push(pull.x, 0.15D, pull.z); }
-            target.hurt(player.damageSources().playerAttack(player), 7.0F);
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 140, 2));
+            if (pull.lengthSqr() > 0.001D) { pull = pull.normalize().scale(1.25D); target.push(pull.x, 0.18D, pull.z); }
+            target.hurt(player.damageSources().playerAttack(player), 10.0F);
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 180, 3));
         }
         particles(player, ParticleTypes.PORTAL, 100, 3.5D, 0.18D);
     }
