@@ -16,13 +16,17 @@ import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class FusionReactorIOBlockEntity extends BlockEntity {
     private BlockPos controllerPosition;
     private long matterInputSequence;
     private long matterOutputSequence;
+    private long energyOutputSequence;
 
     public FusionReactorIOBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_REACTOR_IO.get(), pos, state);
@@ -31,12 +35,9 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state,
                                   FusionReactorIOBlockEntity io) {
         FusionReactorControllerBlockEntity controller = io.controller();
-        if (controller == null) {
-            return;
-        }
+        if (controller == null) return;
 
-        int matterRoom = controller.getMatter().getMatterCapacity()
-                - controller.getMatter().getMatterStored();
+        int matterRoom = controller.getMatter().getMatterCapacity() - controller.getMatter().getMatterStored();
         if (matterRoom > 0) {
             int receivedMatter = MatterNetworkUtil.pullMatter(
                     level, pos, controller.getMatter(), matterRoom, io.matterInputSequence);
@@ -56,80 +57,76 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
             }
         }
 
-        if (controller.getEnergy().getEnergyStored() <= 0) {
-            return;
-        }
+        if (controller.getEnergy().getEnergyStored() <= 0) return;
 
-        Set<BlockPos> visited = new HashSet<>();
+        List<Receiver> receivers = discoverEnergyReceivers(level, pos, controller);
+        if (receivers.isEmpty()) return;
+        receivers.sort(Comparator.comparingLong(receiver -> receiver.position().asLong()));
+
+        int start = (int) Math.floorMod(io.energyOutputSequence, (long) receivers.size());
+        int available = controller.getEnergy().getEnergyStored();
+        int sent = 0;
+        for (int offset = 0; offset < receivers.size() && available > 0; offset++) {
+            Receiver receiver = receivers.get((start + offset) % receivers.size());
+            IEnergyStorage storage = receiver.blockEntity().getCapability(
+                    ForgeCapabilities.ENERGY, receiver.side()).orElse(null);
+            if (storage == null || !storage.canReceive()) continue;
+
+            int remaining = receivers.size() - offset;
+            int fairOffer = (int) Math.min(Integer.MAX_VALUE,
+                    ((long) available + remaining - 1L) / remaining);
+            int moved = controller.transferEnergyTo(storage, fairOffer);
+            available -= moved;
+            sent += moved;
+        }
+        io.energyOutputSequence++;
+        if (sent > 0) io.setChanged();
+    }
+
+    private static List<Receiver> discoverEnergyReceivers(Level level, BlockPos ioPos,
+                                                           FusionReactorControllerBlockEntity controller) {
+        List<Receiver> receivers = new ArrayList<>();
+        Set<BlockPos> visitedPipes = new HashSet<>();
         Set<BlockPos> visitedReceivers = new HashSet<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
-        visited.add(pos);
-        enqueueAdjacentCables(level, pos, pending, visited);
 
-        // A machine touching a valid Reactor IO is a legitimate zero-cable output.
-        // Internal-ring receivers are handled by the controller's fair internal bus.
         for (Direction direction : Direction.values()) {
-            BlockPos neighborPos = pos.relative(direction);
+            BlockPos neighborPos = ioPos.relative(direction);
             BlockEntity neighbor = level.getBlockEntity(neighborPos);
-            if (neighbor == null
-                    || neighbor instanceof EnergyPipeBlockEntity
-                    || neighbor instanceof FusionReactorControllerBlockEntity
-                    || neighbor instanceof FusionReactorIOBlockEntity
-                    || controller.isInternalPowerAt(neighborPos)) {
+            if (neighbor instanceof EnergyPipeBlockEntity) {
+                if (visitedPipes.add(neighborPos.immutable())) pending.addLast(neighborPos.immutable());
                 continue;
             }
-            if (pushToReceiver(controller, neighbor, direction)) {
-                visitedReceivers.add(neighborPos.immutable());
-            }
+            addReceiver(controller, neighborPos, neighbor, direction.getOpposite(), visitedReceivers, receivers);
         }
 
-        while (!pending.isEmpty() && controller.getEnergy().getEnergyStored() > 0) {
+        while (!pending.isEmpty()) {
             BlockPos current = pending.removeFirst();
             for (Direction direction : Direction.values()) {
                 BlockPos neighborPos = current.relative(direction);
                 BlockEntity neighbor = level.getBlockEntity(neighborPos);
-
                 if (neighbor instanceof EnergyPipeBlockEntity) {
-                    if (visited.add(neighborPos.immutable())) {
-                        pending.addLast(neighborPos.immutable());
-                    }
+                    if (visitedPipes.add(neighborPos.immutable())) pending.addLast(neighborPos.immutable());
                     continue;
                 }
-                if (neighbor instanceof FusionReactorControllerBlockEntity
-                        || neighbor instanceof FusionReactorIOBlockEntity
-                        || controller.isInternalPowerAt(neighborPos)) {
-                    continue;
-                }
-                if (neighbor != null && !visitedReceivers.contains(neighborPos)
-                        && pushToReceiver(controller, neighbor, direction)) {
-                    visitedReceivers.add(neighborPos.immutable());
-                }
+                addReceiver(controller, neighborPos, neighbor, direction.getOpposite(), visitedReceivers, receivers);
             }
         }
+        return receivers;
     }
 
-    private static void enqueueAdjacentCables(Level level, BlockPos ioPosition,
-                                              ArrayDeque<BlockPos> pending,
-                                              Set<BlockPos> visited) {
-        for (Direction direction : Direction.values()) {
-            BlockPos adjacent = ioPosition.relative(direction);
-            if (level.getBlockEntity(adjacent) instanceof EnergyPipeBlockEntity
-                    && visited.add(adjacent.immutable())) {
-                pending.addLast(adjacent.immutable());
-            }
+    private static void addReceiver(FusionReactorControllerBlockEntity controller,
+                                    BlockPos position, @Nullable BlockEntity blockEntity, Direction receiverSide,
+                                    Set<BlockPos> visitedReceivers, List<Receiver> receivers) {
+        if (blockEntity == null
+                || blockEntity instanceof FusionReactorControllerBlockEntity
+                || blockEntity instanceof FusionReactorIOBlockEntity
+                || controller.isInternalPowerAt(position)
+                || !visitedReceivers.add(position.immutable())) return;
+        IEnergyStorage storage = blockEntity.getCapability(ForgeCapabilities.ENERGY, receiverSide).orElse(null);
+        if (storage != null && storage.canReceive()) {
+            receivers.add(new Receiver(position.immutable(), blockEntity, receiverSide));
         }
-    }
-
-    private static boolean pushToReceiver(FusionReactorControllerBlockEntity controller,
-                                          BlockEntity receiver, Direction direction) {
-        IEnergyStorage storage = receiver.getCapability(
-                ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
-        if (storage == null || !storage.canReceive()) {
-            return false;
-        }
-
-        controller.transferEnergyTo(storage, controller.getEnergy().getEnergyStored());
-        return true;
     }
 
     public void linkController(BlockPos controllerPos) {
@@ -149,9 +146,7 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
 
     @Nullable
     private FusionReactorControllerBlockEntity controller() {
-        if (level == null || controllerPosition == null) {
-            return null;
-        }
+        if (level == null || controllerPosition == null) return null;
         BlockEntity blockEntity = level.getBlockEntity(controllerPosition);
         return blockEntity instanceof FusionReactorControllerBlockEntity controller
                 && controller.isIoAt(worldPosition) ? controller : null;
@@ -160,11 +155,10 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
-        if (controllerPosition != null) {
-            tag.putLong("ControllerPosition", controllerPosition.asLong());
-        }
+        if (controllerPosition != null) tag.putLong("ControllerPosition", controllerPosition.asLong());
         tag.putLong("MatterInputSequence", matterInputSequence);
         tag.putLong("MatterOutputSequence", matterOutputSequence);
+        tag.putLong("EnergyOutputSequence", energyOutputSequence);
     }
 
     @Override
@@ -174,22 +168,17 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
                 ? BlockPos.of(tag.getLong("ControllerPosition")) : null;
         matterInputSequence = tag.getLong("MatterInputSequence");
         matterOutputSequence = tag.getLong("MatterOutputSequence");
+        energyOutputSequence = tag.getLong("EnergyOutputSequence");
     }
 
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
         FusionReactorControllerBlockEntity controller = controller();
-        if (controller == null) {
-            return super.getCapability(capability, side);
-        }
-        if (capability == ForgeCapabilities.ENERGY) {
-            // A formed IO is the reactor's sided FE face. Exposing it to every
-            // face restores direct machine, cable, and capability-based extraction.
-            return LazyOptional.of(controller::getEnergy).cast();
-        }
-        if (capability == ModCapabilities.MATTER) {
-            return LazyOptional.of(controller::getMatter).cast();
-        }
+        if (controller == null) return super.getCapability(capability, side);
+        if (capability == ForgeCapabilities.ENERGY) return LazyOptional.of(controller::getEnergy).cast();
+        if (capability == ModCapabilities.MATTER) return LazyOptional.of(controller::getMatter).cast();
         return super.getCapability(capability, side);
     }
+
+    private record Receiver(BlockPos position, BlockEntity blockEntity, Direction side) {}
 }
