@@ -22,6 +22,7 @@ While enabled, the overlay draws:
 - a highlighted outline for the region currently under the mouse;
 - red outlines for buttons whose clickable rectangles intersect;
 - a live count of visible regions and overlapping pairs;
+- the summed intersecting area in GUI pixels;
 - current mouse coordinates;
 - exact hovered-region `x`, `y`, width, height, and centre coordinates.
 
@@ -32,7 +33,7 @@ While enabled, the overlay draws:
 - Red: region intersects at least one other measured region.
 - Pale centre marker: computed centre/anchor.
 
-The overlay is intentionally based on clickable rectangles rather than only painted textures. This makes it useful for finding invisible hitbox collisions as well as obvious visual overlap.
+The overlay is intentionally based on clickable rectangles rather than only painted textures. This makes it useful for finding invisible hitbox collisions as well as obvious visual overlap. Rectangles whose edges only touch have zero intersection area and are not counted as overlaps.
 
 ## Recommended GUI validation pass
 
@@ -41,7 +42,7 @@ For an affected screen such as the Android Class Matrix:
 1. Open the screen with F8 off and capture the normal appearance if needed.
 2. Enable F8.
 3. Move the pointer across suspect controls and record their geometry from the debug panel.
-4. Look for red regions and a non-zero overlap count.
+4. Look for red regions and a non-zero overlap count/area.
 5. Repeat at GUI scales 2, 3, and 4 where practical.
 6. Resize the game window or switch fullscreen/windowed and re-check responsive layouts.
 7. Change tabs/pages so dynamically rebuilt controls are measured too.
@@ -85,7 +86,6 @@ Useful follow-on work once the 0.6 build is verified:
 
 - semantic IDs for opt-in custom screen regions (Aspect slot, Fragment slot, Artifact slot, etc.);
 - custom-drawn rectangle registration, not only `Button` widgets;
-- overlap area in pixels rather than only pair detection;
 - safe-area and panel-edge diagnostics;
 - optional developer adjustment controls for translate/rotate/scale with copyable values;
 - model-context selector for GUI/ground/fixed views in addition to the live held context;
