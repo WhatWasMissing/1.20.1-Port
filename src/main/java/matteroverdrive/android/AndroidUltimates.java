@@ -66,7 +66,7 @@ public final class AndroidUltimates {
             case NANITE_WEAVER -> naniteBloom(player);
             case GRAVITY_CORE -> eventHorizon(player);
         }
-        AndroidData.addExperience(player, 60);
+        AndroidData.addExperience(player, 75);
         status(player, "ULTIMATE // " + ultimate.displayName, ChatFormatting.GOLD);
         ModNetwork.syncAndroidState(player);
     }
@@ -77,183 +77,200 @@ public final class AndroidUltimates {
     }
 
     private static void withAbilityDamage(ServerPlayer player, Runnable action) {
-        boolean previous = player.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG);
-        player.getPersistentData().putBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG, true);
-        try {
-            action.run();
-        } finally {
-            if (!previous) player.getPersistentData().remove(AndroidAbilities.ABILITY_DAMAGE_TAG);
-        }
+        AndroidAbilities.withAbilityDamage(player, action);
     }
 
     private static void singularityCascade(ServerPlayer player) {
         ServerLevel level = player.serverLevel();
-        List<LivingEntity> targets = hostiles(player, 10.0D);
+        List<LivingEntity> targets = hostiles(player, 12.0D);
         withAbilityDamage(player, () -> {
             for (LivingEntity target : targets) {
                 double distance = Math.max(0.5D, target.distanceTo(player));
-                float damage = (float)Math.max(10.0D, 24.0D - distance);
+                float damage = (float)Math.max(16.0D, 34.0D - distance * 1.25D);
                 target.hurt(player.damageSources().playerAttack(player), damage);
                 Vec3 push = target.position().subtract(player.position());
                 if (push.lengthSqr() > 0.001D) {
-                    push = push.normalize().scale(2.1D);
-                    target.push(push.x, 0.75D, push.z);
+                    push = push.normalize().scale(2.8D);
+                    target.push(push.x, 1.0D, push.z);
                 }
-                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140, 1));
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 220, 2));
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 1));
             }
         });
-        level.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0D, player.getZ(), 18, 4.0D, 1.5D, 4.0D, 0.08D);
-        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 1.0D, player.getZ(), 120, 5.0D, 2.0D, 5.0D, 0.2D);
-        level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.4F, 0.65F);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 1, true, true));
+        level.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0D, player.getZ(), 28, 5.0D, 1.8D, 5.0D, 0.10D);
+        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 1.0D, player.getZ(), 180, 6.0D, 2.5D, 6.0D, 0.24D);
+        level.playSound(null, player.blockPosition(), SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.6F, 0.55F);
     }
 
     private static void citadelProtocol(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 400, 2, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 400, 3, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 400, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 400, 0, true, true));
-        player.serverLevel().sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.0D, player.getZ(), 80, 1.2D, 1.2D, 1.2D, 0.08D);
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.0F, 0.8F);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 500, 3, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 500, 4, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 500, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 500, 0, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300, 1, true, true));
+        for (LivingEntity target : hostiles(player, 8.0D)) {
+            Vec3 push = target.position().subtract(player.position());
+            if (push.lengthSqr() > 0.001D) {
+                push = push.normalize().scale(2.0D);
+                target.push(push.x, 0.6D, push.z);
+            }
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 180, 2));
+        }
+        player.serverLevel().sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.0D, player.getZ(), 120, 1.8D, 1.5D, 1.8D, 0.10D);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.2F, 0.7F);
     }
 
     private static void phaseDominion(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 2, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 300, 0, true, false));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 300, 0, true, true));
-        for (LivingEntity target : hostiles(player, 18.0D)) {
-            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 300, 0));
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 160, 1));
-            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 160, 0));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 400, 3, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 400, 0, true, false));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 400, 1, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300, 1, true, true));
+        for (LivingEntity target : hostiles(player, 24.0D)) {
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 400, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 240, 2));
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 240, 1));
         }
-        player.serverLevel().sendParticles(ParticleTypes.PORTAL, player.getX(), player.getY() + 1.0D, player.getZ(), 140, 3.0D, 1.5D, 3.0D, 0.35D);
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 0.6F);
+        AndroidData.receiveEnergy(player, 4_000);
+        player.serverLevel().sendParticles(ParticleTypes.PORTAL, player.getX(), player.getY() + 1.0D, player.getZ(), 200, 4.0D, 2.0D, 4.0D, 0.40D);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.2F, 0.55F);
     }
 
     private static void overmindAscendant(ServerPlayer player) {
         UUID owner = player.getUUID();
-        AABB area = player.getBoundingBox().inflate(32.0D);
+        AABB area = player.getBoundingBox().inflate(40.0D);
         List<DroneEntity> drones = player.level().getEntitiesOfClass(DroneEntity.class, area,
                 drone -> owner.equals(drone.getOwnerUuid()) && drone.isAlive());
         for (DroneEntity drone : drones) {
             drone.setHealth(drone.getMaxHealth());
-            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 500, 2, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 500, 2, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 500, 1, true, true));
-            player.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK, drone.getX(), drone.getY() + 0.5D, drone.getZ(), 24, 0.6D, 0.6D, 0.6D, 0.15D);
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 600, 3, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 600, 2, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 600, 2, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 600, 3, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 600, 2, true, true));
+            player.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK, drone.getX(), drone.getY() + 0.5D, drone.getZ(), 36, 0.8D, 0.8D, 0.8D, 0.18D);
         }
-        for (LivingEntity target : hostiles(player, 32.0D)) target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 240, 0));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 240, 0, true, true));
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 1.0F, 1.25F);
-        status(player, "Overmind linked " + drones.size() + " drone(s).", ChatFormatting.AQUA);
+        for (LivingEntity target : hostiles(player, 40.0D)) {
+            target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 360, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 240, 1));
+        }
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 300, 1, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 300, 2, true, true));
+        AndroidData.receiveEnergy(player, Math.min(8_000, drones.size() * 1_500));
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 1.2F, 1.15F);
+        status(player, "Overmind fully overclocked " + drones.size() + " drone(s).", ChatFormatting.AQUA);
     }
 
-    /** Strider / Hunter-Killer: mark the whole hunt radius and brutally reward already exposed targets. */
     private static void executionLattice(ServerPlayer player) {
-        List<LivingEntity> targets = hostiles(player, 22.0D);
+        List<LivingEntity> targets = hostiles(player, 28.0D);
         withAbilityDamage(player, () -> {
             for (LivingEntity target : targets) {
                 boolean marked = target.hasEffect(MobEffects.GLOWING);
                 float missingHealth = 1.0F - target.getHealth() / Math.max(1.0F, target.getMaxHealth());
-                float damage = 12.0F + (marked ? 10.0F : 0.0F) + missingHealth * 10.0F;
+                float damage = 18.0F + (marked ? 14.0F : 0.0F) + missingHealth * 14.0F;
                 target.hurt(player.damageSources().playerAttack(player), damage);
-                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 360, 0));
-                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 180, 0));
+                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 420, 0));
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 240, 1));
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 1));
             }
         });
-        AndroidData.receiveEnergy(player, Math.min(6_000, targets.size() * 450));
-        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 180, 2, true, true));
-        player.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 1.0D, player.getZ(), 150, 6.0D, 2.0D, 6.0D, 0.12D);
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1.2F, 0.55F);
+        AndroidData.receiveEnergy(player, Math.min(10_000, targets.size() * 700));
+        player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 240, 3, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 180, 2, true, true));
+        player.serverLevel().sendParticles(ParticleTypes.ELECTRIC_SPARK, player.getX(), player.getY() + 1.0D, player.getZ(), 200, 7.0D, 2.5D, 7.0D, 0.15D);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1.3F, 0.5F);
     }
 
-    /** Strider / Precision Frame: a forward precision cone rather than another generic radial explosion. */
     private static void railstormProtocol(ServerPlayer player) {
         Vec3 look = player.getLookAngle().normalize();
-        List<LivingEntity> candidates = hostiles(player, 28.0D);
+        List<LivingEntity> candidates = hostiles(player, 40.0D);
         withAbilityDamage(player, () -> {
             for (LivingEntity target : candidates) {
                 Vec3 toTarget = target.getEyePosition().subtract(player.getEyePosition());
                 double distance = toTarget.length();
                 if (distance < 0.001D) continue;
                 double alignment = look.dot(toTarget.scale(1.0D / distance));
-                if (alignment < 0.78D) continue;
-                float damage = target.hasEffect(MobEffects.GLOWING) ? 34.0F : 27.0F;
+                if (alignment < 0.68D) continue;
+                float damage = target.hasEffect(MobEffects.GLOWING) ? 52.0F : 40.0F;
                 target.hurt(player.damageSources().playerAttack(player), damage);
-                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 240, 0));
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
-                player.serverLevel().sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + target.getBbHeight() * 0.5D, target.getZ(), 18, 0.25D, 0.4D, 0.25D, 0.12D);
+                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 320, 0));
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 140, 2));
+                player.serverLevel().sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + target.getBbHeight() * 0.5D, target.getZ(), 28, 0.3D, 0.5D, 0.3D, 0.16D);
             }
         });
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 140, 1, true, true));
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.9F, 1.6F);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 120, 0, true, true));
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 1.1F, 1.5F);
     }
 
-    /** Juggernaut / Siege Frame: temporary heavy-frame state plus an immediate close-range breach. */
     private static void siegeEngine(ServerPlayer player) {
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 320, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 320, 1, true, true));
-        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 320, 2, true, true));
-        List<LivingEntity> targets = hostiles(player, 9.0D);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 400, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 400, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 400, 3, true, true));
+        List<LivingEntity> targets = hostiles(player, 12.0D);
         withAbilityDamage(player, () -> {
             for (LivingEntity target : targets) {
-                target.hurt(player.damageSources().playerAttack(player), 18.0F);
+                target.hurt(player.damageSources().playerAttack(player), 24.0F);
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 180, 1));
                 Vec3 push = target.position().subtract(player.position());
                 if (push.lengthSqr() > 0.001D) {
-                    push = push.normalize().scale(2.4D);
-                    target.push(push.x, 0.8D, push.z);
+                    push = push.normalize().scale(3.0D);
+                    target.push(push.x, 1.0D, push.z);
                 }
             }
         });
-        player.serverLevel().sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 0.6D, player.getZ(), 16, 3.5D, 0.6D, 3.5D, 0.05D);
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.2F, 0.55F);
+        player.serverLevel().sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 0.6D, player.getZ(), 24, 4.5D, 0.9D, 4.5D, 0.07D);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 1.4F, 0.5F);
     }
 
-    /** Architect / Nanite Weaver: hostile corrosion and allied repair in the same field. */
     private static void naniteBloom(ServerPlayer player) {
-        List<LivingEntity> targets = hostiles(player, 15.0D);
+        List<LivingEntity> targets = hostiles(player, 20.0D);
         withAbilityDamage(player, () -> {
             for (LivingEntity target : targets) {
-                target.hurt(player.damageSources().playerAttack(player), 8.0F);
-                target.addEffect(new MobEffectInstance(MobEffects.POISON, 260, 2));
-                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 260, 1));
-                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 260, 0));
+                target.hurt(player.damageSources().playerAttack(player), 12.0F);
+                target.addEffect(new MobEffectInstance(MobEffects.POISON, 340, 3));
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 340, 2));
+                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 340, 0));
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 180, 1));
             }
         });
-        player.heal(8.0F);
-        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 300, 1, true, true));
+        player.heal(12.0F);
+        player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 400, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 300, 2, true, true));
         UUID owner = player.getUUID();
-        List<DroneEntity> drones = player.level().getEntitiesOfClass(DroneEntity.class, player.getBoundingBox().inflate(20.0D),
+        List<DroneEntity> drones = player.level().getEntitiesOfClass(DroneEntity.class, player.getBoundingBox().inflate(24.0D),
                 drone -> owner.equals(drone.getOwnerUuid()) && drone.isAlive());
         for (DroneEntity drone : drones) {
-            drone.heal(10.0F);
-            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 300, 1, true, true));
-            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300, 0, true, true));
+            drone.heal(14.0F);
+            drone.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 400, 2, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 400, 1, true, true));
+            drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 300, 1, true, true));
         }
-        AndroidData.receiveEnergy(player, Math.min(7_000, targets.size() * 500));
-        player.serverLevel().sendParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + 1.0D, player.getZ(), 140, 5.0D, 1.8D, 5.0D, 0.08D);
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.0F, 1.45F);
+        AndroidData.receiveEnergy(player, Math.min(10_000, targets.size() * 700));
+        player.serverLevel().sendParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + 1.0D, player.getZ(), 200, 6.0D, 2.2D, 6.0D, 0.10D);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 1.2F, 1.35F);
     }
 
-    /** Architect / Gravity Core: pull, suspend and damage rather than simply applying another status burst. */
     private static void eventHorizon(ServerPlayer player) {
-        List<LivingEntity> targets = hostiles(player, 18.0D);
+        List<LivingEntity> targets = hostiles(player, 22.0D);
         withAbilityDamage(player, () -> {
             for (LivingEntity target : targets) {
                 Vec3 pull = player.position().add(0.0D, 1.0D, 0.0D).subtract(target.position());
                 if (pull.lengthSqr() > 0.001D) {
-                    double scale = Math.min(2.2D, 0.8D + pull.length() * 0.06D);
+                    double scale = Math.min(3.0D, 1.2D + pull.length() * 0.075D);
                     pull = pull.normalize().scale(scale);
-                    target.push(pull.x, Math.max(0.15D, pull.y * 0.35D), pull.z);
+                    target.push(pull.x, Math.max(0.20D, pull.y * 0.45D), pull.z);
                 }
-                target.hurt(player.damageSources().playerAttack(player), 16.0F);
-                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 220, 3));
-                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 220, 1));
-                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 220, 0));
+                target.hurt(player.damageSources().playerAttack(player), 22.0F);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 300, 4));
+                target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 300, 2));
+                target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 300, 0));
             }
         });
-        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 180, 1, true, true));
-        player.serverLevel().sendParticles(ParticleTypes.PORTAL, player.getX(), player.getY() + 1.0D, player.getZ(), 220, 6.0D, 2.5D, 6.0D, 0.45D);
-        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 0.8F, 0.65F);
+        player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 240, 2, true, true));
+        player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 240, 0, true, true));
+        player.serverLevel().sendParticles(ParticleTypes.PORTAL, player.getX(), player.getY() + 1.0D, player.getZ(), 300, 7.0D, 3.0D, 7.0D, 0.55D);
+        player.serverLevel().playSound(null, player.blockPosition(), SoundEvents.END_PORTAL_SPAWN, SoundSource.PLAYERS, 1.0F, 0.55F);
     }
 
     private static String formatSeconds(int ticks) {
