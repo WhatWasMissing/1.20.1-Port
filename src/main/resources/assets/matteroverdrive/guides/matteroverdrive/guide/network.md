@@ -27,6 +27,23 @@ If an FE cable works but a matter pipe does nothing, first check that the receiv
 
 The **Network Pipe / Matter Network Cable** belongs to the task/item routing layer. Routers, Switches, Pattern Monitor, Pattern Storage and Replicator use this layer to discover destinations and move replication work. It is not a replacement for FE cable or Matter Transport Pipe.
 
+## Facility Network Controller
+
+The **Facility Network Controller** is a new central monitoring console for the logical Matter Network. Place it against Network Pipe, a Router, or another reachable section of the data network and use it to perform a live topology scan.
+
+A normal use reports:
+
+- number of connected network clients;
+- number of connected FE-capable endpoints discovered on those clients;
+- number of connected Matter-capable endpoints;
+- total FE stored versus FE capacity;
+- total Matter stored versus Matter capacity;
+- an anomaly warning if a reachable network client exposes an anomaly block entity.
+
+**Sneak + use** prints a per-device inventory grouped by machine type. This is intended as the first layer of the broader facility-management system: it gives one place to inspect whether the factory is actually connected before chasing individual machines.
+
+The controller follows the same logical network traversal rules as the existing Matter Network. It does not magically scan every block in the base. If a machine is not reachable through the network topology, the controller should not report it. That makes the console useful for diagnosing isolated Switch sections and broken Network Cable runs.
+
 ## Router and Switch
 
 The **Network Router** joins network sections and processes queued routes. Destination filtering can restrict where a route is allowed to go. Supported speed upgrades increase how quickly routing work is processed.
@@ -70,5 +87,7 @@ Matter Overdrive's task graph remains separate from AE2. Do not try to splice an
 **Machine has FE but no Matter:** inspect the Matter Pipe path and Matter capacity.
 
 **Replicator has resources but no queued job:** inspect Pattern Storage, Pattern Monitor, Network Cable and Switch state.
+
+**Controller reports zero nodes:** place it directly against a live Network Pipe/Router/Switch path and check whether a Switch has isolated that segment.
 
 **One cable works but a longer route fails:** test the route one segment at a time. The 0.6 line contains explicit chained-cable routing fixes, so a reproducible length/break-replace failure should be reported as a bug rather than treated as intended range behavior.
