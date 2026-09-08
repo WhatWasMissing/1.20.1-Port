@@ -8,7 +8,6 @@ import matteroverdrive.menu.NetworkRouterMenu;
 import matteroverdrive.menu.NetworkSwitchMenu;
 import matteroverdrive.menu.PylonMenu;
 import matteroverdrive.menu.ContractMarketMenu;
-import matteroverdrive.menu.StarMapMenu;
 import matteroverdrive.menu.ChargingStationMenu;
 import matteroverdrive.menu.EnergyPipeMenu;
 import matteroverdrive.menu.InscriberMenu;
@@ -34,7 +33,6 @@ import net.minecraftforge.registries.RegistryObject;
 public final class ModMenus {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MatterOverdrive.MOD_ID);
     public static final RegistryObject<MenuType<ContractMarketMenu>> CONTRACT_MARKET = MENUS.register("contract_market", () -> IForgeMenuType.create(ContractMarketMenu::new));
-    public static final RegistryObject<MenuType<StarMapMenu>> STAR_MAP = MENUS.register("star_map", () -> IForgeMenuType.create(StarMapMenu::new));
     public static final RegistryObject<MenuType<NetworkRouterMenu>> NETWORK_ROUTER = MENUS.register("network_router", () -> IForgeMenuType.create(NetworkRouterMenu::new));
     public static final RegistryObject<MenuType<NetworkSwitchMenu>> NETWORK_SWITCH = MENUS.register("network_switch", () -> IForgeMenuType.create(NetworkSwitchMenu::new));
     public static final RegistryObject<MenuType<PylonMenu>> PYLON = MENUS.register("pylon", () -> IForgeMenuType.create(PylonMenu::new));
