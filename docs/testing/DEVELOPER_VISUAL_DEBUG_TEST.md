@@ -17,12 +17,18 @@ Test against the current `main` 0.6 build. These checks validate the client-only
 - [ ] Open at least one machine GUI and confirm its ordinary buttons are measurable too.
 - [ ] Press F8 again; confirm the action-bar message reports OFF and all debug rendering disappears.
 
-## Model diagnostics state — F9
+## Live model diagnostics — F9
 
-- [ ] Press F9 and confirm the action-bar message reports model diagnostics ON.
-- [ ] Press F9 again and confirm it reports OFF.
+- [ ] Hold the Phaser and press F9; confirm the action-bar message reports model diagnostics ON.
+- [ ] Confirm the top-left model panel identifies `matteroverdrive:phaser`.
+- [ ] In first person, confirm the panel reports the appropriate `firstperson_righthand` or `firstperson_lefthand` context.
+- [ ] Confirm rotation, position/translation, and scale vectors are shown.
+- [ ] Change to third-person view and confirm the context changes to the matching `thirdperson_*` entry.
+- [ ] Repeat with Phaser Rifle, Ion Sniper and Plasma Shotgun.
+- [ ] Confirm the Rifle/Sniper/Shotgun currently report their shared authored hand-transform values; use screenshots to judge whether each mesh actually needs unique values.
+- [ ] Test an item whose model has no direct display transform and confirm the HUD reports that condition rather than showing fabricated values.
+- [ ] Press F9 again and confirm the model panel disappears and the action-bar message reports OFF.
 - [ ] Confirm toggling F9 has no gameplay, weapon-energy, animation, inventory, or server-state side effects.
-- [ ] Do **not** expect every weapon's transform to appear yet: 0.6 currently provides the shared telemetry state/API but renderer-specific producers are pending confirmation of the active weapon rendering path.
 
 ## Regression / safety
 
@@ -43,4 +49,12 @@ For a GUI layout bug, capture:
 4. the current overlap-pair count;
 5. GUI scale and fullscreen/windowed state.
 
-This allows layout issues to be converted directly into coordinate/anchor fixes rather than estimated from the final rendered image alone.
+For a weapon/model placement bug, capture:
+
+1. the weapon in the problematic view with F9 enabled;
+2. the item ID and display context visible in the panel;
+3. the reported rotation, translation, and scale vectors;
+4. whether the player is right- or left-handed and whether the item is in main/off hand;
+5. FOV and first/third-person state if relevant.
+
+This turns visual issues into reproducible coordinate/transform fixes rather than estimates from the rendered image alone.
