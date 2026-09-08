@@ -67,6 +67,25 @@ Descriptions in the Class Matrix are intended to match the runtime values. The 0
 
 Reactive Exoshell, for example, now triggers a six-second Resistance III + Absorption II defensive window when damaged, with an eight-second retrigger gate. Phase Navigator changes Teleport range/cooldown/post-blink effects and improves cloak exit rather than existing only as descriptive text.
 
+## Chassis hardware
+
+Converted Androids can now install a second, physical hardware layer in addition to perks, Aspects and subclass choices. Chassis hardware has five persistent slots: **Core, Frame, Muscles, Optics and Shell**. Right-click a chassis module while converted to install it. Installing a different module in the same slot automatically returns the previous module to your inventory, so changing hardware does not destroy the old component.
+
+Current module choices:
+
+- **Capacitor Core** - slowly recovers Android FE over time.
+- **Overclock Core** - spends FE continuously for stronger combat output.
+- **Lightweight Frame** - improves mobility and jump control at the cost of slightly greater incoming damage.
+- **Reinforced Frame** - substantially reduces incoming damage.
+- **Agility Myomers** - improves movement speed.
+- **Siege Myomers** - improves attack output but reduces mobility.
+- **Hunter Optics** - periodically spends a small amount of FE to highlight nearby hostile targets.
+- **Precision Optics** - increases outgoing combat damage.
+- **Stealth Shell** - crouching spends FE to suppress the Android's visible signature.
+- **Reactive Shell** - hardens automatically below half health.
+
+Chassis modules persist with the player and are copied through player clone/respawn handling. They are intended to create hardware trade-offs that sit underneath the existing specialization system rather than replace it. For example, a Drone Commander can still choose a Reinforced Frame, while a Precision Frame subclass can pair with Siege Myomers or a Stealth Shell.
+
 ## Linking and commanding drones
 
 Interact with an unowned drone to link it to your player. Linked drones remember their owner and command mode. Sneak-interacting with your own drone releases the link.
