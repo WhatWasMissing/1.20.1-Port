@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "matteroverdrive:crashed_ship",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 17290431,
+    "spacing": 80,
+    "separation": 24
+  }
+}
