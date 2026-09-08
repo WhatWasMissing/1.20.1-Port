@@ -13,12 +13,12 @@ echo  Matter Overdrive 1.20.1 - M1 runtime log verification
 echo ============================================================
 
 echo [1/3] Checking registry marker...
-findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=75, blockItems=72, standaloneItems=107, sounds=57" "%LOG%" >nul
+findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=75, blockItems=72, standaloneItems=114, sounds=57" "%LOG%" >nul
 if errorlevel 1 (
   echo [FAIL] Expected M1 registry marker was not found.
   exit /b 31
 )
-echo [PASS] Registry marker is correct: 75 / 72 / 107 / 57
+echo [PASS] Registry marker is correct: 75 / 72 / 114 / 57
 
 echo [2/3] Checking Matter Overdrive model textures...
 findstr /c:"Missing textures in model matteroverdrive:" "%LOG%" >nul
