@@ -81,7 +81,7 @@ public final class AndroidClassAbilities {
             case SIEGE_FRAME -> "Heavy 10-block radial blast for 16 damage, strong knockback and 6s Weakness II.";
             case DRONE_COMMANDER -> "Overclock owned drones within 24 blocks for 16s with Strength III, Speed III and Regeneration II. Refund up to 4,000 FE.";
             case NANITE_WEAVER -> "Hostiles within 12 blocks take 10s Poison III + Weakness II. Nearby drones heal 6 HP and gain 10s combat regeneration.";
-            case GRAVITY_CORE -> "Pull hostiles within 13 blocks inward, deal 10 damage and apply Slowness IV for 9s.";
+            case GRAVITY_CORE -> "Pull hostiles within 13 blocks inward, deal 10 ability damage and apply Slowness IV for 9s.";
         };
     }
 
@@ -212,11 +212,13 @@ public final class AndroidClassAbilities {
 
     private static void kineticRam(ServerPlayer player) {
         dash(player, 1.85D, 0.28D);
-        for (LivingEntity target : hostiles(player, 4.5D)) {
-            target.hurt(player.damageSources().playerAttack(player), 9.0F);
-            Vec3 push = target.position().subtract(player.position());
-            if (push.lengthSqr() > 0.001D) { push = push.normalize().scale(1.45D); target.push(push.x, 0.5D, push.z); }
-        }
+        AndroidAbilities.withAbilityDamage(player, () -> {
+            for (LivingEntity target : hostiles(player, 4.5D)) {
+                target.hurt(player.damageSources().playerAttack(player), 9.0F);
+                Vec3 push = target.position().subtract(player.position());
+                if (push.lengthSqr() > 0.001D) { push = push.normalize().scale(1.45D); target.push(push.x, 0.5D, push.z); }
+            }
+        });
         player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 70, 1, true, true));
         particles(player, ParticleTypes.EXPLOSION, 7, 1.2D, 0.02D);
     }
@@ -346,25 +348,25 @@ public final class AndroidClassAbilities {
     }
 
     private static void gravityPulse(ServerPlayer player) {
-        for (LivingEntity target : hostiles(player, 13.0D)) {
-            Vec3 pull = player.position().add(0, 1, 0).subtract(target.position());
-            if (pull.lengthSqr() > 0.001D) { pull = pull.normalize().scale(1.25D); target.push(pull.x, 0.18D, pull.z); }
-            target.hurt(player.damageSources().playerAttack(player), 10.0F);
-            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 180, 3));
-        }
+        AndroidAbilities.withAbilityDamage(player, () -> {
+            for (LivingEntity target : hostiles(player, 13.0D)) {
+                Vec3 pull = player.position().add(0, 1, 0).subtract(target.position());
+                if (pull.lengthSqr() > 0.001D) { pull = pull.normalize().scale(1.25D); target.push(pull.x, 0.18D, pull.z); }
+                target.hurt(player.damageSources().playerAttack(player), 10.0F);
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 180, 3));
+            }
+        });
         particles(player, ParticleTypes.PORTAL, 100, 3.5D, 0.18D);
     }
 
     private static void damageBurst(ServerPlayer player, double radius, float damage, double pushScale, double yPush) {
-        boolean previous = player.getPersistentData().getBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG);
-        player.getPersistentData().putBoolean(AndroidAbilities.ABILITY_DAMAGE_TAG, true);
-        try {
+        AndroidAbilities.withAbilityDamage(player, () -> {
             for (LivingEntity target : hostiles(player, radius)) {
                 target.hurt(player.damageSources().playerAttack(player), damage);
                 Vec3 push = target.position().subtract(player.position());
                 if (push.lengthSqr() > 0.001D) { push = push.normalize().scale(pushScale); target.push(push.x, yPush, push.z); }
             }
-        } finally { if (!previous) player.getPersistentData().remove(AndroidAbilities.ABILITY_DAMAGE_TAG); }
+        });
         particles(player, ParticleTypes.EXPLOSION, 10, Math.max(1.5D, radius / 2.5D), 0.04D);
         sound(player, SoundEvents.GENERIC_EXPLODE, 1.0F, 0.85F);
     }
