@@ -1,17 +1,21 @@
 # Matter Overdrive 1.20.1 - Current Feature Reference
 
-Branch: `testing/main`
+Branch: `main`
+Release line: `0.6`
 Legacy references:
 - Matter Overdrive 1.7.10 `0.4.2`.
 - Matter Overdrive 1.12.2 `0.7.1.0`.
 
 The 0.8 alpha jar is not a parity authority.
-Build identity: `Alpha Version 3`, made by MVQ1303
+Build identity: `Matter Overdrive 0.6`, maintained by MVQ1303
 
-This is the source-of-truth feature summary and is bundled in-game as **Current Feature Reference**. Implemented does not mean runtime-confirmed; use the M2 Testing Checklist for verification status.
+This is the source-of-truth feature summary and is mirrored by the GuideME **Current Features** page. Implemented does not mean runtime-confirmed; use the M2 Testing Checklist for verification status.
 
 ## Matter / power / machines
 Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe are implemented. Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench are functional. Legacy-inspired Home/Tasks/Config/Upgrades presentation is exposed where real server state exists and physical slots remain visible. Decomposer, Matter Recycler and Microwave use wide HOME/TASKS/UPGRADES operator layouts with persistent access to their real IO and four upgrade slots. Solar Panel uses HOME/GEN/UPGRADES with live generation, sky/light/daylight, buffer and output telemetry while both real upgrade slots remain visible. Pattern Storage now uses HOME/DRIVES/UPGRADES while keeping its energy slot, six real Pattern Drive slots and four upgrade slots visible; Pattern Monitor uses PATTERNS/QUEUE while preserving its 12 clickable ghost-pattern request slots. Replicator, Transporter, Charging Station, Space-Time Accelerator and Inscriber retain their richer real-state operator pages.
+
+### 0.6 matter economy
+Matter valuation now resolves through dynamic Matter Dust values, explicit item values, tag bases, recursively derived recipe values and deterministic fallbacks. Recipe resolution includes cycle/depth protection, output-count division and cheapest-positive ingredient alternatives. Analyzer and Decomposer use the level-aware value path, Pattern Drives preserve analyzed values, Replicator consumes those stored values, tooltips expose effective matter values and their source, and startup auditing/diagnostic commands are available for coverage checks. Existing Pattern Drives created before the 0.6 valuation pass may need to be re-analyzed to refresh their stored value.
 
 Fusion Reactor/gravity includes horizontal structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behavior, Reactor Remote, persistent overlay, Gravitational Anomaly mass/pull/event horizon, Equalizer and powered Stabilizers. Gravitational Stabilizer now uses HOME/BEAM/UPGRADES pages backed by its synchronized FE draw, redstone mode, beam-block and anomaly-lock telemetry while the real RS MODE control and four upgrade slots remain available.
 
@@ -92,6 +96,6 @@ Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are im
 6. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
 7. Remaining weapon module mesh positioning and full first-person hand/weapon animation choreography.
 8. Deeper dispatcher/broadcaster network concepts where cleanly mappable to the working Forge routing core.
-9. Broader dialog/quest framework.
+9. Richer dialogue presentation and remaining source-backed quest detail.
 
 See the in-game **M2 Testing Checklist** for runtime verification.
