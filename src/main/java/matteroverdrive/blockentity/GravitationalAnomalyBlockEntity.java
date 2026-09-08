@@ -171,7 +171,7 @@ public class GravitationalAnomalyBlockEntity extends BlockEntity {
             if (distanceSquared <= eventHorizonSquared) {
                 ItemStack stack = itemEntity.getItem();
                 if (!stack.isEmpty()) {
-                    long itemMatter = Math.max(1, MatterValueRegistry.getMatter(stack));
+                    long itemMatter = Math.max(1, MatterValueRegistry.getMatter(level, stack));
                     recordConsumption(itemMatter * (long) stack.getCount());
                     horizonEntityCount++;
                     itemEntity.discard();
