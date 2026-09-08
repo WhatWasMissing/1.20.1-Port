@@ -5,7 +5,7 @@ import matteroverdrive.android.AndroidChassisData;
 import matteroverdrive.android.AndroidData;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
@@ -14,7 +14,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-@Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID)
+@Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class AndroidChassisEvents {
     private AndroidChassisEvents() {}
 
@@ -67,8 +67,7 @@ public final class AndroidChassisEvents {
         if (time % 40L == 0L && AndroidChassisData.has(player, AndroidChassisData.Module.HUNTER_OPTICS)
                 && AndroidData.tryConsumeEnergy(player, 80)) {
             AABB range = player.getBoundingBox().inflate(24.0D);
-            for (LivingEntity target : player.level().getEntitiesOfClass(LivingEntity.class, range,
-                    e -> e.isAlive() && e != player && e.getType().getCategory().isFriendly() == false)) {
+            for (Monster target : player.level().getEntitiesOfClass(Monster.class, range, Monster::isAlive)) {
                 target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 50, 0, true, false));
             }
         }
@@ -76,8 +75,6 @@ public final class AndroidChassisEvents {
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone event) {
-        if (event.isWasDeath()) event.getOriginal().reviveCaps();
         AndroidChassisData.copyTo(event.getOriginal(), event.getEntity());
-        if (event.isWasDeath()) event.getOriginal().invalidateCaps();
     }
 }
