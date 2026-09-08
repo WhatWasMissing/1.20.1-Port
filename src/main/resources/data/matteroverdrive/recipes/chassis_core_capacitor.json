@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {"item": "matteroverdrive:integration_matrix"},
+    {"item": "matteroverdrive:hc_battery"},
+    {"item": "matteroverdrive:isolinear_circuit_mk3"}
+  ],
+  "result": {"item": "matteroverdrive:chassis_core_capacitor"}
+}
