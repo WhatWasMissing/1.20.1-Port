@@ -8,6 +8,7 @@ import matteroverdrive.block.NetworkRouterBlock;
 import matteroverdrive.block.NetworkSwitchBlock;
 import matteroverdrive.block.PylonBlock;
 import matteroverdrive.block.ContractMarketBlock;
+import matteroverdrive.block.FacilityNetworkControllerBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
 import matteroverdrive.block.VisualPipeBlock;
@@ -59,6 +60,7 @@ public final class ModBlocks {
         "bounding_box",
         "charging_station",
         "contract_market",
+        "facility_network_controller",
         "decomposer",
         "decorative.beams",
         "decorative.carbon_fiber_plate",
@@ -140,6 +142,8 @@ public final class ModBlocks {
     private static void registerPlaceholder(String id) {
         if (id.equals("contract_market")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ContractMarketBlock(propertiesFor(id))));
+        } else if (id.equals("facility_network_controller")) {
+            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FacilityNetworkControllerBlock(propertiesFor(id))));
         } else if (id.equals("network_router")) {
             BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkRouterBlock(propertiesFor(id))));
         } else if (id.equals("network_switch")) {
