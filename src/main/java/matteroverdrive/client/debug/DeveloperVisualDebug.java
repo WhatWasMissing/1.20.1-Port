@@ -58,12 +58,15 @@ public final class DeveloperVisualDebug {
         List<Button> buttons = new ArrayList<>(regions.keySet());
         boolean[] overlaps = new boolean[buttons.size()];
         int overlapPairs = 0;
+        int overlapPixels = 0;
         for (int i = 0; i < buttons.size(); i++) {
             for (int j = i + 1; j < buttons.size(); j++) {
-                if (intersects(buttons.get(i), buttons.get(j))) {
+                int area = intersectionArea(buttons.get(i), buttons.get(j));
+                if (area > 0) {
                     overlaps[i] = true;
                     overlaps[j] = true;
                     overlapPairs++;
+                    overlapPixels += area;
                 }
             }
         }
@@ -83,12 +86,13 @@ public final class DeveloperVisualDebug {
             }
         }
 
-        int panelWidth = Math.min(286, Math.max(210, screenWidth - 8));
+        int panelWidth = Math.min(306, Math.max(220, screenWidth - 8));
         int panelHeight = hovered == null ? 32 : 58;
         int panelX = Math.max(4, screenWidth - panelWidth - 4);
         int panelY = Math.max(4, screenHeight - panelHeight - 4);
         graphics.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, PANEL);
-        graphics.drawString(font, "DEV GUI [F8]  regions=" + buttons.size() + "  overlaps=" + overlapPairs,
+        graphics.drawString(font,
+                "DEV GUI [F8]  regions=" + buttons.size() + "  overlaps=" + overlapPairs + " (" + overlapPixels + "px)",
                 panelX + 5, panelY + 5, overlapPairs > 0 ? OVERLAP : TEXT, false);
         graphics.drawString(font, "mouse=" + mouseX + "," + mouseY,
                 panelX + 5, panelY + 17, MUTED, false);
@@ -106,7 +110,7 @@ public final class DeveloperVisualDebug {
     }
 
     /**
-     * Renderer hooks can publish their active transform here without depending on a debug screen.
+     * Renderer hooks and the JSON model inspector can publish the active transform here.
      * The latest value is intentionally client-local and ephemeral.
      */
     public static void recordModelTransform(String itemId, String context,
@@ -135,11 +139,13 @@ public final class DeveloperVisualDebug {
                 && y >= button.getY() && y < button.getY() + button.getHeight();
     }
 
-    private static boolean intersects(Button a, Button b) {
-        return a.getX() < b.getX() + b.getWidth()
-                && a.getX() + a.getWidth() > b.getX()
-                && a.getY() < b.getY() + b.getHeight()
-                && a.getY() + a.getHeight() > b.getY();
+    private static int intersectionArea(Button a, Button b) {
+        int left = Math.max(a.getX(), b.getX());
+        int top = Math.max(a.getY(), b.getY());
+        int right = Math.min(a.getX() + a.getWidth(), b.getX() + b.getWidth());
+        int bottom = Math.min(a.getY() + a.getHeight(), b.getY() + b.getHeight());
+        if (right <= left || bottom <= top) return 0;
+        return (right - left) * (bottom - top);
     }
 
     private static void outline(GuiGraphics graphics, int x, int y, int width, int height, int color) {
