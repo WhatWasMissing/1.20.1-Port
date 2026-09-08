@@ -90,15 +90,7 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
         Set<BlockPos> visitedReceivers = new HashSet<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
 
-        for (Direction direction : Direction.values()) {
-            BlockPos neighborPos = ioPos.relative(direction);
-            BlockEntity neighbor = level.getBlockEntity(neighborPos);
-            if (neighbor instanceof EnergyPipeBlockEntity) {
-                if (visitedPipes.add(neighborPos.immutable())) pending.addLast(neighborPos.immutable());
-                continue;
-            }
-            addReceiver(controller, neighborPos, neighbor, direction.getOpposite(), visitedReceivers, receivers);
-        }
+        enqueueAdjacentCables(level, ioPos, controller, visitedPipes, visitedReceivers, pending, receivers);
 
         while (!pending.isEmpty()) {
             BlockPos current = pending.removeFirst();
@@ -113,6 +105,28 @@ public class FusionReactorIOBlockEntity extends BlockEntity {
             }
         }
         return receivers;
+    }
+
+    /**
+     * Seeds the external energy-network traversal from the Reactor IO boundary.
+     * Direct machine receivers are recorded immediately while adjacent energy pipes
+     * are queued for breadth-first discovery of the rest of the cable network.
+     */
+    private static void enqueueAdjacentCables(Level level, BlockPos ioPos,
+                                              FusionReactorControllerBlockEntity controller,
+                                              Set<BlockPos> visitedPipes,
+                                              Set<BlockPos> visitedReceivers,
+                                              ArrayDeque<BlockPos> pending,
+                                              List<Receiver> receivers) {
+        for (Direction direction : Direction.values()) {
+            BlockPos neighborPos = ioPos.relative(direction);
+            BlockEntity neighbor = level.getBlockEntity(neighborPos);
+            if (neighbor instanceof EnergyPipeBlockEntity) {
+                if (visitedPipes.add(neighborPos.immutable())) pending.addLast(neighborPos.immutable());
+                continue;
+            }
+            addReceiver(controller, neighborPos, neighbor, direction.getOpposite(), visitedReceivers, receivers);
+        }
     }
 
     private static void addReceiver(FusionReactorControllerBlockEntity controller,
