@@ -117,8 +117,12 @@ public final class MatterValueRegistry {
         register("minecraft:lapis_lazuli", 4);
         register("minecraft:emerald", 256);
         register("minecraft:brick", 2);
+        register("minecraft:raw_iron", 32);
         register("minecraft:iron_ingot", 32);
+        register("minecraft:raw_gold", 42);
         register("minecraft:gold_ingot", 42);
+        register("minecraft:raw_copper", 16);
+        register("minecraft:copper_ingot", 16);
 
         register("matteroverdrive:dilithium_crystal", 512);
         register("matteroverdrive:debug_matter_block", 1_000_000);
@@ -153,13 +157,9 @@ public final class MatterValueRegistry {
         if (stack.getItem() instanceof MatterDustItem) {
             return new MatterValue(MatterDustItem.getMatter(stack), ValueSource.DYNAMIC);
         }
-
-        MatterValue base = getBaseValue(stack);
-        if (base.hasMatter()) {
-            return base;
-        }
         if (level == null) {
-            return fallbackValue(stack);
+            MatterValue base = getBaseValue(stack);
+            return base.hasMatter() ? base : fallbackValue(stack);
         }
 
         refreshRecipeCacheIfNeeded(level);
@@ -181,9 +181,9 @@ public final class MatterValueRegistry {
      * thread. Recursive recipe valuation from that callback can freeze the
      * client while joining a world.
      *
-     * <p>Explicit/tag/dynamic values are returned immediately. A recipe-derived
-     * value is used when it has already been resolved by normal gameplay or a
-     * diagnostic command; otherwise the cheap fallback is shown until then.</p>
+     * <p>A recipe-derived value is preferred once normal gameplay has resolved
+     * and cached it. Otherwise explicit/tag/dynamic values are returned
+     * immediately and the cheap fallback is used for everything else.</p>
      */
     public static MatterValue getMatterValueForTooltip(ItemStack stack) {
         if (stack == null || stack.isEmpty()) {
@@ -193,14 +193,14 @@ public final class MatterValueRegistry {
             return new MatterValue(MatterDustItem.getMatter(stack), ValueSource.DYNAMIC);
         }
 
-        MatterValue base = getBaseValue(stack);
-        if (base.hasMatter()) {
-            return base;
-        }
-
         String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
         MatterValue cached = RECIPE_CACHE.get(id);
-        return cached != null ? cached : fallbackValue(stack);
+        if (cached != null) {
+            return cached;
+        }
+
+        MatterValue base = getBaseValue(stack);
+        return base.hasMatter() ? base : fallbackValue(stack);
     }
 
     public static void clearRecipeCache() {
@@ -242,17 +242,16 @@ public final class MatterValueRegistry {
         if (stack.getItem() instanceof MatterDustItem) {
             return new MatterValue(MatterDustItem.getMatter(stack), ValueSource.DYNAMIC);
         }
-
-        MatterValue base = getBaseValue(stack);
-        if (base.hasMatter()) {
-            return base;
-        }
         if (depth >= MAX_RECIPE_DEPTH) {
-            return fallbackValue(stack);
+            MatterValue base = getBaseValue(stack);
+            return base.hasMatter() ? base : fallbackValue(stack);
         }
 
         String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
         if (!resolving.add(id)) {
+            // Do not inject a hard-coded value into a reversible recipe cycle.
+            // The caller can still resolve another non-cyclic recipe or fall
+            // back to the explicit/tag value after all recipes are exhausted.
             return new MatterValue(0, ValueSource.NONE);
         }
 
@@ -297,9 +296,15 @@ public final class MatterValueRegistry {
                     }
 
                     int outputCount = Math.max(1, result.getCount());
-                    int perItem = (int) Math.max(1L, Math.min(Integer.MAX_VALUE,
-                            (subtotal + outputCount - 1L) / outputCount));
-                    bestRecipeValue = Math.min(bestRecipeValue, perItem);
+                    long perItem = subtotal / outputCount;
+                    if (perItem <= 0L) {
+                        // Rounding upward here would allow a many-output recipe
+                        // to create matter from nothing. Ignore that recipe and
+                        // use another recipe/base/fallback instead.
+                        continue;
+                    }
+                    bestRecipeValue = Math.min(bestRecipeValue,
+                            (int) Math.min(Integer.MAX_VALUE, perItem));
                 }
             }
         } finally {
@@ -309,7 +314,9 @@ public final class MatterValueRegistry {
         if (bestRecipeValue != Integer.MAX_VALUE) {
             return new MatterValue(bestRecipeValue, ValueSource.RECIPE);
         }
-        return fallbackValue(stack);
+
+        MatterValue base = getBaseValue(stack);
+        return base.hasMatter() ? base : fallbackValue(stack);
     }
 
     private static MatterValue getBaseValue(ItemStack stack) {
