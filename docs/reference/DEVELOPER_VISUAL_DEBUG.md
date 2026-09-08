@@ -8,6 +8,7 @@ Matter Overdrive 0.6 includes an opt-in, client-only visual diagnostics layer fo
 - The feature is client-only and does not change server state, progression, packets, matter, FE, combat, or saved gameplay data.
 - The GUI overlay currently inspects ordinary visible Minecraft `Button` children on the active screen. This makes it useful across Matter Overdrive screens without each screen needing its own debug renderer.
 - Custom-drawn regions that are not real widgets are not automatically measurable yet; they should be exposed through a future opt-in region provider if they need geometry diagnostics.
+- Model diagnostics read resource-pack JSON and report values only; they do not alter Minecraft's renderer or model resources.
 
 ## F8 — GUI diagnostics
 
@@ -46,21 +47,37 @@ For an affected screen such as the Android Class Matrix:
 7. Change tabs/pages so dynamically rebuilt controls are measured too.
 8. Disable F8 and verify no debug rendering remains.
 
-## F9 — model transform diagnostics foundation
+## F9 — live model transform diagnostics
 
-Press **F9** to toggle the model diagnostics state.
+Press **F9** while in-world to toggle the held-item model diagnostics HUD.
 
-The shared API is `matteroverdrive.client.debug.DeveloperVisualDebug.recordModelTransform(...)`. A renderer can publish the transform it is actively applying using:
+The inspector identifies the held item, determines the current first-person or third-person left/right-hand display context, and reads that context directly from the item's active resource-pack model JSON. The HUD displays:
 
-- item/model identifier;
-- render context;
-- translation X/Y/Z;
+- item registry ID;
+- active display context (`firstperson_righthand`, `firstperson_lefthand`, `thirdperson_righthand`, or `thirdperson_lefthand`);
 - rotation X/Y/Z;
+- translation X/Y/Z;
 - scale X/Y/Z.
 
-`DeveloperVisualDebug.lastModelTransform()` exposes the latest client-local snapshot to future debug UI/render hooks.
+If the model has no direct display entry for that context, the HUD reports that instead of inventing values. The resource lookup is cached while diagnostics are enabled; enabling F9 clears the diagnostic cache so a fresh session reads the current resource stack.
 
-At the current 0.6 stage this is deliberately a **telemetry foundation**, not a claim that every weapon transform is already captured. Current main does not expose a clear custom `ItemInHandRenderer`/`IClientItemExtensions` path for the Matter Overdrive weapons, so renderer-specific producers should be wired only after the active model/display-transform path has been confirmed. This avoids invasive or speculative hand-render interception.
+This approach matches the current Matter Overdrive weapon assets: Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun use Forge OBJ item models with JSON `display` transforms. It therefore gives us the values that are actually authored for their first/third-person presentation without injecting into Minecraft's hand renderer.
+
+The shared API `matteroverdrive.client.debug.DeveloperVisualDebug.recordModelTransform(...)` remains available for future custom renderers that need to publish a transform which is not represented by a direct JSON display block. `DeveloperVisualDebug.lastModelTransform()` exposes the most recent client-local snapshot.
+
+### Why this matters for the current weapons
+
+The current Phaser Rifle, Ion Sniper and Plasma Shotgun model JSONs use the same first-person and third-person transform values despite having different meshes. F9 makes those copied values visible in-game so screenshots can be tied directly to the authored transform that produced them. Weapon-specific placement can then be tuned deliberately rather than by guessing from screenshots alone.
+
+## Recommended model validation pass
+
+1. Hold the weapon/item to inspect.
+2. Enable F9.
+3. Capture a screenshot that includes the model and transform HUD.
+4. Check both first-person and third-person views.
+5. Where relevant, check right- and left-handed/off-hand presentation.
+6. Compare different MO weapons; note when distinct meshes share identical values but produce visibly different placement.
+7. Disable F9 and confirm the normal HUD returns unchanged.
 
 ## Planned extensions
 
@@ -70,10 +87,10 @@ Useful follow-on work once the 0.6 build is verified:
 - custom-drawn rectangle registration, not only `Button` widgets;
 - overlap area in pixels rather than only pair detection;
 - safe-area and panel-edge diagnostics;
-- live model transform HUD once active renderer producers are known;
 - optional developer adjustment controls for translate/rotate/scale with copyable values;
-- named transform contexts such as first-person right/left, third-person right/left, GUI, and ground.
+- model-context selector for GUI/ground/fixed views in addition to the live held context;
+- custom-renderer producers where an asset does not expose a direct JSON display transform.
 
 ## Screenshot workflow
 
-When reporting a visual issue, a screenshot with F8 enabled is considerably more useful than a normal screenshot alone because the image contains the clickable bounds and exact layout coordinates. Where possible, capture both the normal view and the F8 diagnostic view at the same GUI scale.
+For a GUI issue, capture both the normal view and the F8 diagnostic view at the same GUI scale. For a held-model issue, capture the normal model with F9 enabled so the screenshot records the item ID, context and transform values alongside the visual problem. This turns visual feedback into reproducible coordinate/transform work rather than approximate trial and error.
