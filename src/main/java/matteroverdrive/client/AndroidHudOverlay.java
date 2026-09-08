@@ -1,6 +1,9 @@
 package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.android.AndroidClassAbilities;
+import matteroverdrive.android.AndroidLoadout;
+import matteroverdrive.android.AndroidUltimates;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -25,11 +28,12 @@ public final class AndroidHudOverlay {
 
         GuiGraphics graphics = event.getGuiGraphics();
         int x = 8;
-        int y = event.getWindow().getGuiScaledHeight() - 94;
-        int width = 166;
+        int panelHeight = 112;
+        int y = event.getWindow().getGuiScaledHeight() - panelHeight - 24;
+        int width = 230;
         int energy = AndroidClientState.energy();
 
-        graphics.fill(x, y, x + width, y + 69, 0xB0101820);
+        graphics.fill(x, y, x + width, y + panelHeight, 0xB0101820);
         graphics.fill(x, y, x + width, y + 1, 0xFF53E6FF);
         graphics.drawString(minecraft.font, "ANDROID CORE", x + 6, y + 5, 0xFFE8F8FF, false);
 
@@ -53,7 +57,7 @@ public final class AndroidHudOverlay {
         graphics.drawString(minecraft.font, progression, x + 6, y + 34, 0xFFFFD27A, false);
 
         graphics.drawString(minecraft.font,
-                Component.literal("ABILITY: " + AndroidClientState.abilityName()),
+                Component.literal("CORE ABILITY: " + AndroidClientState.abilityName()),
                 x + 6, y + 46, 0xFFE8F8FF, false);
 
         String state;
@@ -74,7 +78,7 @@ public final class AndroidHudOverlay {
             state = "ACTIVE";
             color = 0xFF65FF9A;
         } else if (AndroidClientState.cooldownTicks() > 0) {
-            state = String.format("COOLDOWN %.1fs", AndroidClientState.cooldownTicks() / 20.0D);
+            state = String.format("CORE COOLDOWN %.1fs", AndroidClientState.cooldownTicks() / 20.0D);
             color = 0xFFFFB45B;
         } else {
             String cycleKey = AndroidKeyMappings.CYCLE_ABILITY.getTranslatedKeyMessage().getString();
@@ -83,6 +87,37 @@ public final class AndroidHudOverlay {
             color = 0xFF9BB6C3;
         }
         graphics.drawString(minecraft.font, state, x + 6, y + 57, color, false);
+
+        AndroidLoadout.Specialization spec = AndroidClientState.specialization();
+        drawAbilitySlot(graphics, minecraft, x + 6, y + 72, "H", AndroidClassAbilities.classAbilityName(spec),
+                AndroidClientState.classAbilityCooldownTicks(), AndroidClassAbilities.classEnergyCost(spec),
+                AndroidClassAbilities.REQUIRED_LEVEL, energy);
+        drawAbilitySlot(graphics, minecraft, x + 6, y + 84, "N", AndroidClassAbilities.techAbilityName(spec),
+                AndroidClientState.techAbilityCooldownTicks(), AndroidClassAbilities.techEnergyCost(spec),
+                AndroidClassAbilities.REQUIRED_LEVEL, energy);
+        drawAbilitySlot(graphics, minecraft, x + 6, y + 96, "G", spec.ultimate.displayName,
+                AndroidClientState.ultimateCooldownTicks(), spec.ultimate.energyCost,
+                AndroidUltimates.REQUIRED_LEVEL, energy);
+    }
+
+    private static void drawAbilitySlot(GuiGraphics graphics, Minecraft minecraft, int x, int y, String key,
+                                        String name, int cooldownTicks, int cost, int requiredLevel, int energy) {
+        String status;
+        int color;
+        if (AndroidClientState.level() < requiredLevel) {
+            status = "LOCK L" + requiredLevel;
+            color = 0xFF8F979F;
+        } else if (cooldownTicks > 0) {
+            status = String.format("%.1fs", cooldownTicks / 20.0D);
+            color = 0xFFFFB45B;
+        } else if (energy < cost) {
+            status = "NEEDS " + compact(cost) + " FE";
+            color = 0xFFFF6060;
+        } else {
+            status = "READY";
+            color = 0xFF65FF9A;
+        }
+        graphics.drawString(minecraft.font, key + "  " + name + "  //  " + status, x, y, color, false);
     }
 
     private static String compact(int value) {
