@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["TCT","CMC","TCT"],
+  "key":{"T":{"item":"matteroverdrive:tritanium_plate"},"C":{"item":"matteroverdrive:isolinear_circuit_mk1"},"M":{"item":"matteroverdrive:matter_container"}},
+  "result":{"item":"matteroverdrive:matter_storage_cell_64k"}
+}
