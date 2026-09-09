@@ -1,9 +1,9 @@
-# Matter Overdrive 1.20.1 - `testing/tech-overhaul` runtime checklist
+# Matter Overdrive 1.20.1 - `main` runtime checklist
 
 Release line: `0.6`
 Target: Minecraft 1.20.1 / Forge 47.4.10 / Java 17
 
-This is the current development-branch test list. Static validators and a successful build reduce risk but do not replace Forge/Minecraft runtime verification.
+This is the current merged development test list. Static validators and a successful build reduce risk but do not replace Forge/Minecraft runtime verification.
 
 > **Retired content:** the Star Map is not part of the active port. Historical inventory/localization references are archaeology only and must not be used as restoration requirements.
 
@@ -24,6 +24,7 @@ python scripts/validate_port_consistency.py
 python scripts/validate_android_consistency.py
 python scripts/validate_weapon_consistency.py
 python scripts/validate_network_transport_consistency.py
+python scripts/validate_weapon_renderer_consistency.py
 ```
 
 Attach `build/reports/m2-port-consistency.md` when reporting static-audit warnings.
@@ -122,9 +123,16 @@ Use a fresh world or unexplored chunks.
 - [ ] Heat, overheat and reload work in Survival and Creative.
 - [ ] Install a high-capacity weapon battery, charge above the capacity of a smaller/no-battery configuration, then swap/remove it in the Weapon Station: stored weapon FE clamps to the final packed capacity and does not reappear when the larger battery is reinstalled.
 - [ ] Opening/closing a Weapon Station without changing the battery does not destroy charge merely because modules are temporarily unpacked for editing.
-- [ ] Ion Sniper aim/FOV, Sniper Scope override and recoil behavior match the current recovered parity values.
+- [ ] **Renderer 2.0:** all four energy weapons are immediately visible in first person after equip; none fall back to the vanilla bow/eating/use pose.
+- [ ] Hip-fire movement has subtle view-model sway, weapon switching has a short draw/lower motion, and aiming strongly reduces movement bob.
+- [ ] Firing produces a short model recoil impulse and camera recoil without turning into continuous held-item wobble.
+- [ ] Ion Sniper and Plasma Shotgun show smooth presentation-only charge motion while held; releasing returns the model cleanly to idle.
+- [ ] Ion Sniper aim/FOV and Sniper Scope override retain the recovered zoom values while the view model centers on ADS.
+- [ ] Holo Sights and Sniper Scope stay attached to the weapon during hip-fire, ADS, recoil and charge motion.
+- [ ] Put a shield/tool in the off hand: it is suppressed while a Matter Overdrive gun owns first person and returns immediately after switching to a normal item.
+- [ ] Sprint, jump, stop, swap slots and rapidly re-equip several times; the weapon never becomes invisible or stuck at an old transform.
 - [ ] Weapon Station slots/modules persist and its stats update immediately after module changes.
-- [ ] First/third-person weapon transforms remain visible and correctly oriented.
+- [ ] Third-person, GUI, dropped-item and fixed/item-frame weapon rendering remain visible and correctly oriented.
 
 ## Legacy/world-content regression
 
