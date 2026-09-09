@@ -3,10 +3,15 @@ package matteroverdrive.client;
 import com.mojang.math.Axis;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.weapon.EnergyWeaponItem;
+import matteroverdrive.item.weapon.NativeDestinyWeaponItem;
+import matteroverdrive.item.weapon.NativeDestinyWeaponProfile;
+import matteroverdrive.item.weapon.VexMythoclastItem;
 import matteroverdrive.item.weapon.WeaponModuleItem;
 import matteroverdrive.item.weapon.WeaponSystem;
+import matteroverdrive.network.WeaponTriggerPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -18,16 +23,15 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Client-only weapon presentation for the first-person Matter Overdrive view model.
+ * Client-only firearm presentation for Renderer 2.0.
  *
- * Renderer 2.0 follows the same broad split used by modern gun mods: server-authoritative
- * weapon gameplay stays in EnergyWeaponItem, while this class owns interpolation and the
- * dedicated first-person camera/view-model path. RenderHandEvent is cancelled only for
- * Matter Overdrive energy weapons, so ordinary items immediately return to vanilla.
+ * Trigger and aim are intentionally independent: LMB drives the server-authoritative
+ * Item use/fire loop, RMB drives this ADS state, and Shift+RMB remains reload/mode input.
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class WeaponClientEffects {
     private static long seenShot = Long.MIN_VALUE;
+    private static String seenWeapon = "";
 
     private static float previousAim;
     private static float aim;
@@ -54,18 +58,35 @@ public final class WeaponClientEffects {
 
     @SubscribeEvent
     public static void onFov(ViewportEvent.ComputeFov event) {
-        var player = Minecraft.getInstance().player;
         ItemStack stack = heldStack();
-        if (player == null || !player.isUsingItem() || !(stack.getItem() instanceof EnergyWeaponItem weapon)) return;
+        if (!WeaponTriggerPacket.isFirearm(stack) || !WeaponTriggerInput.isAiming()) return;
 
-        // Legacy EnergyWeapon#getZoomMultiply asks a scope module first, then the weapon base.
-        // 1.12 Ion Sniper base zoom = 0.4 and Sniper Scope getZoomAmount = 0.85.
-        double zoom = weapon.getWeaponType() == EnergyWeaponItem.WeaponType.ION_SNIPER ? 0.40D : 1.0D;
-        if (WeaponSystem.hasEffect(stack, WeaponModuleItem.Effect.SNIPER_SCOPE)) zoom = 0.85D;
+        double zoom = aimZoom(stack);
         if (zoom < 1.0D) {
             double easedAim = smoothStep(aim);
             event.setFOV(event.getFOV() * Mth.lerp(easedAim, 1.0D, zoom));
         }
+    }
+
+    private static double aimZoom(ItemStack stack) {
+        if (stack.getItem() instanceof NativeDestinyWeaponItem destiny) {
+            NativeDestinyWeaponProfile profile = destiny.profile();
+            if (profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT) return 0.55D;
+            if (profile == NativeDestinyWeaponProfile.MIDA_MULTI_TOOL
+                    || profile == NativeDestinyWeaponProfile.CHAOS_DOGMA
+                    || profile == NativeDestinyWeaponProfile.PROXIMA_CENTAURI_II
+                    || profile == NativeDestinyWeaponProfile.TRAX_CALLUM_1) return 0.72D;
+            return profile.automatic() ? 0.86D : 0.82D;
+        }
+        if (stack.getItem() instanceof VexMythoclastItem vex) {
+            return vex.isLinearMode(stack) ? 0.62D : 0.78D;
+        }
+        if (stack.getItem() instanceof EnergyWeaponItem weapon) {
+            double zoom = weapon.getWeaponType() == EnergyWeaponItem.WeaponType.ION_SNIPER ? 0.40D : 1.0D;
+            if (WeaponSystem.hasEffect(stack, WeaponModuleItem.Effect.SNIPER_SCOPE)) zoom = 0.85D;
+            return zoom;
+        }
+        return 1.0D;
     }
 
     @SubscribeEvent
@@ -79,34 +100,38 @@ public final class WeaponClientEffects {
         previousRenderRecoil = renderRecoil;
 
         ItemStack stack = heldStack();
-        boolean holdingWeapon = stack.getItem() instanceof EnergyWeaponItem;
-        boolean wantsAim = holdingWeapon && minecraft.player.isUsingItem()
-                && minecraft.player.getUsedItemHand() == InteractionHand.MAIN_HAND;
+        boolean holdingWeapon = WeaponTriggerPacket.isFirearm(stack);
+        boolean wantsAim = holdingWeapon && WeaponTriggerInput.isAiming();
         aim = approach(aim, wantsAim ? 1.0F : 0.0F, wantsAim ? 0.18F : 0.24F);
 
+        int triggerTicks = WeaponTriggerInput.heldTicks();
         float wantedCharge = 0.0F;
-        if (stack.getItem() instanceof EnergyWeaponItem weapon && wantsAim) {
-            int elapsed = Math.max(0, weapon.getUseDuration(stack) - minecraft.player.getUseItemRemainingTicks());
+        if (stack.getItem() instanceof VexMythoclastItem vex && vex.isLinearMode(stack)) {
+            wantedCharge = Mth.clamp(triggerTicks / 12.0F, 0.0F, 1.0F);
+        } else if (stack.getItem() instanceof EnergyWeaponItem weapon
+                && !(stack.getItem() instanceof NativeDestinyWeaponItem)) {
             wantedCharge = switch (weapon.getWeaponType()) {
-                case ION_SNIPER -> Mth.clamp(elapsed / 12.0F, 0.0F, 1.0F);
-                case PLASMA_SHOTGUN -> Mth.clamp(elapsed / 20.0F, 0.0F, 1.0F);
+                case ION_SNIPER -> Mth.clamp(triggerTicks / 12.0F, 0.0F, 1.0F);
+                case PLASMA_SHOTGUN -> Mth.clamp(triggerTicks / 20.0F, 0.0F, 1.0F);
                 default -> 0.0F;
             };
         }
         charge = approach(charge, wantedCharge, wantedCharge > charge ? 0.16F : 0.28F);
 
-        if (stack.getItem() instanceof EnergyWeaponItem weapon) {
-            long shot = stack.getOrCreateTag().getLong("MatterOverdriveLastShot");
-            if (shot != 0L && shot != seenShot) {
+        if (holdingWeapon) {
+            long shot = shotTimestamp(stack);
+            String weaponId = String.valueOf(BuiltInRegistries.ITEM.getKey(stack.getItem()));
+            if (shot != 0L && (shot != seenShot || !weaponId.equals(seenWeapon))) {
                 seenShot = shot;
-                float heat = weapon.getHeat(stack) / Math.max(1.0F, weapon.getMaxHeat(stack));
-                float base = switch (weapon.getWeaponType()) {
-                    case PHASER -> 0.55F;
-                    case PHASER_RIFLE -> 1.10F;
-                    case ION_SNIPER -> minecraft.player.isUsingItem() ? 3.0F : 4.0F;
-                    case PLASMA_SHOTGUN -> 2.35F;
-                };
-                recoilPitch = Math.max(recoilPitch, base + base * heat);
+                seenWeapon = weaponId;
+                WeaponRenderProfile profile = WeaponRenderProfile.forStack(stack);
+                float heatMultiplier = 1.0F;
+                if (stack.getItem() instanceof EnergyWeaponItem weapon
+                        && !(stack.getItem() instanceof NativeDestinyWeaponItem)) {
+                    heatMultiplier += weapon.getHeat(stack) / Math.max(1.0F, weapon.getMaxHeat(stack));
+                }
+                float base = profile.recoilPitch() * heatMultiplier;
+                recoilPitch = Math.max(recoilPitch, base);
                 recoilYaw += (minecraft.player.getRandom().nextFloat() - 0.5F) * base * 0.28F;
                 renderRecoil = 1.0F;
             }
@@ -119,7 +144,6 @@ public final class WeaponClientEffects {
             previousRenderRecoil = 0.0F;
         }
 
-        // A shot is an impulse, not a held-item wobble.
         recoilPitch *= 0.70F;
         recoilYaw *= 0.66F;
         renderRecoil *= 0.58F;
@@ -128,32 +152,43 @@ public final class WeaponClientEffects {
         if (renderRecoil < 0.01F) renderRecoil = 0.0F;
     }
 
+    private static long shotTimestamp(ItemStack stack) {
+        if (stack.getItem() instanceof NativeDestinyWeaponItem) {
+            return stack.getOrCreateTag().getLong(NativeDestinyWeaponItem.LAST_SHOT_TAG);
+        }
+        if (stack.getItem() instanceof VexMythoclastItem) {
+            return stack.getOrCreateTag().getLong("VexLastShot");
+        }
+        if (stack.getItem() instanceof EnergyWeaponItem) {
+            return stack.getOrCreateTag().getLong("MatterOverdriveLastShot");
+        }
+        return 0L;
+    }
+
     @SubscribeEvent
     public static void onRenderHand(RenderHandEvent event) {
         var minecraft = Minecraft.getInstance();
         var player = minecraft.player;
         if (player == null) return;
 
-        // A dedicated gun view model owns the first-person frame. Keeping the ordinary
-        // off hand visible here causes shields/tools to clip directly through long guns.
         if (event.getHand() == InteractionHand.OFF_HAND) {
-            if (player.getMainHandItem().getItem() instanceof EnergyWeaponItem) event.setCanceled(true);
+            if (WeaponTriggerPacket.isFirearm(player.getMainHandItem())) event.setCanceled(true);
             return;
         }
 
         ItemStack stack = event.getItemStack();
-        if (!(stack.getItem() instanceof EnergyWeaponItem weapon)) return;
+        if (!WeaponTriggerPacket.isFirearm(stack)) return;
 
         event.setCanceled(true);
         float partial = event.getPartialTick();
         float aimed = smoothStep(Mth.lerp(partial, previousAim, aim));
         float charged = smoothStep(Mth.lerp(partial, previousCharge, charge));
         float kick = smoothStep(Mth.lerp(partial, previousRenderRecoil, renderRecoil));
-        WeaponRenderProfile profile = WeaponRenderProfile.forWeapon(weapon);
+        WeaponRenderProfile profile = WeaponRenderProfile.forStack(stack);
 
         var pose = event.getPoseStack();
         pose.pushPose();
-        applyViewModelTransform(pose, player, profile, aimed, charged, kick,
+        applyViewModelTransform(pose, player, stack, profile, aimed, charged, kick,
                 event.getEquipProgress(), event.getSwingProgress(), partial);
         firstPersonRenderer().renderFirstPerson(stack, pose, event.getMultiBufferSource(),
                 event.getPackedLight(), OverlayTexture.NO_OVERLAY);
@@ -162,20 +197,21 @@ public final class WeaponClientEffects {
 
     private static void applyViewModelTransform(com.mojang.blaze3d.vertex.PoseStack pose,
                                                 net.minecraft.client.player.LocalPlayer player,
+                                                ItemStack stack,
                                                 WeaponRenderProfile profile,
                                                 float aimed, float charged, float kick,
                                                 float equipProgress, float swingProgress,
                                                 float partialTick) {
-        // Recovered 1.12 first-person pose. The item renderer uses FIXED afterwards,
-        // whose 180-degree Y rotation combines with this +5 degrees to reproduce the
-        // legacy 185-degree hip orientation. ADS subtracts the same legacy deltas.
-        pose.translate(0.13D, -0.18D, -0.55D);
-        pose.mulPose(Axis.YP.rotationDegrees(5.0F));
-        pose.mulPose(Axis.XP.rotationDegrees(3.0F));
+        boolean authoredBase = stack.getItem() instanceof NativeDestinyWeaponItem
+                || stack.getItem() instanceof VexMythoclastItem;
 
-        // Forge/vanilla expose equipProgress as the lowering amount used by the held-item
-        // renderer (0 when fully equipped). Keep the motion short so weapon swaps read as
-        // a draw instead of the vanilla eating/bow animation.
+        if (!authoredBase) {
+            // Recovered MO first-person base; FIXED contributes the 180-degree Y rotation.
+            pose.translate(0.13D, -0.18D, -0.55D);
+            pose.mulPose(Axis.YP.rotationDegrees(5.0F));
+            pose.mulPose(Axis.XP.rotationDegrees(3.0F));
+        }
+
         float equip = Mth.clamp(equipProgress, 0.0F, 1.0F);
         pose.translate(0.025D * equip, -0.34D * equip, 0.08D * equip);
         pose.mulPose(Axis.ZP.rotationDegrees(7.0F * equip));
@@ -186,9 +222,8 @@ public final class WeaponClientEffects {
         pose.mulPose(Axis.YP.rotationDegrees(-3.5F * swing));
         pose.mulPose(Axis.ZP.rotationDegrees(1.5F * swing));
 
-        // Modern gun renderers replace large vanilla item bob with smaller view-model sway.
         double horizontalSpeed = player.getDeltaMovement().horizontalDistance();
-        float movement = (float) Math.min(1.0D, horizontalSpeed * 5.5D);
+        float movement = (float)Math.min(1.0D, horizontalSpeed * 5.5D);
         if (!player.onGround()) movement *= 0.20F;
         if (player.isSprinting()) movement = Math.min(1.0F, movement * 1.20F);
         movement *= 1.0F - aimed * 0.82F;
@@ -200,27 +235,30 @@ public final class WeaponClientEffects {
                 0.0025F * verticalBob);
         pose.mulPose(Axis.ZP.rotationDegrees(profile.moveRoll() * sideBob));
 
-        // Tiny idle drift keeps a stationary view model from looking bolted to the screen.
         float idlePhase = (player.tickCount + partialTick) * 0.075F;
         pose.translate(Mth.sin(idlePhase) * 0.0015F * hip,
                 Mth.cos(idlePhase * 0.83F) * 0.0010F * hip,
                 0.0D);
 
-        // Legacy hip -> aim delta: X 0.13 -> 0, Y rot 185 -> 180, X rot 3 -> 0.
-        pose.translate(-0.13D * aimed, 0.04D * aimed, -0.30D * aimed);
-        pose.mulPose(Axis.YP.rotationDegrees(-5.0F * aimed));
-        pose.mulPose(Axis.XP.rotationDegrees(-3.0F * aimed));
+        if (authoredBase) {
+            // Imported model JSONs retain their authored base placement; Renderer 2.0 adds
+            // only the camera-space ADS delta on top.
+            pose.translate(-0.055D * aimed, 0.035D * aimed, -0.22D * aimed);
+            pose.mulPose(Axis.XP.rotationDegrees(-1.5F * aimed));
+        } else {
+            // Legacy MO hip -> aim delta: X .13 -> 0, Y 185 -> 180, X 3 -> 0.
+            pose.translate(-0.13D * aimed, 0.04D * aimed, -0.30D * aimed);
+            pose.mulPose(Axis.YP.rotationDegrees(-5.0F * aimed));
+            pose.mulPose(Axis.XP.rotationDegrees(-3.0F * aimed));
+        }
 
-        // Charge motion is presentation-only. Gameplay charge remains server authoritative.
         pose.translate(0.0D, -0.006D * charged, profile.chargeBack() * charged);
         pose.mulPose(Axis.XP.rotationDegrees(profile.chargePitch() * charged));
 
-        // Model kick is synchronized to the same shot timestamp that drives camera recoil.
         pose.translate(0.0D, profile.recoilLift() * kick, profile.recoilBack() * kick);
         pose.mulPose(Axis.XP.rotationDegrees(-profile.recoilPitch() * kick));
 
-        // The recovered first-person OBJ display entry compressed depth to 0.8.
-        pose.scale(1.0F, 1.0F, 0.8F);
+        if (!authoredBase) pose.scale(1.0F, 1.0F, 0.8F);
     }
 
     @SubscribeEvent
