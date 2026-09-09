@@ -7,6 +7,7 @@ import matteroverdrive.item.TransportFlashDriveItem;
 import matteroverdrive.menu.TransporterMenu;
 import matteroverdrive.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -46,6 +47,10 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
     public static final int TRANSPORT_DELAY = 80;
     public static final int TRANSPORT_RANGE = 32;
     public static final int MAX_ENTITIES_PER_TRANSPORT = 3;
+    private static final int[][] ARRIVAL_OFFSETS = {
+            {0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+            {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+    };
 
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override
@@ -156,17 +161,48 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
         if (progress < cycle()) return;
 
         BlockPos target = selectedTarget();
-        int count = Math.min(MAX_ENTITIES_PER_TRANSPORT, entities.size());
-        for (int i = 0; i < count; i++) {
+        int attempts = Math.min(MAX_ENTITIES_PER_TRANSPORT, entities.size());
+        int transported = 0;
+        for (int i = 0; i < attempts; i++) {
             Entity entity = entities.get(i);
-            entity.teleportTo(target.getX() + 0.5D, target.getY() + 1.0D, target.getZ() + 0.5D);
+            Arrival arrival = findSafeArrival(entity, target);
+            if (arrival == null) continue;
+            entity.teleportTo(arrival.x(), arrival.y(), arrival.z());
+            transported++;
         }
 
-        lastTransportedEntities = count;
-        energy.consumeEnergy(energyCost(), level.getGameTime());
         progress = 0;
+        running = false;
+        lastTransportedEntities = transported;
+        if (transported <= 0) {
+            setChanged();
+            return;
+        }
+
+        energy.consumeEnergy(energyCost(), level.getGameTime());
         cooldown = delay();
         setChanged();
+    }
+
+    @Nullable
+    private Arrival findSafeArrival(Entity entity, BlockPos target) {
+        if (level == null || !level.hasChunkAt(target)) return null;
+        for (int rise = 1; rise <= 4; rise++) {
+            for (int[] offset : ARRIVAL_OFFSETS) {
+                BlockPos feet = target.offset(offset[0], rise, offset[1]);
+                if (!level.hasChunkAt(feet)) continue;
+                BlockPos support = feet.below();
+                if (!level.getBlockState(support).isFaceSturdy(level, support, Direction.UP)) continue;
+
+                double x = feet.getX() + 0.5D;
+                double y = feet.getY();
+                double z = feet.getZ() + 0.5D;
+                AABB moved = entity.getBoundingBox().move(
+                        x - entity.getX(), y - entity.getY(), z - entity.getZ());
+                if (level.noCollision(entity, moved)) return new Arrival(x, y, z);
+            }
+        }
+        return null;
     }
 
     private List<Entity> entitiesOnPad() {
@@ -199,7 +235,7 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
                 && target.getZ() == worldPosition.getZ()
                 && target.getY() < worldPosition.getY() + 4
                 && target.getY() > worldPosition.getY() - 4;
-        return !sameColumnTooClose && distance() < range();
+        return !sameColumnTooClose && level.hasChunkAt(target) && distance() <= range();
     }
 
     private int distance() {
@@ -395,6 +431,7 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     private record Destination(BlockPos pos, String name) {}
+    private record Arrival(double x, double y, double z) {}
 
     private static int low(int value) { return value & 65_535; }
     private static int high(int value) { return value >>> 16 & 65_535; }
