@@ -111,12 +111,27 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
     private void beginReload(Level level, Player player, ItemStack weapon) {
         CompoundTag tag = weapon.getOrCreateTag();
         if (isReloading(level, weapon)) return;
-        String animation = getMagazine(weapon) <= 0 ? "animation.model.reloadempty" : "animation.model.reload";
-        triggerAnimation(level, weapon, animation);
+        triggerAnimation(level, weapon, reloadAnimation(weapon));
         tag.putLong(RELOAD_END_TAG, level.getGameTime() + profile.reloadTicks());
         if (!level.isClientSide) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), matteroverdrive.registry.ModSounds.get("weapons.reload").get(), SoundSource.PLAYERS, 0.75F, 1.0F);
         }
+    }
+
+    /**
+     * The imported source pack does not give every weapon both reload clips. Never request
+     * a clip that the supplied animation file does not contain, otherwise that reload is
+     * visually silent even though the capacitor state still advances.
+     */
+    private String reloadAnimation(ItemStack weapon) {
+        boolean empty = getMagazine(weapon) <= 0;
+        return switch (profile) {
+            case CHAOS_DOGMA -> "animation.model.reloadempty";
+            case KHVOSTOV_7G02, MARSHAL_A1, MIDA_MULTI_TOOL, MONTE_CARLO,
+                    PROXIMA_CENTAURI_II, SUROS_REGIME, TRAX_CALLUM_1 ->
+                    empty ? "animation.model.reloadempty" : "animation.model.reload";
+            default -> "animation.model.reload";
+        };
     }
 
     private boolean fire(Level level, Player shooter, ItemStack weapon) {
@@ -199,6 +214,11 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
     }
 
     private void triggerFireAnimation(Level level, ItemStack stack) {
+        if (profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT
+                || profile == NativeDestinyWeaponProfile.THE_LAST_WORD) {
+            triggerAnimation(level, stack, "animation.model.fire");
+            return;
+        }
         long sequence = level.getGameTime();
         triggerAnimation(level, stack, (sequence & 1L) == 0L ? "animation.model.fire2" : "animation.model.fire");
     }
@@ -225,7 +245,8 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         tooltip.add(Component.literal("Damage: " + String.format("%.1f", profile.damage()) + " | Range: " + profile.range()).withStyle(ChatFormatting.GRAY));
         String energy = getEnergyStored(stack) == Integer.MAX_VALUE ? "Infinite" : getEnergyStored(stack) + " / " + getCapacity(stack);
         tooltip.add(Component.literal("Energy: " + energy + " FE | " + profile.energyPerShot() + " FE/shot").withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal(profile.automatic() ? "Hold right-click: automatic fire" : "Right-click: fire").withStyle(ChatFormatting.WHITE));
+        tooltip.add(Component.literal(profile.automatic() ? "Hold left-click: automatic fire" : "Left-click: fire").withStyle(ChatFormatting.WHITE));
+        tooltip.add(Component.literal("Right-click: aim down sights").withStyle(ChatFormatting.AQUA));
         tooltip.add(Component.literal("Shift-right-click: capacitor reload + battery transfer").withStyle(ChatFormatting.LIGHT_PURPLE));
         tooltip.add(Component.literal("Supports Matter Overdrive weapon modules and charging").withStyle(ChatFormatting.DARK_AQUA));
     }
