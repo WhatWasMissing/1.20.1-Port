@@ -117,31 +117,20 @@ public final class AndroidData {
         if (perk.level >= 5) return 1;
         return 0;
     }
-    public static int getPriorBranchInvestments(Player player, Perk perk) {
-        return priorBranchInvestments(getSelectedPerks(player), perk);
-    }
+    public static int getPriorBranchInvestments(Player player, Perk perk) { return priorBranchInvestments(getSelectedPerks(player), perk); }
     private static int priorBranchInvestments(long mask, Perk perk) {
         int count = 0;
-        for (Perk candidate : Perk.values()) {
-            if (candidate.branch == perk.branch && candidate.level < perk.level
-                    && (mask & (1L << candidate.ordinal())) != 0L) count++;
-        }
+        for (Perk candidate : Perk.values()) if (candidate.branch == perk.branch && candidate.level < perk.level && (mask & (1L << candidate.ordinal())) != 0L) count++;
         return count;
     }
-    public static boolean meetsPerkPrerequisites(Player player, Perk perk) {
-        return getPriorBranchInvestments(player, perk) >= requiredBranchInvestment(perk);
-    }
+    public static boolean meetsPerkPrerequisites(Player player, Perk perk) { return getPriorBranchInvestments(player, perk) >= requiredBranchInvestment(perk); }
     private static boolean maskMeetsPrerequisites(long mask) {
-        for (Perk perk : Perk.values()) {
-            if ((mask & (1L << perk.ordinal())) != 0L
-                    && priorBranchInvestments(mask, perk) < requiredBranchInvestment(perk)) return false;
-        }
+        for (Perk perk : Perk.values()) if ((mask & (1L << perk.ordinal())) != 0L && priorBranchInvestments(mask, perk) < requiredBranchInvestment(perk)) return false;
         return true;
     }
 
     public static boolean selectPerk(Player player, Perk perk) {
-        if (!isAndroid(player) || getLevel(player) < perk.level || hasPerk(player, perk)
-                || getAvailableSkillPoints(player) <= 0 || !meetsPerkPrerequisites(player, perk)) return false;
+        if (!isAndroid(player) || getLevel(player) < perk.level || hasPerk(player, perk) || getAvailableSkillPoints(player) <= 0 || !meetsPerkPrerequisites(player, perk)) return false;
         CompoundTag state = data(player); writeSelectedPerks(state, getSelectedPerks(player) | (1L << perk.ordinal())); save(player, state); return true;
     }
     public static boolean tryRefundPerk(Player player, Perk perk) {
@@ -158,9 +147,7 @@ public final class AndroidData {
     public static int scaleAbilityEnergy(Player player, int base, Perk specialisedEfficiency) {
         double m = 1.0D;
         if (hasPerk(player, Perk.EFFICIENT_CORE)) m *= 0.80D;
-        if (specialisedEfficiency != null && hasPerk(player, specialisedEfficiency)) {
-            m *= specialisedEfficiency == Perk.GHOST_PROTOCOL || specialisedEfficiency == Perk.BARRIER_MATRIX ? 0.60D : 0.65D;
-        }
+        if (specialisedEfficiency != null && hasPerk(player, specialisedEfficiency)) m *= specialisedEfficiency == Perk.GHOST_PROTOCOL || specialisedEfficiency == Perk.BARRIER_MATRIX ? 0.60D : 0.65D;
         if (hasPerk(player, Perk.APEX_CORE)) m *= 0.65D;
         if (hasPerk(player, Perk.SYNTHETIC_PERFECTION)) m *= 0.85D;
         if (specialisedEfficiency == Perk.GHOST_PROTOCOL && hasPerk(player, Perk.SILENT_CLOAK)) m *= 0.65D;
@@ -185,16 +172,10 @@ public final class AndroidData {
         }
         return Math.max(0, state.getInt(EXPERIENCE));
     }
-    public static int getLevel(Player player) {
-        int xp = getExperience(player), level = 1;
-        while (level < MAX_LEVEL && xp >= experienceForLevel(level + 1)) level++;
-        return level;
-    }
+    public static int getLevel(Player player) { int xp = getExperience(player), level = 1; while (level < MAX_LEVEL && xp >= experienceForLevel(level + 1)) level++; return level; }
     public static int experienceForLevel(int level) { return LEVEL_XP[Mth.clamp(level, 1, MAX_LEVEL)]; }
     public static int experienceIntoLevel(Player player) { return getExperience(player) - experienceForLevel(getLevel(player)); }
-    public static int experienceToNextLevel(Player player) {
-        int level = getLevel(player); return level >= MAX_LEVEL ? 0 : experienceForLevel(level + 1) - getExperience(player);
-    }
+    public static int experienceToNextLevel(Player player) { int level = getLevel(player); return level >= MAX_LEVEL ? 0 : experienceForLevel(level + 1) - getExperience(player); }
     public static int addExperience(Player player, int amount) {
         if (amount > 0 && hasPerk(player, Perk.LEARNING_MATRIX)) amount = (int)Math.ceil(amount * 1.40D);
         int before = getExperience(player), after = Mth.clamp(before + Math.max(0, amount), 0, experienceForLevel(MAX_LEVEL));
@@ -210,10 +191,7 @@ public final class AndroidData {
         boolean migrated = !state.contains(EXPERIENCE); if (migrated) state.putInt(EXPERIENCE, 150 + Integer.bitCount(getParts(player)) * 75);
         save(player, state); if (!migrated) addExperience(player, 100);
     }
-    public static int receiveEnergy(Player player, int amount) {
-        if (!isAndroid(player)) return 0; int accepted = Math.min(Math.max(0, amount), ENERGY_CAPACITY - getEnergy(player));
-        if (accepted > 0) setEnergy(player, getEnergy(player) + accepted); return accepted;
-    }
+    public static int receiveEnergy(Player player, int amount) { if (!isAndroid(player)) return 0; int accepted = Math.min(Math.max(0, amount), ENERGY_CAPACITY - getEnergy(player)); if (accepted > 0) setEnergy(player, getEnergy(player) + accepted); return accepted; }
     public static int consumeEnergy(Player player, int amount) { int used = Math.min(Math.max(0, amount), getEnergy(player)); if (used > 0) setEnergy(player, getEnergy(player) - used); return used; }
     public static boolean tryConsumeEnergy(Player player, int amount) { int requested = Math.max(0, amount), stored = getEnergy(player); if (requested == 0) return true; if (stored < requested) return false; setEnergy(player, stored - requested); return true; }
     public static void setEnergy(Player player, int amount) { CompoundTag state = data(player); state.putInt(ENERGY, Mth.clamp(amount, 0, ENERGY_CAPACITY)); save(player, state); }
@@ -223,6 +201,20 @@ public final class AndroidData {
         CompoundTag state = data(player); state.putInt(PARTS, getParts(player) | part.bit);
         if (!isAbilityUnlocked(player, getSelectedAbility(player))) for (Ability ability : Ability.values()) if (ability.requiredPart == part) { state.putInt(SELECTED_ABILITY, ability.ordinal()); break; }
         save(player, state); addExperience(player, 75); return true;
+    }
+    public static boolean removePart(Player player, Part part) {
+        if (!isAndroid(player) || part == null || !hasPart(player, part)) return false;
+        CompoundTag state = data(player);
+        state.putInt(PARTS, getParts(player) & ~part.bit);
+        if (part == Part.HEAD) state.putBoolean(CLOAK_ENABLED, false);
+        if (part == Part.CHEST) state.putBoolean(SHIELD_ENABLED, false);
+        save(player, state);
+        if (!isAbilityUnlocked(player, getSelectedAbility(player))) {
+            for (Ability ability : Ability.values()) {
+                if (isAbilityUnlocked(player, ability)) { setSelectedAbility(player, ability); break; }
+            }
+        }
+        return true;
     }
     public static Ability getSelectedAbility(Player player) { Ability[] v = Ability.values(); return v[Mth.clamp(data(player).getInt(SELECTED_ABILITY), 0, v.length - 1)]; }
     public static void setSelectedAbility(Player player, Ability ability) { CompoundTag state = data(player); state.putInt(SELECTED_ABILITY, ability.ordinal()); save(player, state); }
