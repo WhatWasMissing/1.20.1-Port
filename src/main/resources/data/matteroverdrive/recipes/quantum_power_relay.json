@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["DQD","CMC","DPD"],
+  "key":{"D":{"item":"matteroverdrive:dilithium_crystal"},"Q":{"item":"matteroverdrive:quantum_fold_manipulator"},"C":{"item":"matteroverdrive:isolinear_circuit_mk4"},"M":{"item":"matteroverdrive:machine_casing"},"P":{"item":"matteroverdrive:pylon"}},
+  "result":{"item":"matteroverdrive:quantum_power_relay"}
+}
