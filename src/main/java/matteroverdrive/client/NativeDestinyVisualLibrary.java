@@ -20,14 +20,17 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Lightweight native loader for the Bedrock/Blockbench gun geometry and animation data
@@ -37,7 +40,7 @@ import java.util.Map;
 public final class NativeDestinyVisualLibrary {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final ResourceLocation DATA =
-            new ResourceLocation(MatterOverdrive.MOD_ID, "native_destiny/weapons.json");
+            new ResourceLocation(MatterOverdrive.MOD_ID, "native_destiny/weapons.json.gz.b64");
     private static final Map<String, WeaponVisual> VISUALS = new HashMap<>();
     private static boolean loaded;
 
@@ -52,8 +55,16 @@ public final class NativeDestinyVisualLibrary {
         if (loaded) return;
         loaded = true;
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.getResourceManager().getResource(DATA).ifPresent(resource -> {
-            try (var reader = new InputStreamReader(resource.open(), StandardCharsets.UTF_8)) {
+        var resource = minecraft.getResourceManager().getResource(DATA);
+        if (resource.isEmpty()) {
+            LOGGER.error("Native Destiny visual bundle {} is missing", DATA);
+            return;
+        }
+        try (var input = resource.get().open()) {
+            String encoded = new String(input.readAllBytes(), StandardCharsets.UTF_8).replaceAll("\\s+", "");
+            byte[] compressed = Base64.getDecoder().decode(encoded);
+            try (var reader = new InputStreamReader(
+                    new GZIPInputStream(new ByteArrayInputStream(compressed)), StandardCharsets.UTF_8)) {
                 JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
                 JsonObject weapons = root.getAsJsonObject("weapons");
                 for (Map.Entry<String, JsonElement> entry : weapons.entrySet()) {
@@ -63,11 +74,15 @@ public final class NativeDestinyVisualLibrary {
                         LOGGER.error("Failed to build native Destiny visual {}", entry.getKey(), ex);
                     }
                 }
-                LOGGER.info("Loaded {} native Destiny weapon visuals", VISUALS.size());
-            } catch (Exception ex) {
-                LOGGER.error("Failed to load native Destiny weapon visual data", ex);
+                if (VISUALS.size() != 14) {
+                    LOGGER.warn("Expected 14 native Destiny weapon visuals but loaded {}", VISUALS.size());
+                } else {
+                    LOGGER.info("Loaded all 14 native Destiny weapon visuals");
+                }
             }
-        });
+        } catch (Exception ex) {
+            LOGGER.error("Failed to load compressed native Destiny weapon visual data", ex);
+        }
     }
 
     public static final class WeaponVisual {
