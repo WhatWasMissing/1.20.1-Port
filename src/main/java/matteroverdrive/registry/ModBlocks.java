@@ -26,6 +26,7 @@ import matteroverdrive.block.MicrowaveBlock;
 import matteroverdrive.block.SpacetimeAcceleratorBlock;
 import matteroverdrive.block.ReplicatorBlock;
 import matteroverdrive.block.SolarPanelBlock;
+import matteroverdrive.block.TechMachineBlock;
 import matteroverdrive.block.TritaniumCrateBlock;
 import matteroverdrive.block.PatternStorageBlock;
 import matteroverdrive.block.PatternMonitorBlock;
@@ -43,231 +44,94 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ModBlocks {
-    public static final DeferredRegister<Block> BLOCKS =
-            DeferredRegister.create(ForgeRegistries.BLOCKS, MatterOverdrive.MOD_ID);
-
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MatterOverdrive.MOD_ID);
     private static final Map<String, RegistryObject<Block>> BLOCKS_BY_ID = new LinkedHashMap<>();
 
-    public static final Set<String> NO_BLOCK_ITEM = Set.of(
-            "bounding_box",
-            "matter_plasma",
-            "molten_tritanium"
-    );
+    public static final Set<String> NO_BLOCK_ITEM = Set.of("bounding_box", "matter_plasma", "molten_tritanium");
 
     private static final List<String> LEGACY_BLOCK_IDS = List.of(
-        "android_spawner",
-        "android_station",
-        "bounding_box",
-        "charging_station",
-        "contract_market",
-        "facility_network_controller",
-        "decomposer",
-        "decorative.beams",
-        "decorative.carbon_fiber_plate",
-        "decorative.clean",
-        "decorative.coils",
-        "decorative.engine_exhaust_plasma",
-        "decorative.floor_noise",
-        "decorative.floor_tile_white",
-        "decorative.floor_tiles",
-        "decorative.floor_tiles_green",
-        "decorative.holo_matrix",
-        "decorative.matter_tube",
-        "decorative.separator",
-        "decorative.stripes",
-        "decorative.tritanium_lamp",
-        "decorative.tritanium_plate",
-        "decorative.tritanium_plate_colored",
-        "decorative.tritanium_plate_stripe",
-        "decorative.vent.bright",
-        "decorative.vent.dark",
-        "decorative.white_plate",
-        "dilithium_ore",
-        "debug_matter_block",
-        "fusion_reactor_coil",
-        "fusion_reactor_controller",
-        "fusion_reactor_io",
-        "gravitational_anomaly",
-        "gravitational_stabilizer",
-        "heavy_matter_pipe",
-        "holo_sign",
-        "industrial_glass",
-        "inscriber",
-        "machine_hull",
-        "matter_analyzer",
-        "matter_pipe",
-        "matter_plasma",
-        "matter_recycler",
-        "microwave",
-        "molten_tritanium",
-        "network_pipe",
-        "network_router",
-        "network_switch",
-        "pattern_monitor",
-        "pattern_storage",
-        "pylon",
-        "replicator",
-        "solar_panel",
-        "spacetime_accelerator",
-        "transporter",
-        "tritanium_block",
-        "tritanium_crate",
-        "tritanium_crate_black",
-        "tritanium_crate_blue",
-        "tritanium_crate_brown",
-        "tritanium_crate_cyan",
-        "tritanium_crate_gray",
-        "tritanium_crate_green",
-        "tritanium_crate_light_blue",
-        "tritanium_crate_lime",
-        "tritanium_crate_magenta",
-        "tritanium_crate_orange",
-        "tritanium_crate_pink",
-        "tritanium_crate_purple",
-        "tritanium_crate_red",
-        "tritanium_crate_silver",
-        "tritanium_crate_white",
-        "tritanium_crate_yellow",
-        "tritanium_ore",
-        "weapon_station"
+        "android_spawner", "android_station", "android_induction_relay", "bounding_box", "charging_station", "contract_market",
+        "facility_network_controller", "grid_capacitor", "quantum_power_relay", "matter_storage_matrix", "matter_excavator", "holographic_status_panel",
+        "decomposer", "decorative.beams", "decorative.carbon_fiber_plate", "decorative.clean", "decorative.coils",
+        "decorative.engine_exhaust_plasma", "decorative.floor_noise", "decorative.floor_tile_white", "decorative.floor_tiles",
+        "decorative.floor_tiles_green", "decorative.holo_matrix", "decorative.matter_tube", "decorative.separator", "decorative.stripes",
+        "decorative.tritanium_lamp", "decorative.tritanium_plate", "decorative.tritanium_plate_colored", "decorative.tritanium_plate_stripe",
+        "decorative.vent.bright", "decorative.vent.dark", "decorative.white_plate", "dilithium_ore", "debug_matter_block",
+        "fusion_reactor_coil", "fusion_reactor_controller", "fusion_reactor_io", "gravitational_anomaly", "gravitational_stabilizer",
+        "heavy_matter_pipe", "holo_sign", "industrial_glass", "inscriber", "machine_hull", "matter_analyzer", "matter_pipe",
+        "matter_plasma", "matter_recycler", "microwave", "molten_tritanium", "network_pipe", "network_router", "network_switch",
+        "pattern_monitor", "pattern_storage", "pylon", "replicator", "solar_panel", "spacetime_accelerator", "transporter",
+        "tritanium_block", "tritanium_crate", "tritanium_crate_black", "tritanium_crate_blue", "tritanium_crate_brown",
+        "tritanium_crate_cyan", "tritanium_crate_gray", "tritanium_crate_green", "tritanium_crate_light_blue", "tritanium_crate_lime",
+        "tritanium_crate_magenta", "tritanium_crate_orange", "tritanium_crate_pink", "tritanium_crate_purple", "tritanium_crate_red",
+        "tritanium_crate_silver", "tritanium_crate_white", "tritanium_crate_yellow", "tritanium_ore", "weapon_station"
     );
 
-    static {
-        LEGACY_BLOCK_IDS.forEach(ModBlocks::registerPlaceholder);
-    }
-
-    private ModBlocks() {
-    }
+    static { LEGACY_BLOCK_IDS.forEach(ModBlocks::registerPlaceholder); }
+    private ModBlocks() {}
 
     private static void registerPlaceholder(String id) {
-        if (id.equals("contract_market")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ContractMarketBlock(propertiesFor(id))));
-        } else if (id.equals("facility_network_controller")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FacilityNetworkControllerBlock(propertiesFor(id))));
-        } else if (id.equals("network_router")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkRouterBlock(propertiesFor(id))));
-        } else if (id.equals("network_switch")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkSwitchBlock(propertiesFor(id))));
-        } else if (id.equals("pylon")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PylonBlock(propertiesFor(id))));
-        } else if (id.equals("android_station")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidStationBlock(propertiesFor(id))));
-        } else if (id.equals("android_spawner")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidSpawnerBlock(propertiesFor(id))));
-        } else if (id.equals("heavy_matter_pipe")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
-        } else if (id.equals("matter_pipe") || id.equals("network_pipe")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new VisualPipeBlock(propertiesFor(id))));
-        } else if (id.equals("charging_station")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ChargingStationBlock(propertiesFor(id))));
-        } else if (id.equals("fusion_reactor_controller")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
-        } else if (id.equals("fusion_reactor_io")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorIOBlock(propertiesFor(id))));
-        } else if (id.equals("gravitational_anomaly")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalAnomalyBlock(propertiesFor(id))));
-        } else if (id.equals("gravitational_stabilizer")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalStabilizerBlock(propertiesFor(id))));
-        } else if (id.equals("decomposer")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DecomposerBlock(propertiesFor(id))));
-        } else if (id.equals("matter_recycler")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterRecyclerBlock(propertiesFor(id))));
-        } else if (id.equals("microwave")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MicrowaveBlock(propertiesFor(id))));
-        } else if (id.equals("spacetime_accelerator")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SpacetimeAcceleratorBlock(propertiesFor(id))));
-        } else if (id.equals("transporter")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TransporterBlock(propertiesFor(id))));
-        } else if (id.equals("inscriber")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new InscriberBlock(propertiesFor(id))));
-        } else if (id.equals("matter_analyzer")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterAnalyzerBlock(propertiesFor(id))));
-        } else if (id.equals("replicator")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ReplicatorBlock(propertiesFor(id))));
-        } else if (id.equals("pattern_storage")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternStorageBlock(propertiesFor(id))));
-        } else if (id.equals("pattern_monitor")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternMonitorBlock(propertiesFor(id))));
-        } else if (id.equals("solar_panel")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SolarPanelBlock(propertiesFor(id))));
-        } else if (id.equals("weapon_station")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new WeaponStationBlock(propertiesFor(id))));
-        } else if (id.equals("holo_sign")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new HoloSignBlock(propertiesFor(id))));
-        } else if (id.equals("industrial_glass")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new IndustrialGlassBlock(propertiesFor(id))));
-        } else if (id.equals("tritanium_crate") || id.startsWith("tritanium_crate_")) {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TritaniumCrateBlock(propertiesFor(id))));
-        } else {
-            BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new Block(propertiesFor(id))));
-        }
+        if (id.equals("contract_market")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ContractMarketBlock(propertiesFor(id))));
+        else if (id.equals("facility_network_controller")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FacilityNetworkControllerBlock(propertiesFor(id))));
+        else if (id.equals("grid_capacitor")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.GRID_CAPACITOR)));
+        else if (id.equals("android_induction_relay")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.ANDROID_INDUCTION_RELAY)));
+        else if (id.equals("quantum_power_relay")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.QUANTUM_POWER_RELAY)));
+        else if (id.equals("matter_storage_matrix")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.MATTER_STORAGE_MATRIX)));
+        else if (id.equals("matter_excavator")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.MATTER_EXCAVATOR)));
+        else if (id.equals("holographic_status_panel")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id).noOcclusion(), TechMachineBlock.Type.STATUS_PANEL)));
+        else if (id.equals("network_router")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkRouterBlock(propertiesFor(id))));
+        else if (id.equals("network_switch")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new NetworkSwitchBlock(propertiesFor(id))));
+        else if (id.equals("pylon")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PylonBlock(propertiesFor(id))));
+        else if (id.equals("android_station")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidStationBlock(propertiesFor(id))));
+        else if (id.equals("android_spawner")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new AndroidSpawnerBlock(propertiesFor(id))));
+        else if (id.equals("heavy_matter_pipe")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
+        else if (id.equals("matter_pipe") || id.equals("network_pipe")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new VisualPipeBlock(propertiesFor(id))));
+        else if (id.equals("charging_station")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ChargingStationBlock(propertiesFor(id))));
+        else if (id.equals("fusion_reactor_controller")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
+        else if (id.equals("fusion_reactor_io")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorIOBlock(propertiesFor(id))));
+        else if (id.equals("gravitational_anomaly")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalAnomalyBlock(propertiesFor(id))));
+        else if (id.equals("gravitational_stabilizer")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalStabilizerBlock(propertiesFor(id))));
+        else if (id.equals("decomposer")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DecomposerBlock(propertiesFor(id))));
+        else if (id.equals("matter_recycler")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterRecyclerBlock(propertiesFor(id))));
+        else if (id.equals("microwave")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MicrowaveBlock(propertiesFor(id))));
+        else if (id.equals("spacetime_accelerator")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SpacetimeAcceleratorBlock(propertiesFor(id))));
+        else if (id.equals("transporter")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TransporterBlock(propertiesFor(id))));
+        else if (id.equals("inscriber")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new InscriberBlock(propertiesFor(id))));
+        else if (id.equals("matter_analyzer")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterAnalyzerBlock(propertiesFor(id))));
+        else if (id.equals("replicator")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ReplicatorBlock(propertiesFor(id))));
+        else if (id.equals("pattern_storage")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternStorageBlock(propertiesFor(id))));
+        else if (id.equals("pattern_monitor")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new PatternMonitorBlock(propertiesFor(id))));
+        else if (id.equals("solar_panel")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new SolarPanelBlock(propertiesFor(id))));
+        else if (id.equals("weapon_station")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new WeaponStationBlock(propertiesFor(id))));
+        else if (id.equals("holo_sign")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new HoloSignBlock(propertiesFor(id))));
+        else if (id.equals("industrial_glass")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new IndustrialGlassBlock(propertiesFor(id))));
+        else if (id.equals("tritanium_crate") || id.startsWith("tritanium_crate_")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TritaniumCrateBlock(propertiesFor(id))));
+        else BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new Block(propertiesFor(id))));
     }
 
     private static BlockBehaviour.Properties propertiesFor(String id) {
-        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of()
-                .strength(isMachineLike(id) ? 4.0F : 2.0F, isMachineLike(id) ? 12.0F : 6.0F);
-
-        if (!id.equals("industrial_glass") && !id.equals("bounding_box")) {
-            properties = properties.requiresCorrectToolForDrops();
-        }
-
-        if (id.equals("industrial_glass")
-                || id.equals("bounding_box")
-                || id.equals("matter_plasma")
-                || id.equals("molten_tritanium")
-                || id.equals("gravitational_anomaly")
-                || id.equals("holo_sign")
-                || id.equals("pattern_monitor")
-                || id.equals("pattern_storage")
-                || id.equals("spacetime_accelerator")
-                || id.equals("matter_pipe")
-                || id.equals("heavy_matter_pipe")
-                || id.equals("network_pipe")
-                || id.equals("pylon")) {
-            properties = properties.noOcclusion();
-        }
-
-        if (id.equals("gravitational_anomaly")) {
-            properties = properties.noCollission();
-        }
-
-        if (id.equals("decorative.tritanium_lamp")
-                || id.equals("gravitational_anomaly")
-                || id.equals("decorative.engine_exhaust_plasma")) {
-            properties = properties.lightLevel(state -> 15);
-        }
-
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of().strength(isMachineLike(id) ? 4.0F : 2.0F, isMachineLike(id) ? 12.0F : 6.0F);
+        if (!id.equals("industrial_glass") && !id.equals("bounding_box")) properties = properties.requiresCorrectToolForDrops();
+        if (id.equals("industrial_glass") || id.equals("bounding_box") || id.equals("matter_plasma") || id.equals("molten_tritanium")
+                || id.equals("gravitational_anomaly") || id.equals("holo_sign") || id.equals("pattern_monitor") || id.equals("pattern_storage")
+                || id.equals("spacetime_accelerator") || id.equals("matter_pipe") || id.equals("heavy_matter_pipe") || id.equals("network_pipe")
+                || id.equals("pylon") || id.equals("holographic_status_panel")) properties = properties.noOcclusion();
+        if (id.equals("gravitational_anomaly")) properties = properties.noCollission();
+        if (id.equals("decorative.tritanium_lamp") || id.equals("gravitational_anomaly") || id.equals("decorative.engine_exhaust_plasma")) properties = properties.lightLevel(state -> 15);
         return properties;
     }
 
     private static boolean isMachineLike(String id) {
-        return id.contains("replicator")
-                || id.contains("decomposer")
-                || id.contains("analyzer")
-                || id.contains("storage")
-                || id.contains("station")
-                || id.contains("reactor")
-                || id.contains("transporter")
-                || id.contains("network")
-                || id.contains("recycler")
-                || id.contains("monitor")
-                || id.contains("accelerator")
-                || id.contains("inscriber")
-                || id.contains("microwave")
-                || id.contains("solar")
-                || id.contains("crate")
-                || id.contains("holo_sign");
+        return id.contains("replicator") || id.contains("decomposer") || id.contains("analyzer") || id.contains("storage") || id.contains("station")
+                || id.contains("reactor") || id.contains("transporter") || id.contains("network") || id.contains("recycler") || id.contains("monitor")
+                || id.contains("accelerator") || id.contains("inscriber") || id.contains("microwave") || id.contains("solar") || id.contains("crate")
+                || id.contains("holo_sign") || id.contains("capacitor") || id.contains("relay") || id.contains("excavator") || id.contains("matrix") || id.contains("status_panel");
     }
 
-    public static Map<String, RegistryObject<Block>> all() {
-        return Collections.unmodifiableMap(BLOCKS_BY_ID);
-    }
-
+    public static Map<String, RegistryObject<Block>> all() { return Collections.unmodifiableMap(BLOCKS_BY_ID); }
     public static RegistryObject<Block> get(String id) {
         RegistryObject<Block> block = BLOCKS_BY_ID.get(id);
-        if (block == null) {
-            throw new IllegalArgumentException("Unknown Matter Overdrive block id: " + id);
-        }
+        if (block == null) throw new IllegalArgumentException("Unknown Matter Overdrive block id: " + id);
         return block;
     }
 }
