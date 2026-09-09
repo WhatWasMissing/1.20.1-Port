@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["GHG","CNC","GTG"],
+  "key":{"G":{"item":"minecraft:glass_pane"},"H":{"item":"matteroverdrive:holo_sign"},"C":{"item":"matteroverdrive:isolinear_circuit_mk2"},"N":{"item":"matteroverdrive:network_flash_drive"},"T":{"item":"matteroverdrive:tritanium_plate"}},
+  "result":{"item":"matteroverdrive:holographic_status_panel"}
+}
