@@ -1,0 +1,9 @@
+{
+  "structures": [{"structure": "matteroverdrive:matter_refinery", "weight": 1}],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 24587157,
+    "spacing": 128,
+    "separation": 40
+  }
+}
