@@ -2,9 +2,12 @@ package matteroverdrive.block;
 
 import matteroverdrive.blockentity.EnergyPipeBlockEntity;
 import matteroverdrive.blockentity.HybridConduitBlockEntity;
+import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModExtraBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -14,6 +17,9 @@ import org.jetbrains.annotations.Nullable;
 /** Higher-tier conduit: same FE behavior as Heavy Energy Cable and also a Matter transport path. */
 public class HybridConduitBlock extends EnergyPipeBlock {
     public HybridConduitBlock(Properties properties) { super(properties); }
+    @Override protected boolean canVisuallyConnect(LevelAccessor level, BlockPos pos, Direction direction, BlockState neighbour) {
+        return super.canVisuallyConnect(level, pos, direction, neighbour) || neighbour.is(ModBlocks.get("matter_pipe").get());
+    }
     @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new HybridConduitBlockEntity(pos, state); }
     @Nullable @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide || type != ModExtraBlockEntities.HYBRID_CONDUIT.get()) return null;
