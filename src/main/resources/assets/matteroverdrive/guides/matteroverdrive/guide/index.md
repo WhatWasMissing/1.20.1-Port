@@ -41,6 +41,7 @@ The scientist/research campaign is an optional guided progression path rather th
 - [Advanced Infrastructure](advanced_infrastructure.md)
 - [Applied Energistics 2](ae2.md)
 - [World Structures](structures.md)
+- [Facility Restoration](facility_restoration.md)
 - [Quests and Contracts](quests.md)
 - [Dimensional Pylon](pylon.md)
 - [Transporter and Security](transporter_security.md)

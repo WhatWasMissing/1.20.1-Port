@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"matteroverdrive:block/damaged_panel"},"facing=east":{"model":"matteroverdrive:block/damaged_panel","y":90},"facing=south":{"model":"matteroverdrive:block/damaged_panel","y":180},"facing=west":{"model":"matteroverdrive:block/damaged_panel","y":270}}}

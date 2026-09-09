@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"matteroverdrive:block/industrial_railing"},"facing=east":{"model":"matteroverdrive:block/industrial_railing","y":90},"facing=south":{"model":"matteroverdrive:block/industrial_railing","y":180},"facing=west":{"model":"matteroverdrive:block/industrial_railing","y":270}}}

@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"matteroverdrive:block/cable_tray"},"facing=east":{"model":"matteroverdrive:block/cable_tray","y":90},"facing=south":{"model":"matteroverdrive:block/cable_tray","y":180},"facing=west":{"model":"matteroverdrive:block/cable_tray","y":270}}}

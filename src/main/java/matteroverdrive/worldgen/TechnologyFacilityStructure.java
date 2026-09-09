@@ -61,8 +61,10 @@ public final class TechnologyFacilityStructure extends Structure {
         LOGGER.debug("M2 FACILITY TRACE: scheduled kind={} chunk={} origin={} surfaceY={} layout={}",
                 kind, context.chunkPos(), origin, surfaceY, layout);
 
-        return Optional.of(new GenerationStub(origin,
-                builder -> TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout)));
+        return Optional.of(new GenerationStub(origin, builder -> {
+            TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout);
+            FacilityInfrastructurePiece.assemble(builder, kind, origin, layout);
+        }));
     }
 
     @Override

@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":[" R "," L "," P "],"key":{"R":{"item":"minecraft:redstone"},"L":{"item":"matteroverdrive:decorative.tritanium_lamp"},"P":{"item":"matteroverdrive:tritanium_plate"}},"result":{"item":"matteroverdrive:warning_light","count":2}}

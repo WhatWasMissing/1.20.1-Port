@@ -1,6 +1,7 @@
 package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.worldgen.FacilityInfrastructurePiece;
 import matteroverdrive.worldgen.LegacyNativeStructure;
 import matteroverdrive.worldgen.LegacyNativeStructurePiece;
 import matteroverdrive.worldgen.LegacyParityStructureFeature;
@@ -32,6 +33,7 @@ public final class ModStructures {
 
     public static final RegistryObject<StructurePieceType> LEGACY_NATIVE_PIECE = STRUCTURE_PIECES.register("legacy_native", () -> LegacyNativeStructurePiece::new);
     public static final RegistryObject<StructurePieceType> TECHNOLOGY_FACILITY_PIECE = STRUCTURE_PIECES.register("technology_facility", () -> TechnologyFacilityStructurePiece::new);
+    public static final RegistryObject<StructurePieceType> FACILITY_INFRASTRUCTURE_PIECE = STRUCTURE_PIECES.register("facility_infrastructure", () -> FacilityInfrastructurePiece::new);
 
     private static RegistryObject<StructureType<LegacyNativeStructure>> type(String id, LegacyParityStructureFeature.Kind kind) {
         return STRUCTURE_TYPES.register(id, () -> () -> LegacyNativeStructure.codec(kind));

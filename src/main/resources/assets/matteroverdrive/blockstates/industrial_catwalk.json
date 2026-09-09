@@ -1,0 +1,1 @@
+{"variants":{"facing=north":{"model":"matteroverdrive:block/industrial_catwalk"},"facing=east":{"model":"matteroverdrive:block/industrial_catwalk","y":90},"facing=south":{"model":"matteroverdrive:block/industrial_catwalk","y":180},"facing=west":{"model":"matteroverdrive:block/industrial_catwalk","y":270}}}
