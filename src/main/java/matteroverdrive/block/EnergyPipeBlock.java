@@ -37,7 +37,6 @@ public class EnergyPipeBlock extends BaseEntityBlock {
     public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
     public static final BooleanProperty WEST = BlockStateProperties.WEST;
     public static final BooleanProperty EAST = BlockStateProperties.EAST;
-
     private static final VoxelShape CORE = Block.box(5, 5, 5, 11, 11, 11);
     private static final VoxelShape ARM_DOWN = Block.box(5, 0, 5, 11, 5, 11);
     private static final VoxelShape ARM_UP = Block.box(5, 11, 5, 11, 16, 11);
@@ -48,62 +47,20 @@ public class EnergyPipeBlock extends BaseEntityBlock {
 
     public EnergyPipeBlock(Properties properties) {
         super(properties.noOcclusion());
-        registerDefaultState(stateDefinition.any()
-                .setValue(DOWN, false).setValue(UP, false)
-                .setValue(NORTH, false).setValue(SOUTH, false)
-                .setValue(WEST, false).setValue(EAST, false));
+        registerDefaultState(stateDefinition.any().setValue(DOWN, false).setValue(UP, false).setValue(NORTH, false).setValue(SOUTH, false).setValue(WEST, false).setValue(EAST, false));
     }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(DOWN, UP, NORTH, SOUTH, WEST, EAST);
-    }
-
-    @Nullable
-    @Override
-    public BlockState getStateForPlacement(BlockPlaceContext context) {
+    @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(DOWN, UP, NORTH, SOUTH, WEST, EAST); }
+    @Nullable @Override public BlockState getStateForPlacement(BlockPlaceContext context) {
         BlockState state = defaultBlockState();
-        for (Direction direction : Direction.values()) {
-            state = state.setValue(property(direction), canVisuallyConnect(
-                    context.getLevel(), context.getClickedPos(), direction,
-                    context.getLevel().getBlockState(context.getClickedPos().relative(direction))));
-        }
+        for (Direction direction : Direction.values()) state = state.setValue(property(direction), canVisuallyConnect(context.getLevel(), context.getClickedPos(), direction, context.getLevel().getBlockState(context.getClickedPos().relative(direction))));
         return state;
     }
-
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState,
-                                  LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
-        return state.setValue(property(direction), canVisuallyConnect(level, pos, direction, neighbourState));
+    @Override public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { return state.setValue(property(direction), canVisuallyConnect(level, pos, direction, neighbourState)); }
+    protected boolean canVisuallyConnect(LevelAccessor level, BlockPos pos, Direction direction, BlockState neighbour) { return neighbour.is(this) || level.getBlockEntity(pos.relative(direction)) != null; }
+    private static BooleanProperty property(Direction direction) { return switch (direction) { case DOWN -> DOWN; case UP -> UP; case NORTH -> NORTH; case SOUTH -> SOUTH; case WEST -> WEST; case EAST -> EAST; }; }
+    @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        VoxelShape shape = CORE; if (state.getValue(DOWN)) shape = Shapes.or(shape, ARM_DOWN); if (state.getValue(UP)) shape = Shapes.or(shape, ARM_UP); if (state.getValue(NORTH)) shape = Shapes.or(shape, ARM_NORTH); if (state.getValue(SOUTH)) shape = Shapes.or(shape, ARM_SOUTH); if (state.getValue(WEST)) shape = Shapes.or(shape, ARM_WEST); if (state.getValue(EAST)) shape = Shapes.or(shape, ARM_EAST); return shape;
     }
-
-    private boolean canVisuallyConnect(LevelAccessor level, BlockPos pos, Direction direction, BlockState neighbour) {
-        return neighbour.is(this) || level.getBlockEntity(pos.relative(direction)) != null;
-    }
-
-    private static BooleanProperty property(Direction direction) {
-        return switch (direction) {
-            case DOWN -> DOWN;
-            case UP -> UP;
-            case NORTH -> NORTH;
-            case SOUTH -> SOUTH;
-            case WEST -> WEST;
-            case EAST -> EAST;
-        };
-    }
-
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        VoxelShape shape = CORE;
-        if (state.getValue(DOWN)) shape = Shapes.or(shape, ARM_DOWN);
-        if (state.getValue(UP)) shape = Shapes.or(shape, ARM_UP);
-        if (state.getValue(NORTH)) shape = Shapes.or(shape, ARM_NORTH);
-        if (state.getValue(SOUTH)) shape = Shapes.or(shape, ARM_SOUTH);
-        if (state.getValue(WEST)) shape = Shapes.or(shape, ARM_WEST);
-        if (state.getValue(EAST)) shape = Shapes.or(shape, ARM_EAST);
-        return shape;
-    }
-
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Nullable @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new EnergyPipeBlockEntity(pos, state); }
     @Nullable @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
@@ -111,8 +68,7 @@ public class EnergyPipeBlock extends BaseEntityBlock {
         return (tickerLevel, tickerPos, tickerState, entity) -> EnergyPipeBlockEntity.serverTick(tickerLevel, tickerPos, tickerState, (EnergyPipeBlockEntity) entity);
     }
     @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof EnergyPipeBlockEntity pipe)
-            NetworkHooks.openScreen(serverPlayer, pipe, pos);
+        if (!level.isClientSide && player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof EnergyPipeBlockEntity pipe) NetworkHooks.openScreen(serverPlayer, pipe, pos);
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 }
