@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.logging.LogUtils;
 import matteroverdrive.item.weapon.NativeDestinyWeaponItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -9,12 +10,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.slf4j.Logger;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /** Native Matter Overdrive renderer for the supplied skeletal Destiny weapon models. */
 public final class NativeDestinyWeaponRenderer extends BlockEntityWithoutLevelRenderer {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final Set<String> WARNED_MISSING = new HashSet<>();
 
     public NativeDestinyWeaponRenderer() {
@@ -35,8 +38,7 @@ public final class NativeDestinyWeaponRenderer extends BlockEntityWithoutLevelRe
         NativeDestinyVisualLibrary.WeaponVisual visual = NativeDestinyVisualLibrary.get(weapon.profile().id());
         if (visual == null) {
             if (WARNED_MISSING.add(weapon.profile().id())) {
-                matteroverdrive.MatterOverdrive.LOGGER.error(
-                        "Native Destiny visual {} is missing; check native_destiny/weapons*.json.gz and texture assets",
+                LOGGER.error("Native Destiny visual {} is missing; check native Destiny visual data and textures",
                         weapon.profile().id());
             }
             return false;
