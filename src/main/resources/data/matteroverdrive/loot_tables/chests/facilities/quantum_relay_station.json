@@ -1,0 +1,62 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {
+        "min": 3,
+        "max": 5,
+        "type": "minecraft:uniform"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:dilithium_crystal",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:isolinear_circuit_mk2",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:network_flash_drive",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:upgrade_power_storage",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:facility_research",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{FacilityArchive:\"QUANTUM_RELAY_STATION\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 1,
+        "max": 2,
+        "type": "minecraft:uniform"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:emergency_ration"
+        }
+      ]
+    }
+  ]
+}

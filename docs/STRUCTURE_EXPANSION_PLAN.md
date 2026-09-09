@@ -45,7 +45,7 @@ Reusable modern pieces now include:
 - excavation shafts
 - vertical secure entrances
 
-A deterministic low-frequency damaged-room treatment can remove small roof/wall sections from eligible rooms without affecting the underlying piece graph.
+A deterministic damaged-room treatment adds corner breaches, themed rubble and failed support equipment without changing the underlying piece graph.
 
 ## Facility identity
 
@@ -145,13 +145,43 @@ The current legacy refresh includes:
 - Underwater Base given radial illuminated circulation, hull ribs and more current Matter-network hardware.
 - Sand Pit reframed as a buried industrial excavation with exposed tritanium deck, gantries, lighting and excavator hardware.
 
-## Encounter and reward hooks
+## Generated rewards and research (9 September pass)
 
-Security-oriented rooms now deliberately place existing Android Spawner hardware in Android bunker and Black Site security spaces. This gives those structures a concrete encounter hook without inventing a second encounter system.
+All six native facility families now seed real Tritanium crate rewards. Seven data-pack loot tables under `loot_tables/chests/facilities/` cover the six families plus low-value exterior salvage. Generation stores the table id and a world-seed/position-derived seed in the crate; table evaluation waits for server inventory access, automation access, opening, or the existing crate-item drop path. Pending metadata survives save/reload and a resolved cache is not refilled by opening it again. Player-crafted crates remain ordinary storage.
 
-Tritanium crate rooms are present in shipping, armoury and Black Site vault spaces. The current `TritaniumCrateBlockEntity` persists a Forge item handler but does not implement vanilla loot-table semantics, so this pass does not falsely attach chest loot tables that the crate cannot consume. A follow-up reward pass should either add one-time structure-loot support to the crate block entity or introduce a dedicated structure cache marker.
+| Facility | Cache locations | Loot focus | First dossier reward |
+| --- | --- | --- | --- |
+| Manufacturing Plant | Shipping crates | Plates, circuits, fabrication parts | 100 XP + Speed Upgrade |
+| Matter Refinery | Processing wing | Matter materials, patterns, storage upgrades | 100 XP + Matter Storage Upgrade |
+| Quantum Relay | Control wing | Dilithium, circuits, network drives | 150 XP + Power Storage Upgrade |
+| Android Bunker | Armoury | Android parts, batteries, weapon equipment | 150 XP + Holo Sights |
+| Fusion Complex | Reactor control | Containment materials, circuits, failsafes | 200 XP + Failsafe Upgrade |
+| Black Site | Vault and lab | Advanced circuits, weapon/chassis technology | 250 XP + Precision Optics chassis |
 
-The standalone Anomaly Containment Unit is an item, not a registered placeable block. Where structure code requests a containment-unit visual it intentionally falls back to an explicit vanilla containment material until a dedicated placeable containment block exists.
+Every main cache contains its family research dossier. Use the dossier to record a persistent per-player discovery, receive the equipment/XP reward once and read a short field finding. Repeated copies can be shared with other players but do not repeatedly pay the same player. The dossier remains readable. These discoveries complement the scientist campaign; they do not advance campaign stages or skip contracts. Full inventories drop the equipment reward at the player.
+
+## Finite security encounters
+
+Generated Android Spawners are explicitly configured as facility security. They activate within 16 blocks of a non-creative, non-spectator player, release at most one Android per 200 ticks, and spend a finite persisted reserve without needing an external FE supply. Peaceful suppresses deployment without consuming the reserve. A failed spawn retries after the normal interval without spending a charge. Spawning checks loaded candidate chunks and collision before insertion. Surviving defenders persist and guard their station.
+
+| Facility | Security rooms | Reserve per station | Ranged chance |
+| --- | --- | --- | --- |
+| Manufacturing Plant | Assembly | 2 | 25% |
+| Matter Refinery | Excavation | 2 | 25% |
+| Quantum Relay | Power | 2 | 85% |
+| Android Bunker | Checkpoint, drone bay | 3 | 60% |
+| Fusion Complex | Stabilizer wing | 2 | 60% |
+| Black Site | Checkpoint, security, containment | 4 | 85% |
+
+Damaged rooms reduce each reserve by one (minimum one). Empty reserves stay empty even if FE is supplied or defenders are killed. Player-built spawners retain their existing FE/squad behaviour. The generated spawner title reports its remaining reserve; block NBT exposes `FacilityProfile`, `FacilityRemaining` and `FacilityRangedChance`. Existing generated sites are not retroactively configured.
+
+## Abandoned variants
+
+Deterministic damaged-room frequency increases to roughly one in four eligible room hashes. Breaches expose a corner of the roof and wall, with facility-specific rubble, cobwebs, failed lighting hardware and inert support machinery. Main paths, caches and security markers are preserved. Refinery rubble uses tuff, relay wreckage uses oxidized copper, and containment sites use obsidian-themed debris.
+
+Two layouts of each surface facility add a bounded independent salvage-yard piece: broken service framing, a recovery aisle, themed wreckage and a low-value salvage crate. Buried bunker/Black Site families retain their compact surface footprints. All new detail remains clipped to both the active chunk and the owning piece box. No new Feature stamping or generation-time entity deployment is introduced.
+
+The Anomaly Containment Unit remains an item; its structural visual continues to use the existing inert obsidian fallback.
 
 ## World-generation safety
 
@@ -200,9 +230,15 @@ Exact spacing/separation should be tuned during the upcoming large playtest rath
 
 ## Next structure work
 
-- add first-class structure reward seeding to Tritanium crates instead of empty cache hooks;
-- add research/discovery progression hooks once the research spine is brought forward;
-- add structure-specific damaged exterior pieces and debris fields rather than only small deterministic room damage;
+- extend recovered research into richer optional objectives after this discovery/reward pass;
+- add more exterior silhouette variants after visual feedback;
 - add dedicated railings, cable trays, wall light strips, blast doors and hazard-marking blocks if visual testing shows the existing decorative palette is insufficient;
-- add structure-specific hostile encounter configuration rather than using the generic Android spawner defaults;
+- tune finite encounter budgets and equipment rewards from survival feedback;
 - tune terrain adaptation, entrances and spacing after the large playtest exposes real-world generation edge cases.
+
+
+## Validation of this pass
+
+Baseline inspected: `ea957b94de43e4f1d800cfebf59e6f3de4919b61` on `testing/tech-overhaul`.
+
+Local structure static gate and Java 17 parser checks passed. The gate now checks all seven reward tables, registered item names and dossier family mappings. Java parsing checks syntax only, not Forge/Minecraft type resolution. No Gradle dependency cache is available here and direct Git cloning lacks credentials; source was inspected at the pinned commit through the authenticated GitHub connection. No full compilation, production JAR or in-game test is claimed. GitHub Actions were not used for validation. Use the updated playtest plan after a local build.

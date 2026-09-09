@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {
+        "type": "minecraft:uniform",
+        "min": 2,
+        "max": 4
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:tritanium_nugget"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:tritanium_dust"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:isolinear_circuit_mk1"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:emergency_ration"
+        }
+      ]
+    }
+  ]
+}

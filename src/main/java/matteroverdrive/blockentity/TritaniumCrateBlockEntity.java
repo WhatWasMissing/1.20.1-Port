@@ -31,6 +31,37 @@ public class TritaniumCrateBlockEntity extends net.minecraft.world.level.block.e
             setChanged();
         }
     };
+    private net.minecraft.resources.ResourceLocation structureLoot;
+    private long structureLootSeed;
+    private boolean structureLootAssigned;
+
+    /** Generation only assigns metadata; loot resolves on the server during actual access. */
+    public void seedStructureLoot(net.minecraft.resources.ResourceLocation table, long seed) {
+        if (structureLootAssigned || getUsedSlots() != 0) return;
+        structureLootAssigned = true;
+        structureLoot = table;
+        structureLootSeed = seed;
+        setChanged();
+    }
+
+    private void unpackStructureLoot() {
+        if (structureLoot == null || !(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        var table = server.getServer().getLootData().getLootTable(structureLoot);
+        var params = new net.minecraft.world.level.storage.loot.LootParams.Builder(server)
+                .withParameter(net.minecraft.world.level.storage.loot.parameters.LootContextParams.ORIGIN,
+                        net.minecraft.world.phys.Vec3.atCenterOf(worldPosition))
+                .create(net.minecraft.world.level.storage.loot.parameters.LootContextParamSets.CHEST);
+        // Clear before invoking loot modifiers, which may themselves query capabilities.
+        structureLoot = null;
+        var stacks = table.getRandomItems(params, structureLootSeed);
+        for (ItemStack stack : stacks) {
+            for (int slot = 0; slot < inventory.getSlots() && !stack.isEmpty(); slot++) {
+                stack = inventory.insertItem(slot, stack, false);
+            }
+        }
+        setChanged();
+    }
+
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> inventory);
 
     private final ContainerData data = new ContainerData() {
@@ -58,6 +89,7 @@ public class TritaniumCrateBlockEntity extends net.minecraft.world.level.block.e
     }
 
     public ItemStackHandler getInventory() {
+        unpackStructureLoot();
         return inventory;
     }
 
@@ -84,6 +116,7 @@ public class TritaniumCrateBlockEntity extends net.minecraft.world.level.block.e
     }
 
     public void writeInventoryToItem(ItemStack stack) {
+        unpackStructureLoot();
         if (!stack.isEmpty()) {
             stack.getOrCreateTag().put("TritaniumCrateInventory", inventory.serializeNBT());
         }
@@ -101,11 +134,17 @@ public class TritaniumCrateBlockEntity extends net.minecraft.world.level.block.e
     protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put("Inventory", inventory.serializeNBT());
+        tag.putBoolean("StructureLootAssigned", structureLootAssigned);
+        if (structureLoot != null) tag.putString("StructureLoot", structureLoot.toString());
+        tag.putLong("StructureLootSeed", structureLootSeed);
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
+        structureLoot = tag.contains("StructureLoot") ? net.minecraft.resources.ResourceLocation.tryParse(tag.getString("StructureLoot")) : null;
+        structureLootAssigned = tag.getBoolean("StructureLootAssigned") || structureLoot != null;
+        structureLootSeed = tag.getLong("StructureLootSeed");
         if (tag.contains("Inventory")) {
             inventory.deserializeNBT(tag.getCompound("Inventory"));
         }
@@ -114,6 +153,7 @@ public class TritaniumCrateBlockEntity extends net.minecraft.world.level.block.e
     @Override
     public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction side) {
         if (capability == ForgeCapabilities.ITEM_HANDLER) {
+            unpackStructureLoot();
             return itemCapability.cast();
         }
         return super.getCapability(capability, side);
@@ -140,6 +180,8 @@ public class TritaniumCrateBlockEntity extends net.minecraft.world.level.block.e
     @Override
     public AbstractContainerMenu createMenu(
             int containerId, Inventory playerInventory, Player player) {
+        unpackStructureLoot();
         return new TritaniumCrateMenu(containerId, playerInventory, this);
     }
 }
+

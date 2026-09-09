@@ -65,6 +65,33 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     private final Set<UUID> ownedAndroids = new LinkedHashSet<>();
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energy);
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> patrolDrives);
+    private String facilityProfile = "";
+    private int facilityRemaining;
+    private int facilityRangedChance;
+
+    /** Finite emergency reserve, separate from player-built FE production. */
+    public void configureFacility(String profile, int reserve, int rangedChance) {
+        if (!facilityProfile.isEmpty()) return;
+        facilityProfile = profile;
+        facilityRemaining = Math.max(0, Math.min(6, reserve));
+        facilityRangedChance = Math.max(0, Math.min(100, rangedChance));
+        squadMode = RogueAndroidEntity.MODE_GUARD;
+        squadColor = Math.floorMod(profile.hashCode(), 8);
+        setChanged();
+    }
+
+    private void tickFacility(ServerLevel server) {
+        long now = server.getGameTime();
+        if (facilityRemaining <= 0 || server.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) return;
+        if (now < lastSpawn) lastSpawn = now;
+        if (now - lastSpawn < SPAWN_INTERVAL) return;
+        if (server.getNearestPlayer(worldPosition.getX() + .5, worldPosition.getY() + .5,
+                worldPosition.getZ() + .5, 16, true) == null) return;
+        if (trySpawn(server, worldPosition)) facilityRemaining--;
+        lastSpawn = now;
+        setChanged();
+    }
+
     private long lastSpawn;
     private long lastOwnershipMigration;
     private int squadColor;
@@ -94,6 +121,10 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     public AndroidSpawnerBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.ANDROID_SPAWNER.get(), pos, state); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, AndroidSpawnerBlockEntity spawner) {
+        if (!spawner.facilityProfile.isEmpty()) {
+            spawner.tickFacility((ServerLevel) level);
+            return;
+        }
         spawner.pullAdjacentEnergy();
         long gameTime = level.getGameTime();
         if (gameTime < spawner.lastSpawn) spawner.lastSpawn = gameTime - SPAWN_INTERVAL;
@@ -116,11 +147,16 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
             int[] offset = SPAWN_OFFSETS[(start + attempt) % SPAWN_OFFSETS.length];
             BlockPos candidate = spawnerPos.offset(offset[0], offset[1], offset[2]);
             if (!level.getWorldBorder().isWithinBounds(candidate)) continue;
-            RogueAndroidEntity android = level.random.nextInt(10) < 3 ? ModEntities.ROGUE_ANDROID.get().create(level) : ModEntities.RANGED_ROGUE_ANDROID.get().create(level);
+            if (!level.hasChunksAt(candidate.offset(-1,-1,-1), candidate.offset(1,3,1))) continue;
+            RogueAndroidEntity android = level.random.nextInt(100) >= (facilityProfile.isEmpty() ? 70 : facilityRangedChance) ? ModEntities.ROGUE_ANDROID.get().create(level) : ModEntities.RANGED_ROGUE_ANDROID.get().create(level);
             if (android == null) return false;
             android.moveTo(candidate.getX() + 0.5D, candidate.getY(), candidate.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
             if (!level.noCollision(android)) { android.discard(); continue; }
             android.finalizeSpawn(level, level.getCurrentDifficultyAt(candidate), MobSpawnType.SPAWNER, null, null);
+            if (!facilityProfile.isEmpty()) {
+                android.setPersistenceRequired();
+                android.setCustomName(Component.literal(facilityProfile.replace('_', ' ') + " security"));
+            }
             android.setSpawnerPosition(spawnerPos);
             android.setPatrolPoints(patrol);
             android.setSquad(squadColor, squadMode, commanderUuid);
@@ -191,6 +227,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     private int ticksUntilNextSpawn() {
+        if (!facilityProfile.isEmpty() && facilityRemaining == 0) return 0;
         if (level == null) return SPAWN_INTERVAL;
         if (ownedSpawnCount() >= MAX_SPAWN_AMOUNT) return 0;
         long elapsed = Math.max(0L, level.getGameTime() - lastSpawn);
@@ -223,6 +260,9 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
 
     @Override protected void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
+        tag.putString("FacilityProfile", facilityProfile);
+        tag.putInt("FacilityRemaining", facilityRemaining);
+        tag.putInt("FacilityRangedChance", facilityRangedChance);
         tag.putInt("Energy", energy.getEnergyStored());
         tag.putLong("LastSpawn", lastSpawn);
         tag.put("PatrolDrives", patrolDrives.serializeNBT());
@@ -236,6 +276,9 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
 
     @Override public void load(CompoundTag tag) {
         super.load(tag);
+        facilityProfile = tag.getString("FacilityProfile");
+        facilityRemaining = Math.max(0, Math.min(6, tag.getInt("FacilityRemaining")));
+        facilityRangedChance = Math.max(0, Math.min(100, tag.getInt("FacilityRangedChance")));
         energy.setEnergyStored(tag.getInt("Energy"));
         lastSpawn = tag.getLong("LastSpawn");
         if (tag.contains("PatrolDrives")) patrolDrives.deserializeNBT(tag.getCompound("PatrolDrives"));
@@ -254,6 +297,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     }
     @Override public void invalidateCaps() { super.invalidateCaps(); energyCapability.invalidate(); itemCapability.invalidate(); }
     @Override public void reviveCaps() { super.reviveCaps(); energyCapability = LazyOptional.of(() -> energy); itemCapability = LazyOptional.of(() -> patrolDrives); }
-    @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.android_spawner"); }
+    @Override public Component getDisplayName() { return facilityProfile.isEmpty() ? Component.translatable("block.matteroverdrive.android_spawner") : Component.literal("Security reserve: " + facilityRemaining); }
     @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new AndroidSpawnerMenu(id, inventory, this); }
 }
+

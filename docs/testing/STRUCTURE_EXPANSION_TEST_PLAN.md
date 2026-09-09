@@ -125,9 +125,41 @@ Also recheck the three compact Features because the large-site changes share the
 
 These should remain small and must not reproduce the historical wide-Feature world-generation hang.
 
-## Known reward limitation for this pass
+## Rewards, dossiers and security pass
 
-Tritanium crates persist inventory but currently do not consume vanilla chest loot tables. Shipping/armoury/vault crates therefore act as reward-room hooks until structure-specific crate seeding is implemented. Do not file empty generated crates as a persistence regression; test instead that they exist, open, save inventory and survive reload.
+Run `python scripts/validate_structure_expansion.py`, then build locally. The development pass passed static resource checks and Java 17 syntax parsing; compilation and runtime behaviour remain to be verified here.
+
+### Cache lifecycle
+
+- In fresh chunks, find shipping (plant), processing (refinery), control (relay), armoury (bunker), reactor control (fusion), and vault/lab (Black Site) caches. Empty main caches are now a bug.
+- Before first access, inspect `/data get block X Y Z`: `StructureLoot`, `StructureLootSeed`, and `StructureLootAssigned` should exist. Save/reload before opening and confirm the metadata persists.
+- Open the cache: themed items and a matching dossier should appear. Reopening, emptying and reloading must not refill it. The pending table key should disappear after resolution.
+- Extract from an unopened cache through an item pipe/hopper and confirm loot resolves once. Pick up an unopened crate, place it again, and check that the saved inventory is present exactly once.
+- Player-crafted crates and existing occupied crates retain ordinary inventory behaviour. No retroactive loot is expected in previously generated sites.
+- If customizing loot tables, keep their result within the 54-slot crate capacity; excess customized loot is not retained.
+
+### Research recovery
+
+- Use all six family dossiers. Each gives its documented XP/equipment package once and displays its finding. Read again and use a second copy: no second payout.
+- Save/reload and die/respawn, then reread: discovery flags under `ForgeData.PlayerPersisted.MatterOverdriveFacilityResearch` must persist.
+- Share a dossier with a second player: their first discovery should pay independently. Test a full inventory: reward drops at the player.
+- Scientist contracts and research stage must not jump ahead. Dossiers stay readable and reusable.
+
+### Finite encounters
+
+- Use Survival, outside Peaceful; Creative is deliberately not an activation trigger.
+- Within 16 blocks, allow at least 10 seconds for each deployment. Expect 2 per ordinary station, 3 per bunker station, 4 per Black Site station; damaged stations have one fewer.
+- Clear every defender, wait, reload and feed FE: an exhausted generated station must never refill its reserve. Check `FacilityRemaining` with `/data get block` or reopen its menu for the title.
+- Block candidate spawn spaces: unsuccessful attempts must preserve the reserve. Reopen the spaces and verify deployment resumes.
+- Peaceful must not spend charges. Switch back to Normal and check remaining deployment. Existing surviving hostiles may despawn when difficulty changes, as usual.
+- Approach a station at a loaded-chunk boundary and verify no generation stall or forced distant load. Defenders should guard the station, with more ranged units at relay/Black Site facilities.
+- A newly player-placed Android Spawner should still use the existing FE and squad controls.
+
+### Abandoned visuals
+
+- Compare intact and damaged eligible rooms. Look for exposed corner framing, rubble, failed support machinery, cobwebs and reduced security reserves.
+- Check surface-facility salvage yards in layouts 1/2: bounded broken service frame, clear recovery aisle, themed debris and low-value loot without a research dossier.
+- Ensure doors/caches are reachable, rubble stays within its piece and generation does not replace bedrock. Record floating or buried salvage-yard platforms for terrain adaptation follow-up.
 
 ## Useful feedback to record
 
@@ -140,3 +172,4 @@ For every bad spawn, capture:
 - screenshot from outside and inside;
 - whether the problem appeared on first generation or only after reload;
 - whether the affected piece crosses a chunk border.
+

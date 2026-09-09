@@ -1,0 +1,62 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {
+        "min": 3,
+        "max": 5,
+        "type": "minecraft:uniform"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:dilithium_crystal",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:tritanium_plate",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:isolinear_circuit_mk3",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:upgrade_failsafe",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:facility_research",
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{FacilityArchive:\"FUSION_RESEARCH_COMPLEX\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "rolls": {
+        "min": 1,
+        "max": 2,
+        "type": "minecraft:uniform"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:emergency_ration"
+        }
+      ]
+    }
+  ]
+}

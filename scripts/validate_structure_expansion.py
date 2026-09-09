@@ -23,7 +23,7 @@ FACILITIES = [
 REQUIRED_PIECES = [
     "CORRIDOR_X", "CORRIDOR_Z", "SERVICE_GANTRY_X", "SERVICE_GANTRY_Z",
     "ROOF_PLANT", "RELAY_MAST", "SECURITY_CHECKPOINT", "OBSERVATION_BRIDGE",
-    "EXCAVATION_SHAFT",
+    "EXCAVATION_SHAFT", "SALVAGE_YARD",
 ]
 SAFE_ITEM_ONLY_VISUAL_FALLBACKS = {"anomaly_containment_unit"}
 errors: list[str] = []
@@ -83,6 +83,41 @@ if STRUCTURE.is_file():
     if "TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout)" not in text:
         errors.append("layout variant is not forwarded into piece assembly")
 
+# Resource cross-check: loot names must resolve to actual registered items, and
+# each archive must match the enum consumed by the dossier item (not silently PASS).
+items = ROOT / "src/main/java/matteroverdrive/registry/ModItems.java"
+archive = ROOT / "src/main/java/matteroverdrive/item/FacilityResearchItem.java"
+require(items)
+require(archive)
+if items.is_file() and archive.is_file():
+    registered = set(re.findall(r'"([a-z0-9_.]+)"', items.read_text(encoding="utf-8")))
+    archive_source = archive.read_text(encoding="utf-8")
+    for family in FACILITIES + ["salvage"]:
+        path = ROOT / f"src/main/resources/data/matteroverdrive/loot_tables/chests/facilities/{family}.json"
+        require(path)
+        if not path.is_file():
+            continue
+        try:
+            table = json.loads(path.read_text(encoding="utf-8"))
+            if table.get("type") != "minecraft:chest":
+                errors.append(f"wrong loot context for {family}")
+            archives = []
+            for pool in table["pools"]:
+                for entry in pool["entries"]:
+                    namespace, name = entry["name"].split(":", 1)
+                    if namespace == "matteroverdrive" and name not in registered:
+                        errors.append(f"unknown loot item {entry['name']} in {family}")
+                    if name == "facility_research":
+                        archives.append(entry)
+            if family != "salvage":
+                if family.upper() + "(" not in archive_source:
+                    errors.append(f"unhandled research family: {family}")
+                expected = '{FacilityArchive:"' + family.upper() + '"}'
+                if len(archives) != 1 or archives[0]["functions"][0]["tag"] != expected:
+                    errors.append(f"missing/mismatched guaranteed dossier: {family}")
+        except (ValueError, KeyError, TypeError, IndexError) as exc:
+            errors.append(f"invalid facility loot {family}: {exc}")
+
 if errors:
     print("STRUCTURE EXPANSION VALIDATION FAILED")
     for error in errors:
@@ -97,3 +132,6 @@ print("  facility block ids: registered or explicitly documented fallback")
 print("  layout variation: stable and save/reload safe")
 print("  chunk-local clipping guard: present")
 print("  retired Star Map reference: absent")
+
+
+print("  facility loot: 7 tables, registered items, six matching research archives")

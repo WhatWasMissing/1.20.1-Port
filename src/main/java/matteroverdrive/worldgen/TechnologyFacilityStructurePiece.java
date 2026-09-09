@@ -31,7 +31,7 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
         FUSION_CORE, STABILIZER_WING, REACTOR_CONTROL, SERVICE_WING, FUSION_ENTRANCE,
         BLACK_CORE, BLACK_LAB, BLACK_CONTAINMENT, BLACK_VAULT, BLACK_SECURITY, BLACK_ENTRANCE,
         CORRIDOR_X, CORRIDOR_Z, SERVICE_GANTRY_X, SERVICE_GANTRY_Z, ROOF_PLANT,
-        RELAY_MAST, SECURITY_CHECKPOINT, OBSERVATION_BRIDGE, EXCAVATION_SHAFT
+        RELAY_MAST, SECURITY_CHECKPOINT, OBSERVATION_BRIDGE, EXCAVATION_SHAFT, SALVAGE_YARD
     }
 
     private final TechnologyFacilityStructure.Kind facility;
@@ -69,6 +69,10 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
             case ANDROID_COMMAND_BUNKER -> assembleBunker(builder, kind, c, layout);
             case FUSION_RESEARCH_COMPLEX -> assembleFusion(builder, kind, c, layout);
             case BLACK_SITE -> assembleBlackSite(builder, kind, c, layout);
+        }
+        if (layout != 0 && kind != TechnologyFacilityStructure.Kind.BLACK_SITE
+                && kind != TechnologyFacilityStructure.Kind.ANDROID_COMMAND_BUNKER) {
+            add(builder, kind, Room.SALVAGE_YARD, c.offset(34, 0, -18));
         }
     }
 
@@ -256,6 +260,18 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
             case SECURITY_CHECKPOINT -> securityCheckpoint(level, chunkBox);
             case OBSERVATION_BRIDGE -> observationBridge(level, chunkBox);
             case EXCAVATION_SHAFT -> excavationShaft(level, chunkBox);
+            case SALVAGE_YARD -> salvageYard(level, chunkBox);
+        }
+        // Room-local cache/defence markers run after the room shell, never outside this chunk.
+        switch (room) {
+            case PROCESSING_WING, CONTROL_WING, REACTOR_CONTROL, BLACK_LAB ->
+                    set(level, chunkBox, origin.offset(3,1,3), mod("tritanium_crate_blue", Blocks.BARREL));
+            default -> { }
+        }
+        switch (room) {
+            case ASSEMBLY_WING, EXCAVATION_WING, POWER_WING, STABILIZER_WING, BLACK_CONTAINMENT ->
+                    set(level, chunkBox, origin.offset(-3,1,3), mod("android_spawner", Blocks.IRON_BLOCK));
+            default -> { }
         }
     }
 
@@ -300,7 +316,26 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
             for (int y = h - 1; y <= h + 1; y++) set(level, clip, origin.offset(hx, y, hz - 2), Blocks.AIR.defaultBlockState());
             set(level, clip, origin.offset(hx - 1, h + 1, hz - 2), Blocks.AIR.defaultBlockState());
         }
-        for (Placement p : machines) set(level, clip, origin.offset(p.x, p.y, p.z), mod(p.id, p.fallback));
+        for (Placement p : machines) {
+            // Ruined support machinery becomes inert salvage; caches and defence markers remain usable.
+            boolean wreck = damaged && p.x > 0 && !p.id.startsWith("tritanium_crate") && !p.id.equals("android_spawner");
+            set(level, clip, origin.offset(p.x, p.y, p.z), wreck ? mod("decorative.vent.dark", Blocks.IRON_BLOCK) : mod(p.id, p.fallback));
+        }
+        if (damaged) {
+            BlockState debris = switch (facility) {
+                case MATTER_REFINERY -> Blocks.TUFF.defaultBlockState();
+                case FUSION_RESEARCH_COMPLEX, BLACK_SITE -> Blocks.CRYING_OBSIDIAN.defaultBlockState();
+                case QUANTUM_RELAY_STATION -> Blocks.OXIDIZED_COPPER.defaultBlockState();
+                default -> Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState();
+            };
+            for (int x = hx-3; x <= hx; x++) for (int z = hz-3; z <= hz; z++) {
+                if ((x+z)%3 != 0) set(level,clip,origin.offset(x,h+1,z),Blocks.AIR.defaultBlockState());
+                if ((x+z)%2 == 0) set(level,clip,origin.offset(x,1,z),debris);
+            }
+            for (int y=2;y<h;y++) set(level,clip,origin.offset(hx,y,hz-2),Blocks.AIR.defaultBlockState());
+            set(level,clip,origin.offset(-hx+1,h-1,hz-1),Blocks.COBWEB.defaultBlockState());
+            set(level,clip,origin.offset(hx-2,h,0),mod("decorative.vent.dark",Blocks.IRON_BLOCK));
+        }
     }
 
     private void corridor(WorldGenLevel level, BoundingBox clip, boolean xAxis) {
@@ -469,9 +504,28 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
         set(level,clip,origin.offset(0,0,0),mod("holo_sign",Blocks.SEA_LANTERN));
     }
 
+    private void salvageYard(WorldGenLevel level, BoundingBox clip) {
+        BlockState beam = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState wreck = switch (facility) {
+            case QUANTUM_RELAY_STATION -> mod("decorative.coils", Blocks.OXIDIZED_COPPER);
+            case MATTER_REFINERY -> Blocks.TUFF.defaultBlockState();
+            case FUSION_RESEARCH_COMPLEX -> Blocks.OBSIDIAN.defaultBlockState();
+            default -> mod("decorative.vent.dark", Blocks.IRON_BLOCK);
+        };
+        for (int x=-5;x<=5;x++) for (int z=-4;z<=4;z++) {
+            set(level,clip,origin.offset(x,0,z),darkFloor());
+            for(int y=1;y<=4;y++) set(level,clip,origin.offset(x,y,z),Blocks.AIR.defaultBlockState());
+            if (Math.abs(x)==5 && z%3==0) for(int y=1;y<=3;y++) set(level,clip,origin.offset(x,y,z),beam);
+            if (x > 1 && z > 0 && (x+z)%2==0) set(level,clip,origin.offset(x,1,z),wreck);
+        }
+        // Broken service frame and a clear two-block recovery aisle.
+        for(int x=-5;x<=1;x++) set(level,clip,origin.offset(x,4,3),beam);
+        set(level,clip,origin.offset(-3,1,1),mod("tritanium_crate",Blocks.BARREL));
+    }
+
     private boolean damageVariant() {
         long h=origin.asLong() ^ ((long)facility.ordinal()*0x9E3779B97F4A7C15L) ^ ((long)room.ordinal()*0xC2B2AE3D27D4EB4FL);
-        return Math.floorMod(h, 9L)==0L;
+        return Math.floorMod(h, 4L)==0L;
     }
 
     private BlockState paletteWall(){ return mod("decorative.tritanium_plate",Blocks.IRON_BLOCK); }
@@ -485,6 +539,7 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
 
     private static BoundingBox boxFor(Room room, BlockPos p) {
         return switch(room) {
+            case SALVAGE_YARD -> box(p,5,4,4);
             case MANUFACTURING_CORE -> box(p,8,8,8);
             case REFINERY_CORE,BUNKER_COMMAND,BLACK_CORE -> box(p,9,9,8);
             case QUANTUM_CORE -> new BoundingBox(p.getX()-7,p.getY(),p.getZ()-7,p.getX()+7,p.getY()+19,p.getZ()+7);
@@ -512,9 +567,34 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
         return block==null||block==Blocks.AIR?fallback.defaultBlockState():block.defaultBlockState();
     }
 
-    private static void set(WorldGenLevel level,BoundingBox clip,BlockPos pos,BlockState state){
-        if(clip.isInside(pos)&&!level.getBlockState(pos).is(Blocks.BEDROCK)) level.setBlock(pos,state,2);
+    private void set(WorldGenLevel level,BoundingBox clip,BlockPos pos,BlockState state){
+        if (!clip.isInside(pos) || !getBoundingBox().isInside(pos)) return;
+        if (level.getBlockState(pos).is(Blocks.BEDROCK)) return;
+        level.setBlock(pos,state,2);
+        // All reads, metadata assignment and writes use the same clipped position.
+        if (state.getBlock() instanceof matteroverdrive.block.TritaniumCrateBlock
+                && level.getBlockEntity(pos) instanceof matteroverdrive.blockentity.TritaniumCrateBlockEntity crate) {
+            String profile = room == Room.SALVAGE_YARD ? "salvage" : facility.name().toLowerCase(java.util.Locale.ROOT);
+            crate.seedStructureLoot(new ResourceLocation("matteroverdrive", "chests/facilities/" + profile),
+                    level.getSeed() ^ pos.asLong() ^ ((long) room.ordinal() * 73428767L));
+        }
+        if (state.getBlock() instanceof matteroverdrive.block.AndroidSpawnerBlock
+                && level.getBlockEntity(pos) instanceof matteroverdrive.blockentity.AndroidSpawnerBlockEntity spawner) {
+            int reserve = switch (facility) {
+                case BLACK_SITE -> 4;
+                case ANDROID_COMMAND_BUNKER -> 3;
+                default -> 2;
+            };
+            int ranged = switch (facility) {
+                case MATTER_REFINERY, SYNTHETIC_MANUFACTURING_PLANT -> 25;
+                case BLACK_SITE, QUANTUM_RELAY_STATION -> 85;
+                default -> 60;
+            };
+            spawner.configureFacility(facility.name().toLowerCase(java.util.Locale.ROOT),
+                    damageVariant() ? Math.max(1,reserve-1) : reserve, ranged);
+        }
     }
 
     private record Placement(int x,int y,int z,String id,Block fallback){}
 }
+

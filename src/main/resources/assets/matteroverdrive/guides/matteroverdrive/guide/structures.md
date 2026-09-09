@@ -91,3 +91,14 @@ This is advice, **not an unlock chain**.
 ## Port/parity note
 
 The structures are reconstructed from the 1.12.2 structure classes and recovered templates. Modern 1.20.1 terrain placement is used where necessary while source-backed dimensions and population behaviour are retained where practical. Exact visual/layout parity can continue to improve independently of survival functionality.
+
+
+## Technology facilities and field research
+
+Six large facilities offer optional exploration rewards: Synthetic Manufacturing Plants, Matter Refineries, Quantum Relay Stations, Android Command Bunkers, Fusion Research Complexes and rare Black Sites.
+
+Search shipping, processing, control, armoury and vault rooms for Tritanium caches. Each main cache contains themed supplies and a recovered research dossier. **Use the dossier** to archive its finding and earn a one-time equipment/XP reward for that facility family. Keep it to reread or share it with a friend. Repeated copies do not pay the same explorer again, and discoveries do not skip scientist assignments.
+
+Facility security stations run on finite emergency reserves and wake when a Survival player approaches. They deploy small guard groups over time. Clear the station before salvaging nearby equipment; an abandoned facility can still defend itself. Black Sites carry the strongest reserves and favour ranged defenders.
+
+Some rooms have collapsed corners, damaged support machines and reduced security reserves. Surface facilities may also have broken service yards with lower-value salvage. New rewards and encounters appear only in newly generated facilities.
