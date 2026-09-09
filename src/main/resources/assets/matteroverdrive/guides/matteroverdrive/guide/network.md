@@ -29,7 +29,15 @@ The tech-overhaul branch adds six-face Matter policies. INPUT, OUTPUT, BOTH and 
 
 The **Hybrid Conduit** is a higher-tier physical cable that carries **FE and Matter Plasma through the same run**. It participates in the Heavy Energy Cable FE graph while also being recognised as a Matter Transport Pipe by Matter routing.
 
-This means one Hybrid Conduit line can feed a machine both of its ordinary infrastructure resources. It can join an existing Heavy Energy Cable run for FE and an existing Matter Pipe run for Matter. It does not carry Pattern Monitor/Router/Switch jobs; logical task routing still uses Matter Network Cable.
+Existing infrastructure can feed directly into a hybrid trunk. Both junction directions are supported:
+
+- `FE source -> Heavy Energy Cable -> Hybrid Conduit -> FE consumer`
+- `Matter source -> Matter Transport Pipe -> Hybrid Conduit -> Matter consumer`
+- a single Hybrid Conduit trunk can have an existing Heavy Energy Cable feeding FE into one junction and an existing Matter Pipe feeding Matter into another junction at the same time.
+
+The cable arms explicitly connect at those transitions, so a Heavy Energy Cable/Hybrid or Matter Pipe/Hybrid junction should look connected as well as function correctly. Breaking and replacing either side should rebuild the connection normally.
+
+The old cable types keep their original jobs: **Heavy Energy Cable remains FE-only** and **Matter Transport Pipe remains Matter-only**. The Hybrid Conduit is the bridge that can participate in both graphs. It does not carry Pattern Monitor/Router/Switch jobs; logical task routing still uses Matter Network Cable.
 
 ### Matter Network Cable
 
@@ -112,6 +120,8 @@ Matter Overdrive's task graph remains separate from AE2. Do not splice an ME cab
 **Machine has no FE:** inspect the configured FE face, then follow Heavy Energy Cable or Hybrid Conduit back toward the source.
 
 **Machine has FE but no Matter:** inspect the Matter face policy and the Matter Pipe/Hybrid Conduit route.
+
+**Hybrid junction looks disconnected:** break/re-place the junction block once and report it; both Heavy Cable and Matter Pipe sides explicitly recognise Hybrid Conduit and should grow an arm into it.
 
 **Quantum relay has power but remote relay does not:** confirm the pair was created with the Quantum Linker, both chunks are loaded and distance is within 256 blocks.
 
