@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[" CF"," WT","W  "],
+  "key":{"C":{"item":"matteroverdrive:isolinear_circuit_mk2"},"F":{"item":"matteroverdrive:network_flash_drive"},"W":{"item":"matteroverdrive:tritanium_wrench"},"T":{"item":"matteroverdrive:tritanium_plate"}},
+  "result":{"item":"matteroverdrive:network_diagnostic_probe"}
+}
