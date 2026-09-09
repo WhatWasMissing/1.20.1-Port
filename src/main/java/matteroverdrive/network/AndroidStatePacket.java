@@ -8,7 +8,7 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public record AndroidStatePacket(boolean active, int energy, int parts,
+public record AndroidStatePacket(boolean active, int energy, int energyCapacity, int parts,
                                  int selectedAbility, int cooldownTicks, int activeAbilityFlags, int experience, int level,
                                  long selectedPerks, int aspectMask, int fragmentMask, int artifactOrdinal, int dronePerkMask,
                                  int specializationOrdinal, int ultimateCooldownTicks,
@@ -16,6 +16,7 @@ public record AndroidStatePacket(boolean active, int energy, int parts,
     public static void encode(AndroidStatePacket packet, FriendlyByteBuf buffer) {
         buffer.writeBoolean(packet.active);
         buffer.writeVarInt(packet.energy);
+        buffer.writeVarInt(packet.energyCapacity);
         buffer.writeByte(packet.parts);
         buffer.writeByte(packet.selectedAbility);
         buffer.writeVarInt(packet.cooldownTicks);
@@ -34,7 +35,7 @@ public record AndroidStatePacket(boolean active, int energy, int parts,
     }
 
     public static AndroidStatePacket decode(FriendlyByteBuf buffer) {
-        return new AndroidStatePacket(buffer.readBoolean(), buffer.readVarInt(), buffer.readUnsignedByte(),
+        return new AndroidStatePacket(buffer.readBoolean(), buffer.readVarInt(), buffer.readVarInt(), buffer.readUnsignedByte(),
                 buffer.readUnsignedByte(), buffer.readVarInt(), buffer.readUnsignedByte(), buffer.readVarInt(),
                 buffer.readUnsignedByte(), buffer.readVarLong(), buffer.readVarInt(), buffer.readVarInt(),
                 buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(),
@@ -44,7 +45,7 @@ public record AndroidStatePacket(boolean active, int energy, int parts,
     public static void handle(AndroidStatePacket packet, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> AndroidClientState.set(
-                packet.active, packet.energy, packet.parts, packet.selectedAbility, packet.cooldownTicks,
+                packet.active, packet.energy, packet.energyCapacity, packet.parts, packet.selectedAbility, packet.cooldownTicks,
                 packet.activeAbilityFlags, packet.experience, packet.level, packet.selectedPerks,
                 packet.aspectMask, packet.fragmentMask, packet.artifactOrdinal, packet.dronePerkMask,
                 packet.specializationOrdinal, packet.ultimateCooldownTicks,

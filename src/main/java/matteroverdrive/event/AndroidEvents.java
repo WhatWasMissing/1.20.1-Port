@@ -117,7 +117,7 @@ public final class AndroidEvents {
         }
 
         if (AndroidData.hasPerk(player, AndroidData.Perk.SYNTHETIC_PERFECTION)
-                && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY * 3 / 4
+                && AndroidData.getEnergy(player) >= AndroidData.getEnergyCapacity(player) * 3 / 4
                 && player.getHealth() < player.getMaxHealth()
                 && AndroidData.tryConsumeEnergy(player, 125)) {
             player.heal(0.5F);
@@ -144,14 +144,15 @@ public final class AndroidEvents {
     }
 
     private static void chargeFromHeldBattery(ServerPlayer player) {
+        int capacity = AndroidData.getEnergyCapacity(player);
         if (!AndroidData.isAndroid(player) || !player.isCrouching()
-                || AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY) return;
+                || AndroidData.getEnergy(player) >= capacity) return;
 
         int baseChargeRate = AndroidData.hasPerk(player, AndroidData.Perk.QUICK_CHARGE)
                 ? HANDHELD_CHARGE_PER_TICK * 3 : HANDHELD_CHARGE_PER_TICK;
         int chargeRate = Math.max(1, (int)Math.round(baseChargeRate
                 * AndroidMastery.utilityChargeMultiplier(player)));
-        int remaining = Math.min(chargeRate, AndroidData.ENERGY_CAPACITY - AndroidData.getEnergy(player));
+        int remaining = Math.min(chargeRate, capacity - AndroidData.getEnergy(player));
         for (InteractionHand hand : InteractionHand.values()) {
             if (remaining <= 0) break;
             ItemStack stack = player.getItemInHand(hand);

@@ -7,6 +7,7 @@ import matteroverdrive.android.AndroidLoadout;
 public final class AndroidClientState {
     private static boolean active;
     private static int energy;
+    private static int energyCapacity = AndroidData.ENERGY_CAPACITY;
     private static int parts;
     private static int selectedAbility;
     private static int cooldownTicks;
@@ -25,14 +26,15 @@ public final class AndroidClientState {
 
     private AndroidClientState() {}
 
-    public static void set(boolean nextActive, int nextEnergy, int nextParts,
+    public static void set(boolean nextActive, int nextEnergy, int nextEnergyCapacity, int nextParts,
                            int nextSelectedAbility, int nextCooldownTicks, int nextActiveAbilityFlags,
                            int nextExperience, int nextLevel, long nextSelectedPerks,
                            int nextAspectMask, int nextFragmentMask, int nextArtifactOrdinal, int nextDronePerkMask,
                            int nextSpecializationOrdinal, int nextUltimateCooldownTicks,
                            int nextClassAbilityCooldownTicks, int nextTechAbilityCooldownTicks) {
         active = nextActive;
-        energy = Math.max(0, nextEnergy);
+        energyCapacity = Math.max(1, nextEnergyCapacity);
+        energy = Math.max(0, Math.min(nextEnergy, energyCapacity));
         parts = nextParts & 15;
         selectedAbility = Math.max(0, Math.min(AndroidData.Ability.values().length - 1, nextSelectedAbility));
         cooldownTicks = Math.max(0, nextCooldownTicks);
@@ -60,6 +62,7 @@ public final class AndroidClientState {
 
     public static boolean isActive() { return active; }
     public static int energy() { return energy; }
+    public static int energyCapacity() { return energyCapacity; }
     public static int parts() { return parts; }
     public static int selectedAbility() { return selectedAbility; }
     public static String abilityName() { return AndroidData.Ability.values()[selectedAbility].displayName; }

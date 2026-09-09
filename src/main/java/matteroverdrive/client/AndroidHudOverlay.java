@@ -2,6 +2,7 @@ package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.android.AndroidClassAbilities;
+import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.android.AndroidUltimates;
 import net.minecraft.client.Minecraft;
@@ -13,7 +14,6 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class AndroidHudOverlay {
-    private static final int CAPACITY = 100_000;
     private static final int PANEL_WIDTH = 252;
     private static final int PANEL_HEIGHT = 148;
 
@@ -28,6 +28,8 @@ public final class AndroidHudOverlay {
         int x = 8;
         int y = event.getWindow().getGuiScaledHeight() - PANEL_HEIGHT - 18;
         int energy = AndroidClientState.energy();
+        int capacity = Math.max(1, AndroidClientState.energyCapacity());
+        int lowEnergyThreshold = Math.max(1, capacity * 15 / 100);
 
         graphics.fill(x, y, x + PANEL_WIDTH, y + PANEL_HEIGHT, 0xC0101820);
         graphics.fill(x, y, x + PANEL_WIDTH, y + 2, 0xFF53E6FF);
@@ -41,19 +43,21 @@ public final class AndroidHudOverlay {
         int barY = y + 18;
         int barWidth = PANEL_WIDTH - 14;
         graphics.fill(barX, barY, barX + barWidth, barY + 6, 0xFF26333D);
-        int filled = Math.max(0, Math.min(barWidth, Math.round(barWidth * energy / (float) CAPACITY)));
+        int filled = Math.max(0, Math.min(barWidth, Math.round(barWidth * energy / (float) capacity)));
         graphics.fill(barX, barY, barX + filled, barY + 6,
-                energy < 15_000 ? 0xFFFF8A2B : 0xFF35CFFF);
-        graphics.drawString(minecraft.font, compact(energy) + " / 100k FE",
-                barX, barY + 8, energy < 15_000 ? 0xFFFFB45B : 0xFFB5DFFF, false);
+                energy < lowEnergyThreshold ? 0xFFFF8A2B : 0xFF35CFFF);
+        graphics.drawString(minecraft.font, compact(energy) + " / " + compact(capacity) + " FE",
+                barX, barY + 8, energy < lowEnergyThreshold ? 0xFFFFB45B : 0xFFB5DFFF, false);
 
         int level = AndroidClientState.level();
-        int levelStart = (level - 1) * 100;
-        int unspent = Math.max(0, level - Long.bitCount(AndroidClientState.selectedPerks()));
-        String progression = level >= 10
+        int unspent = Math.max(0, AndroidData.skillPointsForLevel(level) - Long.bitCount(AndroidClientState.selectedPerks()));
+        int levelStart = AndroidData.experienceForLevel(level);
+        int levelEnd = level >= AndroidData.MAX_LEVEL ? levelStart : AndroidData.experienceForLevel(level + 1);
+        int intoLevel = Math.max(0, AndroidClientState.experience() - levelStart);
+        int levelSpan = Math.max(1, levelEnd - levelStart);
+        String progression = level >= AndroidData.MAX_LEVEL
                 ? "LEVEL 10 // MAX XP"
-                : String.format("LEVEL %d // XP %d/100", level,
-                        Math.max(0, AndroidClientState.experience() - levelStart));
+                : String.format("LEVEL %d // XP %d/%d", level, intoLevel, levelSpan);
         if (unspent > 0) progression += " // " + unspent + " POINT" + (unspent == 1 ? "" : "S");
         graphics.drawString(minecraft.font, progression, barX, y + 36, 0xFFFFD27A, false);
 

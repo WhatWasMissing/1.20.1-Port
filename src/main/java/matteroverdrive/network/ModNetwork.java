@@ -14,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "9";
+    private static final String PROTOCOL = "10";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -56,7 +56,7 @@ public final class ModNetwork {
     public static void syncAndroidState(ServerPlayer p) {
         AndroidData.Ability a = AndroidData.getSelectedAbility(p);
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new AndroidStatePacket(
-                AndroidData.isAndroid(p), AndroidData.getEnergy(p), AndroidData.getParts(p), a.ordinal(),
+                AndroidData.isAndroid(p), AndroidData.getEnergy(p), AndroidData.getEnergyCapacity(p), AndroidData.getParts(p), a.ordinal(),
                 AndroidData.getRemainingCooldown(p, a, p.level().getGameTime()), AndroidData.getActiveAbilityFlags(p),
                 AndroidData.getExperience(p), AndroidData.getLevel(p), AndroidData.getSelectedPerks(p),
                 AndroidLoadout.getAspectMask(p), AndroidLoadout.getFragmentMask(p),

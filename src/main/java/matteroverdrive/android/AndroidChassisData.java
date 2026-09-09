@@ -57,6 +57,7 @@ public final class AndroidChassisData {
         CompoundTag state = data(player);
         state.putString(module.slot.name(), module.name());
         save(player, state);
+        clampStoredEnergyToCapacity(player);
         return old;
     }
 
@@ -68,7 +69,17 @@ public final class AndroidChassisData {
         CompoundTag state = data(player);
         state.remove(slot.name());
         save(player, state);
+        clampStoredEnergyToCapacity(player);
         return old;
+    }
+
+    /**
+     * Persist the post-hardware-change clamp, rather than only clamping reads. Without this,
+     * energy above the reduced capacity could remain hidden in NBT and reappear after the
+     * Capacitor Core was installed again.
+     */
+    private static void clampStoredEnergyToCapacity(Player player) {
+        AndroidData.setEnergy(player, AndroidData.getEnergy(player));
     }
 
     public static ItemStack stack(Module module) { return module == null ? ItemStack.EMPTY : new ItemStack(ModItems.get(module.itemId).get()); }

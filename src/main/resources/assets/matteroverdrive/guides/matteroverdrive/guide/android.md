@@ -46,7 +46,7 @@ Current hardware choices are:
 - **Stealth Shell** - crouching consumes FE to cloak.
 - **Reactive Shell** - hardens the chassis below half health.
 
-The tech-overhaul branch also fixes the **Capacitor Core** so its extra 50,000 FE is real storage capacity rather than tooltip-only capacity. Charging systems now use the chassis-adjusted maximum.
+The tech-overhaul branch fixes the **Capacitor Core** so its extra 50,000 FE is real storage capacity rather than tooltip-only capacity. Charging systems, the HUD and the Skill Tree use the chassis-adjusted maximum, and percentage-based loadout effects use that same effective reserve. A normal Android therefore evaluates 50%/75% effects at 50,000/75,000 FE; a Capacitor-Core Android evaluates them at 75,000/112,500 FE. Removing or replacing a capacity-granting core permanently clamps stored FE to the new maximum, so excess charge cannot remain hidden in player data and reappear when the core is reinstalled.
 
 The station also provides direct buttons for **Core Ability Cycle**, **Skill Tree**, and **Class Matrix**, so normal Android configuration can start from one machine.
 
@@ -99,11 +99,11 @@ The **Class Matrix** reports the exact FE cost, cooldown and effects for the cur
 
 ## HUD
 
-The in-world Android HUD reports current specialization, FE and low-energy state, level/XP/progression points, equipped Aspect/Fragment counts, selected core ability, and dedicated H/N/G slots with cooldowns.
+The in-world Android HUD reports current specialization, chassis-adjusted FE reserve and low-energy state, level/nonlinear XP progress, true available Ascension Points, equipped Aspect/Fragment counts, selected core ability, and dedicated H/N/G slots with cooldowns.
 
 ## Skill tree and build points
 
-Android level progression is persistent. The skill tree grants a limited number of points, so it creates a build rather than unlocking everything simultaneously. Higher tiers require investment in the same branch. The Android Station links directly to the skill tree.
+Android level progression is persistent. The skill tree grants **one Ascension Point every two Android levels**, up to five points at level 10, so it creates a build rather than unlocking everything simultaneously. Higher tiers require investment in the same branch. The Android Station links directly to the skill tree.
 
 ## Aspects, Fragments and passive protocols
 

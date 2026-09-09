@@ -47,12 +47,13 @@ public final class AndroidLoadoutEvents {
         double costMultiplier = conserve ? 0.65D : 1.0D;
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.OVERCLOCKED_RELAY)) costMultiplier *= 1.08D;
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.NANITE_CROWN)) costMultiplier *= 0.80D;
+        int capacity = AndroidData.getEnergyCapacity(player);
 
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.CAPACITOR_HEART)
-                && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY / 2) AndroidData.receiveEnergy(player, 250);
+                && AndroidData.getEnergy(player) >= capacity / 2) AndroidData.receiveEnergy(player, 250);
 
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.TEMPORAL_OVERDRIVE)
-                && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY * 3 / 4
+                && AndroidData.getEnergy(player) >= capacity * 3 / 4
                 && AndroidData.tryConsumeEnergy(player, (int)Math.ceil(100 * costMultiplier))) {
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 35, 2, true, false, false));
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 35, 1, true, false, false));
@@ -64,7 +65,7 @@ public final class AndroidLoadoutEvents {
             float healing = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.RECOVERY) ? 4.5F : 3.0F;
             if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.NANITE_CROWN)) healing += 3.0F;
             if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.OVERFLOW)
-                    && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY * 3 / 4) healing += 1.0F;
+                    && AndroidData.getEnergy(player) >= capacity * 3 / 4) healing += 1.0F;
             player.heal(healing);
         }
 
@@ -107,7 +108,7 @@ public final class AndroidLoadoutEvents {
         }
 
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.MOBILE_FORTRESS)
-                && AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY / 2) {
+                && AndroidData.getEnergy(player) >= capacity / 2) {
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 30, 1, true, false, false));
             if (player.tickCount % 40 == 0) player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 60, 0, true, false, false));
         }
@@ -168,8 +169,9 @@ public final class AndroidLoadoutEvents {
         int bonus = 0;
         if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.INDUCTION)) bonus += 384;
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.RECURSIVE_CORE)) bonus += 512;
-        if (bonus <= 0 || !player.isCrouching() || AndroidData.getEnergy(player) >= AndroidData.ENERGY_CAPACITY) return;
-        int remaining = Math.min(bonus, AndroidData.ENERGY_CAPACITY - AndroidData.getEnergy(player));
+        int capacity = AndroidData.getEnergyCapacity(player);
+        if (bonus <= 0 || !player.isCrouching() || AndroidData.getEnergy(player) >= capacity) return;
+        int remaining = Math.min(bonus, capacity - AndroidData.getEnergy(player));
         for (InteractionHand hand : InteractionHand.values()) {
             if (remaining <= 0) break;
             ItemStack stack = player.getItemInHand(hand);
@@ -215,7 +217,7 @@ public final class AndroidLoadoutEvents {
         if (abilityDamage && AndroidLoadout.hasFragment(attacker, AndroidLoadout.Fragment.AFTERSHOCK)) multiplier *= 1.15F;
         if (abilityDamage && AndroidLoadout.hasArtifact(attacker, AndroidLoadout.Artifact.OVERCLOCKED_RELAY)) multiplier *= 1.18F;
         if (AndroidLoadout.hasFragment(attacker, AndroidLoadout.Fragment.SURGE)
-                && AndroidData.getEnergy(attacker) >= AndroidData.ENERGY_CAPACITY * 3 / 4) multiplier *= 1.10F;
+                && AndroidData.getEnergy(attacker) >= AndroidData.getEnergyCapacity(attacker) * 3 / 4) multiplier *= 1.10F;
         if (!abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.VANGUARD_PROTOCOL)) multiplier *= 1.15F;
         if (event.getEntity().hasEffect(MobEffects.GLOWING)) {
             if (AndroidLoadout.hasArtifact(attacker, AndroidLoadout.Artifact.HUNTER_LENS)) multiplier *= 1.15F;
@@ -234,7 +236,7 @@ public final class AndroidLoadoutEvents {
         if (event.getEntity().hasEffect(MobEffects.GLOWING) && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.PREDATOR_CHAIN)) AndroidData.receiveEnergy(attacker, 250);
         if (abilityDamage && AndroidLoadout.hasArtifact(attacker, AndroidLoadout.Artifact.OVERCLOCKED_RELAY)) AndroidData.receiveEnergy(attacker, 150);
         if (abilityDamage && AndroidLoadout.hasArtifact(attacker, AndroidLoadout.Artifact.CAPACITOR_HEART)
-                && AndroidData.getEnergy(attacker) >= AndroidData.ENERGY_CAPACITY / 2) AndroidData.receiveEnergy(attacker, 400);
+                && AndroidData.getEnergy(attacker) >= AndroidData.getEnergyCapacity(attacker) / 2) AndroidData.receiveEnergy(attacker, 400);
         if (abilityDamage && AndroidLoadout.hasFragment(attacker, AndroidLoadout.Fragment.SYNAPSE) && attacker.getRandom().nextFloat() < 0.45F)
             attacker.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 70, 2, true, false, false));
         if (abilityDamage && AndroidLoadout.hasAspect(attacker, AndroidLoadout.Aspect.CORROSIVE_CLOUD)) {

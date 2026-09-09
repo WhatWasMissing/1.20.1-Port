@@ -46,7 +46,7 @@ if not defined PYTHON_CMD (
 )
 
 echo.
-echo [1/7] Facility layout reachability gate...
+echo [1/8] Facility layout reachability gate...
 %PYTHON_CMD% scripts\facility_layout_lab.py --check-only
 if errorlevel 1 (
   set "EXITCODE=29"
@@ -54,7 +54,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [2/7] Native structure expansion gate...
+echo [2/8] Native structure expansion gate...
 %PYTHON_CMD% scripts\validate_structure_expansion.py
 if errorlevel 1 (
   set "EXITCODE=30"
@@ -62,7 +62,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [3/7] Whole-port consistency audit...
+echo [3/8] Whole-port consistency audit...
 %PYTHON_CMD% scripts\validate_port_consistency.py
 if errorlevel 1 (
   set "EXITCODE=31"
@@ -70,7 +70,15 @@ if errorlevel 1 (
 )
 
 echo.
-echo [4/7] Gradle bootstrap...
+echo [4/8] Android power/progression consistency gate...
+%PYTHON_CMD% scripts\validate_android_consistency.py
+if errorlevel 1 (
+  set "EXITCODE=32"
+  goto :finish
+)
+
+echo.
+echo [5/8] Gradle bootstrap...
 call gradlew.bat --version
 if errorlevel 1 (
   set "EXITCODE=23"
@@ -78,7 +86,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [5/7] Re-running the verified M1 resource gate...
+echo [6/8] Re-running the verified M1 resource gate...
 call gradlew.bat verifyM1Resources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=24"
@@ -86,7 +94,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [6/7] Checking the M2 functional-machines source gate...
+echo [7/8] Checking the M2 functional-machines source gate...
 call gradlew.bat verifyM2Sources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=25"
@@ -94,7 +102,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [7/7] Clean Forge compilation...
+echo [8/8] Clean Forge compilation...
 call gradlew.bat clean build --stacktrace
 if errorlevel 1 (
   set "EXITCODE=26"

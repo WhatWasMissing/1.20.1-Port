@@ -21,6 +21,7 @@ Or run the static gates individually:
 python scripts/facility_layout_lab.py --check-only
 python scripts/validate_structure_expansion.py
 python scripts/validate_port_consistency.py
+python scripts/validate_android_consistency.py
 ```
 
 Attach `build/reports/m2-port-consistency.md` when reporting static-audit warnings.
@@ -93,6 +94,13 @@ Use a fresh world or unexplored chunks.
 - [ ] Android HUD appears after conversion and keybinds cycle/activate/open the tree correctly.
 - [ ] Class/subclass, Aspects, Fragments, Passive Protocols and Mastery persist through level-up/relog/death.
 - [ ] Refund/reset behavior does not erase unrelated progression.
+- [ ] **Capacitor Core:** installing it raises effective Android storage from **100,000 FE to 150,000 FE** in the Android Station, HUD and Skill Tree.
+- [ ] With a Capacitor Core installed, crouch-held Battery/HC Battery charging continues past 100,000 FE and can reach 150,000 FE.
+- [ ] Fragment of Induction / Recursive Core bonus charging also continues to the chassis-adjusted maximum instead of stopping at 100,000 FE.
+- [ ] At 150,000 FE capacity, 50% loadout thresholds trigger at 75,000 FE and 75% thresholds at 112,500 FE; removing the core returns thresholds to 50,000/75,000 FE.
+- [ ] Charge above 100,000 FE, remove/swap the Capacitor Core, then reinstall it: excess FE is permanently clamped to the reduced capacity and does **not** reappear as hidden banked energy.
+- [ ] HUD XP progress matches the nonlinear Skill Tree thresholds (150, 400, 800, 1,400, 2,250, 3,400, 5,000, 7,200, 10,000 total XP).
+- [ ] HUD available Ascension Points matches the Skill Tree: one point every two Android levels, maximum five at level 10.
 - [ ] Drone Matrix level and selected behavior persist.
 - [ ] Owned drones/android squads never attack owner/allies and cannot be silently stolen by another player.
 - [ ] Patrol/guard/hold/escort state and patrol drives persist after save/reload and level-up.

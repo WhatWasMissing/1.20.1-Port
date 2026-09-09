@@ -173,7 +173,7 @@ public class AndroidSkillTreeScreen extends Screen {
 
         g.drawString(font, "ANDROID // SYNTHETIC ASCENSION", 18, 16, TEXT, false);
         g.drawString(font, "SUBSYSTEM CALIBRATION", 18, 29, MUTED, false);
-        g.drawString(font, "POWER " + AndroidClientState.energy() + " / " + AndroidData.ENERGY_CAPACITY,
+        g.drawString(font, "POWER " + AndroidClientState.energy() + " / " + AndroidClientState.energyCapacity(),
                 width - 190, 17, ACCENT, false);
 
         g.fill(18, 46, width - 18, 47, 0x55FFFFFF);
