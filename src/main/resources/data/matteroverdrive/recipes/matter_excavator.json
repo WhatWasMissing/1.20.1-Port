@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["SMS","CDC","SBS"],
+  "key":{"S":{"item":"matteroverdrive:s_magnet"},"M":{"item":"matteroverdrive:matter_scanner"},"C":{"item":"matteroverdrive:isolinear_circuit_mk4"},"D":{"item":"matteroverdrive:decomposer"},"B":{"item":"matteroverdrive:machine_casing"}},
+  "result":{"item":"matteroverdrive:matter_excavator"}
+}
