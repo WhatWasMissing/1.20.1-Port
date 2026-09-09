@@ -35,7 +35,7 @@ Below the body controls are five persistent chassis slots: **Core, Frame, Muscle
 
 Current hardware choices are:
 
-- **Capacitor Core** - passive FE recovery.
+- **Capacitor Core** - passive FE recovery and a larger Android energy reserve.
 - **Overclock Core** - spends FE for stronger combat output.
 - **Lightweight Frame** - mobility and jump control at a defensive cost.
 - **Reinforced Frame** - substantially reduces incoming damage.
@@ -46,7 +46,22 @@ Current hardware choices are:
 - **Stealth Shell** - crouching consumes FE to cloak.
 - **Reactive Shell** - hardens the chassis below half health.
 
+The tech-overhaul branch also fixes the **Capacitor Core** so its extra 50,000 FE is real storage capacity rather than tooltip-only capacity. Charging systems now use the chassis-adjusted maximum.
+
 The station also provides direct buttons for **Core Ability Cycle**, **Skill Tree**, and **Class Matrix**, so normal Android configuration can start from one machine.
+
+## Android charging
+
+The Android Station still charges nearby Androids when supplied with FE. For larger bases, the tech-overhaul branch adds the **Android Induction Relay**:
+
+- stores **2,000,000 FE**;
+- accepts up to **16,384 FE/t**;
+- wirelessly distributes up to **8,192 FE/t**;
+- supports **32 / 64 / 96 block** ranges;
+- charges only Android players in the same dimension;
+- splits available transfer between multiple Androids rather than duplicating FE.
+
+Sneak-use the relay to cycle its range. It does not create energy and does not force-load or charge players in other dimensions.
 
 ## Quick controls
 
@@ -84,14 +99,7 @@ The **Class Matrix** reports the exact FE cost, cooldown and effects for the cur
 
 ## HUD
 
-The in-world Android HUD reports:
-
-- current specialization;
-- Android FE and low-energy warning;
-- level, XP and unspent progression points;
-- equipped Aspect/Fragment counts and passive protocol;
-- selected core ability and current state;
-- dedicated H / N / G slots and cooldowns.
+The in-world Android HUD reports current specialization, FE and low-energy state, level/XP/progression points, equipped Aspect/Fragment counts, selected core ability, and dedicated H/N/G slots with cooldowns.
 
 ## Skill tree and build points
 
@@ -124,3 +132,5 @@ Press **M** while Android systems are active to open the operator console. It re
 The Android Spawner maintains owned synthetic soldiers with persistent squad mode and commander state. ESCORT uses formation slots and catch-up handling rather than stacking every unit into the same position.
 
 Android features are server-authoritative where gameplay state is concerned, so legitimate progression and equipment should survive relogging and respawn cloning.
+
+For Grid Capacitors, Quantum Power Relays, facility monitoring and the rest of the experimental infrastructure, see [Advanced Infrastructure](advanced_infrastructure.md).
