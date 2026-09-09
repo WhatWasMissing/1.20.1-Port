@@ -17,7 +17,7 @@ Attach the Facility Network Controller to a reachable Matter Network path. It ag
 
 Routers and Switches support **channels 0-15**. Matching channels form logical subnetworks over the same physical infrastructure. A Router's priority decides which available router becomes the active executor for that channel; the highest priority wins and position order provides a deterministic tie break.
 
-Use the **Network Diagnostic Probe** to inspect and configure this system without opening every machine manually. The probe has modes for diagnostic summary, FE, Matter, Items, Network and Range. It can inspect configured faces, change Router/Switch/Quantum Relay channels, adjust router priority and visualize supported working ranges.
+Use the **Network Diagnostic Probe** to inspect and configure this system without opening every machine manually. The probe has modes for diagnostic summary, FE, Matter, Items, Network and Range. It can inspect configured faces, change Router/Switch channels, adjust router priority and visualize supported working ranges.
 
 ## Per-side machine configuration
 
@@ -37,15 +37,27 @@ This does not perform cross-dimensional charging and does not create energy. It 
 
 ## Quantum Power Relay
 
-Quantum Power Relays move FE wirelessly between **loaded** same-dimension relays on the same channel. They support channels 0-15, a **256 block** link range, **1,000,000 FE** internal storage and up to **16,384 FE/t** transfer.
+Quantum Power Relays now use **explicit point-to-point links** rather than automatically sharing energy with every compatible relay. This prevents unrelated bases or machines from silently joining the same wireless power pool.
 
-Relay discovery uses a loaded-relay registry rather than scanning world volumes, so inactive relays do not perform huge block scans. Unloaded destinations are deliberately not force-loaded.
+Use a **Quantum Linker** on the first relay, then use it on the second relay. The pair is stored as a bidirectional link. Each relay can hold up to **8 explicit links** and the maximum distance between linked relays is **256 blocks**. Both relays must be in the same dimension, and both source/destination chunks must be loaded for energy to move.
+
+The relay stores **1,000,000 FE** and can move up to **16,384 FE/t**. Sneak-use the Quantum Linker on a relay to clear all of that relay's links. Relays do not force-load destinations.
+
+## Hybrid Conduit
+
+The **Hybrid Conduit** is a higher-tier cable that carries **both Forge Energy and Matter Plasma** through the same physical cable run.
+
+On the FE side it participates in the same graph as Heavy Energy Cable, using the existing **8,192 FE cable buffer** and **1,024 FE/t per-side** transfer behavior. It can connect directly into existing Heavy Energy Cable runs.
+
+On the Matter side it is treated as a Matter Transport Pipe by the routing backend, so Decomposers, Replicators, Matter Storage Matrices and other Matter-capable machines can use the same Hybrid Conduit run for Matter transfer.
+
+The Hybrid Conduit does **not** merge the logical Matter Network task layer into FE/Matter transport. Network Cable is still required for Pattern Monitor/Pattern Storage/Router/Switch task routing.
 
 ## Matter Storage Matrix
 
 The Matter Storage Matrix is a modular Matter bank. Install up to four removable Matter Cells. Current cell capacities are **64k, 256k, 1M and 4M Matter**. A cell can only be removed when the remaining installed capacity can still contain the Matter already stored in the matrix.
 
-Connect Matter Transport Pipe to use the Matrix as ordinary Matter storage. Comparator output reports fill level.
+Connect Matter Transport Pipe or Hybrid Conduit to use the Matrix as ordinary Matter storage. Comparator output reports fill level.
 
 ## Matter Excavator
 
@@ -65,9 +77,11 @@ The **Parallel Processing Upgrade** is supported by the Decomposer and Replicato
 
 1. Build one Grid Capacitor and verify FE in/out and comparator level.
 2. Charge an Android through each Induction Relay range.
-3. Link two Quantum Relays on the same channel, then verify a different channel isolates them.
-4. Install/remove every Matter Cell tier and verify stored Matter is never deleted by shrinking capacity.
-5. Configure a small Excavator radius and confirm only the selected target is decomposed.
-6. Split a Router/Switch network into two channels and verify routing isolation.
-7. Use the Diagnostic Probe to change side policies and confirm real automation follows them.
-8. Install Parallel Processing in a Decomposer/Replicator and compare throughput and FE demand.
+3. Use a Quantum Linker to pair two Quantum Power Relays and confirm an unlinked third relay receives nothing.
+4. Clear the link and confirm wireless transfer stops.
+5. Build a Hybrid Conduit run between FE and Matter machines and verify both resource types traverse the same cable path.
+6. Install/remove every Matter Cell tier and verify stored Matter is never deleted by shrinking capacity.
+7. Configure a small Excavator radius and confirm only the selected target is decomposed.
+8. Split a Router/Switch network into two channels and verify routing isolation.
+9. Use the Diagnostic Probe to change side policies and confirm real automation follows them.
+10. Install Parallel Processing in a Decomposer/Replicator and compare throughput and FE demand.
