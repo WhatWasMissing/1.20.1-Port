@@ -26,13 +26,20 @@ import java.util.Set;
 public final class ItemNetworkUtil {
     public static final int MAX_NODES = 1024;
     private static final Comparator<BlockPos> POSITION_ORDER = Comparator
-            .comparingInt((BlockPos pos) -> pos.getX())
-            .thenComparingInt(BlockPos::getY)
-            .thenComparingInt(BlockPos::getZ);
+            .comparingInt((BlockPos pos) -> pos.getX()).thenComparingInt(BlockPos::getY).thenComparingInt(BlockPos::getZ);
 
     private ItemNetworkUtil() {}
 
     public static Scan scan(Level level, BlockPos origin) {
+        int channel = 0;
+        BlockEntity originEntity = level.getBlockEntity(origin);
+        if (originEntity instanceof NetworkRouterBlockEntity router) channel = router.getChannel();
+        else if (originEntity instanceof NetworkSwitchBlockEntity networkSwitch) channel = networkSwitch.getChannel();
+        return scan(level, origin, channel);
+    }
+
+    public static Scan scan(Level level, BlockPos origin, int channel) {
+        channel &= 15;
         Map<BlockPos, Endpoint> endpointMap = new LinkedHashMap<>();
         ArrayDeque<BlockPos> pending = new ArrayDeque<>();
         Set<BlockPos> visited = new HashSet<>();
@@ -46,7 +53,7 @@ public final class ItemNetworkUtil {
             BlockPos current = pending.removeFirst();
             if (!visited.add(current) || !level.hasChunkAt(current)) continue;
             BlockEntity currentEntity = level.getBlockEntity(current);
-            if (currentEntity instanceof NetworkRouterBlockEntity) routerPositions.add(current.immutable());
+            if (currentEntity instanceof NetworkRouterBlockEntity router && router.getChannel() == channel) routerPositions.add(current.immutable());
             if (currentEntity instanceof PylonBlockEntity pylon) {
                 pylons++;
                 for (BlockPos linked : PylonBlockEntity.linked(level, current, pylon.getChannel())) {
@@ -60,16 +67,15 @@ public final class ItemNetworkUtil {
                 if (!level.hasChunkAt(next) || visited.contains(next)) continue;
                 BlockState state = level.getBlockState(next);
                 BlockEntity entity = level.getBlockEntity(next);
-                if (state.is(ModBlocks.get("network_switch").get())
-                        && entity instanceof NetworkSwitchBlockEntity networkSwitch && !networkSwitch.isEnabled()) {
-                    disabledSwitches++;
-                    continue;
+                if (state.is(ModBlocks.get("network_switch").get()) && entity instanceof NetworkSwitchBlockEntity networkSwitch) {
+                    if (!networkSwitch.isEnabled()) { disabledSwitches++; continue; }
+                    if (networkSwitch.getChannel() != channel) continue;
                 }
-                if (isTransport(state, entity)) {
-                    pending.addLast(next.immutable());
-                } else if (entity != null && entity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).isPresent()) {
+                if (state.is(ModBlocks.get("network_router").get()) && entity instanceof NetworkRouterBlockEntity router
+                        && router.getChannel() != channel) continue;
+                if (isTransport(state, entity, channel)) pending.addLast(next.immutable());
+                else if (entity != null && entity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).isPresent())
                     endpointMap.putIfAbsent(next.immutable(), new Endpoint(next.immutable(), direction.getOpposite()));
-                }
             }
         }
 
@@ -82,10 +88,7 @@ public final class ItemNetworkUtil {
     }
 
     private static long edgeKey(BlockPos a, BlockPos b) {
-        long first = a.asLong();
-        long second = b.asLong();
-        long lo = Math.min(first, second);
-        long hi = Math.max(first, second);
+        long first = a.asLong(), second = b.asLong(), lo = Math.min(first, second), hi = Math.max(first, second);
         return lo * 31L + hi;
     }
 
@@ -96,25 +99,20 @@ public final class ItemNetworkUtil {
 
         boolean destinationFilter = NetworkFlashDriveItem.isNetworkFlashDrive(filter);
         Set<BlockPos> allowedDestinations = destinationFilter ? NetworkFlashDriveItem.getConnections(filter) : null;
-        boolean sourceItems = false;
-        boolean filterCandidate = false;
-        boolean allowedDestination = false;
-        boolean destinationSpace = false;
-        int start = (int) Math.floorMod(cursor, endpoints.size());
+        boolean sourceItems = false, filterCandidate = false, allowedDestination = false, destinationSpace = false;
+        int start = (int)Math.floorMod(cursor, endpoints.size());
 
         for (int sourceOffset = 0; sourceOffset < endpoints.size(); sourceOffset++) {
             Endpoint source = endpoints.get((start + sourceOffset) % endpoints.size());
             if (blockedSources.contains(source.pos())) continue;
             IItemHandler sourceHandler = handler(level, source);
             if (sourceHandler == null) continue;
-
             for (int slot = 0; slot < sourceHandler.getSlots(); slot++) {
                 ItemStack candidate = sourceHandler.extractItem(slot, maximum, true);
                 if (candidate.isEmpty()) continue;
                 sourceItems = true;
                 if (!destinationFilter && !filter.isEmpty() && !ItemStack.isSameItemSameTags(candidate, filter)) continue;
                 filterCandidate = true;
-
                 for (int destinationOffset = 1; destinationOffset < endpoints.size(); destinationOffset++) {
                     Endpoint destination = endpoints.get((start + sourceOffset + destinationOffset) % endpoints.size());
                     if (destination.pos().equals(source.pos())) continue;
@@ -123,18 +121,15 @@ public final class ItemNetworkUtil {
                     IItemHandler destinationHandler = handler(level, destination);
                     if (destinationHandler == null) continue;
                     ItemStack remaining = candidate.copy();
-                    for (int destinationSlot = 0; destinationSlot < destinationHandler.getSlots() && !remaining.isEmpty(); destinationSlot++) {
+                    for (int destinationSlot = 0; destinationSlot < destinationHandler.getSlots() && !remaining.isEmpty(); destinationSlot++)
                         remaining = destinationHandler.insertItem(destinationSlot, remaining, true);
-                    }
                     int accepted = candidate.getCount() - remaining.getCount();
                     if (accepted <= 0) continue;
                     destinationSpace = true;
-
                     ItemStack extracted = sourceHandler.extractItem(slot, accepted, false);
                     ItemStack toInsert = extracted;
-                    for (int destinationSlot = 0; destinationSlot < destinationHandler.getSlots() && !toInsert.isEmpty(); destinationSlot++) {
+                    for (int destinationSlot = 0; destinationSlot < destinationHandler.getSlots() && !toInsert.isEmpty(); destinationSlot++)
                         toInsert = destinationHandler.insertItem(destinationSlot, toInsert, false);
-                    }
                     if (!toInsert.isEmpty()) sourceHandler.insertItem(slot, toInsert, false);
                     int moved = extracted.getCount() - toInsert.getCount();
                     if (moved > 0) return new MoveResult(MoveStatus.MOVED, moved, source.pos(), destination.pos());
@@ -161,31 +156,17 @@ public final class ItemNetworkUtil {
         return entity == null ? null : entity.getCapability(ForgeCapabilities.ITEM_HANDLER, endpoint.side()).orElse(null);
     }
 
-    private static boolean isTransport(BlockState state, BlockEntity entity) {
-        if (state.is(ModBlocks.get("network_pipe").get()) || state.is(ModBlocks.get("network_router").get())
-                || state.is(ModBlocks.get("pylon").get())) return true;
-        return state.is(ModBlocks.get("network_switch").get())
-                && entity instanceof NetworkSwitchBlockEntity networkSwitch && networkSwitch.isEnabled();
+    private static boolean isTransport(BlockState state, BlockEntity entity, int channel) {
+        if (state.is(ModBlocks.get("network_pipe").get()) || state.is(ModBlocks.get("pylon").get())) return true;
+        if (state.is(ModBlocks.get("network_router").get())) return entity instanceof NetworkRouterBlockEntity router && router.getChannel() == channel;
+        return state.is(ModBlocks.get("network_switch").get()) && entity instanceof NetworkSwitchBlockEntity networkSwitch
+                && networkSwitch.isEnabled() && networkSwitch.getChannel() == channel;
     }
 
     public enum MoveStatus {
-        IDLE,
-        MOVED,
-        NO_ENDPOINTS,
-        NO_BUDGET,
-        NO_SOURCE_ITEMS,
-        FILTER_MISS,
-        NO_ALLOWED_DESTINATION,
-        DESTINATION_FULL,
-        NO_ROUTE,
-        NO_ENERGY,
-        SECONDARY_ROUTER,
-        GRAPH_LIMIT;
-
-        public static MoveStatus byOrdinal(int value) {
-            MoveStatus[] values = values();
-            return value >= 0 && value < values.length ? values[value] : IDLE;
-        }
+        IDLE, MOVED, NO_ENDPOINTS, NO_BUDGET, NO_SOURCE_ITEMS, FILTER_MISS, NO_ALLOWED_DESTINATION,
+        DESTINATION_FULL, NO_ROUTE, NO_ENERGY, SECONDARY_ROUTER, GRAPH_LIMIT;
+        public static MoveStatus byOrdinal(int value) { MoveStatus[] values = values(); return value >= 0 && value < values.length ? values[value] : IDLE; }
     }
 
     public record Endpoint(BlockPos pos, Direction side) {}
