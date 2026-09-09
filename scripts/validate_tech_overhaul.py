@@ -10,12 +10,14 @@ BLOCKS = [
     "grid_capacitor",
     "android_induction_relay",
     "quantum_power_relay",
+    "hybrid_conduit",
     "matter_storage_matrix",
     "matter_excavator",
     "holographic_status_panel",
 ]
 ITEMS = [
     "network_diagnostic_probe",
+    "quantum_linker",
     "matter_storage_cell_64k",
     "matter_storage_cell_256k",
     "matter_storage_cell_1m",
@@ -24,14 +26,17 @@ ITEMS = [
 ]
 JAVA = [
     "src/main/java/matteroverdrive/block/TechMachineBlock.java",
+    "src/main/java/matteroverdrive/block/HybridConduitBlock.java",
     "src/main/java/matteroverdrive/blockentity/GridCapacitorBlockEntity.java",
     "src/main/java/matteroverdrive/blockentity/AndroidInductionRelayBlockEntity.java",
     "src/main/java/matteroverdrive/blockentity/QuantumPowerRelayBlockEntity.java",
+    "src/main/java/matteroverdrive/blockentity/HybridConduitBlockEntity.java",
     "src/main/java/matteroverdrive/blockentity/MatterStorageMatrixBlockEntity.java",
     "src/main/java/matteroverdrive/blockentity/MatterExcavatorBlockEntity.java",
     "src/main/java/matteroverdrive/blockentity/HolographicStatusPanelBlockEntity.java",
     "src/main/java/matteroverdrive/item/MatterStorageCellItem.java",
     "src/main/java/matteroverdrive/item/NetworkDiagnosticProbeItem.java",
+    "src/main/java/matteroverdrive/item/QuantumLinkerItem.java",
     "src/main/java/matteroverdrive/machine/MachineSideConfigurationData.java",
     "src/main/java/matteroverdrive/network/FacilityNetworkTelemetry.java",
 ]
@@ -48,80 +53,64 @@ errors = []
 
 def require(path: str):
     p = ROOT / path
-    if not p.is_file():
-        errors.append(f"missing file: {path}")
+    if not p.is_file(): errors.append(f"missing file: {path}")
     return p
 
-for path in JAVA + GUIDES:
-    require(path)
-
+for path in JAVA + GUIDES: require(path)
 for block in BLOCKS:
     require(f"src/main/resources/assets/matteroverdrive/blockstates/{block}.json")
     require(f"src/main/resources/assets/matteroverdrive/models/block/{block}.json")
     require(f"src/main/resources/assets/matteroverdrive/models/item/{block}.json")
     require(f"src/main/resources/data/matteroverdrive/recipes/{block}.json")
     require(f"src/main/resources/data/matteroverdrive/loot_tables/blocks/{block}.json")
-
 for item in ITEMS:
     require(f"src/main/resources/assets/matteroverdrive/models/item/{item}.json")
     require(f"src/main/resources/data/matteroverdrive/recipes/{item}.json")
 
-# Parse every experimental JSON resource now, before Forge gets involved.
-for path in list((ROOT / "src/main/resources/assets/matteroverdrive/blockstates").glob("*.json")) + \
-            list((ROOT / "src/main/resources/assets/matteroverdrive/models/block").glob("*.json")) + \
-            list((ROOT / "src/main/resources/assets/matteroverdrive/models/item").glob("*.json")) + \
-            list((ROOT / "src/main/resources/data/matteroverdrive/recipes").glob("*.json")) + \
-            list((ROOT / "src/main/resources/data/matteroverdrive/loot_tables/blocks").glob("*.json")):
+for path in list((ROOT / "src/main/resources/assets/matteroverdrive/blockstates").glob("*.json")) + list((ROOT / "src/main/resources/assets/matteroverdrive/models/block").glob("*.json")) + list((ROOT / "src/main/resources/assets/matteroverdrive/models/item").glob("*.json")) + list((ROOT / "src/main/resources/data/matteroverdrive/recipes").glob("*.json")) + list((ROOT / "src/main/resources/data/matteroverdrive/loot_tables/blocks").glob("*.json")):
     name = path.stem
-    if name not in BLOCKS and name not in ITEMS:
-        continue
-    try:
-        json.loads(path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        errors.append(f"invalid JSON: {path.relative_to(ROOT)}: {exc}")
+    if name not in BLOCKS and name not in ITEMS: continue
+    try: json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc: errors.append(f"invalid JSON: {path.relative_to(ROOT)}: {exc}")
 
 mod_blocks = require("src/main/java/matteroverdrive/registry/ModBlocks.java")
 mod_items = require("src/main/java/matteroverdrive/registry/ModItems.java")
 extra_be = require("src/main/java/matteroverdrive/registry/ModExtraBlockEntities.java")
 client_events = require("src/main/java/matteroverdrive/client/ClientModEvents.java")
+relay = require("src/main/java/matteroverdrive/blockentity/QuantumPowerRelayBlockEntity.java")
+matter_network = require("src/main/java/matteroverdrive/network/MatterNetworkUtil.java")
 
 if mod_blocks.is_file():
     text = mod_blocks.read_text(encoding="utf-8")
     for block in BLOCKS:
-        if f'"{block}"' not in text:
-            errors.append(f"ModBlocks does not register {block}")
+        if f'"{block}"' not in text: errors.append(f"ModBlocks does not register {block}")
 if mod_items.is_file():
     text = mod_items.read_text(encoding="utf-8")
     for item in ITEMS:
-        if f'"{item}"' not in text:
-            errors.append(f"ModItems does not register {item}")
+        if f'"{item}"' not in text: errors.append(f"ModItems does not register {item}")
 if extra_be.is_file():
     text = extra_be.read_text(encoding="utf-8")
-    for key in ["GRID_CAPACITOR", "ANDROID_INDUCTION_RELAY", "QUANTUM_POWER_RELAY", "MATTER_STORAGE_MATRIX", "MATTER_EXCAVATOR", "HOLOGRAPHIC_STATUS_PANEL"]:
-        if key not in text:
-            errors.append(f"ModExtraBlockEntities missing {key}")
-if client_events.is_file():
-    text = client_events.read_text(encoding="utf-8")
-    if "HolographicStatusPanelRenderer" not in text:
-        errors.append("Holographic status renderer is not registered client-side")
+    for key in ["GRID_CAPACITOR", "ANDROID_INDUCTION_RELAY", "QUANTUM_POWER_RELAY", "HYBRID_CONDUIT", "MATTER_STORAGE_MATRIX", "MATTER_EXCAVATOR", "HOLOGRAPHIC_STATUS_PANEL"]:
+        if key not in text: errors.append(f"ModExtraBlockEntities missing {key}")
+if client_events.is_file() and "HolographicStatusPanelRenderer" not in client_events.read_text(encoding="utf-8"): errors.append("Holographic status renderer is not registered client-side")
+if relay.is_file():
+    text = relay.read_text(encoding="utf-8")
+    if "Set<BlockPos> links" not in text or "addLink" not in text or "MAX_LINKS" not in text: errors.append("Quantum Power Relay is not using explicit persisted links")
+    if "LOADED_RELAYS" in text or "channel" in text.lower(): errors.append("Quantum Power Relay still contains automatic channel-pool linking")
+if matter_network.is_file() and 'ModBlocks.get("hybrid_conduit")' not in matter_network.read_text(encoding="utf-8"): errors.append("Hybrid Conduit is not wired into Matter routing")
 
-# Protect the project direction in active GuideME pages.
-active_guides = [
-    ROOT / "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/index.md",
-    ROOT / "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/current_features.md",
-]
-for guide in active_guides:
-    if guide.is_file() and "[Star Map]" in guide.read_text(encoding="utf-8"):
-        errors.append(f"retired Star Map remains linked from active guide: {guide.relative_to(ROOT)}")
+for guide in [ROOT / "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/index.md", ROOT / "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/current_features.md"]:
+    if guide.is_file() and "[Star Map]" in guide.read_text(encoding="utf-8"): errors.append(f"retired Star Map remains linked from active guide: {guide.relative_to(ROOT)}")
 
 if errors:
     print("TECH OVERHAUL VALIDATION FAILED")
-    for error in errors:
-        print(f"  - {error}")
+    for error in errors: print(f"  - {error}")
     sys.exit(1)
 
 print("TECH OVERHAUL VALIDATION PASSED")
 print(f"  experimental blocks: {len(BLOCKS)}")
 print(f"  experimental standalone items/upgrades: {len(ITEMS)}")
+print("  explicit quantum relay links: present")
+print("  hybrid FE+Matter conduit routing: present")
 print("  recipes/models/blockstates/loot tables: present and JSON-parseable")
 print("  GuideME/test-plan coverage: present")
