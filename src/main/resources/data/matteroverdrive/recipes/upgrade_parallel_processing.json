@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["CIC","UBU","CIC"],
+  "key":{"C":{"item":"matteroverdrive:isolinear_circuit_mk3"},"I":{"item":"matteroverdrive:integration_matrix"},"U":{"item":"matteroverdrive:upgrade_base"},"B":{"item":"matteroverdrive:hc_battery"}},
+  "result":{"item":"matteroverdrive:upgrade_parallel_processing"}
+}
