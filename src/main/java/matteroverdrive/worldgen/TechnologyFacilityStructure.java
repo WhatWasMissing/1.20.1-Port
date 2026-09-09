@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /**
  * Native multi-chunk structures for the post-parity Matter Overdrive technology
- * progression. Every facility is assembled from independent StructurePieces so
+ * progression. Facilities are assembled from independent StructurePieces so
  * Minecraft clips generation to the active chunk instead of synchronously
  * stamping blocks into neighbouring chunks.
  */
@@ -54,11 +54,15 @@ public final class TechnologyFacilityStructure extends Structure {
             default -> surfaceY;
         };
 
+        // Stable per-start-chunk variation. Do not consume mutable worldgen random here:
+        // every StructurePiece must reconstruct the same layout after save/reload.
+        int layout = Math.floorMod(context.chunkPos().x * 73428767 ^ context.chunkPos().z * 912931, 3);
         BlockPos origin = new BlockPos(x, y, z);
-        LOGGER.debug("M2 FACILITY TRACE: scheduled kind={} chunk={} origin={} surfaceY={}",
-                kind, context.chunkPos(), origin, surfaceY);
+        LOGGER.debug("M2 FACILITY TRACE: scheduled kind={} chunk={} origin={} surfaceY={} layout={}",
+                kind, context.chunkPos(), origin, surfaceY, layout);
 
-        return Optional.of(new GenerationStub(origin, builder -> TechnologyFacilityStructurePiece.assemble(builder, kind, origin)));
+        return Optional.of(new GenerationStub(origin,
+                builder -> TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout)));
     }
 
     @Override
