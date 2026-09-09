@@ -1,0 +1,10 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "matteroverdrive:abandoned_matter_lab",
+    "matteroverdrive:android_relay_outpost",
+    "matteroverdrive:anomaly_research_site"
+  ],
+  "step": "surface_structures"
+}
