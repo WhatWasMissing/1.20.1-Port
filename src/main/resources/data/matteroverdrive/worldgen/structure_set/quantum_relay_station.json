@@ -1,0 +1,9 @@
+{
+  "structures": [{"structure": "matteroverdrive:quantum_relay_station", "weight": 1}],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 24587203,
+    "spacing": 160,
+    "separation": 48
+  }
+}
