@@ -8,6 +8,7 @@ import matteroverdrive.machine.MachineSideConfigurationData;
 import matteroverdrive.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -107,14 +108,30 @@ public final class ItemNetworkUtil {
                     int accepted=candidate.getCount()-remaining.getCount(); if(accepted<=0) continue; destinationSpace=true;
                     ItemStack extracted=sourceHandler.extractItem(slot,accepted,false),toInsert=extracted;
                     for(int destinationSlot=0;destinationSlot<destinationHandler.getSlots()&&!toInsert.isEmpty();destinationSlot++) toInsert=destinationHandler.insertItem(destinationSlot,toInsert,false);
-                    if(!toInsert.isEmpty()) sourceHandler.insertItem(slot,toInsert,false);
-                    int moved=extracted.getCount()-toInsert.getCount(); if(moved>0) return new MoveResult(MoveStatus.MOVED,moved,source.pos(),destination.pos());
+                    int moved = extracted.getCount() - toInsert.getCount();
+                    if(!toInsert.isEmpty()) restoreRemainder(level, source, sourceHandler, slot, toInsert);
+                    if(moved>0) return new MoveResult(MoveStatus.MOVED,moved,source.pos(),destination.pos());
                 }
             }
         }
         if(!sourceItems)return MoveResult.failed(MoveStatus.NO_SOURCE_ITEMS); if(!filterCandidate)return MoveResult.failed(MoveStatus.FILTER_MISS);
         if(!allowedDestination)return MoveResult.failed(MoveStatus.NO_ALLOWED_DESTINATION); if(!destinationSpace)return MoveResult.failed(MoveStatus.DESTINATION_FULL);
         return MoveResult.failed(MoveStatus.NO_ROUTE);
+    }
+
+    private static void restoreRemainder(Level level, Endpoint source, IItemHandler sourceHandler, int originalSlot, ItemStack remainder) {
+        ItemStack remaining = sourceHandler.insertItem(originalSlot, remainder, false);
+        for (int slot = 0; slot < sourceHandler.getSlots() && !remaining.isEmpty(); slot++) {
+            if (slot == originalSlot) continue;
+            remaining = sourceHandler.insertItem(slot, remaining, false);
+        }
+        if (!remaining.isEmpty()) {
+            Containers.dropItemStack(level,
+                    source.pos().getX() + 0.5D,
+                    source.pos().getY() + 0.5D,
+                    source.pos().getZ() + 0.5D,
+                    remaining);
+        }
     }
 
     public static boolean endpointHasItems(Level level, Endpoint endpoint) {
