@@ -22,6 +22,8 @@ python scripts/facility_layout_lab.py --check-only
 python scripts/validate_structure_expansion.py
 python scripts/validate_port_consistency.py
 python scripts/validate_android_consistency.py
+python scripts/validate_weapon_consistency.py
+python scripts/validate_network_transport_consistency.py
 ```
 
 Attach `build/reports/m2-port-consistency.md` when reporting static-audit warnings.
@@ -85,8 +87,15 @@ Use a fresh world or unexplored chunks.
 
 - [ ] Router/Switch routing survives branching networks and save/reload.
 - [ ] Per-side policies/priorities and Hybrid Conduit FE+Matter routing behave as configured.
+- [ ] Configure a machine face to INPUT/OUTPUT/DISABLED, break the block, then place a fresh machine at the same position: the replacement starts at default BOTH instead of inheriting stale side policy.
 - [ ] Hybrid Conduit visually joins Heavy Energy Cable and Matter/Network pipes without broken arms/seams.
 - [ ] Network diagnostic tooling reports the actual connected graph.
+- [ ] Router item movement conserves item count when moving between ordinary chests/machines and never duplicates through branching networks.
+- [ ] Transporter accepts a target exactly at its displayed effective range (32 blocks with no Range Upgrade) and rejects one block beyond it.
+- [ ] A Transporter destination in an unloaded chunk does not force-load that chunk and does not begin/complete transport until the destination is loaded.
+- [ ] Obstruct the saved target and nearby arrival cells: a completed charge-up aborts safely, spends no transport FE and starts no cooldown when zero entities can arrive.
+- [ ] Leave only one safe arrival for multiple entities: telemetry reports the count actually moved and the successful transport charges its FE cost once.
+- [ ] Transported entities arrive on supported, collision-free space rather than inside solid blocks.
 - [ ] Transporter uses exact required FE and does not duplicate transports through chained infrastructure.
 
 ## Android progression / drones
@@ -111,6 +120,8 @@ Use a fresh world or unexplored chunks.
 - [ ] One weapon never drains another weapon as a reload source.
 - [ ] Energy Packs / intended battery sources reload correctly and rechargeable batteries remain rechargeable.
 - [ ] Heat, overheat and reload work in Survival and Creative.
+- [ ] Install a high-capacity weapon battery, charge above the capacity of a smaller/no-battery configuration, then swap/remove it in the Weapon Station: stored weapon FE clamps to the final packed capacity and does not reappear when the larger battery is reinstalled.
+- [ ] Opening/closing a Weapon Station without changing the battery does not destroy charge merely because modules are temporarily unpacked for editing.
 - [ ] Ion Sniper aim/FOV, Sniper Scope override and recoil behavior match the current recovered parity values.
 - [ ] Weapon Station slots/modules persist and its stats update immediately after module changes.
 - [ ] First/third-person weapon transforms remain visible and correctly oriented.
