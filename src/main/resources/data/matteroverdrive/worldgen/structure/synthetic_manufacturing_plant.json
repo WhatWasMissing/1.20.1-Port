@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:synthetic_manufacturing_plant",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
