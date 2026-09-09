@@ -1,37 +1,17 @@
 package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
-import matteroverdrive.client.screen.DecomposerScreen;
-import matteroverdrive.client.screen.AndroidSpawnerScreen;
-import matteroverdrive.client.screen.AndroidStationScreen;
-import matteroverdrive.client.screen.NetworkRouterScreen;
-import matteroverdrive.client.screen.NetworkSwitchScreen;
-import matteroverdrive.client.screen.PylonScreen;
-import matteroverdrive.client.screen.ContractMarketScreen;
-import matteroverdrive.client.screen.ChargingStationScreen;
-import matteroverdrive.client.screen.EnergyPipeScreen;
-import matteroverdrive.client.screen.InscriberScreen;
-import matteroverdrive.client.screen.TransporterScreen;
-import matteroverdrive.client.screen.FusionReactorScreen;
-import matteroverdrive.client.screen.GravitationalStabilizerScreen;
-import matteroverdrive.client.screen.MatterAnalyzerScreen;
-import matteroverdrive.client.screen.MatterRecyclerScreen;
-import matteroverdrive.client.screen.MicrowaveScreen;
-import matteroverdrive.client.screen.SpacetimeAcceleratorScreen;
-import matteroverdrive.client.screen.ReplicatorScreen;
-import matteroverdrive.client.screen.SolarPanelScreen;
-import matteroverdrive.client.screen.TritaniumCrateScreen;
-import matteroverdrive.client.screen.PatternStorageScreen;
-import matteroverdrive.client.screen.PatternMonitorScreen;
-import matteroverdrive.client.screen.WeaponStationScreen;
+import matteroverdrive.client.screen.*;
 import matteroverdrive.item.MatterContainerItem;
 import matteroverdrive.item.PatternDriveItem;
 import matteroverdrive.registry.ModBlocks;
+import matteroverdrive.registry.ModExtraBlockEntities;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -70,33 +50,21 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.TRITANIUM_CRATE.get(), TritaniumCrateScreen::new);
             MenuScreens.register(ModMenus.WEAPON_STATION.get(), WeaponStationScreen::new);
 
+            BlockEntityRenderers.register(ModExtraBlockEntities.HOLOGRAPHIC_STATUS_PANEL.get(), HolographicStatusPanelRenderer::new);
+
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("industrial_glass").get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("bounding_box").get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("matter_plasma").get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("molten_tritanium").get(), RenderType.translucent());
 
-            ItemProperties.register(
-                    ModItems.get("matter_container").get(),
-                    new ResourceLocation(MatterOverdrive.MOD_ID, "matter_fill"),
-                    (stack, level, entity, seed) -> MatterContainerItem.getFillFraction(stack)
-            );
-
-            ItemProperties.register(
-                    ModItems.get("pattern_drive").get(),
-                    new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
-                    (stack, level, entity, seed) -> patternFill(stack)
-            );
-            ItemProperties.register(
-                    ModItems.get("creative_pattern_drive").get(),
-                    new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
-                    (stack, level, entity, seed) -> patternFill(stack)
-            );
-            ItemProperties.register(
-                    ModItems.get("matter_scanner").get(),
-                    new ResourceLocation(MatterOverdrive.MOD_ID, "scanner_linked"),
-                    (stack, level, entity, seed) -> stack.hasTag()
-                            && stack.getTag().getBoolean("ScannerLinked") ? 1.0F : 0.0F
-            );
+            ItemProperties.register(ModItems.get("matter_container").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "matter_fill"),
+                    (stack, level, entity, seed) -> MatterContainerItem.getFillFraction(stack));
+            ItemProperties.register(ModItems.get("pattern_drive").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
+                    (stack, level, entity, seed) -> patternFill(stack));
+            ItemProperties.register(ModItems.get("creative_pattern_drive").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
+                    (stack, level, entity, seed) -> patternFill(stack));
+            ItemProperties.register(ModItems.get("matter_scanner").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "scanner_linked"),
+                    (stack, level, entity, seed) -> stack.hasTag() && stack.getTag().getBoolean("ScannerLinked") ? 1.0F : 0.0F);
         });
     }
 
