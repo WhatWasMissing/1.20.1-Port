@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["CCC","CIC","CCC"],
+  "key":{"C":{"item":"matteroverdrive:matter_storage_cell_64k"},"I":{"item":"matteroverdrive:isolinear_circuit_mk2"}},
+  "result":{"item":"matteroverdrive:matter_storage_cell_256k"}
+}
