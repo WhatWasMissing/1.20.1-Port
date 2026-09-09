@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -130,7 +129,7 @@ public class VexMythoclastItem extends Item {
         }
         spawnBeam(level, start, impact, linear);
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                ModDestinySounds.get(linear ? "destiny_sleepersimulant_fire" : "destiny_surosregime"),
+                ModDestinySounds.get(linear ? "destiny_vex_mythoclast_linear_fire" : "destiny_vex_mythoclast_fire"),
                 SoundSource.PLAYERS, linear ? 1.35F : 0.95F, linear ? 0.84F : 1.08F);
         if (linear && getCharges(stack) <= 0) setLinearMode(stack, false);
         return true;
