@@ -7,7 +7,7 @@ navigation:
 ---
 # Power and Machines
 
-Matter Overdrive machines use **Forge Energy (FE)**. Early machines can be run from modest generation, while Matter processing, weapons and the Fusion Reactor ecosystem push you toward larger storage and distribution systems.
+Matter Overdrive machines use **Forge Energy (FE)**. Early machines can be run from modest generation, while Matter processing, weapons, Android infrastructure and the Fusion Reactor ecosystem push you toward larger storage and distribution systems.
 
 ## Starting power
 
@@ -23,51 +23,74 @@ Generation follows daylight rather than producing full power at all times. If a 
 
 Heavy Energy Cable is the normal FE transport line. Each cable currently buffers **8,192 FE** and can move up to **1,024 FE/t per side**.
 
-For diagnosis, inspect a network from the source outward. If the first cable charges but the next one does not, that is a transport problem. If every cable is charged but the machine remains empty, check the machine's accepted side/capability and whether its storage is already full.
+The tech-overhaul branch adds per-side FE policy to supported machines. A valid cable path is not sufficient if the receiving face is configured as OUTPUT or DISABLED. Use the **Network Diagnostic Probe** in Energy mode to inspect/cycle the exact face.
+
+## Grid Capacitor
+
+The **Grid Capacitor** is the high-throughput buffer for larger installations. It stores **16,000,000 FE** and moves up to **32,768 FE/t**. Put it between a large generator/reactor feed and bursty consumers to absorb load spikes rather than forcing every downstream machine to rely on the tiny buffer of an individual cable.
+
+Comparator output reports capacitor fill level.
 
 ## Charging Station
 
-The **Charging Station** is the intended bridge between stationary FE generation and compatible portable Matter Overdrive energy storage. Use it for batteries and supported powered items rather than relying on unrelated modded weapons/items as generic batteries.
+The **Charging Station** remains the local bridge between stationary FE generation and compatible portable Matter Overdrive energy storage.
 
-Android energy and weapon energy are gameplay resources in their own right, so keeping a charged portable reserve is useful even after you have a large base power system.
+For Android bases, the tech-overhaul branch adds an **Android Induction Relay**. It stores **2,000,000 FE**, accepts up to **16,384 FE/t**, wirelessly supplies up to **8,192 FE/t**, and supports **32 / 64 / 96 block** same-dimension charging ranges. It does not create FE and does not charge across dimensions.
+
+## Quantum Power Relay
+
+A pair/group of **Quantum Power Relays** can move FE wirelessly between loaded same-dimension locations. Relays use channels **0-15**, have a **256 block** wireless range, store **1,000,000 FE**, and transfer up to **16,384 FE/t**.
+
+Only loaded peers participate. Relays do not force-load destinations. The implementation keeps a registry of loaded relays rather than scanning the entire 256-block world volume every tick.
 
 ## Machine upgrades
 
-Matter Overdrive machines support upgrade types such as Speed, Power, Fail-Safe, Range, Power Storage, Hyper Speed and Matter Storage where the specific machine allows them.
+Matter Overdrive machines support Speed, Power, Fail-Safe, Range, Power Storage, Hyper Speed and Matter Storage where appropriate. The tech-overhaul branch also adds **Parallel Processing** for the Decomposer and Replicator.
 
-Do not assume that a speed upgrade is free throughput. Faster processing generally means the machine can demand FE and/or Matter more quickly. If a machine becomes inconsistent after upgrading it, compare its resource supply rate against the new processing rate.
+Do not assume that upgrades are free throughput. Faster or parallel processing can raise instantaneous FE/Matter demand. If a machine becomes inconsistent after upgrading it, compare its supply rate against the new workload.
 
-**Power Storage** upgrades increase how much energy supported machines can buffer. **Matter Storage** upgrades perform the equivalent role for Matter-capable machines. **Range** affects machines that have a meaningful spatial operating radius.
+**Power Storage** increases supported machine buffers. **Matter Storage** performs the equivalent role for Matter-capable machines. **Range** affects machines with a real spatial operating radius. **Parallel Processing** adds additional simultaneous work lanes rather than simply shortening one progress bar.
+
+## Per-side configuration
+
+Supported machines persist six independent face policies for FE, Matter and Items. Each face can be **INPUT**, **OUTPUT**, **BOTH** or **DISABLED** for the relevant capability.
+
+This is functional backend state, not just GUI metadata. Energy Cable, Matter Pipe and item automation should obey the configured face they actually touch.
 
 ## Common machine chain
 
-A practical early Matter-processing layout is:
+A practical Matter-processing layout is:
 
 1. Solar Panel or another FE source.
-2. Heavy Energy Cable distribution.
-3. Charging Station for portable reserves.
-4. Matter Recycler/Decomposer for Matter production.
-5. Matter Analyzer for patterns.
-6. Pattern Storage/Monitor when you want networked pattern handling.
-7. Replicator for manufacturing.
+2. Grid Capacitor when the installation needs burst capacity.
+3. Heavy Energy Cable distribution.
+4. Charging Station / Android Induction Relay for portable or Android charging.
+5. Matter Recycler/Decomposer for Matter production.
+6. Matter Analyzer for patterns.
+7. Pattern Storage/Monitor for networked pattern handling.
+8. Replicator for manufacturing.
+9. Quantum Power Relay for remote loaded facilities when cabling is impractical.
 
-The machines do not all share one universal resource pipe. FE uses energy cable, Matter uses Matter Transport Pipe, and logical replication tasks use Matter Network Cable.
+FE uses energy infrastructure, Matter uses Matter Transport Pipe, and logical replication tasks use Matter Network Cable.
 
 ## Solar and reactor power are different scales
 
-Solar Panels are appropriate for low-throughput early setups. The **Fusion Reactor** is a late-game source with a much larger internal storage/output model and a multiblock/anomaly requirement. It should not be necessary just to operate one basic machine.
+Solar Panels are appropriate for low-throughput early setups. The **Fusion Reactor** is a late-game source with a much larger internal storage/output model and a multiblock/anomaly requirement.
 
-The reactor ring can distribute FE internally to supported ring components. External machines should be fed through **Reactor IO** and ordinary energy transport. See [Fusion Reactor](reactor.md) for assembly and telemetry.
+The reactor ring can distribute FE internally to supported ring components. External machines should be fed through **Reactor IO** and ordinary energy transport. A Grid Capacitor is useful immediately outside the reactor when downstream loads are highly variable.
 
 ## Debugging power problems
 
 If a machine is not running, check these in order:
 
 1. Does its GUI report stored FE?
-2. Does the machine have the other resource it needs, such as Matter or an input item?
-3. Is the recipe/pattern valid?
-4. Does the adjacent cable contain FE?
-5. Does the previous cable/source contain FE?
-6. Did an upgrade raise demand above supply?
+2. Is the touched FE face configured to accept input?
+3. Does the machine have the other resource it needs, such as Matter or an input item?
+4. Is the recipe/pattern valid?
+5. Does the adjacent cable/capacitor/relay contain FE?
+6. Does the previous source contain FE?
+7. Did speed or parallel upgrades raise demand above supply?
 
-A machine with a full FE bar that still does nothing usually has a recipe, matter, pattern, output-space or state problem rather than a power-generation problem.
+A machine with a full FE bar that still does nothing usually has a recipe, matter, pattern, output-space or state problem rather than a generation problem.
+
+For the experimental Grid Capacitor, wireless relays, Matter Matrix and facility monitoring stack, see [Advanced Infrastructure](advanced_infrastructure.md).
