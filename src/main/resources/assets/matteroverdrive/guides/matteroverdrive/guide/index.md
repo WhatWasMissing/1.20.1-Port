@@ -8,7 +8,9 @@ item_ids:
 ---
 # Matter Overdrive 0.6
 
-Welcome to the Matter Overdrive field manual for the current **0.6 `main` release line**, maintained by MVQ1303. This GuideME edition is the primary player-facing **how-to guide** when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
+Welcome to the Matter Overdrive field manual for the current **0.6 development line**, maintained by MVQ1303. This GuideME edition is the primary player-facing **how-to guide** when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
+
+The `testing/tech-overhaul` branch contains experimental late-game infrastructure that is intentionally isolated from `main` until it passes local build and runtime testing. Those systems are documented under [Advanced Infrastructure](advanced_infrastructure.md).
 
 The system pages below are maintained alongside the repository feature/testing references. For a compact implementation/parity overview, see [Current Features](current_features.md). Implemented features may still require runtime verification in the 0.6 testing pass.
 
@@ -36,9 +38,9 @@ The scientist/research campaign is an optional guided progression path rather th
 - [Fusion Reactor](reactor.md)
 - [Weapons](weapons.md)
 - [Matter Network](network.md)
+- [Advanced Infrastructure](advanced_infrastructure.md)
 - [Applied Energistics 2](ae2.md)
 - [World Structures](structures.md)
 - [Quests and Contracts](quests.md)
-- [Star Map](starmap.md)
 - [Dimensional Pylon](pylon.md)
 - [Transporter and Security](transporter_security.md)
