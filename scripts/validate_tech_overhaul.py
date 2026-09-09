@@ -139,6 +139,8 @@ if relay.is_file():
     text = relay.read_text(encoding="utf-8")
     if "Set<BlockPos> links" not in text or "addLink" not in text or "MAX_LINKS" not in text: errors.append("Quantum Power Relay is not using explicit persisted links")
     if "LOADED_RELAYS" in text or "channel" in text.lower(): errors.append("Quantum Power Relay still contains automatic channel-pool linking")
+    if "difference <= 1" not in text or "difference / 2" not in text: errors.append("Quantum Power Relay no longer guards bidirectional links against FE ping-pong")
+    if "peer.removeLink(worldPosition)" not in text: errors.append("Clearing a Quantum Power Relay no longer cleans loaded reciprocal links")
 
 if matter_network.is_file():
     text = matter_network.read_text(encoding="utf-8")
@@ -168,6 +170,8 @@ print(f"  experimental blocks: {len(BLOCKS)}")
 print(f"  experimental standalone items/upgrades: {len(ITEMS)}")
 print(f"  new survival craftables with verified recipes: {len(list(dict.fromkeys(NEW_CRAFTABLES)))}")
 print("  explicit quantum relay links: present")
+print("  quantum relay anti-ping-pong balancing: present")
+print("  reciprocal relay unlink cleanup: present")
 print("  heavy cable <-> hybrid FE junction: present")
 print("  matter pipe <-> hybrid Matter junction: present")
 print("  hybrid FE+Matter conduit routing: present")
