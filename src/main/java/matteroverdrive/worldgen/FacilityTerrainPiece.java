@@ -86,12 +86,14 @@ public final class FacilityTerrainPiece extends StructurePiece {
                 if (layout != 0) add(builder, facility, Kind.SALVAGE_FOUNDATION, c.offset(34, 0, -18));
             }
             case ANDROID_COMMAND_BUNKER -> {
-                add(builder, facility, Kind.BUNKER_APPROACH_SUPPORT, c.offset(0, 9, -33));
+                // Keep the support pad north of the three-step approach so it cannot overwrite the top stair.
+                add(builder, facility, Kind.BUNKER_APPROACH_SUPPORT, c.offset(0, 9, -36));
                 if (layout == 1) add(builder, facility, Kind.BUNKER_ANDROID_LINK_Z, c.offset(-18, 0, 9));
                 else if (layout == 2) add(builder, facility, Kind.BUNKER_ANDROID_LINK_Z, c.offset(18, 0, 9));
             }
             case FUSION_RESEARCH_COMPLEX -> {
-                add(builder, facility, Kind.FUSION_APPROACH_SUPPORT, c.offset(0, 2, -31));
+                // The infrastructure stair ends near z=-31; keep this terrain pad one cell beyond its footprint.
+                add(builder, facility, Kind.FUSION_APPROACH_SUPPORT, c.offset(0, 2, -34));
                 if (layout != 0) add(builder, facility, Kind.SALVAGE_FOUNDATION, c.offset(34, 0, -18));
             }
             case BLACK_SITE -> add(builder, facility, Kind.BLACK_HATCH_CROWN, c.offset(0, 16, -27));
