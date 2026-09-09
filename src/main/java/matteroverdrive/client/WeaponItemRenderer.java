@@ -2,6 +2,8 @@ package matteroverdrive.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import matteroverdrive.item.weapon.EnergyWeaponItem;
+import matteroverdrive.item.weapon.NativeDestinyWeaponItem;
+import matteroverdrive.item.weapon.VexMythoclastItem;
 import matteroverdrive.item.weapon.WeaponModuleItem;
 import matteroverdrive.item.weapon.WeaponSystem;
 import net.minecraft.client.Minecraft;
@@ -13,14 +15,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /**
- * Item and view-model renderer for Matter Overdrive energy weapons.
+ * Item and view-model renderer for Matter Overdrive firearms.
  *
- * Renderer 2.0 deliberately exposes a dedicated first-person entry point. The regular
- * BEWLR path remains useful for contexts that ask for a custom item renderer, while the
- * first-person event can render the weapon in a neutral FIXED context after applying the
- * recovered Matter Overdrive camera-space transform itself.
+ * Renderer 2.0 owns the first-person transform. Native Destiny weapons deliberately
+ * bypass the generic baked-energy-weapon path and render their supplied skeletal model.
  */
 public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
+    private static NativeDestinyWeaponRenderer nativeDestinyRenderer;
+
     public WeaponItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
                 Minecraft.getInstance().getEntityModels());
@@ -30,20 +32,45 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
     public void renderByItem(ItemStack weapon, ItemDisplayContext displayContext,
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
-        if (!(weapon.getItem() instanceof EnergyWeaponItem)) return;
-        renderWeaponAndOptic(weapon, displayContext, poseStack, buffer, packedLight, packedOverlay);
+        if (weapon.getItem() instanceof NativeDestinyWeaponItem) {
+            nativeDestinyRenderer().renderByItem(weapon, displayContext, poseStack, buffer,
+                    packedLight, packedOverlay);
+            return;
+        }
+        if (weapon.getItem() instanceof EnergyWeaponItem) {
+            renderWeaponAndOptic(weapon, displayContext, poseStack, buffer, packedLight, packedOverlay);
+        }
     }
 
-    /**
-     * Renders the complete first-person weapon assembly after WeaponClientEffects has
-     * positioned the view model. FIXED is intentional: first-person transforms are owned
-     * by Renderer 2.0, not by vanilla use/bow transforms or the baked-model display entry.
-     */
+    /** Renders any firearm owned by Renderer 2.0 after the camera-space pose is applied. */
     public void renderFirstPerson(ItemStack weapon, PoseStack poseStack,
                                   MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        if (!(weapon.getItem() instanceof EnergyWeaponItem)) return;
-        renderWeaponAndOptic(weapon, ItemDisplayContext.FIXED,
-                poseStack, buffer, packedLight, packedOverlay);
+        if (weapon.getItem() instanceof NativeDestinyWeaponItem) {
+            nativeDestinyRenderer().renderNative(weapon, poseStack, buffer, packedLight, packedOverlay);
+            return;
+        }
+        if (weapon.getItem() instanceof VexMythoclastItem) {
+            renderBakedOnly(weapon, poseStack, buffer, packedLight, packedOverlay);
+            return;
+        }
+        if (weapon.getItem() instanceof EnergyWeaponItem) {
+            renderWeaponAndOptic(weapon, ItemDisplayContext.FIXED,
+                    poseStack, buffer, packedLight, packedOverlay);
+        }
+    }
+
+    private static NativeDestinyWeaponRenderer nativeDestinyRenderer() {
+        if (nativeDestinyRenderer == null) nativeDestinyRenderer = new NativeDestinyWeaponRenderer();
+        return nativeDestinyRenderer;
+    }
+
+    private static void renderBakedOnly(ItemStack weapon, PoseStack poseStack,
+                                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        Minecraft minecraft = Minecraft.getInstance();
+        var itemRenderer = minecraft.getItemRenderer();
+        BakedModel model = itemRenderer.getModel(weapon, minecraft.level, null, 0);
+        itemRenderer.render(weapon, ItemDisplayContext.FIXED, false, poseStack, buffer,
+                packedLight, packedOverlay, model);
     }
 
     private static void renderWeaponAndOptic(ItemStack weapon, ItemDisplayContext displayContext,
@@ -59,8 +86,6 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         itemRenderer.render(weapon, displayContext, leftHand, poseStack, buffer,
                 packedLight, packedOverlay, weaponModel);
 
-        // The recovered renderer mounted only visual optics. Barrels, colours and utility
-        // modules affect gameplay but are not represented as floating inventory icons.
         ItemStack module = WeaponSystem.getModule(weapon, WeaponSystem.SIGHTS_SLOT);
         if (module.getItem() instanceof WeaponModuleItem moduleItem
                 && (moduleItem.getEffect() == WeaponModuleItem.Effect.HOLO_SIGHTS
