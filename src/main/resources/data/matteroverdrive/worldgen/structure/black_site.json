@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:black_site",
+  "biomes": "#minecraft:is_overworld",
+  "step": "underground_structures",
+  "spawn_overrides": {}
+}
