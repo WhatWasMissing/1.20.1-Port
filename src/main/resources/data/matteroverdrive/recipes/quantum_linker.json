@@ -1,0 +1,11 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["IFI","FQF","ITI"],
+  "key":{
+    "I":{"item":"matteroverdrive:isolinear_circuit_mk3"},
+    "F":{"item":"matteroverdrive:network_flash_drive"},
+    "Q":{"item":"matteroverdrive:quantum_fold_manipulator"},
+    "T":{"item":"matteroverdrive:tritanium_ingot"}
+  },
+  "result":{"item":"matteroverdrive:quantum_linker"}
+}
