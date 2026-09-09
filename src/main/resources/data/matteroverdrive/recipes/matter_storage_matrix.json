@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["CMC","PBP","CMC"],
+  "key":{"C":{"item":"matteroverdrive:isolinear_circuit_mk3"},"M":{"item":"matteroverdrive:matter_container"},"P":{"item":"matteroverdrive:tritanium_plate"},"B":{"item":"matteroverdrive:machine_casing"}},
+  "result":{"item":"matteroverdrive:matter_storage_matrix"}
+}
