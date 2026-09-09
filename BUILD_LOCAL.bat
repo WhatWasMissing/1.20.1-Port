@@ -8,26 +8,39 @@ echo Matter Overdrive guarded local build
 echo ============================================================
 echo.
 
+set PYTHON_CMD=
 where py >nul 2>nul
 if %errorlevel%==0 (
-    py -3 scripts\validate_model_bounds.py
+    set PYTHON_CMD=py -3
 ) else (
     where python >nul 2>nul
     if not %errorlevel%==0 (
-        echo ERROR: Python 3 was not found. Install Python 3 or run the validator manually before building.
+        echo ERROR: Python 3 was not found. Install Python 3 or run the validators manually before building.
         exit /b 2
     )
-    python scripts\validate_model_bounds.py
+    set PYTHON_CMD=python
 )
 
+%PYTHON_CMD% scripts\validate_model_bounds.py
 if not %errorlevel%==0 (
     echo.
     echo Build stopped because a block model failed validation.
     exit /b 1
 )
 
+if exist "scripts\validate_tech_overhaul.py" (
+    echo.
+    echo Running tech-overhaul packaging validation...
+    %PYTHON_CMD% scripts\validate_tech_overhaul.py
+    if not %errorlevel%==0 (
+        echo.
+        echo Build stopped because the tech-overhaul packaging gate failed.
+        exit /b 1
+    )
+)
+
 echo.
-echo Model validation passed. Starting clean Gradle build...
+echo Static validation passed. Starting clean Gradle build...
 call gradlew.bat clean build --stacktrace
 set BUILD_RESULT=%errorlevel%
 
