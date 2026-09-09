@@ -1,0 +1,9 @@
+{
+  "structures": [{"structure": "matteroverdrive:black_site", "weight": 1}],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 24587337,
+    "spacing": 256,
+    "separation": 96
+  }
+}
