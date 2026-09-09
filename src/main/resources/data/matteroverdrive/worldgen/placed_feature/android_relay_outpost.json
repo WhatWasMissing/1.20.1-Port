@@ -1,0 +1,8 @@
+{
+  "feature": "matteroverdrive:android_relay_outpost",
+  "placement": [
+    {"type": "minecraft:rarity_filter", "chance": 260},
+    {"type": "minecraft:in_square"},
+    {"type": "minecraft:biome"}
+  ]
+}
