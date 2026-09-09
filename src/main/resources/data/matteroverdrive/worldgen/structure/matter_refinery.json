@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:matter_refinery",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
