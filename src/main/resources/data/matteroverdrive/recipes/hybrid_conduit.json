@@ -1,0 +1,11 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["EME","TCT","EME"],
+  "key":{
+    "E":{"item":"matteroverdrive:heavy_matter_pipe"},
+    "M":{"item":"matteroverdrive:matter_pipe"},
+    "T":{"item":"matteroverdrive:tritanium_ingot"},
+    "C":{"item":"matteroverdrive:isolinear_circuit_mk2"}
+  },
+  "result":{"item":"matteroverdrive:hybrid_conduit","count":8}
+}
