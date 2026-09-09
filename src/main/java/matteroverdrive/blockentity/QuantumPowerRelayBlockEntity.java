@@ -62,6 +62,11 @@ public class QuantumPowerRelayBlockEntity extends BlockEntity {
         }
     }
 
+    /**
+     * Balance linked relays instead of blindly filling every peer. A bidirectional link is
+     * intentionally symmetric, so transferring only from the fuller relay to the emptier
+     * relay prevents the two server ticks from immediately shuttling the same FE back again.
+     */
     private int transferToLinkedPeers() {
         if (level == null || energy.getEnergyStored() <= 0 || links.isEmpty()) return 0;
         double rangeSq = (double) RANGE * RANGE;
@@ -79,7 +84,11 @@ public class QuantumPowerRelayBlockEntity extends BlockEntity {
         int total = 0;
         for (int i = 0; i < peers.size() && budget > 0; i++) {
             QuantumPowerRelayBlockEntity peer = peers.get((start + i) % peers.size());
-            int accepted = peer.energy.receiveEnergy(budget, true);
+            int difference = energy.getEnergyStored() - peer.energy.getEnergyStored();
+            if (difference <= 1) continue;
+            int balanceAmount = Math.max(1, difference / 2);
+            int offer = Math.min(budget, balanceAmount);
+            int accepted = peer.energy.receiveEnergy(offer, true);
             if (accepted <= 0) continue;
             int extracted = energy.extractEnergy(accepted, false);
             int received = peer.energy.receiveEnergy(extracted, false);
@@ -117,7 +126,18 @@ public class QuantumPowerRelayBlockEntity extends BlockEntity {
     public boolean removeLink(BlockPos target) { boolean changed = links.remove(target); if (changed) setChanged(); return changed; }
     public boolean isLinkedTo(BlockPos target) { return links.contains(target); }
     public int getLinkCount() { return links.size(); }
-    public void clearLinks() { if (!links.isEmpty()) { links.clear(); setChanged(); } }
+    public void clearLinks() {
+        if (links.isEmpty()) return;
+        if (level != null) {
+            for (BlockPos target : List.copyOf(links)) {
+                if (!level.hasChunkAt(target)) continue;
+                BlockEntity be = level.getBlockEntity(target);
+                if (be instanceof QuantumPowerRelayBlockEntity peer) peer.removeLink(worldPosition);
+            }
+        }
+        links.clear();
+        setChanged();
+    }
 
     public InteractionResult onUse(ServerPlayer player, InteractionHand hand) {
         player.sendSystemMessage(Component.literal("QUANTUM POWER RELAY  " + energy.getEnergyStored() + " / " + CAPACITY + " FE").withStyle(ChatFormatting.AQUA));
