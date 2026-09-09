@@ -15,13 +15,11 @@ import net.minecraftforge.fml.common.Mod;
  * - attack / left mouse = trigger
  * - use / right mouse = ADS only
  * - shift + right mouse = the weapon's existing reload/mode action
- *
- * Vanilla mining/melee is suppressed while a firearm owns the attack input. Only trigger
- * edges are sent; the server owns the actual use duration and weapon gameplay rules.
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class WeaponTriggerInput {
     private static boolean attackWasDown;
+    private static boolean aimWasDown;
     private static int heldTicks;
 
     private WeaponTriggerInput() {}
@@ -52,9 +50,8 @@ public final class WeaponTriggerInput {
         }
 
         if (event.isUseItem() && !minecraft.player.isShiftKeyDown()) {
-            // ADS is presentation-only. Cancelling vanilla use prevents RMB from also
-            // entering the historical fire/use loop. Shift-RMB is deliberately left
-            // alone for reload, Phaser power mode and Mythoclast mode switching.
+            // ADS is presentation-only. Cancelling vanilla use prevents RMB from entering
+            // the historical Item#use firing loop. Shift-RMB remains reload/mode control.
             event.setCanceled(true);
         }
     }
@@ -66,19 +63,23 @@ public final class WeaponTriggerInput {
         boolean firearm = minecraft.player != null && minecraft.level != null && minecraft.screen == null
                 && WeaponTriggerPacket.isFirearm(minecraft.player.getMainHandItem());
         boolean attackDown = firearm && minecraft.options.keyAttack.isDown();
+        boolean aimDown = firearm && minecraft.options.keyUse.isDown() && !minecraft.player.isShiftKeyDown();
 
-        if (attackDown && !attackWasDown) {
-            heldTicks = 0;
-            ModNetwork.weaponTrigger(true);
+        // Send either edge. In particular, ADS may be pressed/released while automatic
+        // fire is already held, and the server needs that change for spread calculations.
+        if (attackDown != attackWasDown || aimDown != aimWasDown) {
+            ModNetwork.weaponTrigger(attackDown, aimDown);
         }
-        if (attackDown) {
-            heldTicks++;
-        } else if (attackWasDown) {
-            ModNetwork.weaponTrigger(false);
-            heldTicks = 0;
-        } else if (!firearm) {
-            heldTicks = 0;
+
+        if (attackDown) heldTicks++;
+        else heldTicks = 0;
+
+        // Leaving a firearm while either state is active must release the server use item.
+        if (!firearm && (attackWasDown || aimWasDown)) {
+            ModNetwork.weaponTrigger(false, false);
         }
+
         attackWasDown = attackDown;
+        aimWasDown = aimDown;
     }
 }
