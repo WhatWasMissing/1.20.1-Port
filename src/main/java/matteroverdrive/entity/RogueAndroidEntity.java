@@ -44,6 +44,7 @@ public class RogueAndroidEntity extends Zombie {
 
     private int androidLevel;
     private boolean legendary;
+    private String facilitySecurityProfile = "";
     @Nullable private BlockPos spawnerPosition;
     private final List<BlockPos> patrolPoints = new ArrayList<>();
     private int patrolIndex;
@@ -70,7 +71,9 @@ public class RogueAndroidEntity extends Zombie {
                 .add(Attributes.MAX_HEALTH, 32.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.30D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
-                .add(Attributes.ATTACK_DAMAGE, 4.0D);
+                .add(Attributes.ATTACK_DAMAGE, 4.0D)
+                .add(Attributes.ARMOR, 0.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.0D);
     }
 
     @Nullable
@@ -89,6 +92,21 @@ public class RogueAndroidEntity extends Zombie {
         updateLegacyName();
         setBaby(false);
         return data;
+    }
+
+    /** Applies a persisted facility role after normal Android level generation. */
+    public void applyFacilitySecurityProfile(String profile, int deploymentIndex) {
+        facilitySecurityProfile = profile == null ? "" : profile;
+        int minimumLevel = switch (facilitySecurityProfile) {
+            case "quantum_relay_station", "android_command_bunker" -> 1;
+            case "fusion_research_complex", "black_site" -> 2;
+            default -> 0;
+        };
+        if (facilitySecurityProfile.equals("black_site") && deploymentIndex >= 3) minimumLevel = 3;
+        androidLevel = Math.max(androidLevel, minimumLevel);
+        applyLegacyStats(false);
+        applyFacilityStats(true);
+        updateLegacyName();
     }
 
     @Override
@@ -114,13 +132,70 @@ public class RogueAndroidEntity extends Zombie {
         double attack = legendary ? 8.0D : 4.0D + androidLevel;
         if (getAttribute(Attributes.MAX_HEALTH) != null) getAttribute(Attributes.MAX_HEALTH).setBaseValue(maxHealth);
         if (getAttribute(Attributes.ATTACK_DAMAGE) != null) getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(attack);
+        if (getAttribute(Attributes.MOVEMENT_SPEED) != null) getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.30D);
+        if (getAttribute(Attributes.FOLLOW_RANGE) != null) getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(24.0D);
+        if (getAttribute(Attributes.ARMOR) != null) getAttribute(Attributes.ARMOR).setBaseValue(0.0D);
+        if (getAttribute(Attributes.KNOCKBACK_RESISTANCE) != null) getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(0.0D);
         if (refillHealth) setHealth((float) maxHealth);
         else if (getHealth() > maxHealth) setHealth((float) maxHealth);
     }
 
+    private void applyFacilityStats(boolean refillHealth) {
+        if (facilitySecurityProfile.isEmpty()) return;
+        double health = getAttributeValue(Attributes.MAX_HEALTH);
+        double attack = getAttributeValue(Attributes.ATTACK_DAMAGE);
+        double speed = 0.30D;
+        double follow = 24.0D;
+        double armor = 0.0D;
+        double knockback = 0.0D;
+        switch (facilitySecurityProfile) {
+            case "synthetic_manufacturing_plant" -> {
+                speed = 0.33D;
+                follow = 28.0D;
+            }
+            case "matter_refinery" -> {
+                health *= 0.78D;
+                attack += 2.0D;
+                speed = 0.34D;
+            }
+            case "quantum_relay_station" -> {
+                follow = 36.0D;
+                speed = 0.31D;
+                armor = 2.0D;
+            }
+            case "android_command_bunker" -> {
+                health *= 1.25D;
+                attack += 1.5D;
+                armor = 6.0D;
+                follow = 32.0D;
+            }
+            case "fusion_research_complex" -> {
+                health *= 1.35D;
+                armor = 4.0D;
+                knockback = 0.35D;
+            }
+            case "black_site" -> {
+                health *= 1.55D;
+                attack += 2.5D;
+                armor = 8.0D;
+                knockback = 0.45D;
+                follow = 36.0D;
+            }
+            default -> { }
+        }
+        if (getAttribute(Attributes.MAX_HEALTH) != null) getAttribute(Attributes.MAX_HEALTH).setBaseValue(health);
+        if (getAttribute(Attributes.ATTACK_DAMAGE) != null) getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(attack);
+        if (getAttribute(Attributes.MOVEMENT_SPEED) != null) getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed);
+        if (getAttribute(Attributes.FOLLOW_RANGE) != null) getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(follow);
+        if (getAttribute(Attributes.ARMOR) != null) getAttribute(Attributes.ARMOR).setBaseValue(armor);
+        if (getAttribute(Attributes.KNOCKBACK_RESISTANCE) != null) getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(knockback);
+        if (refillHealth) setHealth((float) health);
+        else if (getHealth() > health) setHealth((float) health);
+    }
+
     private void updateLegacyName() {
         ChatFormatting color = squadColorFormatting();
-        if (spawnerPosition == null) {
+        if (spawnerPosition == null && facilitySecurityProfile.isEmpty()) {
             color = legendary ? ChatFormatting.GOLD : switch (androidLevel) {
                 case 1 -> ChatFormatting.DARK_AQUA;
                 case 2, 3 -> ChatFormatting.DARK_PURPLE;
@@ -128,8 +203,17 @@ public class RogueAndroidEntity extends Zombie {
             };
         }
         String prefix = legendary ? "Legendary " : "";
+        String role = switch (facilitySecurityProfile) {
+            case "synthetic_manufacturing_plant" -> "Assembly Defender";
+            case "matter_refinery" -> "Malfunctioning Refinery Android";
+            case "quantum_relay_station" -> "Relay Sentry";
+            case "android_command_bunker" -> "Command Guard";
+            case "fusion_research_complex" -> "Containment Sentry";
+            case "black_site" -> "Black Site Warden";
+            default -> "Rogue Android";
+        };
         setCustomName(net.minecraft.network.chat.Component.literal(
-                prefix + "Rogue Android [Lv " + androidLevel + "]").withStyle(color));
+                prefix + role + " [Lv " + androidLevel + "]").withStyle(color));
         setCustomNameVisible(false);
     }
 
@@ -148,6 +232,7 @@ public class RogueAndroidEntity extends Zombie {
 
     public int getAndroidLevel() { return androidLevel; }
     public boolean isLegendaryAndroid() { return legendary; }
+    public String getFacilitySecurityProfile() { return facilitySecurityProfile; }
 
     public void setSpawnerPosition(@Nullable BlockPos position) {
         spawnerPosition = position == null ? null : position.immutable();
@@ -226,6 +311,7 @@ public class RogueAndroidEntity extends Zombie {
         super.addAdditionalSaveData(tag);
         tag.putInt("AndroidLevel", androidLevel);
         tag.putBoolean("Legendary", legendary);
+        tag.putString("FacilitySecurityProfile", facilitySecurityProfile);
         if (spawnerPosition != null) tag.putLong("SpawnerPosition", spawnerPosition.asLong());
         tag.putLongArray("PatrolPoints", patrolPoints.stream().mapToLong(BlockPos::asLong).toArray());
         tag.putInt("PatrolIndex", patrolIndex);
@@ -239,6 +325,7 @@ public class RogueAndroidEntity extends Zombie {
         super.readAdditionalSaveData(tag);
         androidLevel = Mth.clamp(tag.getInt("AndroidLevel"), 0, 3);
         legendary = tag.getBoolean("Legendary");
+        facilitySecurityProfile = tag.getString("FacilitySecurityProfile");
         spawnerPosition = tag.contains("SpawnerPosition") ? BlockPos.of(tag.getLong("SpawnerPosition")) : null;
         patrolPoints.clear();
         for (long packed : tag.getLongArray("PatrolPoints")) patrolPoints.add(BlockPos.of(packed));
@@ -247,6 +334,7 @@ public class RogueAndroidEntity extends Zombie {
         squadMode = tag.contains("SquadMode") ? Mth.clamp(tag.getInt("SquadMode"), MODE_PATROL, MODE_ESCORT) : MODE_PATROL;
         commanderUuid = tag.hasUUID("CommanderUUID") ? tag.getUUID("CommanderUUID") : null;
         applyLegacyStats(false);
+        applyFacilityStats(false);
         updateLegacyName();
     }
 

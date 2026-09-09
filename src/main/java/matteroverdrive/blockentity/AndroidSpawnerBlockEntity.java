@@ -6,6 +6,7 @@ import matteroverdrive.item.TransportFlashDriveItem;
 import matteroverdrive.menu.AndroidSpawnerMenu;
 import matteroverdrive.registry.ModBlockEntities;
 import matteroverdrive.registry.ModEntities;
+import matteroverdrive.world.FacilityRestorationSavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -67,6 +68,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> patrolDrives);
     private String facilityProfile = "";
     private int facilityRemaining;
+    private int facilityInitialReserve;
     private int facilityRangedChance;
 
     /** Finite emergency reserve, separate from player-built FE production. */
@@ -74,13 +76,32 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         if (!facilityProfile.isEmpty()) return;
         facilityProfile = profile;
         facilityRemaining = Math.max(0, Math.min(6, reserve));
+        facilityInitialReserve = facilityRemaining;
         facilityRangedChance = Math.max(0, Math.min(100, rangedChance));
-        squadMode = RogueAndroidEntity.MODE_GUARD;
-        squadColor = Math.floorMod(profile.hashCode(), 8);
+        squadColor = switch (profile) {
+            case "synthetic_manufacturing_plant" -> 2;
+            case "matter_refinery" -> 3;
+            case "quantum_relay_station" -> 6;
+            case "android_command_bunker" -> 1;
+            case "fusion_research_complex" -> 5;
+            case "black_site" -> 7;
+            default -> Math.floorMod(profile.hashCode(), 8);
+        };
+        squadMode = switch (profile) {
+            case "matter_refinery", "fusion_research_complex" -> RogueAndroidEntity.MODE_HOLD;
+            default -> RogueAndroidEntity.MODE_GUARD;
+        };
         setChanged();
     }
 
     private void tickFacility(ServerLevel server) {
+        if (FacilityRestorationSavedData.isFacilityRestored(server, worldPosition)) {
+            if (facilityRemaining != 0) {
+                facilityRemaining = 0;
+                setChanged();
+            }
+            return;
+        }
         long now = server.getGameTime();
         if (facilityRemaining <= 0 || server.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) return;
         if (now < lastSpawn) lastSpawn = now;
@@ -155,7 +176,8 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
             android.finalizeSpawn(level, level.getCurrentDifficultyAt(candidate), MobSpawnType.SPAWNER, null, null);
             if (!facilityProfile.isEmpty()) {
                 android.setPersistenceRequired();
-                android.setCustomName(Component.literal(facilityProfile.replace('_', ' ') + " security"));
+                android.applyFacilitySecurityProfile(facilityProfile,
+                        Math.max(0, facilityInitialReserve - facilityRemaining));
             }
             android.setSpawnerPosition(spawnerPos);
             android.setPatrolPoints(patrol);
@@ -262,6 +284,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         super.saveAdditional(tag);
         tag.putString("FacilityProfile", facilityProfile);
         tag.putInt("FacilityRemaining", facilityRemaining);
+        tag.putInt("FacilityInitialReserve", facilityInitialReserve);
         tag.putInt("FacilityRangedChance", facilityRangedChance);
         tag.putInt("Energy", energy.getEnergyStored());
         tag.putLong("LastSpawn", lastSpawn);
@@ -278,6 +301,9 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
         super.load(tag);
         facilityProfile = tag.getString("FacilityProfile");
         facilityRemaining = Math.max(0, Math.min(6, tag.getInt("FacilityRemaining")));
+        facilityInitialReserve = tag.contains("FacilityInitialReserve")
+                ? Math.max(facilityRemaining, Math.min(6, tag.getInt("FacilityInitialReserve")))
+                : facilityRemaining;
         facilityRangedChance = Math.max(0, Math.min(100, tag.getInt("FacilityRangedChance")));
         energy.setEnergyStored(tag.getInt("Energy"));
         lastSpawn = tag.getLong("LastSpawn");
@@ -300,4 +326,3 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
     @Override public Component getDisplayName() { return facilityProfile.isEmpty() ? Component.translatable("block.matteroverdrive.android_spawner") : Component.literal("Security reserve: " + facilityRemaining); }
     @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new AndroidSpawnerMenu(id, inventory, this); }
 }
-
