@@ -9,7 +9,7 @@ navigation:
 
 Matter Overdrive uses several different connection types. They look related, but they move different resources. Keeping that distinction clear makes most network problems much easier to diagnose.
 
-## The three transport layers
+## Transport layers
 
 ### Heavy Energy Cable
 
@@ -25,9 +25,15 @@ Matter Transport Pipe moves **Matter Plasma**, not items or FE. Connect it to ma
 
 The tech-overhaul branch adds six-face Matter policies. INPUT, OUTPUT, BOTH and DISABLED are enforced by real Matter routing. If a pipe appears correctly connected but no Matter moves, inspect the exact machine face touched by the pipe.
 
+### Hybrid Conduit
+
+The **Hybrid Conduit** is a higher-tier physical cable that carries **FE and Matter Plasma through the same run**. It participates in the Heavy Energy Cable FE graph while also being recognised as a Matter Transport Pipe by Matter routing.
+
+This means one Hybrid Conduit line can feed a machine both of its ordinary infrastructure resources. It can join an existing Heavy Energy Cable run for FE and an existing Matter Pipe run for Matter. It does not carry Pattern Monitor/Router/Switch jobs; logical task routing still uses Matter Network Cable.
+
 ### Matter Network Cable
 
-The **Network Pipe / Matter Network Cable** belongs to the task/item routing layer. Routers, Switches, Pattern Monitor, Pattern Storage and Replicator use this layer to discover destinations and move replication work. It is not a replacement for FE cable or Matter Transport Pipe.
+The **Network Pipe / Matter Network Cable** belongs to the task/item routing layer. Routers, Switches, Pattern Monitor, Pattern Storage and Replicator use this layer to discover destinations and move replication work. It is not a replacement for FE cable, Matter Pipe or Hybrid Conduit.
 
 ## Channels
 
@@ -41,6 +47,14 @@ A Matter Network can contain multiple Routers. The tech-overhaul branch adds Rou
 
 This allows a primary/backup design instead of relying on placement order. Existing destination filtering, Network Flash Drive routing, speed upgrades, route history and FE-per-item accounting remain part of the router backend.
 
+## Quantum Power Relay links
+
+Quantum Power Relays no longer create a shared broadcast pool. Wireless energy only crosses **explicit player-created links**.
+
+Use a **Quantum Linker** on one relay and then on a second relay. This creates a bidirectional pair. A relay supports up to **8 links**, links are same-dimension, maximum link distance is **256 blocks**, and unloaded destinations are not force-loaded. Sneak-use the Linker on a relay to clear its links.
+
+An unlinked relay near a working pair should receive **zero** wireless FE from them.
+
 ## Facility Network Controller
 
 The **Facility Network Controller** is the central monitoring console for the logical Matter Network. Place it against Network Pipe, a Router, or another reachable section of the data network and use it to perform a live topology scan.
@@ -51,16 +65,9 @@ The controller follows logical network traversal. It does not magically scan eve
 
 ## Network Diagnostic Probe
 
-The **Network Diagnostic Probe** is the operator tool for the upgraded network backend. Cycle its modes to work with:
+The **Network Diagnostic Probe** is the operator tool for the upgraded network backend. Cycle its modes to work with Diagnostic summary, FE faces, Matter faces, Item faces, Network channels/priority and Range visualization.
 
-- Diagnostic summary;
-- FE faces;
-- Matter faces;
-- Item faces;
-- Network channels/priority;
-- Range visualization.
-
-Use it on a configured machine face to cycle **INPUT / OUTPUT / BOTH / DISABLED**. In Network mode it can alter Router/Switch/Quantum Relay channels and Router priority. Range mode is intended for machines with a real spatial operating volume, such as the Matter Excavator and Android Induction Relay.
+Use it on a configured machine face to cycle **INPUT / OUTPUT / BOTH / DISABLED**. In Network mode it alters Router/Switch configuration and Router priority. Quantum Relay pairing is deliberately handled by the dedicated Quantum Linker so wireless connections are explicit rather than accidental.
 
 The probe changes server-backed state. It is not a cosmetic overlay.
 
@@ -102,14 +109,14 @@ Matter Overdrive's task graph remains separate from AE2. Do not splice an ME cab
 
 ## Fast fault finding
 
-**Machine has no FE:** inspect the configured FE face, then follow Heavy Energy Cable back toward the source.
+**Machine has no FE:** inspect the configured FE face, then follow Heavy Energy Cable or Hybrid Conduit back toward the source.
 
-**Machine has FE but no Matter:** inspect the Matter face policy, Matter Pipe path and Matter capacity.
+**Machine has FE but no Matter:** inspect the Matter face policy and the Matter Pipe/Hybrid Conduit route.
+
+**Quantum relay has power but remote relay does not:** confirm the pair was created with the Quantum Linker, both chunks are loaded and distance is within 256 blocks.
 
 **Replicator has resources but no queued job:** inspect Pattern Storage, Pattern Monitor, Router/Switch channel and Switch state.
 
 **Controller reports zero nodes:** place it directly against a live Network Pipe/Router/Switch path and verify channel/isolation state.
-
-**A route works until a Switch/Router:** use the Diagnostic Probe and compare both nodes' channels.
 
 For the larger experimental infrastructure built on top of this network, continue to [Advanced Infrastructure](advanced_infrastructure.md).
