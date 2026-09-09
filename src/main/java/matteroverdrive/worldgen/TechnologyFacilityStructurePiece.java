@@ -18,7 +18,10 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Room-sized pieces used by {@link TechnologyFacilityStructure}. */
+/**
+ * Chunk-clipped modular rooms and exterior pieces for the modern Matter Overdrive facilities.
+ * Pieces deliberately stay independent: Minecraft may call postProcess once per intersecting chunk.
+ */
 public final class TechnologyFacilityStructurePiece extends StructurePiece {
     public enum Room {
         MANUFACTURING_CORE, FABRICATION_WING, ASSEMBLY_WING, SHIPPING_WING, PLANT_ENTRANCE,
@@ -26,7 +29,9 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
         QUANTUM_CORE, RELAY_WING, POWER_WING, CONTROL_WING, RELAY_ENTRANCE,
         BUNKER_COMMAND, DRONE_BAY, ANDROID_BAY, ARMORY, BUNKER_ENTRANCE,
         FUSION_CORE, STABILIZER_WING, REACTOR_CONTROL, SERVICE_WING, FUSION_ENTRANCE,
-        BLACK_CORE, BLACK_LAB, BLACK_CONTAINMENT, BLACK_VAULT, BLACK_SECURITY, BLACK_ENTRANCE
+        BLACK_CORE, BLACK_LAB, BLACK_CONTAINMENT, BLACK_VAULT, BLACK_SECURITY, BLACK_ENTRANCE,
+        CORRIDOR_X, CORRIDOR_Z, SERVICE_GANTRY_X, SERVICE_GANTRY_Z, ROOF_PLANT,
+        RELAY_MAST, SECURITY_CHECKPOINT, OBSERVATION_BRIDGE, EXCAVATION_SHAFT
     }
 
     private final TechnologyFacilityStructure.Kind facility;
@@ -56,54 +61,124 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
         tag.putInt("MOZ", origin.getZ());
     }
 
-    public static void assemble(StructurePiecesBuilder builder, TechnologyFacilityStructure.Kind kind, BlockPos c) {
+    public static void assemble(StructurePiecesBuilder builder, TechnologyFacilityStructure.Kind kind, BlockPos c, int layout) {
         switch (kind) {
-            case SYNTHETIC_MANUFACTURING_PLANT -> {
-                add(builder, kind, Room.MANUFACTURING_CORE, c);
-                add(builder, kind, Room.FABRICATION_WING, c.offset(-14, 0, 0));
-                add(builder, kind, Room.ASSEMBLY_WING, c.offset(14, 0, 0));
-                add(builder, kind, Room.SHIPPING_WING, c.offset(0, 0, 14));
-                add(builder, kind, Room.PLANT_ENTRANCE, c.offset(0, 0, -14));
-            }
-            case MATTER_REFINERY -> {
-                add(builder, kind, Room.REFINERY_CORE, c);
-                add(builder, kind, Room.EXCAVATION_WING, c.offset(-15, 0, 0));
-                add(builder, kind, Room.STORAGE_WING, c.offset(15, 0, 0));
-                add(builder, kind, Room.PROCESSING_WING, c.offset(0, 0, 15));
-                add(builder, kind, Room.REFINERY_ENTRANCE, c.offset(0, 0, -15));
-            }
-            case QUANTUM_RELAY_STATION -> {
-                add(builder, kind, Room.QUANTUM_CORE, c);
-                add(builder, kind, Room.RELAY_WING, c.offset(-13, 0, 0));
-                add(builder, kind, Room.POWER_WING, c.offset(13, 0, 0));
-                add(builder, kind, Room.CONTROL_WING, c.offset(0, 0, 13));
-                add(builder, kind, Room.RELAY_ENTRANCE, c.offset(0, 0, -13));
-            }
-            case ANDROID_COMMAND_BUNKER -> {
-                add(builder, kind, Room.BUNKER_COMMAND, c);
-                add(builder, kind, Room.DRONE_BAY, c.offset(-15, 0, 0));
-                add(builder, kind, Room.ANDROID_BAY, c.offset(15, 0, 0));
-                add(builder, kind, Room.ARMORY, c.offset(0, 0, 15));
-                add(builder, kind, Room.BUNKER_ENTRANCE, c.offset(0, 0, -15));
-            }
-            case FUSION_RESEARCH_COMPLEX -> {
-                add(builder, kind, Room.FUSION_CORE, c);
-                add(builder, kind, Room.STABILIZER_WING, c.offset(-17, 0, 0));
-                add(builder, kind, Room.REACTOR_CONTROL, c.offset(17, 0, 0));
-                add(builder, kind, Room.SERVICE_WING, c.offset(0, 0, 17));
-                add(builder, kind, Room.FUSION_ENTRANCE, c.offset(0, 0, -17));
-            }
-            case BLACK_SITE -> {
-                add(builder, kind, Room.BLACK_CORE, c);
-                add(builder, kind, Room.BLACK_LAB, c.offset(-15, 0, 0));
-                add(builder, kind, Room.BLACK_CONTAINMENT, c.offset(15, 0, 0));
-                add(builder, kind, Room.BLACK_VAULT, c.offset(0, 0, 15));
-                add(builder, kind, Room.BLACK_SECURITY, c.offset(0, 0, -15));
-                add(builder, kind, Room.BLACK_ENTRANCE, c.offset(0, 7, -25));
-            }
+            case SYNTHETIC_MANUFACTURING_PLANT -> assemblePlant(builder, kind, c, layout);
+            case MATTER_REFINERY -> assembleRefinery(builder, kind, c, layout);
+            case QUANTUM_RELAY_STATION -> assembleRelay(builder, kind, c, layout);
+            case ANDROID_COMMAND_BUNKER -> assembleBunker(builder, kind, c, layout);
+            case FUSION_RESEARCH_COMPLEX -> assembleFusion(builder, kind, c, layout);
+            case BLACK_SITE -> assembleBlackSite(builder, kind, c, layout);
         }
     }
 
+    private static void assemblePlant(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos c, int v) {
+        add(b, k, Room.MANUFACTURING_CORE, c);
+        if (v == 0) {
+            add(b, k, Room.FABRICATION_WING, c.offset(-18, 0, 0));
+            add(b, k, Room.ASSEMBLY_WING, c.offset(18, 0, 0));
+            add(b, k, Room.SHIPPING_WING, c.offset(0, 0, 19));
+            add(b, k, Room.PLANT_ENTRANCE, c.offset(0, 0, -18));
+            connectX(b, k, c.offset(-10, 0, 0)); connectX(b, k, c.offset(10, 0, 0));
+            connectZ(b, k, c.offset(0, 0, 11)); connectZ(b, k, c.offset(0, 0, -10));
+        } else if (v == 1) {
+            add(b, k, Room.FABRICATION_WING, c.offset(-18, 0, 0));
+            add(b, k, Room.ASSEMBLY_WING, c.offset(-18, 0, 18));
+            add(b, k, Room.SHIPPING_WING, c.offset(0, 0, 18));
+            add(b, k, Room.PLANT_ENTRANCE, c.offset(18, 0, 0));
+            connectX(b, k, c.offset(-10, 0, 0)); connectZ(b, k, c.offset(-18, 0, 9));
+            connectX(b, k, c.offset(-9, 0, 18)); connectX(b, k, c.offset(10, 0, 0));
+        } else {
+            add(b, k, Room.FABRICATION_WING, c.offset(-19, 0, 13));
+            add(b, k, Room.ASSEMBLY_WING, c.offset(19, 0, 13));
+            add(b, k, Room.SHIPPING_WING, c.offset(0, 0, 24));
+            add(b, k, Room.PLANT_ENTRANCE, c.offset(0, 0, -18));
+            connectX(b, k, c.offset(-10, 0, 9)); connectX(b, k, c.offset(10, 0, 9));
+            connectZ(b, k, c.offset(0, 0, 16)); connectZ(b, k, c.offset(0, 0, -10));
+        }
+        add(b, k, Room.ROOF_PLANT, c.offset(0, 7, 0));
+        add(b, k, Room.SERVICE_GANTRY_X, c.offset(0, 5, 10));
+    }
+
+    private static void assembleRefinery(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos c, int v) {
+        add(b, k, Room.REFINERY_CORE, c);
+        int side = v == 1 ? 1 : -1;
+        add(b, k, Room.EXCAVATION_WING, c.offset(19 * side, -2, 0));
+        add(b, k, Room.STORAGE_WING, c.offset(-19 * side, 0, 0));
+        add(b, k, Room.PROCESSING_WING, c.offset(0, 0, 19));
+        add(b, k, Room.REFINERY_ENTRANCE, c.offset(0, 0, -18));
+        connectX(b, k, c.offset(10 * side, 0, 0)); connectX(b, k, c.offset(-10 * side, 0, 0));
+        connectZ(b, k, c.offset(0, 0, 10)); connectZ(b, k, c.offset(0, 0, -10));
+        add(b, k, Room.EXCAVATION_SHAFT, c.offset(26 * side, -7, 0));
+        add(b, k, Room.SERVICE_GANTRY_Z, c.offset(0, 5, 10));
+        if (v == 2) add(b, k, Room.ROOF_PLANT, c.offset(0, 7, -3));
+    }
+
+    private static void assembleRelay(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos c, int v) {
+        add(b, k, Room.QUANTUM_CORE, c);
+        int d = v == 1 ? -1 : 1;
+        add(b, k, Room.RELAY_WING, c.offset(-16 * d, 0, 10));
+        add(b, k, Room.POWER_WING, c.offset(16 * d, 0, 10));
+        add(b, k, Room.CONTROL_WING, c.offset(0, 0, -16));
+        add(b, k, Room.RELAY_ENTRANCE, c.offset(0, 0, -28));
+        connectX(b, k, c.offset(-9 * d, 0, 6)); connectX(b, k, c.offset(9 * d, 0, 6));
+        connectZ(b, k, c.offset(0, 0, -9)); connectZ(b, k, c.offset(0, 0, -22));
+        add(b, k, Room.RELAY_MAST, c.offset(-18 * d, 5, 11));
+        add(b, k, Room.RELAY_MAST, c.offset(18 * d, 5, 11));
+        if (v == 2) add(b, k, Room.OBSERVATION_BRIDGE, c.offset(0, 7, 8));
+    }
+
+    private static void assembleBunker(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos c, int v) {
+        add(b, k, Room.BUNKER_COMMAND, c);
+        add(b, k, Room.BUNKER_ENTRANCE, c.offset(0, 7, -24));
+        add(b, k, Room.SECURITY_CHECKPOINT, c.offset(0, 0, -14));
+        if (v == 0) {
+            add(b, k, Room.DRONE_BAY, c.offset(-18, 0, 3));
+            add(b, k, Room.ANDROID_BAY, c.offset(18, 0, 3));
+            add(b, k, Room.ARMORY, c.offset(0, 0, 19));
+        } else if (v == 1) {
+            add(b, k, Room.DRONE_BAY, c.offset(-18, 0, 0));
+            add(b, k, Room.ANDROID_BAY, c.offset(-18, 0, 18));
+            add(b, k, Room.ARMORY, c.offset(18, 0, 0));
+        } else {
+            add(b, k, Room.DRONE_BAY, c.offset(18, 0, 0));
+            add(b, k, Room.ANDROID_BAY, c.offset(18, 0, 18));
+            add(b, k, Room.ARMORY, c.offset(-18, 0, 0));
+        }
+        connectZ(b, k, c.offset(0, 0, -8));
+        connectX(b, k, c.offset(-10, 0, 2)); connectX(b, k, c.offset(10, 0, 2));
+        connectZ(b, k, c.offset(0, 0, 11));
+    }
+
+    private static void assembleFusion(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos c, int v) {
+        add(b, k, Room.FUSION_CORE, c);
+        int turn = v == 1 ? -1 : 1;
+        add(b, k, Room.STABILIZER_WING, c.offset(-22 * turn, 0, 0));
+        add(b, k, Room.REACTOR_CONTROL, c.offset(22 * turn, 0, 0));
+        add(b, k, Room.SERVICE_WING, c.offset(0, -2, 22));
+        add(b, k, Room.FUSION_ENTRANCE, c.offset(0, 0, -22));
+        connectX(b, k, c.offset(-13 * turn, 0, 0)); connectX(b, k, c.offset(13 * turn, 0, 0));
+        connectZ(b, k, c.offset(0, 0, 13)); connectZ(b, k, c.offset(0, 0, -13));
+        add(b, k, Room.OBSERVATION_BRIDGE, c.offset(0, 6, v == 2 ? -4 : 4));
+        add(b, k, Room.ROOF_PLANT, c.offset(0, 10, 0));
+    }
+
+    private static void assembleBlackSite(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos c, int v) {
+        add(b, k, Room.BLACK_CORE, c);
+        add(b, k, Room.BLACK_SECURITY, c.offset(0, 0, -16));
+        add(b, k, Room.BLACK_ENTRANCE, c.offset(0, 12, -27));
+        add(b, k, Room.SECURITY_CHECKPOINT, c.offset(0, 0, -10));
+        int d = v == 1 ? -1 : 1;
+        add(b, k, Room.BLACK_LAB, c.offset(-18 * d, 0, 0));
+        add(b, k, Room.BLACK_CONTAINMENT, c.offset(18 * d, 0, 0));
+        add(b, k, Room.BLACK_VAULT, c.offset(0, -6, 19));
+        connectX(b, k, c.offset(-10 * d, 0, 0)); connectX(b, k, c.offset(10 * d, 0, 0));
+        connectZ(b, k, c.offset(0, 0, 10)); connectZ(b, k, c.offset(0, 0, -9));
+        if (v == 2) add(b, k, Room.BLACK_LAB, c.offset(-18, -6, 19));
+    }
+
+    private static void connectX(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos p) { add(b, k, Room.CORRIDOR_X, p); }
+    private static void connectZ(StructurePiecesBuilder b, TechnologyFacilityStructure.Kind k, BlockPos p) { add(b, k, Room.CORRIDOR_Z, p); }
     private static void add(StructurePiecesBuilder builder, TechnologyFacilityStructure.Kind kind, Room room, BlockPos pos) {
         builder.addPiece(new TechnologyFacilityStructurePiece(kind, room, pos));
     }
@@ -112,176 +187,334 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
     public void postProcess(WorldGenLevel level, StructureManager structureManager, ChunkGenerator chunkGenerator,
                             RandomSource random, BoundingBox chunkBox, ChunkPos chunkPos, BlockPos pivot) {
         switch (room) {
-            case MANUFACTURING_CORE -> room(level, chunkBox, 6, 6, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), true,
-                    new Placement(0, 1, 0, "facility_network_controller", Blocks.IRON_BLOCK),
-                    new Placement(-2, 1, 1, "inscriber", Blocks.BLAST_FURNACE),
-                    new Placement(2, 1, 1, "replicator", Blocks.SMITHING_TABLE));
-            case FABRICATION_WING -> room(level, chunkBox, 6, 5, 4, mod("decorative.white_plate", Blocks.QUARTZ_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(-2, 1, 0, "inscriber", Blocks.BLAST_FURNACE), new Placement(2, 1, 0, "replicator", Blocks.SMITHING_TABLE));
-            case ASSEMBLY_WING -> room(level, chunkBox, 6, 5, 4, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(-2, 1, 0, "android_station", Blocks.SMITHING_TABLE), new Placement(2, 1, 0, "charging_station", Blocks.LODESTONE));
-            case SHIPPING_WING -> room(level, chunkBox, 5, 6, 4, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(-2, 1, 0, "tritanium_crate", Blocks.BARREL), new Placement(0, 1, 0, "tritanium_crate_blue", Blocks.BARREL), new Placement(2, 1, 0, "tritanium_crate_lime", Blocks.BARREL));
-            case PLANT_ENTRANCE -> entrance(level, chunkBox, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK));
+            case MANUFACTURING_CORE -> modernRoom(level, chunkBox, 7, 7, 5, paletteWall(), paletteFloor(), true, true,
+                    p(0,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(-3,1,2,"inscriber",Blocks.BLAST_FURNACE), p(3,1,2,"replicator",Blocks.SMITHING_TABLE));
+            case FABRICATION_WING -> modernRoom(level, chunkBox, 7, 6, 4, whiteWall(), paletteFloor(), false, true,
+                    p(-3,1,0,"inscriber",Blocks.BLAST_FURNACE), p(3,1,0,"replicator",Blocks.SMITHING_TABLE), p(0,1,3,"holographic_status_panel",Blocks.SEA_LANTERN));
+            case ASSEMBLY_WING -> modernRoom(level, chunkBox, 7, 6, 4, paletteWall(), paletteFloor(), false, true,
+                    p(-3,1,0,"android_station",Blocks.SMITHING_TABLE), p(3,1,0,"charging_station",Blocks.LODESTONE));
+            case SHIPPING_WING -> modernRoom(level, chunkBox, 6, 7, 4, paletteWall(), paletteFloor(), false, false,
+                    p(-3,1,1,"tritanium_crate",Blocks.BARREL), p(0,1,1,"tritanium_crate_blue",Blocks.BARREL), p(3,1,1,"tritanium_crate_lime",Blocks.BARREL));
+            case PLANT_ENTRANCE -> entrance(level, chunkBox, paletteWall(), true);
 
-            case REFINERY_CORE -> room(level, chunkBox, 7, 7, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), true,
-                    new Placement(0, 1, 0, "facility_network_controller", Blocks.IRON_BLOCK), new Placement(-2, 1, 1, "matter_storage_matrix", Blocks.IRON_BLOCK), new Placement(2, 1, 1, "holographic_status_panel", Blocks.SEA_LANTERN));
-            case EXCAVATION_WING -> room(level, chunkBox, 6, 6, 4, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(0, 1, 0, "matter_excavator", Blocks.BLAST_FURNACE));
-            case STORAGE_WING -> room(level, chunkBox, 6, 6, 4, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(-2, 1, 0, "matter_storage_matrix", Blocks.IRON_BLOCK), new Placement(2, 1, 0, "matter_storage_matrix", Blocks.IRON_BLOCK));
-            case PROCESSING_WING -> room(level, chunkBox, 6, 6, 4, mod("decorative.white_plate", Blocks.QUARTZ_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(-2, 1, 0, "decomposer", Blocks.BLAST_FURNACE), new Placement(2, 1, 0, "matter_analyzer", Blocks.LECTERN));
-            case REFINERY_ENTRANCE -> entrance(level, chunkBox, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK));
+            case REFINERY_CORE -> modernRoom(level, chunkBox, 8, 8, 6, paletteWall(), greenFloor(), true, false,
+                    p(0,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(-3,1,2,"matter_storage_matrix",Blocks.IRON_BLOCK), p(3,1,2,"holographic_status_panel",Blocks.SEA_LANTERN));
+            case EXCAVATION_WING -> modernRoom(level, chunkBox, 7, 7, 5, paletteWall(), mod("decorative.floor_tiles_green",Blocks.DEEPSLATE_TILES), false, false,
+                    p(0,1,0,"matter_excavator",Blocks.BLAST_FURNACE));
+            case STORAGE_WING -> modernRoom(level, chunkBox, 7, 7, 5, paletteWall(), greenFloor(), false, false,
+                    p(-3,1,0,"matter_storage_matrix",Blocks.IRON_BLOCK), p(3,1,0,"matter_storage_matrix",Blocks.IRON_BLOCK));
+            case PROCESSING_WING -> modernRoom(level, chunkBox, 7, 7, 5, whiteWall(), greenFloor(), false, true,
+                    p(-3,1,0,"decomposer",Blocks.BLAST_FURNACE), p(3,1,0,"matter_analyzer",Blocks.LECTERN));
+            case REFINERY_ENTRANCE -> entrance(level, chunkBox, paletteWall(), false);
 
-            case QUANTUM_CORE -> towerRoom(level, chunkBox, 6, 6, 8, new Placement(0, 1, 0, "quantum_power_relay", Blocks.RESPAWN_ANCHOR));
-            case RELAY_WING -> room(level, chunkBox, 5, 5, 4, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(0, 1, 0, "quantum_power_relay", Blocks.RESPAWN_ANCHOR));
-            case POWER_WING -> room(level, chunkBox, 5, 5, 4, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(0, 1, 0, "grid_capacitor", Blocks.IRON_BLOCK));
-            case CONTROL_WING -> room(level, chunkBox, 5, 5, 4, mod("decorative.white_plate", Blocks.QUARTZ_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(-1, 1, 0, "facility_network_controller", Blocks.IRON_BLOCK), new Placement(1, 1, 0, "holographic_status_panel", Blocks.SEA_LANTERN));
-            case RELAY_ENTRANCE -> entrance(level, chunkBox, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK));
+            case QUANTUM_CORE -> quantumTower(level, chunkBox);
+            case RELAY_WING -> modernRoom(level, chunkBox, 6, 6, 5, paletteWall(), paletteFloor(), true, true,
+                    p(0,1,0,"quantum_power_relay",Blocks.RESPAWN_ANCHOR));
+            case POWER_WING -> modernRoom(level, chunkBox, 6, 6, 5, paletteWall(), paletteFloor(), false, true,
+                    p(0,1,0,"grid_capacitor",Blocks.IRON_BLOCK));
+            case CONTROL_WING -> modernRoom(level, chunkBox, 6, 6, 5, whiteWall(), paletteFloor(), true, true,
+                    p(-2,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(2,1,0,"holographic_status_panel",Blocks.SEA_LANTERN));
+            case RELAY_ENTRANCE -> entrance(level, chunkBox, paletteWall(), true);
 
-            case BUNKER_COMMAND -> room(level, chunkBox, 7, 7, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), true,
-                    new Placement(0, 1, 0, "facility_network_controller", Blocks.IRON_BLOCK), new Placement(-2, 1, 1, "holographic_status_panel", Blocks.SEA_LANTERN));
-            case DRONE_BAY -> room(level, chunkBox, 6, 6, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "android_spawner", Blocks.IRON_BLOCK), new Placement(2, 1, 0, "charging_station", Blocks.LODESTONE));
-            case ANDROID_BAY -> room(level, chunkBox, 6, 6, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "android_station", Blocks.SMITHING_TABLE), new Placement(2, 1, 0, "android_induction_relay", Blocks.LODESTONE));
-            case ARMORY -> room(level, chunkBox, 6, 6, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "tritanium_crate_red", Blocks.BARREL), new Placement(2, 1, 0, "tritanium_crate", Blocks.BARREL));
+            case BUNKER_COMMAND -> modernRoom(level, chunkBox, 8, 8, 5, paletteWall(), darkFloor(), true, false,
+                    p(0,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(-3,1,2,"holographic_status_panel",Blocks.SEA_LANTERN));
+            case DRONE_BAY -> modernRoom(level, chunkBox, 7, 7, 5, paletteWall(), darkFloor(), true, false,
+                    p(-3,1,0,"android_spawner",Blocks.IRON_BLOCK), p(3,1,0,"charging_station",Blocks.LODESTONE));
+            case ANDROID_BAY -> modernRoom(level, chunkBox, 7, 7, 5, paletteWall(), darkFloor(), true, true,
+                    p(-3,1,0,"android_station",Blocks.SMITHING_TABLE), p(3,1,0,"android_induction_relay",Blocks.LODESTONE));
+            case ARMORY -> modernRoom(level, chunkBox, 7, 7, 5, paletteWall(), darkFloor(), false, false,
+                    p(-3,1,1,"tritanium_crate_red",Blocks.BARREL), p(3,1,1,"tritanium_crate",Blocks.BARREL));
             case BUNKER_ENTRANCE -> bunkerEntrance(level, chunkBox);
 
             case FUSION_CORE -> fusionCore(level, chunkBox);
-            case STABILIZER_WING -> room(level, chunkBox, 7, 6, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "gravitational_stabilizer", Blocks.OBSIDIAN), new Placement(2, 1, 0, "gravitational_stabilizer", Blocks.OBSIDIAN));
-            case REACTOR_CONTROL -> room(level, chunkBox, 7, 6, 5, mod("decorative.white_plate", Blocks.QUARTZ_BLOCK), mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), false,
-                    new Placement(-2, 1, 0, "fusion_reactor_controller", Blocks.IRON_BLOCK), new Placement(0, 1, 0, "facility_network_controller", Blocks.IRON_BLOCK), new Placement(2, 1, 0, "holographic_status_panel", Blocks.SEA_LANTERN));
-            case SERVICE_WING -> room(level, chunkBox, 6, 7, 5, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "grid_capacitor", Blocks.IRON_BLOCK), new Placement(2, 1, 0, "anomaly_containment_unit", Blocks.OBSIDIAN));
-            case FUSION_ENTRANCE -> entrance(level, chunkBox, mod("decorative.tritanium_plate", Blocks.IRON_BLOCK));
+            case STABILIZER_WING -> modernRoom(level, chunkBox, 8, 7, 5, paletteWall(), darkFloor(), true, true,
+                    p(-3,1,0,"gravitational_stabilizer",Blocks.OBSIDIAN), p(3,1,0,"gravitational_stabilizer",Blocks.OBSIDIAN));
+            case REACTOR_CONTROL -> modernRoom(level, chunkBox, 8, 7, 5, whiteWall(), paletteFloor(), true, true,
+                    p(-3,1,0,"fusion_reactor_controller",Blocks.IRON_BLOCK), p(0,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(3,1,0,"holographic_status_panel",Blocks.SEA_LANTERN));
+            case SERVICE_WING -> modernRoom(level, chunkBox, 7, 8, 5, paletteWall(), darkFloor(), false, false,
+                    p(-3,1,0,"grid_capacitor",Blocks.IRON_BLOCK), p(3,1,0,"anomaly_containment_unit",Blocks.OBSIDIAN));
+            case FUSION_ENTRANCE -> entrance(level, chunkBox, paletteWall(), true);
 
-            case BLACK_CORE -> room(level, chunkBox, 7, 7, 5, Blocks.REINFORCED_DEEPSLATE.defaultBlockState(), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), true,
-                    new Placement(0, 1, 0, "facility_network_controller", Blocks.IRON_BLOCK), new Placement(0, 1, 2, "holographic_status_panel", Blocks.SEA_LANTERN));
-            case BLACK_LAB -> room(level, chunkBox, 6, 6, 5, Blocks.REINFORCED_DEEPSLATE.defaultBlockState(), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "matter_analyzer", Blocks.LECTERN), new Placement(2, 1, 0, "android_station", Blocks.SMITHING_TABLE));
-            case BLACK_CONTAINMENT -> room(level, chunkBox, 6, 6, 5, Blocks.REINFORCED_DEEPSLATE.defaultBlockState(), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(0, 1, 0, "anomaly_containment_unit", Blocks.OBSIDIAN));
-            case BLACK_VAULT -> room(level, chunkBox, 6, 6, 5, Blocks.REINFORCED_DEEPSLATE.defaultBlockState(), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "tritanium_crate_red", Blocks.BARREL), new Placement(0, 1, 0, "tritanium_crate_blue", Blocks.BARREL), new Placement(2, 1, 0, "tritanium_crate_lime", Blocks.BARREL));
-            case BLACK_SECURITY -> room(level, chunkBox, 6, 6, 5, Blocks.REINFORCED_DEEPSLATE.defaultBlockState(), mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES), false,
-                    new Placement(-2, 1, 0, "android_spawner", Blocks.IRON_BLOCK), new Placement(2, 1, 0, "grid_capacitor", Blocks.IRON_BLOCK));
+            case BLACK_CORE -> modernRoom(level, chunkBox, 8, 8, 5, blackWall(), darkFloor(), true, false,
+                    p(0,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(0,1,3,"holographic_status_panel",Blocks.SEA_LANTERN));
+            case BLACK_LAB -> modernRoom(level, chunkBox, 7, 7, 5, blackWall(), darkFloor(), true, false,
+                    p(-3,1,0,"matter_analyzer",Blocks.LECTERN), p(3,1,0,"android_station",Blocks.SMITHING_TABLE));
+            case BLACK_CONTAINMENT -> modernRoom(level, chunkBox, 7, 7, 6, blackWall(), darkFloor(), true, false,
+                    p(0,1,0,"anomaly_containment_unit",Blocks.OBSIDIAN));
+            case BLACK_VAULT -> modernRoom(level, chunkBox, 7, 7, 5, blackWall(), darkFloor(), false, false,
+                    p(-3,1,1,"tritanium_crate_red",Blocks.BARREL), p(0,1,1,"tritanium_crate_blue",Blocks.BARREL), p(3,1,1,"tritanium_crate_lime",Blocks.BARREL));
+            case BLACK_SECURITY -> modernRoom(level, chunkBox, 7, 7, 5, blackWall(), darkFloor(), true, false,
+                    p(-3,1,0,"android_spawner",Blocks.IRON_BLOCK), p(3,1,0,"grid_capacitor",Blocks.IRON_BLOCK));
             case BLACK_ENTRANCE -> blackEntrance(level, chunkBox);
+
+            case CORRIDOR_X -> corridor(level, chunkBox, true);
+            case CORRIDOR_Z -> corridor(level, chunkBox, false);
+            case SERVICE_GANTRY_X -> gantry(level, chunkBox, true);
+            case SERVICE_GANTRY_Z -> gantry(level, chunkBox, false);
+            case ROOF_PLANT -> roofPlant(level, chunkBox);
+            case RELAY_MAST -> relayMast(level, chunkBox);
+            case SECURITY_CHECKPOINT -> securityCheckpoint(level, chunkBox);
+            case OBSERVATION_BRIDGE -> observationBridge(level, chunkBox);
+            case EXCAVATION_SHAFT -> excavationShaft(level, chunkBox);
         }
     }
 
-    private void room(WorldGenLevel level, BoundingBox clip, int hx, int hz, int height, BlockState wall, BlockState floor, boolean fourDoors, Placement... machines) {
+    private void modernRoom(WorldGenLevel level, BoundingBox clip, int hx, int hz, int h, BlockState wall, BlockState floor,
+                            boolean fourDoors, boolean windows, Placement... machines) {
+        BlockState frame = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        BlockState lamp = mod("decorative.tritanium_lamp", Blocks.SEA_LANTERN);
+        BlockState trim = mod("decorative.tritanium_plate_stripe", Blocks.YELLOW_CONCRETE);
+        boolean damaged = damageVariant();
+
         for (int x = -hx; x <= hx; x++) for (int z = -hz; z <= hz; z++) {
             set(level, clip, origin.offset(x, 0, z), floor);
             boolean edge = Math.abs(x) == hx || Math.abs(z) == hz;
-            for (int y = 1; y <= height; y++) {
-                boolean nsDoor = Math.abs(x) <= 1 && (z == -hz || z == hz) && y <= 3;
-                boolean ewDoor = Math.abs(z) <= 1 && (x == -hx || x == hx) && y <= 3;
+            boolean corner = Math.abs(x) >= hx - 1 && Math.abs(z) >= hz - 1;
+            for (int y = 1; y <= h; y++) {
+                boolean nsDoor = Math.abs(x) <= 1 && Math.abs(z) == hz && y <= 3;
+                boolean ewDoor = Math.abs(z) <= 1 && Math.abs(x) == hx && y <= 3;
                 boolean door = fourDoors ? nsDoor || ewDoor : nsDoor;
-                set(level, clip, origin.offset(x, y, z), edge ? (door ? Blocks.AIR.defaultBlockState() : wall) : Blocks.AIR.defaultBlockState());
+                if (!edge) {
+                    set(level, clip, origin.offset(x, y, z), Blocks.AIR.defaultBlockState());
+                } else if (door) {
+                    set(level, clip, origin.offset(x, y, z), Blocks.AIR.defaultBlockState());
+                } else if (corner || y == 1 || y == h) {
+                    set(level, clip, origin.offset(x, y, z), frame);
+                } else if (windows && y >= 2 && y <= h - 1 && ((Math.abs(x) + Math.abs(z)) % 3 != 0)) {
+                    set(level, clip, origin.offset(x, y, z), glass);
+                } else {
+                    set(level, clip, origin.offset(x, y, z), wall);
+                }
             }
-            set(level, clip, origin.offset(x, height + 1, z), wall);
+            BlockState roof = ((Math.abs(x) + Math.abs(z)) % 6 == 0) ? frame : wall;
+            set(level, clip, origin.offset(x, h + 1, z), roof);
+        }
+        for (int x = -hx + 2; x <= hx - 2; x += 4) {
+            set(level, clip, origin.offset(x, h, 0), lamp);
+        }
+        for (int x = -hx + 1; x <= hx - 1; x++) {
+            if ((x & 1) == 0) set(level, clip, origin.offset(x, 0, -hz + 1), trim);
+        }
+        if (damaged) {
+            for (int y = h - 1; y <= h + 1; y++) set(level, clip, origin.offset(hx, y, hz - 2), Blocks.AIR.defaultBlockState());
+            set(level, clip, origin.offset(hx - 1, h + 1, hz - 2), Blocks.AIR.defaultBlockState());
         }
         for (Placement p : machines) set(level, clip, origin.offset(p.x, p.y, p.z), mod(p.id, p.fallback));
     }
 
-    private void towerRoom(WorldGenLevel level, BoundingBox clip, int hx, int hz, int height, Placement machine) {
-        BlockState wall = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
-        room(level, clip, hx, hz, 5, wall, mod("decorative.floor_tiles", Blocks.SMOOTH_STONE), true, machine);
-        for (int y = 6; y <= height + 5; y++) {
-            set(level, clip, origin.offset(0, y, 0), wall);
-            if ((y & 1) == 0) {
-                set(level, clip, origin.offset(1, y, 0), Blocks.SEA_LANTERN.defaultBlockState());
-                set(level, clip, origin.offset(-1, y, 0), Blocks.SEA_LANTERN.defaultBlockState());
-                set(level, clip, origin.offset(0, y, 1), Blocks.SEA_LANTERN.defaultBlockState());
-                set(level, clip, origin.offset(0, y, -1), Blocks.SEA_LANTERN.defaultBlockState());
+    private void corridor(WorldGenLevel level, BoundingBox clip, boolean xAxis) {
+        BlockState wall = facility == TechnologyFacilityStructure.Kind.BLACK_SITE ? blackWall() : paletteWall();
+        BlockState floor = facility == TechnologyFacilityStructure.Kind.MATTER_REFINERY ? greenFloor() : darkFloor();
+        BlockState frame = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState lamp = mod("decorative.tritanium_lamp", Blocks.SEA_LANTERN);
+        for (int a = -5; a <= 5; a++) for (int b = -2; b <= 2; b++) {
+            int x = xAxis ? a : b, z = xAxis ? b : a;
+            set(level, clip, origin.offset(x, 0, z), floor);
+            for (int y = 1; y <= 4; y++) {
+                boolean side = Math.abs(b) == 2;
+                set(level, clip, origin.offset(x, y, z), side ? ((a % 4 == 0) ? frame : wall) : Blocks.AIR.defaultBlockState());
+            }
+            set(level, clip, origin.offset(x, 5, z), (a % 4 == 0) ? frame : wall);
+        }
+        for (int a = -4; a <= 4; a += 4) {
+            int x = xAxis ? a : 0, z = xAxis ? 0 : a;
+            set(level, clip, origin.offset(x, 4, z), lamp);
+        }
+    }
+
+    private void entrance(WorldGenLevel level, BoundingBox clip, BlockState wall, boolean glassFront) {
+        BlockState frame = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        BlockState floor = paletteFloor();
+        for (int z = -6; z <= 6; z++) for (int x = -4; x <= 4; x++) {
+            set(level, clip, origin.offset(x, 0, z), floor);
+            for (int y = 1; y <= 4; y++) {
+                boolean side = Math.abs(x) == 4;
+                if (side) set(level, clip, origin.offset(x, y, z), (z % 4 == 0) ? frame : wall);
+                else set(level, clip, origin.offset(x, y, z), Blocks.AIR.defaultBlockState());
+            }
+            set(level, clip, origin.offset(x, 5, z), (Math.abs(x) == 4 || (x & 1) == 0) ? frame : wall);
+        }
+        if (glassFront) for (int x = -3; x <= 3; x++) for (int y = 2; y <= 4; y++) {
+            if (Math.abs(x) > 1) set(level, clip, origin.offset(x, y, -6), glass);
+        }
+        set(level, clip, origin.offset(0, 4, -5), mod("holo_sign", Blocks.SEA_LANTERN));
+    }
+
+    private void quantumTower(WorldGenLevel level, BoundingBox clip) {
+        modernRoom(level, clip, 7, 7, 6, paletteWall(), paletteFloor(), true, true,
+                p(0,1,0,"quantum_power_relay",Blocks.RESPAWN_ANCHOR));
+        BlockState frame = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glow = mod("decorative.holo_matrix", Blocks.SEA_LANTERN);
+        for (int y = 7; y <= 17; y++) {
+            int r = y < 13 ? 3 : 2;
+            for (int x = -r; x <= r; x++) for (int z = -r; z <= r; z++) {
+                boolean edge = Math.abs(x) == r || Math.abs(z) == r;
+                if (edge) set(level, clip, origin.offset(x,y,z), ((x + z + y) & 3) == 0 ? glow : frame);
             }
         }
+        set(level, clip, origin.offset(0,18,0), glow);
+        set(level, clip, origin.offset(0,19,0), glow);
     }
 
     private void fusionCore(WorldGenLevel level, BoundingBox clip) {
-        BlockState hull = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
-        BlockState floor = mod("decorative.floor_tiles", Blocks.DEEPSLATE_TILES);
-        int r = 8;
-        for (int x = -r; x <= r; x++) for (int z = -r; z <= r; z++) {
-            double d = Math.sqrt(x * x + z * z);
-            if (d <= r) set(level, clip, origin.offset(x, 0, z), floor);
-            if (d >= r - 1 && d <= r + .35) for (int y = 1; y <= 7; y++) set(level, clip, origin.offset(x, y, z), hull);
-            if (d < r - 1) for (int y = 1; y <= 7; y++) set(level, clip, origin.offset(x, y, z), Blocks.AIR.defaultBlockState());
-            if (d <= r) set(level, clip, origin.offset(x, 8, z), hull);
+        BlockState hull = paletteWall(), floor = darkFloor();
+        BlockState frame = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        BlockState lamp = mod("decorative.tritanium_lamp", Blocks.SEA_LANTERN);
+        int r = 10;
+        for (int x=-r;x<=r;x++) for (int z=-r;z<=r;z++) {
+            double d = Math.sqrt(x*x + z*z);
+            if (d <= r) set(level,clip,origin.offset(x,0,z),floor);
+            if (d < r-1) for (int y=1;y<=8;y++) set(level,clip,origin.offset(x,y,z),Blocks.AIR.defaultBlockState());
+            if (d >= r-1 && d <= r+.35) for (int y=1;y<=8;y++) {
+                BlockState s = (y==1 || y==8 || ((x+z)&3)==0) ? frame : (y>=3 && y<=6 ? glass : hull);
+                set(level,clip,origin.offset(x,y,z),s);
+            }
+            if (d <= r) set(level,clip,origin.offset(x,9,z), ((x+z)&5)==0 ? frame : hull);
         }
-        for (int y = 1; y <= 3; y++) {
-            set(level, clip, origin.offset(0, y, -r), Blocks.AIR.defaultBlockState());
-            set(level, clip, origin.offset(0, y, r), Blocks.AIR.defaultBlockState());
-            set(level, clip, origin.offset(-r, y, 0), Blocks.AIR.defaultBlockState());
-            set(level, clip, origin.offset(r, y, 0), Blocks.AIR.defaultBlockState());
+        for (int y=1;y<=4;y++) for (int w=-1;w<=1;w++) {
+            set(level,clip,origin.offset(w,y,-r),Blocks.AIR.defaultBlockState());
+            set(level,clip,origin.offset(w,y,r),Blocks.AIR.defaultBlockState());
+            set(level,clip,origin.offset(-r,y,w),Blocks.AIR.defaultBlockState());
+            set(level,clip,origin.offset(r,y,w),Blocks.AIR.defaultBlockState());
         }
-        set(level, clip, origin.offset(0, 1, 0), mod("anomaly_containment_unit", Blocks.OBSIDIAN));
-        set(level, clip, origin.offset(-3, 1, 0), mod("gravitational_stabilizer", Blocks.OBSIDIAN));
-        set(level, clip, origin.offset(3, 1, 0), mod("gravitational_stabilizer", Blocks.OBSIDIAN));
+        for (int a=0;a<360;a+=45) {
+            double rad=Math.toRadians(a);
+            int x=(int)Math.round(Math.cos(rad)*6), z=(int)Math.round(Math.sin(rad)*6);
+            set(level,clip,origin.offset(x,1,z),frame);
+            set(level,clip,origin.offset(x,2,z),lamp);
+        }
+        set(level,clip,origin.offset(0,1,0),mod("anomaly_containment_unit",Blocks.OBSIDIAN));
+        set(level,clip,origin.offset(-4,1,0),mod("gravitational_stabilizer",Blocks.OBSIDIAN));
+        set(level,clip,origin.offset(4,1,0),mod("gravitational_stabilizer",Blocks.OBSIDIAN));
     }
 
-    private void entrance(WorldGenLevel level, BoundingBox clip, BlockState wall) {
-        BlockState floor = mod("decorative.floor_tiles", Blocks.SMOOTH_STONE);
-        for (int z = -5; z <= 5; z++) for (int x = -3; x <= 3; x++) {
-            set(level, clip, origin.offset(x, 0, z), floor);
-            if (Math.abs(x) == 3) for (int y = 1; y <= 4; y++) set(level, clip, origin.offset(x, y, z), wall);
-            set(level, clip, origin.offset(x, 5, z), wall);
+    private void gantry(WorldGenLevel level, BoundingBox clip, boolean xAxis) {
+        BlockState frame=mod("decorative.beams",Blocks.IRON_BARS), floor=mod("decorative.floor_tile_white",Blocks.IRON_BLOCK);
+        for(int a=-8;a<=8;a++) for(int b=-1;b<=1;b++) {
+            int x=xAxis?a:b,z=xAxis?b:a;
+            set(level,clip,origin.offset(x,0,z),floor);
+            if(Math.abs(b)==1) set(level,clip,origin.offset(x,1,z),Blocks.IRON_BARS.defaultBlockState());
+            if(a%4==0) set(level,clip,origin.offset(x,-1,z),frame);
         }
-        for (int y = 1; y <= 3; y++) for (int x = -1; x <= 1; x++) {
-            set(level, clip, origin.offset(x, y, -5), Blocks.AIR.defaultBlockState());
-            set(level, clip, origin.offset(x, y, 5), Blocks.AIR.defaultBlockState());
+    }
+
+    private void roofPlant(WorldGenLevel level, BoundingBox clip) {
+        BlockState frame=mod("decorative.beams",Blocks.POLISHED_DEEPSLATE), vent=mod("decorative.vent.dark",Blocks.IRON_BLOCK), coil=mod("decorative.coils",Blocks.COPPER_BLOCK);
+        for(int x=-4;x<=4;x++) for(int z=-3;z<=3;z++) if(Math.abs(x)==4||Math.abs(z)==3) set(level,clip,origin.offset(x,0,z),frame);
+        for(int x=-2;x<=2;x+=2){ set(level,clip,origin.offset(x,1,0),vent); set(level,clip,origin.offset(x,2,0),coil); }
+        for(int y=1;y<=4;y++) set(level,clip,origin.offset(0,y,3),frame);
+        set(level,clip,origin.offset(0,5,3),mod("holo_sign",Blocks.REDSTONE_LAMP));
+    }
+
+    private void relayMast(WorldGenLevel level, BoundingBox clip) {
+        BlockState frame=mod("decorative.beams",Blocks.IRON_BARS), glow=mod("decorative.holo_matrix",Blocks.SEA_LANTERN);
+        for(int y=0;y<=13;y++) {
+            set(level,clip,origin.offset(0,y,0),frame);
+            if(y==5||y==9||y==13) for(int d=-2;d<=2;d++) { set(level,clip,origin.offset(d,y,0),frame); set(level,clip,origin.offset(0,y,d),frame); }
         }
+        set(level,clip,origin.offset(0,14,0),glow);
+    }
+
+    private void securityCheckpoint(WorldGenLevel level, BoundingBox clip) {
+        BlockState wall=facility==TechnologyFacilityStructure.Kind.BLACK_SITE?blackWall():paletteWall(), frame=mod("decorative.beams",Blocks.POLISHED_DEEPSLATE);
+        for(int z=-4;z<=4;z++) for(int x=-4;x<=4;x++) {
+            set(level,clip,origin.offset(x,0,z),darkFloor());
+            if(Math.abs(x)==4) for(int y=1;y<=4;y++) set(level,clip,origin.offset(x,y,z),(z%3==0)?frame:wall);
+            set(level,clip,origin.offset(x,5,z),wall);
+        }
+        for(int y=1;y<=3;y++) { set(level,clip,origin.offset(-1,y,0),Blocks.IRON_BARS.defaultBlockState()); set(level,clip,origin.offset(1,y,0),Blocks.IRON_BARS.defaultBlockState()); }
+        set(level,clip,origin.offset(-3,1,0),mod("android_spawner",Blocks.IRON_BLOCK));
+        set(level,clip,origin.offset(3,2,0),mod("holographic_status_panel",Blocks.SEA_LANTERN));
+    }
+
+    private void observationBridge(WorldGenLevel level, BoundingBox clip) {
+        BlockState frame=mod("decorative.beams",Blocks.POLISHED_DEEPSLATE), glass=mod("industrial_glass",Blocks.TINTED_GLASS);
+        for(int x=-7;x<=7;x++) for(int z=-2;z<=2;z++) {
+            set(level,clip,origin.offset(x,0,z),darkFloor());
+            for(int y=1;y<=3;y++) if(Math.abs(z)==2) set(level,clip,origin.offset(x,y,z), y==1?frame:glass);
+            set(level,clip,origin.offset(x,4,z),(x%4==0)?frame:glass);
+        }
+        set(level,clip,origin.offset(0,1,0),mod("holographic_status_panel",Blocks.SEA_LANTERN));
+    }
+
+    private void excavationShaft(WorldGenLevel level, BoundingBox clip) {
+        BlockState frame=mod("decorative.beams",Blocks.POLISHED_DEEPSLATE), lamp=mod("decorative.tritanium_lamp",Blocks.SEA_LANTERN);
+        for(int y=0;y<=12;y++) for(int x=-3;x<=3;x++) for(int z=-3;z<=3;z++) {
+            boolean edge=Math.abs(x)==3||Math.abs(z)==3;
+            set(level,clip,origin.offset(x,y,z),edge?((y%4==0)?frame:Blocks.DEEPSLATE_TILES.defaultBlockState()):Blocks.AIR.defaultBlockState());
+        }
+        for(int y=1;y<=11;y+=3) set(level,clip,origin.offset(2,y,2),lamp);
+        set(level,clip,origin.offset(0,0,0),mod("matter_excavator",Blocks.BLAST_FURNACE));
     }
 
     private void bunkerEntrance(WorldGenLevel level, BoundingBox clip) {
-        BlockState wall = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
-        entrance(level, clip, wall);
-        for (int y = 1; y <= 10; y++) {
-            set(level, clip, origin.offset(-2, y, -5), wall);
-            set(level, clip, origin.offset(2, y, -5), wall);
+        entrance(level,clip,paletteWall(),false);
+        BlockState frame=mod("decorative.beams",Blocks.POLISHED_DEEPSLATE);
+        for(int y=-7;y<=0;y++) for(int x=-2;x<=2;x++) for(int z=3;z<=6;z++) {
+            boolean edge=Math.abs(x)==2||z==6;
+            set(level,clip,origin.offset(x,y,z),edge?frame:Blocks.AIR.defaultBlockState());
         }
     }
 
     private void blackEntrance(WorldGenLevel level, BoundingBox clip) {
-        BlockState wall = Blocks.REINFORCED_DEEPSLATE.defaultBlockState();
-        for (int y = -7; y <= 0; y++) for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++) {
-            boolean edge = Math.abs(x) == 2 || Math.abs(z) == 2;
-            set(level, clip, origin.offset(x, y, z), edge ? wall : Blocks.AIR.defaultBlockState());
+        BlockState wall=blackWall(), frame=mod("decorative.beams",Blocks.POLISHED_DEEPSLATE);
+        for(int y=-12;y<=0;y++) for(int x=-3;x<=3;x++) for(int z=-3;z<=3;z++) {
+            boolean edge=Math.abs(x)==3||Math.abs(z)==3;
+            set(level,clip,origin.offset(x,y,z),edge?((y%4==0)?frame:wall):Blocks.AIR.defaultBlockState());
         }
-        set(level, clip, origin.offset(0, 0, 0), mod("holo_sign", Blocks.SEA_LANTERN));
+        for(int y=-10;y<=-1;y+=3) set(level,clip,origin.offset(2,y,2),mod("decorative.tritanium_lamp",Blocks.REDSTONE_LAMP));
+        set(level,clip,origin.offset(0,0,0),mod("holo_sign",Blocks.SEA_LANTERN));
     }
 
+    private boolean damageVariant() {
+        long h=origin.asLong() ^ ((long)facility.ordinal()*0x9E3779B97F4A7C15L) ^ ((long)room.ordinal()*0xC2B2AE3D27D4EB4FL);
+        return Math.floorMod(h, 9L)==0L;
+    }
+
+    private BlockState paletteWall(){ return mod("decorative.tritanium_plate",Blocks.IRON_BLOCK); }
+    private BlockState whiteWall(){ return mod("decorative.white_plate",Blocks.QUARTZ_BLOCK); }
+    private BlockState blackWall(){ return mod("decorative.carbon_fiber_plate",Blocks.REINFORCED_DEEPSLATE); }
+    private BlockState paletteFloor(){ return mod("decorative.floor_tiles",Blocks.SMOOTH_STONE); }
+    private BlockState greenFloor(){ return mod("decorative.floor_tiles_green",Blocks.OXIDIZED_COPPER); }
+    private BlockState darkFloor(){ return mod("decorative.floor_tiles",Blocks.DEEPSLATE_TILES); }
+
+    private static Placement p(int x,int y,int z,String id,Block fallback){ return new Placement(x,y,z,id,fallback); }
+
     private static BoundingBox boxFor(Room room, BlockPos p) {
-        return switch (room) {
-            case MANUFACTURING_CORE, REFINERY_CORE, BUNKER_COMMAND, BLACK_CORE -> box(p, 7, 7, 7);
-            case QUANTUM_CORE -> new BoundingBox(p.getX() - 6, p.getY(), p.getZ() - 6, p.getX() + 6, p.getY() + 13, p.getZ() + 6);
-            case FUSION_CORE -> box(p, 8, 8, 9);
-            case PLANT_ENTRANCE, REFINERY_ENTRANCE, RELAY_ENTRANCE, FUSION_ENTRANCE -> new BoundingBox(p.getX() - 3, p.getY(), p.getZ() - 5, p.getX() + 3, p.getY() + 5, p.getZ() + 5);
-            case BUNKER_ENTRANCE -> new BoundingBox(p.getX() - 3, p.getY(), p.getZ() - 5, p.getX() + 3, p.getY() + 10, p.getZ() + 5);
-            case BLACK_ENTRANCE -> new BoundingBox(p.getX() - 2, p.getY() - 7, p.getZ() - 2, p.getX() + 2, p.getY(), p.getZ() + 2);
-            default -> box(p, 7, 7, 7);
+        return switch(room) {
+            case MANUFACTURING_CORE -> box(p,8,8,8);
+            case REFINERY_CORE,BUNKER_COMMAND,BLACK_CORE -> box(p,9,9,8);
+            case QUANTUM_CORE -> new BoundingBox(p.getX()-7,p.getY(),p.getZ()-7,p.getX()+7,p.getY()+19,p.getZ()+7);
+            case FUSION_CORE -> box(p,11,11,11);
+            case PLANT_ENTRANCE,REFINERY_ENTRANCE,RELAY_ENTRANCE,FUSION_ENTRANCE -> new BoundingBox(p.getX()-4,p.getY(),p.getZ()-6,p.getX()+4,p.getY()+5,p.getZ()+6);
+            case BUNKER_ENTRANCE -> new BoundingBox(p.getX()-4,p.getY()-7,p.getZ()-6,p.getX()+4,p.getY()+5,p.getZ()+6);
+            case BLACK_ENTRANCE -> new BoundingBox(p.getX()-3,p.getY()-12,p.getZ()-3,p.getX()+3,p.getY(),p.getZ()+3);
+            case CORRIDOR_X -> new BoundingBox(p.getX()-5,p.getY(),p.getZ()-2,p.getX()+5,p.getY()+5,p.getZ()+2);
+            case CORRIDOR_Z -> new BoundingBox(p.getX()-2,p.getY(),p.getZ()-5,p.getX()+2,p.getY()+5,p.getZ()+5);
+            case SERVICE_GANTRY_X -> new BoundingBox(p.getX()-8,p.getY()-1,p.getZ()-1,p.getX()+8,p.getY()+2,p.getZ()+1);
+            case SERVICE_GANTRY_Z -> new BoundingBox(p.getX()-1,p.getY()-1,p.getZ()-8,p.getX()+1,p.getY()+2,p.getZ()+8);
+            case ROOF_PLANT -> new BoundingBox(p.getX()-4,p.getY(),p.getZ()-3,p.getX()+4,p.getY()+5,p.getZ()+3);
+            case RELAY_MAST -> new BoundingBox(p.getX()-2,p.getY(),p.getZ()-2,p.getX()+2,p.getY()+14,p.getZ()+2);
+            case SECURITY_CHECKPOINT -> new BoundingBox(p.getX()-4,p.getY(),p.getZ()-4,p.getX()+4,p.getY()+5,p.getZ()+4);
+            case OBSERVATION_BRIDGE -> new BoundingBox(p.getX()-7,p.getY(),p.getZ()-2,p.getX()+7,p.getY()+4,p.getZ()+2);
+            case EXCAVATION_SHAFT -> new BoundingBox(p.getX()-3,p.getY(),p.getZ()-3,p.getX()+3,p.getY()+12,p.getZ()+3);
+            default -> box(p,8,8,8);
         };
     }
 
-    private static BoundingBox box(BlockPos p, int hx, int hz, int h) {
-        return new BoundingBox(p.getX() - hx, p.getY(), p.getZ() - hz, p.getX() + hx, p.getY() + h, p.getZ() + hz);
+    private static BoundingBox box(BlockPos p,int hx,int hz,int h){ return new BoundingBox(p.getX()-hx,p.getY(),p.getZ()-hz,p.getX()+hx,p.getY()+h,p.getZ()+hz); }
+
+    private static BlockState mod(String id,Block fallback){
+        Block block=ForgeRegistries.BLOCKS.getValue(new ResourceLocation("matteroverdrive",id));
+        return block==null||block==Blocks.AIR?fallback.defaultBlockState():block.defaultBlockState();
     }
 
-    private static BlockState mod(String id, Block fallback) {
-        Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation("matteroverdrive", id));
-        return block == null || block == Blocks.AIR ? fallback.defaultBlockState() : block.defaultBlockState();
+    private static void set(WorldGenLevel level,BoundingBox clip,BlockPos pos,BlockState state){
+        if(clip.isInside(pos)&&!level.getBlockState(pos).is(Blocks.BEDROCK)) level.setBlock(pos,state,2);
     }
 
-    private static void set(WorldGenLevel level, BoundingBox clip, BlockPos pos, BlockState state) {
-        if (clip.isInside(pos) && !level.getBlockState(pos).is(Blocks.BEDROCK)) level.setBlock(pos, state, 2);
-    }
-
-    private record Placement(int x, int y, int z, String id, Block fallback) {}
+    private record Placement(int x,int y,int z,String id,Block fallback){}
 }
