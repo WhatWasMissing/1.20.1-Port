@@ -14,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "10";
+    private static final String PROTOCOL = "11";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
@@ -31,6 +31,7 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, DataPadOpenPacket.class, DataPadOpenPacket::encode, DataPadOpenPacket::decode, DataPadOpenPacket::handle);
         CHANNEL.registerMessage(nextId++, DocumentationOpenPacket.class, DocumentationOpenPacket::encode, DocumentationOpenPacket::decode, DocumentationOpenPacket::handle);
         CHANNEL.registerMessage(nextId++, OmniToolFirePacket.class, OmniToolFirePacket::encode, OmniToolFirePacket::decode, OmniToolFirePacket::handle);
+        CHANNEL.registerMessage(nextId++, WeaponTriggerPacket.class, WeaponTriggerPacket::encode, WeaponTriggerPacket::decode, WeaponTriggerPacket::handle);
         CHANNEL.registerMessage(nextId++, ContractAbandonPacket.class, ContractAbandonPacket::encode, ContractAbandonPacket::decode, ContractAbandonPacket::handle);
         CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
         CHANNEL.registerMessage(nextId++, NpcDialoguePacket.class, NpcDialoguePacket::encode, NpcDialoguePacket::decode, NpcDialoguePacket::handle);
@@ -42,6 +43,7 @@ public final class ModNetwork {
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
     public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines)); }
     public static void fireOmniTool() { CHANNEL.sendToServer(new OmniToolFirePacket()); }
+    public static void weaponTrigger(boolean pressed) { CHANNEL.sendToServer(new WeaponTriggerPacket(pressed)); }
     public static void requestContractAbandon(int slot) { CHANNEL.sendToServer(new ContractAbandonPacket(slot)); }
     public static void requestDroneStatus() { CHANNEL.sendToServer(DroneCommandPacket.requestStatus()); }
 
