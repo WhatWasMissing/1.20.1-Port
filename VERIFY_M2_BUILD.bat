@@ -46,7 +46,7 @@ if not defined PYTHON_CMD (
 )
 
 echo.
-echo [1/10] Facility layout reachability gate...
+echo [1/11] Facility layout reachability gate...
 %PYTHON_CMD% scripts\facility_layout_lab.py --check-only
 if errorlevel 1 (
   set "EXITCODE=29"
@@ -54,7 +54,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [2/10] Native structure expansion gate...
+echo [2/11] Native structure expansion gate...
 %PYTHON_CMD% scripts\validate_structure_expansion.py
 if errorlevel 1 (
   set "EXITCODE=30"
@@ -62,7 +62,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [3/10] Whole-port consistency audit...
+echo [3/11] Whole-port consistency audit...
 %PYTHON_CMD% scripts\validate_port_consistency.py
 if errorlevel 1 (
   set "EXITCODE=31"
@@ -70,7 +70,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [4/10] Android power/progression consistency gate...
+echo [4/11] Android power/progression consistency gate...
 %PYTHON_CMD% scripts\validate_android_consistency.py
 if errorlevel 1 (
   set "EXITCODE=32"
@@ -78,7 +78,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [5/10] Energy-weapon consistency gate...
+echo [5/11] Energy-weapon consistency gate...
 %PYTHON_CMD% scripts\validate_weapon_consistency.py
 if errorlevel 1 (
   set "EXITCODE=33"
@@ -86,7 +86,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [6/10] Network/Transporter consistency gate...
+echo [6/11] Network/Transporter consistency gate...
 %PYTHON_CMD% scripts\validate_network_transport_consistency.py
 if errorlevel 1 (
   set "EXITCODE=34"
@@ -94,7 +94,15 @@ if errorlevel 1 (
 )
 
 echo.
-echo [7/10] Gradle bootstrap...
+echo [7/11] Weapon Renderer 2.0 consistency gate...
+%PYTHON_CMD% scripts\validate_weapon_renderer_consistency.py
+if errorlevel 1 (
+  set "EXITCODE=35"
+  goto :finish
+)
+
+echo.
+echo [8/11] Gradle bootstrap...
 call gradlew.bat --version
 if errorlevel 1 (
   set "EXITCODE=23"
@@ -102,7 +110,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [8/10] Re-running the verified M1 resource gate...
+echo [9/11] Re-running the verified M1 resource gate...
 call gradlew.bat verifyM1Resources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=24"
@@ -110,7 +118,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [9/10] Checking the M2 functional-machines source gate...
+echo [10/11] Checking the M2 functional-machines source gate...
 call gradlew.bat verifyM2Sources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=25"
@@ -118,7 +126,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [10/10] Clean Forge compilation...
+echo [11/11] Clean Forge compilation...
 call gradlew.bat clean build --stacktrace
 if errorlevel 1 (
   set "EXITCODE=26"
