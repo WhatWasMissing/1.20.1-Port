@@ -1,20 +1,25 @@
 package matteroverdrive.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import matteroverdrive.item.weapon.EnergyWeaponItem;
 import matteroverdrive.item.weapon.WeaponModuleItem;
 import matteroverdrive.item.weapon.WeaponSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.data.ModelProperty;
-import com.mojang.blaze3d.vertex.PoseStack;
 
+/**
+ * Item and view-model renderer for Matter Overdrive energy weapons.
+ *
+ * Renderer 2.0 deliberately exposes a dedicated first-person entry point. The regular
+ * BEWLR path remains useful for contexts that ask for a custom item renderer, while the
+ * first-person event can render the weapon in a neutral FIXED context after applying the
+ * recovered Matter Overdrive camera-space transform itself.
+ */
 public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
     public WeaponItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
@@ -25,10 +30,25 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
     public void renderByItem(ItemStack weapon, ItemDisplayContext displayContext,
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
-        if (!(weapon.getItem() instanceof EnergyWeaponItem)) {
-            return;
-        }
+        if (!(weapon.getItem() instanceof EnergyWeaponItem)) return;
+        renderWeaponAndOptic(weapon, displayContext, poseStack, buffer, packedLight, packedOverlay);
+    }
 
+    /**
+     * Renders the complete first-person weapon assembly after WeaponClientEffects has
+     * positioned the view model. FIXED is intentional: first-person transforms are owned
+     * by Renderer 2.0, not by vanilla use/bow transforms or the baked-model display entry.
+     */
+    public void renderFirstPerson(ItemStack weapon, PoseStack poseStack,
+                                  MultiBufferSource buffer, int packedLight, int packedOverlay) {
+        if (!(weapon.getItem() instanceof EnergyWeaponItem)) return;
+        renderWeaponAndOptic(weapon, ItemDisplayContext.FIXED,
+                poseStack, buffer, packedLight, packedOverlay);
+    }
+
+    private static void renderWeaponAndOptic(ItemStack weapon, ItemDisplayContext displayContext,
+                                             PoseStack poseStack, MultiBufferSource buffer,
+                                             int packedLight, int packedOverlay) {
         Minecraft minecraft = Minecraft.getInstance();
         Level level = minecraft.level;
         var itemRenderer = minecraft.getItemRenderer();
@@ -39,8 +59,8 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         itemRenderer.render(weapon, displayContext, leftHand, poseStack, buffer,
                 packedLight, packedOverlay, weaponModel);
 
-        // The original renderer mounted only visual optics. Barrels, colours and utility
-        // modules affect weapon behaviour but were never rendered as floating item icons.
+        // The recovered renderer mounted only visual optics. Barrels, colours and utility
+        // modules affect gameplay but are not represented as floating inventory icons.
         ItemStack module = WeaponSystem.getModule(weapon, WeaponSystem.SIGHTS_SLOT);
         if (module.getItem() instanceof WeaponModuleItem moduleItem
                 && (moduleItem.getEffect() == WeaponModuleItem.Effect.HOLO_SIGHTS
