@@ -43,7 +43,7 @@ public final class ModNetwork {
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
     public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines)); }
     public static void fireOmniTool() { CHANNEL.sendToServer(new OmniToolFirePacket()); }
-    public static void weaponTrigger(boolean pressed) { CHANNEL.sendToServer(new WeaponTriggerPacket(pressed)); }
+    public static void weaponTrigger(boolean pressed, boolean aiming) { CHANNEL.sendToServer(new WeaponTriggerPacket(pressed, aiming)); }
     public static void requestContractAbandon(int slot) { CHANNEL.sendToServer(new ContractAbandonPacket(slot)); }
     public static void requestDroneStatus() { CHANNEL.sendToServer(DroneCommandPacket.requestStatus()); }
 
