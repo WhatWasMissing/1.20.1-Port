@@ -17,12 +17,11 @@ import net.minecraft.world.level.Level;
 /**
  * Item and view-model renderer for Matter Overdrive firearms.
  *
- * Renderer 2.0 owns the first-person transform. Native Destiny weapons deliberately
- * bypass the generic baked-energy-weapon path and render their supplied skeletal model.
+ * Renderer 2.0 owns the first-person animation layer. Imported weapons retain their
+ * authored FIRST_PERSON_RIGHT_HAND transform beneath that layer, while original MO guns
+ * use the recovered FIXED-model pose reconstructed by WeaponClientEffects.
  */
 public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
-    private static NativeDestinyWeaponRenderer nativeDestinyRenderer;
-
     public WeaponItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
                 Minecraft.getInstance().getEntityModels());
@@ -32,25 +31,19 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
     public void renderByItem(ItemStack weapon, ItemDisplayContext displayContext,
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
-        if (weapon.getItem() instanceof NativeDestinyWeaponItem) {
-            nativeDestinyRenderer().renderByItem(weapon, displayContext, poseStack, buffer,
-                    packedLight, packedOverlay);
-            return;
-        }
+        // NativeDestinyWeaponItem has its own BEWLR. This class handles original MO guns.
+        if (weapon.getItem() instanceof NativeDestinyWeaponItem) return;
         if (weapon.getItem() instanceof EnergyWeaponItem) {
             renderWeaponAndOptic(weapon, displayContext, poseStack, buffer, packedLight, packedOverlay);
         }
     }
 
-    /** Renders any firearm owned by Renderer 2.0 after the camera-space pose is applied. */
+    /** Renders any firearm owned by Renderer 2.0 after its animation pose is applied. */
     public void renderFirstPerson(ItemStack weapon, PoseStack poseStack,
                                   MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        if (weapon.getItem() instanceof NativeDestinyWeaponItem) {
-            nativeDestinyRenderer().renderNative(weapon, poseStack, buffer, packedLight, packedOverlay);
-            return;
-        }
-        if (weapon.getItem() instanceof VexMythoclastItem) {
-            renderBakedOnly(weapon, poseStack, buffer, packedLight, packedOverlay);
+        if (weapon.getItem() instanceof NativeDestinyWeaponItem
+                || weapon.getItem() instanceof VexMythoclastItem) {
+            renderAuthoredFirstPerson(weapon, poseStack, buffer, packedLight, packedOverlay);
             return;
         }
         if (weapon.getItem() instanceof EnergyWeaponItem) {
@@ -59,18 +52,13 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         }
     }
 
-    private static NativeDestinyWeaponRenderer nativeDestinyRenderer() {
-        if (nativeDestinyRenderer == null) nativeDestinyRenderer = new NativeDestinyWeaponRenderer();
-        return nativeDestinyRenderer;
-    }
-
-    private static void renderBakedOnly(ItemStack weapon, PoseStack poseStack,
-                                        MultiBufferSource buffer, int packedLight, int packedOverlay) {
+    private static void renderAuthoredFirstPerson(ItemStack weapon, PoseStack poseStack,
+                                                  MultiBufferSource buffer, int packedLight, int packedOverlay) {
         Minecraft minecraft = Minecraft.getInstance();
         var itemRenderer = minecraft.getItemRenderer();
         BakedModel model = itemRenderer.getModel(weapon, minecraft.level, null, 0);
-        itemRenderer.render(weapon, ItemDisplayContext.FIXED, false, poseStack, buffer,
-                packedLight, packedOverlay, model);
+        itemRenderer.render(weapon, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND, false,
+                poseStack, buffer, packedLight, packedOverlay, model);
     }
 
     private static void renderWeaponAndOptic(ItemStack weapon, ItemDisplayContext displayContext,
