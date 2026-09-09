@@ -64,6 +64,7 @@ public final class TechnologyFacilityStructure extends Structure {
         return Optional.of(new GenerationStub(origin, builder -> {
             TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout);
             FacilityInfrastructurePiece.assemble(builder, kind, origin, layout);
+            FacilityTerrainPiece.assemble(builder, kind, origin, layout);
         }));
     }
 

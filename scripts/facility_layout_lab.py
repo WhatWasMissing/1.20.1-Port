@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
-"""Offline visual/topology lab for Matter Overdrive native facility layouts.
+"""Matter Overdrive facility QA v2.
 
-This is deliberately a QA mirror rather than a second world generator. It renders the
-piece graph used by TechnologyFacilityStructurePiece + FacilityInfrastructurePiece,
-checks the invariants that previously produced unreachable rooms, and emits SVG/JSON
-artifacts without Minecraft, Forge, Pillow, or matplotlib.
+Offline architectural QA for the six native Forge 1.20.1 technology facilities.
+The lab mirrors layout placement, then checks player-scale reachability across room
+floors, corridors, one/two block level transitions, ladders/stairs, service access,
+and restoration-gated thresholds. It also emits plan + elevation SVGs and a JSON
+report. No Minecraft/Forge imports are required.
 
-Run from the repository root:
-    python scripts/facility_layout_lab.py
-
-Outputs are written to build/reports/facility_layout_lab/ by default.
+The mirror is intentionally guarded against Java drift: when run from the repo,
+source markers for the critical traversal pieces must still exist in the real
+StructurePiece assembly code.
 """
 from __future__ import annotations
 
 import argparse
 import html
 import json
+from collections import deque
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
@@ -113,34 +114,33 @@ def bunker(layout: int) -> list[Piece]:
               p("armory_gate",0,12,0,2,0,"gate")]
     elif layout == 1:
         q += [p("drone_bay",-18,0,0,7,7), p("android_bay",-18,18,0,7,7), p("armory",18,0,0,7,7),
-              p("armory_gate",10,0,0,0,2,"gate")]
+              p("armory_gate",10,0,0,0,2,"gate"), corridor_z(-18,9,name="bunker_android_link")]
     else:
         q += [p("drone_bay",18,0,0,7,7), p("android_bay",18,18,0,7,7), p("armory",-18,0,0,7,7),
-              p("armory_gate",-10,0,0,0,2,"gate")]
+              p("armory_gate",-10,0,0,0,2,"gate"), corridor_z(18,9,name="bunker_android_link")]
     return q
 
 
 def fusion(layout: int) -> list[Piece]:
     turn = -1 if layout == 1 else 1
     bridge_z = -4 if layout == 2 else 4
-    q = [p("fusion_core",0,0,0,10,10), p("stabilizer_wing",-22*turn,0,0,8,7),
-         p("reactor_control",22*turn,0,0,8,7), p("service_wing",0,22,-2,7,8),
-         p("entrance",0,-22,0,4,6,"entrance"), corridor_x(-13*turn,0), corridor_x(13*turn,0),
-         corridor_z(0,13), corridor_z(0,-13), p("observation_bridge",0,bridge_z,6,7,2,"service"),
-         p("service_spine",0,0,6,8,1,"service"), p("service_bridge_link",0,(-1 if layout==2 else 1),6,1,2,"service"),
-         p("service_access",8,-3,0,3,3,"vertical"), p("lowered_step",0,14,0,2,2,"vertical"),
-         p("surface_stair",0,-28,0,2,3,"vertical"), p("restoration_terminal",0,-6,1,0,0,"objective"),
-         p("secure_gate",13*turn,0,0,0,2,"gate"), p("roof_plant",0,0,10,4,3,"service")]
-    return q
+    return [p("fusion_core",0,0,0,10,10), p("stabilizer_wing",-22*turn,0,0,8,7),
+            p("reactor_control",22*turn,0,0,8,7), p("service_wing",0,22,-2,7,8),
+            p("entrance",0,-22,0,4,6,"entrance"), corridor_x(-13*turn,0), corridor_x(13*turn,0),
+            corridor_z(0,13), corridor_z(0,-13), p("observation_bridge",0,bridge_z,6,7,2,"service"),
+            p("service_spine",0,0,6,8,1,"service"), p("service_bridge_link",0,(-1 if layout==2 else 1),6,1,2,"service"),
+            p("service_access",8,-3,0,3,3,"vertical"), p("lowered_step",0,14,0,2,2,"vertical"),
+            p("surface_stair",0,-28,0,2,3,"vertical"), p("restoration_terminal",0,-6,1,0,0,"objective"),
+            p("secure_gate",13*turn,0,0,0,2,"gate"), p("roof_plant",0,0,10,4,3,"service")]
 
 
 def black_site(layout: int) -> list[Piece]:
     d = -1 if layout == 1 else 1
-    q = [p("black_core",0,0,0,8,8), p("black_security",0,-16,0,7,7), p("entrance_shaft",0,-27,0,3,3,"entrance"),
+    q = [p("black_core",0,0,0,8,8), p("black_security",0,-16,0,7,7), p("entrance_shaft",0,-27,12,3,3,"entrance"),
          p("security_checkpoint",0,-10,0,4,4), p("black_lab",-18*d,0,0,7,7), p("containment",18*d,0,0,7,7),
          p("vault",0,19,-6,7,7), corridor_x(-10*d,0), corridor_x(10*d,0), corridor_z(0,10), corridor_z(0,-9),
          p("vault_gate",0,11,0,2,0,"gate"), p("entry_ladder",0,-25,0,1,1,"vertical"),
-         p("surface_hatch",0,-27,12,2,2,"vertical"), p("vault_stair",0,16,-3,2,3,"vertical")]
+         p("surface_hatch",0,-27,12,2,2,"vertical"), p("vault_stair",0,13,0,2,6,"vertical")]
     if layout == 2:
         q += [p("lower_lab",-18,19,-6,7,7), corridor_x(-9,19,-6,"lower_lab_link")]
     return q
@@ -154,107 +154,213 @@ BUILDERS = {
     "black_site": black_site,
 }
 
+REQUIRED = {
+    "plant": {"manufacturing_core", "fabrication", "assembly", "shipping"},
+    "refinery": {"refinery_core", "excavation", "storage", "processing", "excavation_shaft"},
+    "relay": {"quantum_core", "relay_wing", "power_wing", "control_wing"},
+    "bunker": {"bunker_command", "security_checkpoint", "drone_bay", "android_bay", "armory"},
+    "fusion": {"fusion_core", "stabilizer_wing", "reactor_control", "service_wing"},
+    "black_site": {"black_core", "black_security", "black_lab", "containment", "vault", "security_checkpoint"},
+}
+
 ROLE_STYLE = {
-    "room": ("#d9e3ec", "#667788"),
-    "entrance": ("#e8dfc8", "#8a7650"),
-    "corridor": ("#cfd8df", "#71808a"),
-    "gate": ("#f0c8c8", "#9a4444"),
-    "service": ("#e0d1ea", "#7f5c8d"),
-    "vertical": ("#cae8cf", "#4d8158"),
-    "objective": ("#c7e8e8", "#397b7b"),
-    "fix": ("#f2ddaa", "#8c6b21"),
+    "room": ("#d9e3ec", "#667788"), "entrance": ("#e8dfc8", "#8a7650"),
+    "corridor": ("#cfd8df", "#71808a"), "gate": ("#f0c8c8", "#9a4444"),
+    "service": ("#e0d1ea", "#7f5c8d"), "vertical": ("#cae8cf", "#4d8158"),
+    "objective": ("#c7e8e8", "#397b7b"), "fix": ("#f2ddaa", "#8c6b21"),
+}
+
+# Critical strings make accidental divergence between this mirror and the Java assembler visible.
+SOURCE_MARKERS = {
+    "src/main/java/matteroverdrive/worldgen/TechnologyFacilityStructurePiece.java": [
+        "c.offset(-19, 0, 13)", "c.offset(19, 0, 13)", "c.offset(0, -6, 19)",
+        "Room.EXCAVATION_SHAFT", "Room.OBSERVATION_BRIDGE",
+    ],
+    "src/main/java/matteroverdrive/worldgen/FacilityInfrastructurePiece.java": [
+        "Kind.SERVICE_ACCESS", "Kind.LOWERED_STEP_EAST", "Kind.LOWERED_STEP_WEST",
+        "Kind.LADDER_DOWN_7", "Kind.LADDER_DOWN_12", "Kind.BLACK_SURFACE_HATCH",
+        "Kind.BLACK_VAULT_STAIR", "Kind.BLACK_LOWER_CORRIDOR_X",
+        "Kind.PLANT_EAST_ENTRANCE_FIX", "Kind.SERVICE_BRIDGE_LINK_NORTH",
+    ],
+    "src/main/java/matteroverdrive/worldgen/FacilityTerrainPiece.java": [
+        "Kind.ENTRY_APRON_NORTH", "Kind.SALVAGE_FOUNDATION", "Kind.BLACK_HATCH_CROWN",
+        "Kind.BUNKER_ANDROID_LINK_Z", "c.offset(-18, 0, 9)", "c.offset(18, 0, 9)",
+    ],
 }
 
 
-def assert_layout(family: str, layout: int, pieces: list[Piece]) -> list[str]:
-    names = {x.name for x in pieces}
+def vertical_levels(piece: Piece) -> set[int]:
+    name = piece.name
+    if name == "service_access":
+        top = 7 if piece.x == -8 and piece.z == 5 else 6 if piece.x == 8 and piece.z == -3 else 5
+        return set(range(piece.y, piece.y + top + 1))
+    if name == "entry_ladder":
+        return set(range(piece.y, 13 if piece.y == 0 and piece.z <= -25 else 8))
+    if name == "excavation_ladder": return set(range(piece.y, piece.y + 13))
+    if name == "lowered_step": return {piece.y, piece.y - 1, piece.y - 2}
+    if name == "vault_stair": return set(range(piece.y - 6, piece.y + 1))
+    if name == "surface_hatch": return set(range(piece.y, piece.y + 5))
+    if name == "surface_stair": return {piece.y, piece.y + 1, piece.y + 2}
+    return {piece.y}
+
+
+def axis_gap(a0: int, a1: int, b0: int, b1: int) -> int:
+    if a1 < b0: return b0 - a1 - 1
+    if b1 < a0: return a0 - b1 - 1
+    return 0
+
+
+def horizontally_close(a: Piece, b: Piece, allowance: int = 1) -> bool:
+    return axis_gap(a.x0, a.x1, b.x0, b.x1) <= allowance and axis_gap(a.z0, a.z1, b.z0, b.z1) <= allowance
+
+
+def connected(a: Piece, b: Piece) -> bool:
+    if not horizontally_close(a, b, 1): return False
+    la, lb = vertical_levels(a), vertical_levels(b)
+    if la & lb: return True
+    # A one-block ordinary step is walkable. Larger changes require an explicit vertical piece.
+    if min(abs(x-y) for x in la for y in lb) <= 1:
+        return True
+    return False
+
+
+def graph_for(pieces: list[Piece], gates_open: bool) -> dict[int, set[int]]:
+    graph = {i:set() for i in range(len(pieces))}
+    for i, a in enumerate(pieces):
+        if a.role == "gate" and not gates_open: continue
+        for j in range(i+1, len(pieces)):
+            b = pieces[j]
+            if b.role == "gate" and not gates_open: continue
+            if connected(a,b):
+                graph[i].add(j); graph[j].add(i)
+    return graph
+
+
+def reachable(pieces: list[Piece], gates_open: bool) -> set[int]:
+    graph = graph_for(pieces, gates_open)
+    starts = [i for i,piece in enumerate(pieces) if piece.role == "entrance"]
+    seen = set(starts); queue = deque(starts)
+    while queue:
+        i = queue.popleft()
+        for j in graph[i]:
+            if j not in seen:
+                seen.add(j); queue.append(j)
+    return seen
+
+
+def assert_layout(family: str, layout: int, pieces: list[Piece]) -> tuple[list[str], dict]:
     errors: list[str] = []
-    def need(*required: str) -> None:
-        for item in required:
-            if item not in names: errors.append(f"missing {item}")
+    names = {x.name for x in pieces}
+    post = reachable(pieces, True)
+    pre = reachable(pieces, False)
+    post_names = {pieces[i].name for i in post}
+    pre_names = {pieces[i].name for i in pre}
 
-    if family == "plant":
-        need("service_access")
-        if layout == 1: need("shipping_gate_west", "east_entrance_fix")
-        if layout == 2: need("qa_core_link_west", "qa_core_link_east", "qa_shipping_link", "shipping_gate")
-    elif family == "refinery": need("lowered_step", "excavation_ladder", "service_access", "processing_gate")
-    elif family == "relay": need("restoration_terminal", "service_access", "control_gate", "wing_gate")
-    elif family == "bunker": need("entry_ladder", "surface_stair", "armory_gate")
-    elif family == "fusion": need("lowered_step", "surface_stair", "service_access", "service_bridge_link", "restoration_terminal", "secure_gate")
-    elif family == "black_site":
-        need("entry_ladder", "surface_hatch", "vault_stair", "vault_gate")
-        if layout == 2: need("lower_lab", "lower_lab_link")
+    required = set(REQUIRED[family])
+    if family == "black_site" and layout == 2: required.add("lower_lab")
+    missing = sorted(required - post_names)
+    if missing: errors.append("unreachable after restoration: " + ", ".join(missing))
 
+    if family in {"relay", "fusion"} and "restoration_terminal" not in pre_names:
+        errors.append("restoration terminal is not reachable before secure gates open")
+
+    if not any(x.role == "entrance" for x in pieces): errors.append("no entrance piece")
     for piece in pieces:
         if piece.hx > 12 or piece.hz > 12:
-            errors.append(f"oversized QA piece {piece.name}: {piece.hx}x{piece.hz}")
-    return errors
+            errors.append(f"oversized QA piece {piece.name}: half-extents {piece.hx}x{piece.hz}")
+
+    # Specific regressions that are easy to hide in a generic graph.
+    if family == "plant" and layout == 1 and "east_entrance_fix" not in names: errors.append("missing east entrance opening")
+    if family == "plant" and layout == 2:
+        for required_name in ("qa_core_link_west","qa_core_link_east","qa_shipping_link"):
+            if required_name not in names: errors.append(f"missing {required_name}")
+    if family == "bunker" and "entry_ladder" not in names: errors.append("missing bunker shaft ladder")
+    if family == "black_site" and not {"entry_ladder","surface_hatch","vault_stair"}.issubset(names):
+        errors.append("black site missing one or more vertical access pieces")
+
+    return errors, {
+        "pre_restore_reachable": sorted(pre_names),
+        "post_restore_reachable": sorted(post_names),
+        "required": sorted(required),
+        "post_restore_coverage": round(len(required & post_names) / max(1, len(required)), 3),
+    }
 
 
-def render_svg(title: str, pieces: Iterable[Piece], out: Path) -> None:
-    pieces = list(pieces)
-    margin = 5
-    x0 = min(x.x0 for x in pieces) - margin
-    x1 = max(x.x1 for x in pieces) + margin
-    z0 = min(x.z0 for x in pieces) - margin
-    z1 = max(x.z1 for x in pieces) + margin
-    scale = 10
-    width = (x1 - x0 + 1) * scale
-    height = (z1 - z0 + 1) * scale + 36
-    def sx(x: float) -> float: return (x - x0) * scale
-    def sy(z: float) -> float: return (z - z0) * scale + 32
+def validate_source_markers(root: Path) -> list[str]:
+    failures: list[str] = []
+    for rel, markers in SOURCE_MARKERS.items():
+        path = root / rel
+        if not path.exists():
+            failures.append(f"source drift check missing file: {rel}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text: failures.append(f"source drift: {rel} missing marker {marker}")
+    return failures
 
-    body = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-            '<rect width="100%" height="100%" fill="#fafafa"/>',
-            f'<text x="8" y="20" font-family="monospace" font-size="14">{html.escape(title)}</text>']
-    role_order = {"room":0,"entrance":1,"corridor":2,"service":3,"vertical":4,"objective":5,"gate":6,"fix":7}
-    for piece in sorted(pieces, key=lambda q: (role_order.get(q.role, 9), q.y)):
-        fill, stroke = ROLE_STYLE.get(piece.role, ("#ddd", "#555"))
-        rx, ry = sx(piece.x0), sy(piece.z0)
-        rw, rh = max(scale, (piece.x1-piece.x0+1)*scale), max(scale, (piece.z1-piece.z0+1)*scale)
-        body.append(f'<rect x="{rx}" y="{ry}" width="{rw}" height="{rh}" fill="{fill}" fill-opacity="0.64" stroke="{stroke}" stroke-width="1.5"/>')
-        label = f"{piece.name} y{piece.y:+d}"
-        body.append(f'<text x="{rx+3}" y="{ry+12}" font-family="monospace" font-size="8" fill="#202020">{html.escape(label)}</text>')
-    body.append('</svg>')
-    out.write_text("\n".join(body), encoding="utf-8")
+
+def render_plan(title: str, pieces: list[Piece], reachable_ids: set[int], out: Path) -> None:
+    margin=5; x0=min(x.x0 for x in pieces)-margin; x1=max(x.x1 for x in pieces)+margin
+    z0=min(x.z0 for x in pieces)-margin; z1=max(x.z1 for x in pieces)+margin; scale=10
+    width=(x1-x0+1)*scale; height=(z1-z0+1)*scale+36
+    sx=lambda x:(x-x0)*scale; sy=lambda z:(z-z0)*scale+32
+    body=[f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">',
+          '<rect width="100%" height="100%" fill="#fafafa"/>',
+          f'<text x="8" y="20" font-family="monospace" font-size="14">{html.escape(title)}</text>']
+    for i,piece in enumerate(pieces):
+        fill,stroke=ROLE_STYLE.get(piece.role,("#ddd","#555")); opacity=.72 if i in reachable_ids else .20
+        rx,ry=sx(piece.x0),sy(piece.z0); rw=max(scale,(piece.x1-piece.x0+1)*scale); rh=max(scale,(piece.z1-piece.z0+1)*scale)
+        body.append(f'<rect x="{rx}" y="{ry}" width="{rw}" height="{rh}" fill="{fill}" fill-opacity="{opacity}" stroke="{stroke}" stroke-width="1.5"/>')
+        body.append(f'<text x="{rx+3}" y="{ry+12}" font-family="monospace" font-size="8">{html.escape(piece.name)} y{piece.y:+d}</text>')
+    body.append('</svg>'); out.write_text("\n".join(body),encoding="utf-8")
+
+
+def render_elevation(title: str, pieces: list[Piece], out: Path) -> None:
+    levels=sorted({level for piece in pieces for level in vertical_levels(piece)})
+    width=900; row=36; height=54+len(levels)*row
+    body=[f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">','<rect width="100%" height="100%" fill="#fafafa"/>',
+          f'<text x="8" y="20" font-family="monospace" font-size="14">{html.escape(title)} elevation/access bands</text>']
+    for idx,y in enumerate(reversed(levels)):
+        yy=42+idx*row; body.append(f'<line x1="42" y1="{yy}" x2="890" y2="{yy}" stroke="#ddd"/>')
+        body.append(f'<text x="5" y="{yy+4}" font-family="monospace" font-size="10">y{y:+d}</text>')
+        names=[piece.name for piece in pieces if y in vertical_levels(piece)]
+        body.append(f'<text x="48" y="{yy+4}" font-family="monospace" font-size="9">{html.escape(" | ".join(names))}</text>')
+    body.append('</svg>'); out.write_text("\n".join(body),encoding="utf-8")
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
-    ap.add_argument("--check-only", action="store_true")
-    ns = ap.parse_args()
-    out = ns.out
-    layouts = []
-    failures = []
-    if not ns.check_only: out.mkdir(parents=True, exist_ok=True)
+    ap=argparse.ArgumentParser(); ap.add_argument("--out",type=Path,default=DEFAULT_OUT); ap.add_argument("--check-only",action="store_true")
+    ap.add_argument("--skip-source-drift",action="store_true",help="skip Java mirror marker checks (useful for isolated script tests)")
+    ns=ap.parse_args(); failures=[]; layouts=[]
+    if not ns.skip_source_drift: failures.extend(validate_source_markers(ROOT))
+    if not ns.check_only: ns.out.mkdir(parents=True,exist_ok=True)
 
-    for family, builder in BUILDERS.items():
+    for family,builder in BUILDERS.items():
         for layout in range(3):
-            pieces = builder(layout)
-            errors = assert_layout(family, layout, pieces)
-            if errors: failures.extend(f"{family} layout {layout}: {e}" for e in errors)
-            layouts.append({"family": family, "layout": layout, "pieces": [asdict(x) for x in pieces], "errors": errors})
+            pieces=builder(layout); errors,access=assert_layout(family,layout,pieces)
+            failures.extend(f"{family} layout {layout}: {e}" for e in errors)
+            post=reachable(pieces,True)
+            layouts.append({"family":family,"layout":layout,"pieces":[asdict(x) for x in pieces],"access":access,"errors":errors})
             if not ns.check_only:
-                render_svg(f"{family} layout {layout}", pieces, out / f"{family}_layout_{layout}.svg")
+                render_plan(f"{family} layout {layout} - post-restoration reachability",pieces,post,ns.out/f"{family}_layout_{layout}.svg")
+                render_elevation(f"{family} layout {layout}",pieces,ns.out/f"{family}_layout_{layout}_elevation.svg")
 
     if not ns.check_only:
-        (out / "facility_layout_lab.json").write_text(json.dumps({"layouts": layouts, "failures": failures}, indent=2), encoding="utf-8")
-        index = ["<!doctype html><meta charset='utf-8'><title>M2 Facility Layout Lab</title>",
-                 "<style>body{font-family:sans-serif;background:#eee}main{display:grid;grid-template-columns:repeat(3,minmax(300px,1fr));gap:12px}iframe{width:100%;height:420px;border:1px solid #aaa;background:white}</style><h1>Matter Overdrive Facility Layout Lab</h1><main>"]
+        payload={"version":2,"layouts":layouts,"failures":failures}
+        (ns.out/"facility_layout_lab.json").write_text(json.dumps(payload,indent=2),encoding="utf-8")
+        index=["<!doctype html><meta charset='utf-8'><title>M2 Facility Layout Lab v2</title>",
+               "<style>body{font-family:sans-serif;background:#eee}main{display:grid;grid-template-columns:repeat(2,minmax(380px,1fr));gap:12px}iframe{width:100%;height:440px;border:1px solid #aaa;background:white}</style><h1>Matter Overdrive Facility Layout Lab v2</h1><p>Opaque pieces are reachable from the entrance after restoration. Each plan has an elevation/access-band view.</p><main>"]
         for family in BUILDERS:
             for layout in range(3):
-                fn=f"{family}_layout_{layout}.svg"
-                index.append(f"<iframe title='{family} layout {layout}' src='{fn}'></iframe>")
-        index.append("</main>")
-        (out / "index.html").write_text("\n".join(index), encoding="utf-8")
+                index += [f"<iframe title='{family} {layout}' src='{family}_layout_{layout}.svg'></iframe>",
+                          f"<iframe title='{family} {layout} elevation' src='{family}_layout_{layout}_elevation.svg'></iframe>"]
+        index.append("</main>"); (ns.out/"index.html").write_text("\n".join(index),encoding="utf-8")
 
     if failures:
-        print("FACILITY LAYOUT LAB FAILED")
-        for f in failures: print(" -", f)
+        print("FACILITY LAYOUT LAB V2 FAILED")
+        for failure in failures: print(" -",failure)
         return 1
-    print("FACILITY LAYOUT LAB PASSED: 18 layouts")
+    print("FACILITY LAYOUT LAB V2 PASSED: 18 layouts; player-scale reachability verified")
     return 0
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+if __name__ == "__main__": raise SystemExit(main())

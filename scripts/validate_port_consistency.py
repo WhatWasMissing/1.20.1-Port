@@ -1,0 +1,226 @@
+#!/usr/bin/env python3
+"""Static consistency audit for the Matter Overdrive 1.20.1 port.
+
+The active Java registries are the source of truth. Historical parity inventories are
+reference material only. The audit is intentionally Forge-independent so it can run
+before Gradle and produce a useful report even when the game cannot be launched.
+"""
+from __future__ import annotations
+
+import json
+import re
+from dataclasses import dataclass, asdict
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+ASSETS = ROOT / "src/main/resources/assets/matteroverdrive"
+DATA = ROOT / "src/main/resources/data/matteroverdrive"
+REPORT_DIR = ROOT / "build/reports"
+BLOCKS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModBlocks.java"
+ITEMS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModItems.java"
+STRUCTURES_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModStructures.java"
+STRUCTURE_JAVA = ROOT / "src/main/java/matteroverdrive/worldgen/TechnologyFacilityStructure.java"
+INVENTORY_JSON = ROOT / "PORT_INVENTORY.json"
+LANG_JSON = ASSETS / "lang/en_us.json"
+GUIDE_ROOT = ASSETS / "guides/matteroverdrive/guide"
+RETIRED_ACTIVE_IDS = {"star_map"}
+
+@dataclass
+class Finding:
+    severity: str
+    category: str
+    message: str
+
+findings: list[Finding] = []
+
+def add(severity: str, category: str, message: str) -> None:
+    findings.append(Finding(severity, category, message))
+
+def read(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError as exc:
+        add("error", "source", f"cannot read {path.relative_to(ROOT)}: {exc}")
+        return ""
+
+def java_list(text: str, name: str, constructor: str = "List") -> list[str]:
+    match = re.search(rf"\b{name}\s*=\s*{constructor}\.of\((.*?)\);", text, re.S)
+    if not match:
+        add("error", "registry", f"could not parse {name}")
+        return []
+    return re.findall(r'"([^"\\]+)"', match.group(1))
+
+def json_file(path: Path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        add("error", "json", f"invalid JSON {path.relative_to(ROOT)}: {exc}")
+        return None
+
+def all_json_files() -> list[Path]:
+    roots = [ASSETS, DATA]
+    return sorted(p for root in roots if root.exists() for p in root.rglob("*.json"))
+
+def resolve_model(ref: str) -> Path | None:
+    if ref.startswith("minecraft:") or ref.startswith("builtin/") or ref.startswith("item/") or ref.startswith("block/"):
+        return None
+    if ref.startswith("matteroverdrive:"):
+        rel = ref.split(":", 1)[1]
+        return ASSETS / "models" / f"{rel}.json"
+    return None
+
+def walk_models(node):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == "model" and isinstance(value, str):
+                yield value
+            else:
+                yield from walk_models(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from walk_models(value)
+
+def walk_texture_values(node):
+    if isinstance(node, dict):
+        textures = node.get("textures")
+        if isinstance(textures, dict):
+            for value in textures.values():
+                if isinstance(value, str):
+                    yield value
+        for value in node.values():
+            yield from walk_texture_values(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from walk_texture_values(value)
+
+def check_json_and_model_refs() -> None:
+    for path in all_json_files():
+        obj = json_file(path)
+        if obj is None:
+            continue
+        posix = path.as_posix()
+        if "assets/matteroverdrive/blockstates" in posix or "assets/matteroverdrive/models" in posix:
+            for ref in walk_models(obj):
+                target = resolve_model(ref)
+                if target is not None and not target.exists():
+                    add("error", "model", f"{path.relative_to(ROOT)} references missing model {ref}")
+        if "assets/matteroverdrive/models" in posix:
+            for ref in walk_texture_values(obj):
+                if ref.startswith("#") or ref.startswith("minecraft:"):
+                    continue
+                if ref.startswith("matteroverdrive:"):
+                    rel = ref.split(":", 1)[1]
+                    target = ASSETS / "textures" / f"{rel}.png"
+                    if not target.exists():
+                        add("error", "texture", f"{path.relative_to(ROOT)} references missing texture {ref}")
+
+def check_registry_resources() -> tuple[list[str], list[str]]:
+    block_text, item_text = read(BLOCKS_JAVA), read(ITEMS_JAVA)
+    blocks = java_list(block_text, "LEGACY_BLOCK_IDS")
+    no_items = set(java_list(block_text, "NO_BLOCK_ITEM", "Set"))
+    items = java_list(item_text, "STANDALONE_ITEM_IDS")
+    for label, values in (("block", blocks), ("standalone item", items)):
+        for value in sorted({x for x in values if values.count(x) > 1}):
+            add("error", "registry", f"duplicate {label} id: {value}")
+    for retired in sorted(RETIRED_ACTIVE_IDS):
+        if retired in blocks or retired in items:
+            add("error", "retired-content", f"retired id {retired!r} is active in Java registries")
+    lang = json_file(LANG_JSON)
+    if not isinstance(lang, dict):
+        lang = {}
+    for block in blocks:
+        if not (ASSETS / "blockstates" / f"{block}.json").exists():
+            add("warning", "resource", f"active block {block} has no blockstate JSON")
+        key = f"block.matteroverdrive.{block}"
+        if key not in lang:
+            add("warning", "localization", f"active block {block} lacks {key}")
+        if block not in no_items and not (ASSETS / "models/item" / f"{block}.json").exists():
+            add("warning", "resource", f"block item {block} has no item model")
+    for item in items:
+        key = f"item.matteroverdrive.{item}"
+        if key not in lang and f"item.matteroverdrive.{item}.name" not in lang:
+            add("warning", "localization", f"standalone item {item} has no modern localization key")
+        if not (ASSETS / "models/item" / f"{item}.json").exists():
+            add("warning", "resource", f"standalone item {item} has no item model")
+    return blocks, items
+
+def check_guides() -> None:
+    if not GUIDE_ROOT.exists():
+        add("warning", "guideme", "GuideME guide root does not exist")
+        return
+    link_re = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+    retired_re = re.compile(r"\bstar[ _-]?map\b", re.I)
+    for path in sorted(GUIDE_ROOT.rglob("*.md")):
+        text = read(path)
+        if retired_re.search(text):
+            add("error", "retired-content", f"active GuideME page mentions retired Star Map: {path.relative_to(ROOT)}")
+        for raw in link_re.findall(text):
+            href = raw.strip().split("#", 1)[0]
+            if not href or "://" in href or href.startswith("#"):
+                continue
+            target = GUIDE_ROOT / href.lstrip("/") if href.startswith("/") else (path.parent / href).resolve()
+            if target.suffix == "" and target.with_suffix(".md").exists():
+                target = target.with_suffix(".md")
+            if not target.exists():
+                add("warning", "guideme", f"broken local link in {path.relative_to(ROOT)}: {raw}")
+
+def check_structure_architecture() -> None:
+    registry = read(STRUCTURES_JAVA)
+    structure = read(STRUCTURE_JAVA)
+    for marker in ["TECHNOLOGY_FACILITY_PIECE", "FACILITY_INFRASTRUCTURE_PIECE", "FACILITY_TERRAIN_PIECE"]:
+        if marker not in registry:
+            add("error", "worldgen", f"missing native StructurePiece registration marker: {marker}")
+    for marker in ["TechnologyFacilityStructurePiece.assemble", "FacilityInfrastructurePiece.assemble", "FacilityTerrainPiece.assemble"]:
+        if marker not in structure:
+            add("error", "worldgen", f"TechnologyFacilityStructure does not assemble {marker.split('.')[0]}")
+    if "GenerationStub" not in structure:
+        add("error", "worldgen", "technology facilities are no longer using native Structure.GenerationStub")
+
+def check_inventory_scope() -> None:
+    inv = json_file(INVENTORY_JSON)
+    if not isinstance(inv, dict):
+        return
+    scope_doc = ROOT / "docs/reference/PORT_INVENTORY_SCOPE.md"
+    scope_text = read(scope_doc).lower() if scope_doc.exists() else ""
+    explicit_historical = inv.get("inventoryScope") == "historical-legacy-reference" or (
+        "historical" in scope_text and "source of truth" in scope_text and "star map" in scope_text
+    )
+    if not explicit_historical:
+        add("warning", "inventory", "PORT_INVENTORY.json is not explicitly documented as historical reference")
+
+def write_reports(blocks: list[str], items: list[str]) -> None:
+    REPORT_DIR.mkdir(parents=True, exist_ok=True)
+    counts = {level: sum(f.severity == level for f in findings) for level in ("error", "warning", "info")}
+    report = {"sourceOfTruth": "active Java registries", "activeBlocks": len(blocks),
+              "standaloneItems": len(items), "counts": counts, "findings": [asdict(f) for f in findings]}
+    (REPORT_DIR / "m2-port-consistency.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    lines = ["# Matter Overdrive Port Consistency Report", "",
+             "Active Java registries are authoritative; historical inventories are reference-only.", "",
+             f"- Active blocks parsed: **{len(blocks)}**", f"- Standalone items parsed: **{len(items)}**",
+             f"- Errors: **{counts['error']}**", f"- Warnings: **{counts['warning']}**", ""]
+    for severity in ("error", "warning", "info"):
+        selected = [f for f in findings if f.severity == severity]
+        if selected:
+            lines += [f"## {severity.title()}s", ""] + [f"- **{f.category}**: {f.message}" for f in selected] + [""]
+    (REPORT_DIR / "m2-port-consistency.md").write_text("\n".join(lines), encoding="utf-8")
+
+def main() -> int:
+    blocks, items = check_registry_resources()
+    check_json_and_model_refs()
+    check_guides()
+    check_structure_architecture()
+    check_inventory_scope()
+    write_reports(blocks, items)
+    errors = [f for f in findings if f.severity == "error"]
+    warnings = [f for f in findings if f.severity == "warning"]
+    if errors:
+        print(f"M2 PORT CONSISTENCY FAILED: {len(errors)} error(s), {len(warnings)} warning(s)")
+        for f in errors[:30]:
+            print(f" - [{f.category}] {f.message}")
+        return 1
+    print(f"M2 PORT CONSISTENCY PASSED: {len(blocks)} blocks, {len(items)} standalone items, {len(warnings)} warning(s)")
+    print("Report: build/reports/m2-port-consistency.md")
+    return 0
+
+if __name__ == "__main__":
+    raise SystemExit(main())

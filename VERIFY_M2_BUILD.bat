@@ -3,6 +3,7 @@ setlocal EnableExtensions
 cd /d "%~dp0"
 
 set "EXITCODE=0"
+set "PYTHON_CMD="
 
 echo ============================================================
 echo  Matter Overdrive 1.20.1 - M2 build verification
@@ -31,9 +32,45 @@ if not "%JAVA_MAJOR%"=="17" (
 )
 
 echo [PASS] JDK 17 detected: %JAVAC_VERSION%
-echo.
 
-echo [1/4] Gradle bootstrap...
+where py.exe >nul 2>&1
+if not errorlevel 1 set "PYTHON_CMD=py -3"
+if not defined PYTHON_CMD (
+  where python.exe >nul 2>&1
+  if not errorlevel 1 set "PYTHON_CMD=python"
+)
+if not defined PYTHON_CMD (
+  echo [FAIL] Python 3 is required for the static structure and consistency gates.
+  set "EXITCODE=28"
+  goto :finish
+)
+
+echo.
+echo [1/7] Facility layout reachability gate...
+%PYTHON_CMD% scripts\facility_layout_lab.py --check-only
+if errorlevel 1 (
+  set "EXITCODE=29"
+  goto :finish
+)
+
+echo.
+echo [2/7] Native structure expansion gate...
+%PYTHON_CMD% scripts\validate_structure_expansion.py
+if errorlevel 1 (
+  set "EXITCODE=30"
+  goto :finish
+)
+
+echo.
+echo [3/7] Whole-port consistency audit...
+%PYTHON_CMD% scripts\validate_port_consistency.py
+if errorlevel 1 (
+  set "EXITCODE=31"
+  goto :finish
+)
+
+echo.
+echo [4/7] Gradle bootstrap...
 call gradlew.bat --version
 if errorlevel 1 (
   set "EXITCODE=23"
@@ -41,7 +78,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [2/4] Re-running the verified M1 resource gate...
+echo [5/7] Re-running the verified M1 resource gate...
 call gradlew.bat verifyM1Resources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=24"
@@ -49,7 +86,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [3/4] Checking the M2 functional-machines source gate...
+echo [6/7] Checking the M2 functional-machines source gate...
 call gradlew.bat verifyM2Sources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=25"
@@ -57,15 +94,15 @@ if errorlevel 1 (
 )
 
 echo.
-echo [4/4] Clean Forge compilation...
+echo [7/7] Clean Forge compilation...
 call gradlew.bat clean build --stacktrace
 if errorlevel 1 (
   set "EXITCODE=26"
   goto :finish
 )
 
-if not exist "build\libs\matteroverdrive-0.8.0.0-alpha.4.1.jar" (
-  echo [FAIL] Build completed but expected JAR was not found.
+if not exist "build\libs\*.jar" (
+  echo [FAIL] Build completed but no JAR was found under build\libs.
   set "EXITCODE=27"
   goto :finish
 )
@@ -74,7 +111,11 @@ echo.
 echo ============================================================
 echo [PASS] M2 BUILD GATE PASSED
 echo ============================================================
-echo JAR: build\libs\matteroverdrive-0.8.0.0-alpha.4.1.jar
+echo Built JARs:
+dir /b "build\libs\*.jar"
+echo.
+echo Static report: build\reports\m2-port-consistency.md
+echo Facility report: build\reports\facility_layout_lab\facility_layout_lab.json
 echo.
 
 :finish
