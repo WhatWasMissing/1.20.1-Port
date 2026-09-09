@@ -1,1 +1,6 @@
-{"parent":"matteroverdrive:block/heavy_matter_pipe"}
+{
+  "parent": "matteroverdrive:block/pipe/pipe_center",
+  "textures": {
+    "0": "matteroverdrive:block/hybrid_conduit"
+  }
+}
