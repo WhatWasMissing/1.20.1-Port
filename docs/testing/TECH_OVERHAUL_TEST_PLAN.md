@@ -7,7 +7,7 @@ This branch is intentionally isolated from `main` until the systems below pass l
 ## Build gate
 
 - Run `BUILD_LOCAL.bat`.
-- Confirm `verifyM2Sources` and resource parsing pass.
+- Confirm `verifyM2Sources`, `validate_tech_overhaul.py` and resource parsing pass.
 - Confirm no missing model/blockstate/recipe/loot-table errors appear in `latest.log`.
 
 ## Grid Capacitor
@@ -27,18 +27,35 @@ This branch is intentionally isolated from `main` until the systems below pass l
 
 ## Quantum Power Relay
 
-- Two loaded relays on the same channel transfer FE within 256 blocks.
-- Different channels do not cross-connect.
+- Place three loaded relays within 256 blocks.
+- Use the Quantum Linker on relay A and then relay B; A/B should transfer FE.
+- Leave relay C unlinked; it must receive zero wireless FE from A/B.
+- Confirm a relay can maintain several deliberate links, up to the 8-link cap.
+- Attempt to link relays more than 256 blocks apart; creation must be rejected.
+- Attempt to pair across dimensions; creation must be rejected.
 - Unloaded destination does not force-load.
-- Changing channel immediately updates the loaded-relay registry.
-- Break/re-place/reload does not leave ghost peers.
-- Large worlds with many relays do not show full-volume scan stalls.
+- Sneak-use Quantum Linker on a relay clears its links and wireless transfer stops.
+- Save/reload preserves explicit links.
+- Breaking/replacing an endpoint does not create a new automatic link.
+- Large worlds with many unlinked relays do not create a shared wireless pool or full-volume scan stalls.
+
+## Hybrid Conduit
+
+- Craft and place a Hybrid Conduit run.
+- Connect a normal FE source through Hybrid Conduit to an FE consumer and verify transfer.
+- Splice Hybrid Conduit into an existing Heavy Energy Cable run and verify FE routing crosses the boundary.
+- Connect a Matter source through the same Hybrid Conduit run to a Matter consumer and verify Matter transfer.
+- Splice Hybrid Conduit into an existing Matter Transport Pipe run and verify Matter routing crosses the boundary.
+- Run FE and Matter simultaneously through one Hybrid Conduit line and check for duplication/loss.
+- Confirm configured FE and Matter face policies are still respected at the destination machine.
+- Verify cable arms visually connect to Hybrid Conduits, machine block entities and ordinary Matter Pipes.
+- Confirm Network Cable task routing is still separate; Hybrid Conduit must not accidentally become a Pattern/Router task cable.
 
 ## Matter Storage Matrix
 
 - All four cell tiers install/remove correctly.
 - Capacity is the sum of installed cells.
-- Matrix accepts/extracts Matter through Matter Transport Pipe.
+- Matrix accepts/extracts Matter through Matter Transport Pipe and Hybrid Conduit.
 - Removing a cell is rejected when stored Matter would exceed remaining capacity.
 - Reload preserves cells and Matter.
 - Breaking the matrix does not silently delete installed cells or stored Matter.
@@ -64,7 +81,7 @@ This branch is intentionally isolated from `main` until the systems below pass l
 ## Per-side configuration
 
 - FE INPUT/OUTPUT/BOTH/DISABLED policies affect the exact touched side.
-- Matter policies affect real Matter Pipe movement.
+- Matter policies affect real Matter Pipe/Hybrid Conduit movement.
 - Item policies affect automation insertion/extraction.
 - Save/reload preserves all six faces and all resource types.
 - Diagnostic Probe reports the same state the backend obeys.
