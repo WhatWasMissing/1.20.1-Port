@@ -60,6 +60,17 @@ public final class AndroidChassisData {
         return old;
     }
 
+    /** Removes and returns the module installed in a chassis slot. */
+    public static Module remove(Player player, Slot slot) {
+        if (!AndroidData.isAndroid(player) || slot == null) return null;
+        Module old = get(player, slot);
+        if (old == null) return null;
+        CompoundTag state = data(player);
+        state.remove(slot.name());
+        save(player, state);
+        return old;
+    }
+
     public static ItemStack stack(Module module) { return module == null ? ItemStack.EMPTY : new ItemStack(ModItems.get(module.itemId).get()); }
 
     public static int energyCapacity(Player player) {
@@ -68,9 +79,7 @@ public final class AndroidChassisData {
         return capacity;
     }
 
-    public static double recurringEnergyMultiplier(Player player) {
-        return has(player, Module.OVERCLOCK_CORE) ? 1.10D : 1.0D;
-    }
+    public static double recurringEnergyMultiplier(Player player) { return has(player, Module.OVERCLOCK_CORE) ? 1.10D : 1.0D; }
 
     public static float incomingDamageMultiplier(Player player) {
         float multiplier = 1.0F;
@@ -94,10 +103,7 @@ public final class AndroidChassisData {
         return multiplier;
     }
 
-    public static int passiveEnergyPerSecond(Player player) {
-        if (has(player, Module.OVERCLOCK_CORE)) return 350;
-        return 0;
-    }
+    public static int passiveEnergyPerSecond(Player player) { return has(player, Module.OVERCLOCK_CORE) ? 350 : 0; }
 
     public static void copyTo(Player original, Player clone) {
         clone.getPersistentData().put(ROOT, original.getPersistentData().getCompound(ROOT).copy());
