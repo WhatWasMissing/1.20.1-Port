@@ -1,5 +1,6 @@
 package matteroverdrive.blockentity;
 
+import matteroverdrive.android.AndroidChassisData;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.menu.AndroidStationMenu;
@@ -65,24 +66,17 @@ public class AndroidStationBlockEntity extends BlockEntity implements MenuProvid
 
     private int chargeNearbyAndroids() {
         if (level == null || level.getServer() == null || energy.getEnergyStored() <= 0) return 0;
-
         List<ServerPlayer> candidates = new ArrayList<>();
         for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
-            if (player.level() == level
-                    && AndroidData.isAndroid(player)
+            if (player.level() == level && AndroidData.isAndroid(player)
                     && AndroidData.getEnergy(player) < AndroidData.ENERGY_CAPACITY
-                    && player.distanceToSqr(worldPosition.getX() + .5D, worldPosition.getY() + .5D,
-                    worldPosition.getZ() + .5D) <= CHARGE_RANGE_SQR) {
-                candidates.add(player);
-            }
+                    && player.distanceToSqr(worldPosition.getX() + .5D, worldPosition.getY() + .5D, worldPosition.getZ() + .5D) <= CHARGE_RANGE_SQR) candidates.add(player);
         }
         if (candidates.isEmpty()) return 0;
-
         candidates.sort(Comparator.comparing(ServerPlayer::getUUID));
         int start = (int) Math.floorMod(chargeSequence++, (long) candidates.size());
         int available = Math.min(TRANSFER_PER_TICK, energy.getEnergyStored());
         int total = 0;
-
         for (int offset = 0; offset < candidates.size() && available > 0; offset++) {
             int remainingPlayers = candidates.size() - offset;
             int fairOffer = (available + remainingPlayers - 1) / remainingPlayers;
@@ -115,30 +109,25 @@ public class AndroidStationBlockEntity extends BlockEntity implements MenuProvid
                     case 12 -> AndroidData.getAvailableSkillPoints(viewer);
                     case 13 -> AndroidData.getSelectedAbility(viewer).ordinal();
                     case 14 -> AndroidData.getActiveAbilityFlags(viewer);
+                    case 15, 16, 17, 18, 19 -> {
+                        AndroidChassisData.Slot slot = AndroidChassisData.Slot.values()[index - 15];
+                        AndroidChassisData.Module module = AndroidChassisData.get(viewer, slot);
+                        yield module == null ? 0 : module.ordinal() + 1;
+                    }
                     default -> 0;
                 };
             }
             @Override public void set(int index, int value) {}
-            @Override public int getCount() { return 15; }
+            @Override public int getCount() { return 20; }
         };
     }
 
     @Override public Component getDisplayName() { return Component.translatable("block.matteroverdrive.android_station"); }
     @Nullable @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new AndroidStationMenu(id, inventory, this); }
 
-    @Override protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.putInt("Energy", energy.getEnergyStored());
-        tag.putLong("ChargeSequence", chargeSequence);
-    }
-    @Override public void load(CompoundTag tag) {
-        super.load(tag);
-        energy.setEnergyStored(tag.getInt("Energy"));
-        chargeSequence = tag.getLong("ChargeSequence");
-    }
-    @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-        return cap == ForgeCapabilities.ENERGY ? energyCapability.cast() : super.getCapability(cap, side);
-    }
+    @Override protected void saveAdditional(CompoundTag tag) { super.saveAdditional(tag); tag.putInt("Energy", energy.getEnergyStored()); tag.putLong("ChargeSequence", chargeSequence); }
+    @Override public void load(CompoundTag tag) { super.load(tag); energy.setEnergyStored(tag.getInt("Energy")); chargeSequence = tag.getLong("ChargeSequence"); }
+    @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) { return cap == ForgeCapabilities.ENERGY ? energyCapability.cast() : super.getCapability(cap, side); }
     @Override public void invalidateCaps() { super.invalidateCaps(); energyCapability.invalidate(); }
     @Override public void reviveCaps() { super.reviveCaps(); energyCapability = LazyOptional.of(() -> energy); }
     private static int low(int value) { return value & 0xFFFF; }
