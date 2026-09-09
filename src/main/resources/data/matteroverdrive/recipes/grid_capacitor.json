@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["PHP","CBC","PHP"],
+  "key":{"P":{"item":"matteroverdrive:tritanium_plate"},"H":{"item":"matteroverdrive:hc_battery"},"C":{"item":"matteroverdrive:isolinear_circuit_mk3"},"B":{"item":"matteroverdrive:machine_casing"}},
+  "result":{"item":"matteroverdrive:grid_capacitor"}
+}
