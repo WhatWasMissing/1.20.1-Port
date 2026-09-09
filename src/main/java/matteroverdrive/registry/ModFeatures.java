@@ -5,6 +5,7 @@ import matteroverdrive.worldgen.GravitationalAnomalyFeature;
 import matteroverdrive.worldgen.LegacyParityStructureFeature;
 import matteroverdrive.worldgen.ModernizedStructureFeature;
 import matteroverdrive.worldgen.SourcePopulationStructureFeature;
+import matteroverdrive.worldgen.TechnologySiteFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraftforge.registries.DeferredRegister;
@@ -20,5 +21,10 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ANDROID_HOUSE = FEATURES.register("android_house", () -> new SourcePopulationStructureFeature(NoneFeatureConfiguration.CODEC, LegacyParityStructureFeature.Kind.ANDROID_HOUSE));
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> SAND_PIT = FEATURES.register("sand_pit", () -> new SourcePopulationStructureFeature(NoneFeatureConfiguration.CODEC, LegacyParityStructureFeature.Kind.SAND_PIT));
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> GRAVITATIONAL_ANOMALY = FEATURES.register("gravitational_anomaly_worldgen", () -> new GravitationalAnomalyFeature(NoneFeatureConfiguration.CODEC));
+
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> ABANDONED_MATTER_LAB = FEATURES.register("abandoned_matter_lab", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.MATTER_LAB));
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> ANDROID_RELAY_OUTPOST = FEATURES.register("android_relay_outpost", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.ANDROID_RELAY));
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> ANOMALY_RESEARCH_SITE = FEATURES.register("anomaly_research_site", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.ANOMALY_RESEARCH));
+
     private ModFeatures() {}
 }
