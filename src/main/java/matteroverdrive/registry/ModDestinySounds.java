@@ -73,6 +73,13 @@ public final class ModDestinySounds {
         register("destiny_sleepersimulant_hit");
         register("destiny_sleepersimulant_reload");
         register("destiny_sleepersimulant_unload");
+
+        // Vex Mythoclast owns dedicated events even when its bundled fallback samples are
+        // shared with the native Destiny set. This stops the exotic from falling through
+        // to Matter Overdrive's generic phaser/sniper SoundEvents and gives us stable IDs
+        // for drop-in Mythoclast recordings in a resource pack or future asset pass.
+        register("destiny_vex_mythoclast_fire");
+        register("destiny_vex_mythoclast_linear_fire");
     }
 
     private static void register(String id) {
