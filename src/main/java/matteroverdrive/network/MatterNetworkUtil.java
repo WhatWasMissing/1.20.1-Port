@@ -99,6 +99,6 @@ public final class MatterNetworkUtil {
 
     private static boolean isNetworkTransport(BlockState state,BlockEntity be){if(state.is(ModBlocks.get("network_pipe").get())||state.is(ModBlocks.get("network_router").get()))return true;return state.is(ModBlocks.get("network_switch").get())&&be instanceof NetworkSwitchBlockEntity networkSwitch&&networkSwitch.isEnabled();}
     private static boolean isNetworkClient(BlockEntity be){return be instanceof MatterAnalyzerBlockEntity||be instanceof PatternStorageBlockEntity||be instanceof PatternMonitorBlockEntity||be instanceof ReplicatorBlockEntity;}
-    private static boolean isMatterPipe(BlockState state){return state.is(ModBlocks.get("matter_pipe").get());}
+    private static boolean isMatterPipe(BlockState state){return state.is(ModBlocks.get("matter_pipe").get())||state.is(ModBlocks.get("hybrid_conduit").get());}
     private record MatterEndpoint(BlockPos pos,Direction side){}
 }
