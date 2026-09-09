@@ -10,8 +10,13 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
-/** Native Matter Overdrive renderer for the imported skeletal Destiny weapon models. */
+import java.util.HashSet;
+import java.util.Set;
+
+/** Native Matter Overdrive renderer for the supplied skeletal Destiny weapon models. */
 public final class NativeDestinyWeaponRenderer extends BlockEntityWithoutLevelRenderer {
+    private static final Set<String> WARNED_MISSING = new HashSet<>();
+
     public NativeDestinyWeaponRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(), Minecraft.getInstance().getEntityModels());
     }
@@ -20,14 +25,28 @@ public final class NativeDestinyWeaponRenderer extends BlockEntityWithoutLevelRe
     public void renderByItem(ItemStack stack, ItemDisplayContext displayContext,
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
-        if (!(stack.getItem() instanceof NativeDestinyWeaponItem weapon)) return;
+        renderNative(stack, poseStack, buffer, packedLight, packedOverlay);
+    }
+
+    /** Renderer 2.0 entry point. The caller owns camera/ADS/recoil transforms. */
+    public boolean renderNative(ItemStack stack, PoseStack poseStack, MultiBufferSource buffer,
+                                int packedLight, int packedOverlay) {
+        if (!(stack.getItem() instanceof NativeDestinyWeaponItem weapon)) return false;
         NativeDestinyVisualLibrary.WeaponVisual visual = NativeDestinyVisualLibrary.get(weapon.profile().id());
-        if (visual == null) return;
+        if (visual == null) {
+            if (WARNED_MISSING.add(weapon.profile().id())) {
+                matteroverdrive.MatterOverdrive.LOGGER.error(
+                        "Native Destiny visual {} is missing; check native_destiny/weapons*.json.gz and texture assets",
+                        weapon.profile().id());
+            }
+            return false;
+        }
 
         poseStack.pushPose();
         visual.apply(stack, Minecraft.getInstance().getFrameTime());
         VertexConsumer vertices = buffer.getBuffer(RenderType.entityCutoutNoCull(visual.texture()));
         visual.root().render(poseStack, vertices, packedLight, packedOverlay);
         poseStack.popPose();
+        return true;
     }
 }
