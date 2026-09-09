@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -37,7 +38,8 @@ public class EnergyPipeBlockEntity extends BlockEntity implements MenuProvider {
         @Override public int get(int index){return switch(index){case 0->energy.getEnergyStored()&0xffff;case 1->energy.getEnergyStored()>>>16&0xffff;case 2->energy.getMaxEnergyStored()&0xffff;case 3->energy.getMaxEnergyStored()>>>16&0xffff;case 4->lastOutput;default->0;};}
         @Override public void set(int index,int value){} @Override public int getCount(){return 5;}
     };
-    public EnergyPipeBlockEntity(BlockPos pos,BlockState state){super(ModBlockEntities.ENERGY_PIPE.get(),pos,state);}
+    public EnergyPipeBlockEntity(BlockPos pos,BlockState state){this(ModBlockEntities.ENERGY_PIPE.get(),pos,state);}
+    protected EnergyPipeBlockEntity(BlockEntityType<?> type,BlockPos pos,BlockState state){super(type,pos,state);}
     public static void serverTick(Level level,BlockPos pos,BlockState state,EnergyPipeBlockEntity pipe){pipe.lastOutput=pipe.pushEnergy();}
 
     private int pushEnergy(){
