@@ -11,6 +11,7 @@ import matteroverdrive.block.ContractMarketBlock;
 import matteroverdrive.block.FacilityNetworkControllerBlock;
 import matteroverdrive.block.DecomposerBlock;
 import matteroverdrive.block.EnergyPipeBlock;
+import matteroverdrive.block.HybridConduitBlock;
 import matteroverdrive.block.VisualPipeBlock;
 import matteroverdrive.block.HoloSignBlock;
 import matteroverdrive.block.IndustrialGlassBlock;
@@ -46,12 +47,10 @@ import java.util.Set;
 public final class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MatterOverdrive.MOD_ID);
     private static final Map<String, RegistryObject<Block>> BLOCKS_BY_ID = new LinkedHashMap<>();
-
     public static final Set<String> NO_BLOCK_ITEM = Set.of("bounding_box", "matter_plasma", "molten_tritanium");
-
     private static final List<String> LEGACY_BLOCK_IDS = List.of(
         "android_spawner", "android_station", "android_induction_relay", "bounding_box", "charging_station", "contract_market",
-        "facility_network_controller", "grid_capacitor", "quantum_power_relay", "matter_storage_matrix", "matter_excavator", "holographic_status_panel",
+        "facility_network_controller", "grid_capacitor", "quantum_power_relay", "hybrid_conduit", "matter_storage_matrix", "matter_excavator", "holographic_status_panel",
         "decomposer", "decorative.beams", "decorative.carbon_fiber_plate", "decorative.clean", "decorative.coils",
         "decorative.engine_exhaust_plasma", "decorative.floor_noise", "decorative.floor_tile_white", "decorative.floor_tiles",
         "decorative.floor_tiles_green", "decorative.holo_matrix", "decorative.matter_tube", "decorative.separator", "decorative.stripes",
@@ -66,16 +65,15 @@ public final class ModBlocks {
         "tritanium_crate_magenta", "tritanium_crate_orange", "tritanium_crate_pink", "tritanium_crate_purple", "tritanium_crate_red",
         "tritanium_crate_silver", "tritanium_crate_white", "tritanium_crate_yellow", "tritanium_ore", "weapon_station"
     );
-
     static { LEGACY_BLOCK_IDS.forEach(ModBlocks::registerPlaceholder); }
     private ModBlocks() {}
-
     private static void registerPlaceholder(String id) {
         if (id.equals("contract_market")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ContractMarketBlock(propertiesFor(id))));
         else if (id.equals("facility_network_controller")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FacilityNetworkControllerBlock(propertiesFor(id))));
         else if (id.equals("grid_capacitor")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.GRID_CAPACITOR)));
         else if (id.equals("android_induction_relay")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.ANDROID_INDUCTION_RELAY)));
         else if (id.equals("quantum_power_relay")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.QUANTUM_POWER_RELAY)));
+        else if (id.equals("hybrid_conduit")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new HybridConduitBlock(propertiesFor(id))));
         else if (id.equals("matter_storage_matrix")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.MATTER_STORAGE_MATRIX)));
         else if (id.equals("matter_excavator")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.MATTER_EXCAVATOR)));
         else if (id.equals("holographic_status_panel")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id).noOcclusion(), TechMachineBlock.Type.STATUS_PANEL)));
@@ -108,30 +106,15 @@ public final class ModBlocks {
         else if (id.equals("tritanium_crate") || id.startsWith("tritanium_crate_")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TritaniumCrateBlock(propertiesFor(id))));
         else BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new Block(propertiesFor(id))));
     }
-
     private static BlockBehaviour.Properties propertiesFor(String id) {
         BlockBehaviour.Properties properties = BlockBehaviour.Properties.of().strength(isMachineLike(id) ? 4.0F : 2.0F, isMachineLike(id) ? 12.0F : 6.0F);
         if (!id.equals("industrial_glass") && !id.equals("bounding_box")) properties = properties.requiresCorrectToolForDrops();
-        if (id.equals("industrial_glass") || id.equals("bounding_box") || id.equals("matter_plasma") || id.equals("molten_tritanium")
-                || id.equals("gravitational_anomaly") || id.equals("holo_sign") || id.equals("pattern_monitor") || id.equals("pattern_storage")
-                || id.equals("spacetime_accelerator") || id.equals("matter_pipe") || id.equals("heavy_matter_pipe") || id.equals("network_pipe")
-                || id.equals("pylon") || id.equals("holographic_status_panel")) properties = properties.noOcclusion();
+        if (id.equals("industrial_glass") || id.equals("bounding_box") || id.equals("matter_plasma") || id.equals("molten_tritanium") || id.equals("gravitational_anomaly") || id.equals("holo_sign") || id.equals("pattern_monitor") || id.equals("pattern_storage") || id.equals("spacetime_accelerator") || id.equals("matter_pipe") || id.equals("heavy_matter_pipe") || id.equals("hybrid_conduit") || id.equals("network_pipe") || id.equals("pylon") || id.equals("holographic_status_panel")) properties = properties.noOcclusion();
         if (id.equals("gravitational_anomaly")) properties = properties.noCollission();
         if (id.equals("decorative.tritanium_lamp") || id.equals("gravitational_anomaly") || id.equals("decorative.engine_exhaust_plasma")) properties = properties.lightLevel(state -> 15);
         return properties;
     }
-
-    private static boolean isMachineLike(String id) {
-        return id.contains("replicator") || id.contains("decomposer") || id.contains("analyzer") || id.contains("storage") || id.contains("station")
-                || id.contains("reactor") || id.contains("transporter") || id.contains("network") || id.contains("recycler") || id.contains("monitor")
-                || id.contains("accelerator") || id.contains("inscriber") || id.contains("microwave") || id.contains("solar") || id.contains("crate")
-                || id.contains("holo_sign") || id.contains("capacitor") || id.contains("relay") || id.contains("excavator") || id.contains("matrix") || id.contains("status_panel");
-    }
-
+    private static boolean isMachineLike(String id) { return id.contains("replicator") || id.contains("decomposer") || id.contains("analyzer") || id.contains("storage") || id.contains("station") || id.contains("reactor") || id.contains("transporter") || id.contains("network") || id.contains("recycler") || id.contains("monitor") || id.contains("accelerator") || id.contains("inscriber") || id.contains("microwave") || id.contains("solar") || id.contains("crate") || id.contains("holo_sign") || id.contains("capacitor") || id.contains("relay") || id.contains("excavator") || id.contains("matrix") || id.contains("status_panel") || id.contains("conduit"); }
     public static Map<String, RegistryObject<Block>> all() { return Collections.unmodifiableMap(BLOCKS_BY_ID); }
-    public static RegistryObject<Block> get(String id) {
-        RegistryObject<Block> block = BLOCKS_BY_ID.get(id);
-        if (block == null) throw new IllegalArgumentException("Unknown Matter Overdrive block id: " + id);
-        return block;
-    }
+    public static RegistryObject<Block> get(String id) { RegistryObject<Block> block = BLOCKS_BY_ID.get(id); if (block == null) throw new IllegalArgumentException("Unknown Matter Overdrive block id: "+id); return block; }
 }
