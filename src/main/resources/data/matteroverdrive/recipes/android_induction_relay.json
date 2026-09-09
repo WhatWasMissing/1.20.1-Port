@@ -1,0 +1,6 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":["SMS","CDC","SBS"],
+  "key":{"S":{"item":"matteroverdrive:s_magnet"},"M":{"item":"matteroverdrive:me_conversion_matrix"},"C":{"item":"matteroverdrive:isolinear_circuit_mk3"},"D":{"item":"matteroverdrive:dilithium_crystal"},"B":{"item":"matteroverdrive:charging_station"}},
+  "result":{"item":"matteroverdrive:android_induction_relay"}
+}
