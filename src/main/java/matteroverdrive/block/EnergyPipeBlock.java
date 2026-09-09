@@ -56,7 +56,12 @@ public class EnergyPipeBlock extends BaseEntityBlock {
         return state;
     }
     @Override public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, LevelAccessor level, BlockPos pos, BlockPos neighbourPos) { return state.setValue(property(direction), canVisuallyConnect(level, pos, direction, neighbourState)); }
-    protected boolean canVisuallyConnect(LevelAccessor level, BlockPos pos, Direction direction, BlockState neighbour) { return neighbour.is(this) || level.getBlockEntity(pos.relative(direction)) != null; }
+    protected boolean canVisuallyConnect(LevelAccessor level, BlockPos pos, Direction direction, BlockState neighbour) {
+        // HybridConduitBlock subclasses EnergyPipeBlock, so explicit class matching makes
+        // Heavy Energy Cable <-> Hybrid Conduit junctions render correctly even before a
+        // neighbouring block entity is available during placement/update propagation.
+        return neighbour.getBlock() instanceof EnergyPipeBlock || level.getBlockEntity(pos.relative(direction)) != null;
+    }
     private static BooleanProperty property(Direction direction) { return switch (direction) { case DOWN -> DOWN; case UP -> UP; case NORTH -> NORTH; case SOUTH -> SOUTH; case WEST -> WEST; case EAST -> EAST; }; }
     @Override public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape shape = CORE; if (state.getValue(DOWN)) shape = Shapes.or(shape, ARM_DOWN); if (state.getValue(UP)) shape = Shapes.or(shape, ARM_UP); if (state.getValue(NORTH)) shape = Shapes.or(shape, ARM_NORTH); if (state.getValue(SOUTH)) shape = Shapes.or(shape, ARM_SOUTH); if (state.getValue(WEST)) shape = Shapes.or(shape, ARM_WEST); if (state.getValue(EAST)) shape = Shapes.or(shape, ARM_EAST); return shape;
