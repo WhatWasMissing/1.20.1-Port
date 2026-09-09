@@ -45,6 +45,33 @@ These commands are primarily diagnostics; normal survival play does not require 
 
 ## Machines
 
-The **Decomposer** converts supported items into matter. The **Matter Analyzer** and **Matter Scanner** discover item information used by the pattern system. **Pattern Drives** and **Pattern Storage** preserve patterns. The **Pattern Monitor** exposes available patterns and requests. The **Replicator** consumes stored matter and Forge Energy to manufacture the selected pattern. **Matter Pipes** and **Matter Containers** move/store matter where their exposed interfaces allow it.
+The **Decomposer** converts supported items into Matter. The **Matter Analyzer** and **Matter Scanner** discover item information used by the pattern system. **Pattern Drives** and **Pattern Storage** preserve patterns. The **Pattern Monitor** exposes available patterns and requests. The **Replicator** consumes stored Matter and Forge Energy to manufacture the selected pattern. **Matter Pipes** and **Matter Containers** move/store Matter where their exposed interfaces allow it.
 
-For automation and routing beyond the basic matter chain, continue to [Matter Network](network.md).
+On the tech-overhaul branch, the Decomposer and Replicator can accept **Parallel Processing Upgrades**. Each installed module adds another work lane. More lanes can complete more operations over the same period, but they also increase peak FE/Matter demand and pressure on output space.
+
+## Matter Storage Matrix
+
+The **Matter Storage Matrix** is modular bulk Matter storage. It accepts up to four removable cells:
+
+- **64k Matter Cell** - 64,000 Matter;
+- **256k Matter Cell** - 256,000 Matter;
+- **1M Matter Cell** - 1,000,000 Matter;
+- **4M Matter Cell** - 4,000,000 Matter.
+
+Capacity is the sum of installed cells. The Matrix refuses a cell removal if the remaining capacity would be smaller than the Matter already stored, preventing a configuration change from silently deleting Matter.
+
+Connect it to ordinary Matter Transport Pipe. It exposes the same Matter capability model used by the rest of the port rather than creating a second incompatible storage system.
+
+## Matter Excavator
+
+The **Matter Excavator** extends decomposition to a configured world volume. Select a target block and working radius; the Excavator searches for matching blocks, consumes FE, removes them and stores their resolved Matter value.
+
+Available range modes are **8 / 16 / 24 blocks**. This is destructive automation, so use the Network Diagnostic Probe's Range mode to visualize the operating volume before enabling a large job.
+
+The Excavator is deliberately not a magical ore generator. It turns actual blocks into the same Matter economy used by the Decomposer and Replicator.
+
+## Per-side Matter policy
+
+Supported machines on the tech-overhaul branch persist a Matter policy for each face: **INPUT / OUTPUT / BOTH / DISABLED**. Matter Pipe routing reads those policies. If storage exists but transfer stalls, inspect the exact side the pipe touches before changing the rest of the network.
+
+For automation, bulk infrastructure and routing beyond the basic matter chain, continue to [Matter Network](network.md) and [Advanced Infrastructure](advanced_infrastructure.md).
