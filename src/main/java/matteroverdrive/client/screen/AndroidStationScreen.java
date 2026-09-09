@@ -1,42 +1,82 @@
 package matteroverdrive.client.screen;
 
+import matteroverdrive.android.AndroidChassisData;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.menu.AndroidStationMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
+/** Central Android equipment/workbench screen for body parts, chassis hardware and progression. */
 public class AndroidStationScreen extends AbstractContainerScreen<AndroidStationMenu> {
-    private static final ResourceLocation HEAD = tex("android_slot_head.png");
-    private static final ResourceLocation CHEST = tex("android_slot_chest.png");
-    private static final ResourceLocation ARMS = tex("android_slot_arms.png");
-    private static final ResourceLocation LEGS = tex("android_slot_legs.png");
-    private static final ResourceLocation FEATURE = tex("android_feature_icon_bg.png");
-    private static final ResourceLocation FEATURE_ACTIVE = tex("android_feature_icon_bg_active.png");
+    private static final int PANEL_X = 8;
+    private static final int BODY_Y = 51;
+    private static final int CHASSIS_Y = 77;
+    private static final int ROW_H = 15;
 
     public AndroidStationScreen(AndroidStationMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 176;
-        imageHeight = 232;
-        inventoryLabelY = 120;
-    }
-
-    private static ResourceLocation tex(String name) {
-        return new ResourceLocation("matteroverdrive", "textures/gui/items/" + name);
+        imageWidth = 272;
+        imageHeight = 236;
+        inventoryLabelX = 55;
+        inventoryLabelY = 146;
     }
 
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.literal("CYCLE"), button -> {
-            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
-        }).bounds(leftPos + 18, topPos + 102, 54, 18).build());
-        addRenderableWidget(Button.builder(Component.literal("SKILL TREE"), button -> {
+        addServerButton("CYCLE", 10, 28, 52, 18, 1);
+        addRenderableWidget(Button.builder(Component.literal("SKILLS"), button -> {
             if (minecraft != null) minecraft.setScreen(new AndroidSkillTreeScreen());
-        }).bounds(leftPos + 75, topPos + 102, 83, 18).build());
+        }).bounds(leftPos + 66, topPos + 28, 60, 18).build());
+        addRenderableWidget(Button.builder(Component.literal("CLASS MATRIX"), button -> {
+            if (minecraft != null) minecraft.setScreen(new AndroidClassLoadoutScreen());
+        }).bounds(leftPos + 130, topPos + 28, 88, 18).build());
+
+        AndroidData.Part[] parts = AndroidData.Part.values();
+        String[] partNames = {"HEAD", "TORSO", "ARMS", "LEGS"};
+        for (int i = 0; i < parts.length; i++) {
+            int x = 10 + i * 63;
+            addServerButton(partNames[i], x, BODY_Y, 58, 18, AndroidStationMenu.PART_BUTTON_BASE + i);
+        }
+
+        for (AndroidChassisData.Slot slot : AndroidChassisData.Slot.values()) {
+            AndroidChassisData.Module first = null;
+            AndroidChassisData.Module second = null;
+            for (AndroidChassisData.Module module : AndroidChassisData.Module.values()) {
+                if (module.slot != slot) continue;
+                if (first == null) first = module; else { second = module; break; }
+            }
+            int y = CHASSIS_Y + slot.ordinal() * ROW_H;
+            if (first != null) addServerButton(shortName(first), 73, y, 89, 14,
+                    AndroidStationMenu.CHASSIS_BUTTON_BASE + first.ordinal());
+            if (second != null) addServerButton(shortName(second), 166, y, 89, 14,
+                    AndroidStationMenu.CHASSIS_BUTTON_BASE + second.ordinal());
+        }
+    }
+
+    private void addServerButton(String label, int x, int y, int width, int height, int id) {
+        addRenderableWidget(Button.builder(Component.literal(label), button -> {
+            if (minecraft != null && minecraft.gameMode != null)
+                minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+        }).bounds(leftPos + x, topPos + y, width, height).build());
+    }
+
+    private static String shortName(AndroidChassisData.Module module) {
+        return switch (module) {
+            case CAPACITOR_CORE -> "CAPACITOR";
+            case OVERCLOCK_CORE -> "OVERCLOCK";
+            case LIGHTWEIGHT_FRAME -> "LIGHTWEIGHT";
+            case REINFORCED_FRAME -> "REINFORCED";
+            case AGILITY_MUSCLES -> "AGILITY";
+            case SIEGE_MUSCLES -> "SIEGE";
+            case HUNTER_OPTICS -> "HUNTER";
+            case PRECISION_OPTICS -> "PRECISION";
+            case STEALTH_SHELL -> "STEALTH";
+            case REACTIVE_SHELL -> "REACTIVE";
+        };
     }
 
     @Override
@@ -49,62 +89,73 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         MachineScreenStyle.drawFrame(graphics, leftPos, topPos, imageWidth, imageHeight, inventoryLabelY, MachineScreenStyle.CYAN);
-        MachineScreenStyle.drawSection(graphics, leftPos + 17, topPos + 29, 142, 71);
-        MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 25, topPos + 51, 126, 5,
-                menu.androidEnergy(), menu.androidCapacity(), MachineScreenStyle.CYAN);
+        MachineScreenStyle.drawSection(graphics, leftPos + PANEL_X, topPos + 48, imageWidth - PANEL_X * 2, 104);
 
-        drawPart(graphics, leftPos + 25, topPos + 62, AndroidData.Part.HEAD, HEAD);
-        drawPart(graphics, leftPos + 57, topPos + 62, AndroidData.Part.CHEST, CHEST);
-        drawPart(graphics, leftPos + 89, topPos + 62, AndroidData.Part.ARMS, ARMS);
-        drawPart(graphics, leftPos + 121, topPos + 62, AndroidData.Part.LEGS, LEGS);
+        int energy = menu.androidEnergy();
+        int capacity = Math.max(1, menu.androidCapacity());
+        MachineScreenStyle.drawHorizontalBar(graphics, leftPos + 222, topPos + 17, 40, 5,
+                energy, capacity, MachineScreenStyle.CYAN);
 
-        AndroidData.Ability[] abilities = AndroidData.Ability.values();
-        int selected = Math.max(0, Math.min(menu.selectedAbilityOrdinal(), abilities.length - 1));
-        AndroidData.Ability ability = abilities[selected];
-        boolean unlocked = menu.androidLevel() >= ability.requiredLevel && (menu.parts() & ability.requiredPart.bit) != 0;
-        boolean active = switch (ability) {
-            case CLOAK -> (menu.activeAbilityFlags() & 1) != 0;
-            case FORCE_FIELD -> (menu.activeAbilityFlags() & 2) != 0;
-            default -> false;
-        };
-        graphics.blit(active ? FEATURE_ACTIVE : FEATURE, leftPos + 19, topPos + 79, 0, 0, 22, 22, 22, 22);
-        if (!unlocked) graphics.fill(leftPos + 22, topPos + 82, leftPos + 38, topPos + 98, 0x88000000);
+        for (int i = 0; i < AndroidData.Part.values().length; i++) {
+            boolean installed = (menu.parts() & AndroidData.Part.values()[i].bit) != 0;
+            int x = leftPos + 10 + i * 63;
+            if (installed) {
+                graphics.fill(x, topPos + BODY_Y + 16, x + 58, topPos + BODY_Y + 18, MachineScreenStyle.GREEN);
+            }
+        }
+
+        for (AndroidChassisData.Module module : AndroidChassisData.Module.values()) {
+            if (!menu.chassisEquipped(module)) continue;
+            int y = topPos + CHASSIS_Y + module.slot.ordinal() * ROW_H;
+            boolean first = isFirst(module);
+            int x = leftPos + (first ? 73 : 166);
+            graphics.fill(x, y + 12, x + 89, y + 14, MachineScreenStyle.GREEN);
+        }
+    }
+
+    private static boolean isFirst(AndroidChassisData.Module module) {
+        for (AndroidChassisData.Module candidate : AndroidChassisData.Module.values()) {
+            if (candidate.slot == module.slot) return candidate == module;
+        }
+        return false;
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         if (!menu.androidActive()) {
-            graphics.drawString(font, "ANDROID OFFLINE", 47, 33, MachineScreenStyle.DANGER, false);
-            graphics.drawString(font, "Use a blue Android Pill to convert", 18, 43, MachineScreenStyle.MUTED, false);
+            graphics.drawString(font, "ANDROID OFFLINE - convert before installing hardware", 8, 18, MachineScreenStyle.DANGER, false);
         } else {
-            graphics.drawString(font, "ANDROID ONLINE", 49, 33, MachineScreenStyle.CYAN, false);
-            graphics.drawString(font, menu.androidEnergy() + " / " + menu.androidCapacity() + " FE", 33, 43, MachineScreenStyle.TEXT, false);
+            String status = "Lv " + menu.androidLevel() + "  |  " + menu.androidEnergy() + "/" + menu.androidCapacity() + " FE"
+                    + "  |  " + menu.availableSkillPoints() + " pts";
+            graphics.drawString(font, status, 8, 18, MachineScreenStyle.CYAN, false);
         }
+
+        graphics.drawString(font, "BODY SYSTEMS - click to install/remove", 10, 40, MachineScreenStyle.MUTED, false);
 
         AndroidData.Ability[] abilities = AndroidData.Ability.values();
         int selected = Math.max(0, Math.min(menu.selectedAbilityOrdinal(), abilities.length - 1));
         AndroidData.Ability ability = abilities[selected];
-        boolean unlocked = menu.androidLevel() >= ability.requiredLevel && (menu.parts() & ability.requiredPart.bit) != 0;
-        boolean active = switch (ability) {
-            case CLOAK -> (menu.activeAbilityFlags() & 1) != 0;
-            case FORCE_FIELD -> (menu.activeAbilityFlags() & 2) != 0;
-            default -> false;
-        };
-        graphics.drawString(font, ability.displayName, 44, 81, unlocked ? MachineScreenStyle.TEXT : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, unlocked ? (active ? "ACTIVE" : "READY") : "LOCKED - " + ability.requiredPart.name() + " Lv " + ability.requiredLevel,
-                44, 90, active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Lv " + menu.androidLevel() + "  XP " + menu.experienceIntoLevel() + "/" + menu.experienceToNextLevel()
-                        + "  P " + menu.availableSkillPoints(), 20, 122, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, "Core: " + ability.displayName, 222, 29, MachineScreenStyle.MUTED, false);
+
+        for (AndroidChassisData.Slot slot : AndroidChassisData.Slot.values()) {
+            int y = CHASSIS_Y + slot.ordinal() * ROW_H + 3;
+            int ordinal = menu.chassisModuleOrdinal(slot);
+            String marker = ordinal >= 0 ? ">" : "-";
+            graphics.drawString(font, marker + " " + prettySlot(slot), 12, y, ordinal >= 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
+        }
+
+        graphics.drawString(font, "Click equipped hardware again to remove it. Swapping returns the old module.",
+                10, 143, MachineScreenStyle.MUTED, false);
     }
 
-    private void drawPart(GuiGraphics graphics, int x, int y, AndroidData.Part part, ResourceLocation icon) {
-        boolean installed = (menu.parts() & part.bit) != 0;
-        graphics.blit(icon, x, y, 0, 0, 16, 16, 16, 16);
-        if (!installed) graphics.fill(x, y, x + 16, y + 16, 0x99000000);
-        else {
-            graphics.fill(x, y + 15, x + 16, y + 16, 0xFF00D8FF);
-            graphics.fill(x + 15, y, x + 16, y + 16, 0xFF00D8FF);
-        }
+    private static String prettySlot(AndroidChassisData.Slot slot) {
+        return switch (slot) {
+            case CORE -> "CORE";
+            case FRAME -> "FRAME";
+            case MUSCLES -> "MUSCLES";
+            case OPTICS -> "OPTICS";
+            case SHELL -> "SHELL";
+        };
     }
 }
