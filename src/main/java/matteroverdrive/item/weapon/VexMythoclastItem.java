@@ -1,6 +1,6 @@
 package matteroverdrive.item.weapon;
 
-import matteroverdrive.registry.ModSounds;
+import matteroverdrive.registry.ModDestinySounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -130,8 +130,8 @@ public class VexMythoclastItem extends Item {
         }
         spawnBeam(level, start, impact, linear);
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                ModSounds.get(linear ? "weapons.sniper_rifle_fire" : "weapons.phaser_rifle_shot").get(),
-                SoundSource.PLAYERS, linear ? 1.35F : 0.9F, linear ? 0.72F : 1.18F);
+                ModDestinySounds.get(linear ? "destiny_sleepersimulant_fire" : "destiny_surosregime"),
+                SoundSource.PLAYERS, linear ? 1.35F : 0.95F, linear ? 0.84F : 1.08F);
         if (linear && getCharges(stack) <= 0) setLinearMode(stack, false);
         return true;
     }
