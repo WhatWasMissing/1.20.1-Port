@@ -1,58 +1,65 @@
-# Current status — 2026-09-01
-
-The current implementation supersedes older Creative-mode references below:
-
-- Weapons must have energy in Survival and Creative; only the explicit Creative Battery module provides infinite energy.
-- The Weapon Station module workflow and battery reload path remain implemented.
-- First- and third-person transforms for Phaser, Phaser Rifle, Ion Sniper, and Plasma Shotgun remain an open visual runtime check; do not treat the older model note as a final rendering solution.
-
-The remaining historical entries are retained as implementation context.
-
 # Gun System Progress
 
-## Current branch
+## Current status — 2026-09-09
 
-`feature/easy-parity-systems`
+Branch: `testing/tech-overhaul`
+Release line: `0.6`
 
-## Latest fixes
+The current implementation supersedes older Creative-mode and early weapon-station notes:
 
-- Weapon Station inventories save and reload through block-entity NBT.
-- Weapon Station contents mark the block entity dirty when changed.
-- Weapon Station shift-click bounds are limited to the slots actually exposed by the menu.
-- Weapons can reload from charged FE batteries in the player inventory or off-hand.
-- Energy packs remain automatic reload items.
-- Shift-right-click reloads non-Phaser weapons in Survival and Creative.
-- Other guns are no longer treated as reload batteries.
-- Charged weapon batteries are consumed once per reload and no longer drained per shot.
-- Gun item models use the original-compatible generated icons; the legacy OBJ assets remain reserved for a later dedicated 1.20.1 renderer.
+- Energy weapons require valid internal FE in **Survival and Creative**. Only the explicit **Creative Battery** module provides infinite energy.
+- Supported reload sources are Energy Packs and `WeaponBatteryItem` batteries. Other energy weapons are deliberately excluded, preventing cross-weapon drain.
+- Heat/overheat, reload state, module storage and server-authoritative firing remain implemented.
+- First- and third-person transforms for Phaser, Phaser Rifle, Ion Sniper and Plasma Shotgun remain runtime visual checks.
+
+## Current energy-state hardening
+
+Weapon energy is stored on the weapon stack while the battery module defines the weapon's effective capacity. This creates a capacity-shrink edge case: without a persisted clamp, removing a large battery can hide excess FE above the reduced capacity and allow it to reappear when a larger battery is reinstalled.
+
+The Weapon Station now persists the energy clamp **after the final module configuration is packed back into the weapon**. The clamp is deliberately not performed while the station temporarily unpacks modules for editing, because simply opening the GUI must not destroy charge. Normal pickup, shift-click, GUI close and station-break packing all converge on that final pack path.
+
+The static gate `scripts/validate_weapon_consistency.py` verifies:
+
+- firing has a pre-shot FE gate;
+- a successful shot drains weapon FE;
+- Energy Packs remain an explicit reload source;
+- battery transfer accepts `WeaponBatteryItem` and rejects the weapon stack itself;
+- the final Weapon Station pack persists a capacity-shrink clamp;
+- Weapon Station take/close paths still pack modules back into the weapon.
+
+It is included in `VERIFY_M2_BUILD.bat`.
 
 ## Weapon Station module implementation
 
-- The Weapon Station now has one dedicated weapon slot and six typed module slots matching the existing weapon NBT system: battery, colour, barrel, sights, utility, utility.
-- Slot validation uses `WeaponSystem.isValidModuleForSlot`, so incompatible modules and unsupported weapon/module combinations are rejected instead of being silently accepted.
-- Opening the station unpacks installed modules from the weapon into editable station slots.
-- Taking the weapon or closing the GUI packs the selected modules back into the weapon and clears the temporary station slots, preventing module duplication.
-- Removing a module while editing cleanly uninstalls it from the weapon when the weapon is packed again.
-- The station screen now exposes the weapon/module layout instead of presenting seven unlabeled generic slots.
-- Shift-clicking the weapon now packs its modules before the stack is copied into the player inventory, so the fast-transfer path preserves the same configuration as normal pickup.
+- One dedicated weapon slot plus six typed module slots: battery, colour, barrel, sights, utility, utility.
+- `WeaponSystem.isValidModuleForSlot` rejects incompatible modules and unsupported weapon/module combinations.
+- Opening the station unpacks installed modules into editable slots without committing a capacity shrink.
+- Taking the weapon or closing the GUI packs the selected modules back into the weapon and clears temporary station slots.
+- Removing a module while editing uninstalls it when the weapon is packed again.
+- Shift-clicking a weapon packs modules before it is moved into the player inventory.
+- Station inventory persists through block-entity NBT.
 
-## Important testing note
+## Runtime test pass
 
-Creative mode bypasses weapon energy consumption. Use Survival mode when testing battery reload, energy costs, and empty-weapon behavior.
+1. Test all four Matter Overdrive energy weapons in Survival **and Creative** at zero FE; none should fire without a Creative Battery module.
+2. Reload from a charged normal/HC battery and confirm only that battery loses FE.
+3. Put another charged weapon in the inventory and confirm it is never used as a reload source.
+4. Verify Energy Packs still reload as the intended consumable source.
+5. Install a high-capacity battery module and charge the weapon above its fallback capacity.
+6. Open the Weapon Station without changing the battery, then close it: merely opening/editing must not discard that charge.
+7. Reopen, actually remove or replace the battery with a lower-capacity configuration, and take/close the weapon: FE must clamp to the final capacity.
+8. Reinstall the larger battery and confirm discarded excess FE does **not** reappear.
+9. Save/reload and repeat via shift-click to ensure every final packing path behaves the same.
+10. Verify heat, overheat, Ion Sniper aim/FOV, module effects and first/third-person transforms.
 
-## Weapon Station test pass
+## Static validation
 
-1. Put each energy weapon into the Weapon slot.
-2. Verify only compatible batteries/modules enter each corresponding module slot.
-3. Install a battery, colour module, barrel module, sights module, and utility modules where supported.
-4. Close and reopen the station and confirm every installed module returns to the correct station slot.
-5. Remove one module, take the weapon, reopen it, and confirm the removed module stays uninstalled.
-6. Take a fully configured weapon directly from the station and confirm its modules still affect firing, colour, range, accuracy, damage, and special effects as applicable.
-7. Save and reload the world with a configured weapon left in the station and confirm the weapon and its module state persist.
-8. Try shift-clicking weapons/modules into and out of the station and confirm no duplication, deletion, or invalid-slot insertion occurs.
+```text
+python scripts/validate_weapon_consistency.py
+```
 
 ## Next work
 
-- Runtime-test the completed Weapon Station module workflow.
-- Add remaining gun recipes once their legacy ingredient mappings are verified rather than guessed.
-- Continue with other self-contained parity systems that do not depend on Android capability infrastructure, custom entity AI, or a dedicated legacy OBJ renderer.
+- Runtime-test the completed energy/module invariants.
+- Keep weapon rendering/hand transforms as a dedicated visual pass if screenshots still show misalignment.
+- Add/adjust recipes only from verified legacy ingredients rather than guessed parity.

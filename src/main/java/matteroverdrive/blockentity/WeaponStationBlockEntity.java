@@ -88,7 +88,7 @@ public class WeaponStationBlockEntity extends BlockEntity implements MenuProvide
     }
 
     public void packModulesInto(ItemStack weapon) {
-        if (syncingModules || !(weapon.getItem() instanceof EnergyWeaponItem)) {
+        if (syncingModules || !(weapon.getItem() instanceof EnergyWeaponItem gun)) {
             return;
         }
 
@@ -100,6 +100,10 @@ public class WeaponStationBlockEntity extends BlockEntity implements MenuProvide
                 WeaponSystem.setModule(weapon, moduleSlot, module);
                 inventory.setStackInSlot(stationSlot, ItemStack.EMPTY);
             }
+            // The Station temporarily removes modules while editing, so clamping during
+            // unpack would destroy charge just by opening the GUI. Clamp only after the
+            // final module configuration has been packed back into the weapon.
+            gun.setEnergyStored(weapon, gun.getEnergyStored(weapon));
         } finally {
             syncingModules = false;
         }

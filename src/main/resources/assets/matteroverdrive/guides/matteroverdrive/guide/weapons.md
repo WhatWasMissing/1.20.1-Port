@@ -33,6 +33,8 @@ For non-Phaser weapons the HUD advertises the current reload input as **Shift + 
 
 The **Charging Station** is the straightforward way to recharge compatible portable energy storage between fights.
 
+Creative mode does not make an ordinary configured gun ignore its FE rules. The explicit **Creative Battery** module is the infinite-energy path.
+
 ## Heat
 
 Firing builds heat. The heat bar changes state as the weapon approaches its limit, and an overheated weapon must recover before it can be used normally again.
@@ -49,6 +51,7 @@ The **Weapon Station** is the configuration and servicing machine for compatible
 
 The module set includes restored component types such as:
 
+- battery/capacity module;
 - color/presentation module;
 - damage focusing barrel module;
 - incendiary/fire barrel module;
@@ -57,6 +60,8 @@ The module set includes restored component types such as:
 - specialised Doomsday/VENOM barrel variants;
 - ricochet/rebound module;
 - sniper scope.
+
+Weapon FE is stored on the weapon stack while the installed battery module sets the weapon's effective capacity. If changing/removing a battery reduces that capacity, excess weapon FE is now discarded immediately and persistently rather than remaining hidden until a larger battery is reinstalled.
 
 Not every module is necessarily valid for every weapon or slot. The station UI is the authority for what a particular weapon accepts.
 
@@ -70,8 +75,9 @@ If a weapon behaves incorrectly, test it in this order:
 4. Does Shift + Use reload from a supported charged item?
 5. Does the Weapon Station retain installed parts after closing and reloading the world?
 6. Does firing consume the weapon's intended source rather than another gun?
+7. Does removing/swapping a battery clamp internal FE to the new capacity permanently?
 
-The 0.6 testing line has specifically addressed zero-energy firing, cross-weapon energy drain, heat/reload state and weapon-station persistence, so regressions in those areas are worth reporting with the held weapon, charge values and game mode.
+The 0.6 testing line has specifically addressed zero-energy firing, cross-weapon energy drain, heat/reload state, battery-capacity shrink and weapon-station persistence, so regressions in those areas are worth reporting with the held weapon, charge values and game mode.
 
 ## Rendering and placement
 
