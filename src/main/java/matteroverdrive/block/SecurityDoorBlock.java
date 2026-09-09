@@ -29,6 +29,8 @@ import javax.annotation.Nullable;
 public final class SecurityDoorBlock extends HorizontalDirectionalBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+    private static final int MAX_COLUMN_HEIGHT = 16;
     private static final VoxelShape CLOSED_X = Block.box(0, 0, 6, 16, 16, 10);
     private static final VoxelShape CLOSED_Z = Block.box(6, 0, 0, 10, 16, 16);
     private static final VoxelShape OPEN_X = Block.box(0, 0, 6, 3, 16, 10);
@@ -36,18 +38,25 @@ public final class SecurityDoorBlock extends HorizontalDirectionalBlock {
 
     public SecurityDoorBlock(Properties properties) {
         super(properties.noOcclusion());
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OPEN, false));
+        registerDefaultState(stateDefinition.any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(OPEN, false)
+                .setValue(POWERED, false));
     }
 
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()).setValue(OPEN, false);
+        boolean powered = context.getLevel().hasNeighborSignal(context.getClickedPos());
+        return defaultBlockState()
+                .setValue(FACING, context.getHorizontalDirection().getOpposite())
+                .setValue(OPEN, powered)
+                .setValue(POWERED, powered);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, OPEN);
+        builder.add(FACING, OPEN, POWERED);
     }
 
     @Override
@@ -62,12 +71,15 @@ public final class SecurityDoorBlock extends HorizontalDirectionalBlock {
                                  InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         if (level instanceof ServerLevel server && !FacilityRestorationSavedData.isAccessUnlocked(server, pos)) {
-            closeColumn(level, pos);
+            syncColumn(level, pos, false, columnPowered(level, pos));
             player.displayClientMessage(Component.literal("ACCESS DENIED - restore emergency power and control hardware first")
                     .withStyle(ChatFormatting.RED), true);
             return InteractionResult.CONSUME;
         }
-        setColumnOpen(level, pos, !state.getValue(OPEN));
+
+        boolean powered = columnPowered(level, pos);
+        if (powered) syncColumn(level, pos, true, true);
+        else syncColumn(level, pos, !state.getValue(OPEN), false);
         return InteractionResult.CONSUME;
     }
 
@@ -75,24 +87,61 @@ public final class SecurityDoorBlock extends HorizontalDirectionalBlock {
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor,
                                 BlockPos neighborPos, boolean movedByPiston) {
         if (level.isClientSide) return;
+
+        boolean powered = columnPowered(level, pos);
+        boolean wasPowered = columnStoredPowered(level, pos);
         if (level instanceof ServerLevel server && !FacilityRestorationSavedData.isAccessUnlocked(server, pos)) {
-            if (state.getValue(OPEN)) closeColumn(level, pos);
+            if (state.getValue(OPEN) || powered != wasPowered) syncColumn(level, pos, false, powered);
             return;
         }
-        boolean powered = level.hasNeighborSignal(pos);
-        if (powered != state.getValue(OPEN)) setColumnOpen(level, pos, powered);
+
+        // Only a redstone state transition controls OPEN. This preserves a manual OPEN state
+        // when unrelated neighbours update while still ensuring every segment follows power
+        // applied to any segment of the generated three-block shutter.
+        if (powered != wasPowered) syncColumn(level, pos, powered, powered);
     }
 
-    private void closeColumn(Level level, BlockPos pos) {
-        setColumnOpen(level, pos, false);
+    private boolean columnPowered(Level level, BlockPos pos) {
+        BlockPos base = columnBase(level, pos);
+        for (int dy = 0; dy < MAX_COLUMN_HEIGHT; dy++) {
+            BlockPos part = base.above(dy);
+            if (level.getBlockState(part).getBlock() != this) break;
+            if (level.hasNeighborSignal(part)) return true;
+        }
+        return false;
     }
 
-    private void setColumnOpen(Level level, BlockPos pos, boolean open) {
-        for (int dy = -3; dy <= 3; dy++) {
-            BlockPos part = pos.offset(0, dy, 0);
+    private boolean columnStoredPowered(Level level, BlockPos pos) {
+        BlockPos base = columnBase(level, pos);
+        for (int dy = 0; dy < MAX_COLUMN_HEIGHT; dy++) {
+            BlockState partState = level.getBlockState(base.above(dy));
+            if (partState.getBlock() != this) break;
+            if (partState.getValue(POWERED)) return true;
+        }
+        return false;
+    }
+
+    private BlockPos columnBase(Level level, BlockPos pos) {
+        BlockPos base = pos;
+        for (int i = 1; i < MAX_COLUMN_HEIGHT; i++) {
+            BlockPos below = base.below();
+            if (level.getBlockState(below).getBlock() != this) break;
+            base = below;
+        }
+        return base;
+    }
+
+    private void syncColumn(Level level, BlockPos pos, boolean open, boolean powered) {
+        BlockPos base = columnBase(level, pos);
+        for (int dy = 0; dy < MAX_COLUMN_HEIGHT; dy++) {
+            BlockPos part = base.above(dy);
             BlockState partState = level.getBlockState(part);
-            if (partState.getBlock() != this || partState.getValue(OPEN) == open) continue;
-            level.setBlock(part, partState.setValue(OPEN, open), 3);
+            if (partState.getBlock() != this) break;
+            BlockState next = partState.setValue(OPEN, open).setValue(POWERED, powered);
+            if (next == partState) continue;
+            // Client update only: avoid recursive neighbour callbacks fighting while the
+            // vertical column is being synchronized segment-by-segment.
+            level.setBlock(part, next, Block.UPDATE_CLIENTS);
         }
     }
 }
