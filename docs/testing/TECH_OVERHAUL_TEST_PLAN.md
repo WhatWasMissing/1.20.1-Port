@@ -8,6 +8,7 @@ This branch is intentionally isolated from `main` until the systems below pass l
 
 - Run `BUILD_LOCAL.bat`.
 - Confirm `verifyM2Sources`, `validate_tech_overhaul.py` and resource parsing pass.
+- Confirm the tech-overhaul validator reports every newly introduced survival craftable has a matching recipe that produces the correct registry ID.
 - Confirm no missing model/blockstate/recipe/loot-table errors appear in `latest.log`.
 
 ## Grid Capacitor
@@ -42,14 +43,31 @@ This branch is intentionally isolated from `main` until the systems below pass l
 ## Hybrid Conduit
 
 - Craft and place a Hybrid Conduit run.
-- Connect a normal FE source through Hybrid Conduit to an FE consumer and verify transfer.
-- Splice Hybrid Conduit into an existing Heavy Energy Cable run and verify FE routing crosses the boundary.
-- Connect a Matter source through the same Hybrid Conduit run to a Matter consumer and verify Matter transfer.
-- Splice Hybrid Conduit into an existing Matter Transport Pipe run and verify Matter routing crosses the boundary.
+- Test `FE source -> Heavy Energy Cable -> Hybrid Conduit -> FE consumer`.
+- Reverse/move the junction and confirm Hybrid Conduit can also feed back into an existing Heavy Energy Cable run.
+- Test `Matter source -> Matter Transport Pipe -> Hybrid Conduit -> Matter consumer`.
+- Reverse/move the junction and confirm Hybrid Conduit can also feed back into an existing Matter Transport Pipe run.
+- Build one hybrid trunk with a Heavy Energy Cable feeding FE at one junction and a Matter Transport Pipe feeding Matter at another; both resources must reach the destination simultaneously.
+- Branch an ordinary Heavy Energy Cable off a hybrid trunk and confirm only FE leaves through that branch.
+- Branch an ordinary Matter Transport Pipe off a hybrid trunk and confirm only Matter leaves through that branch.
+- Break and replace each legacy/hybrid junction and verify both routing and cable-arm visuals reconnect without restarting the world.
 - Run FE and Matter simultaneously through one Hybrid Conduit line and check for duplication/loss.
 - Confirm configured FE and Matter face policies are still respected at the destination machine.
-- Verify cable arms visually connect to Hybrid Conduits, machine block entities and ordinary Matter Pipes.
 - Confirm Network Cable task routing is still separate; Hybrid Conduit must not accidentally become a Pattern/Router task cable.
+
+## New crafting recipes
+
+The branch validator now treats the newly invented player-facing hardware as survival craftables. Verify recipes are visible through the normal recipe/JEI path for:
+
+- Facility Network Controller and Anomaly Containment Unit.
+- All ten Android chassis modules.
+- Grid Capacitor, Android Induction Relay, Quantum Power Relay and Hybrid Conduit.
+- Matter Storage Matrix, Matter Excavator and Holographic Status Panel.
+- Network Diagnostic Probe and Quantum Linker.
+- 64k, 256k, 1M and 4M Matter Storage Cells.
+- Parallel Processing Upgrade.
+
+Craft at least one example from each family and confirm the output is the intended Matter Overdrive item/block rather than a placeholder or wrong registry ID.
 
 ## Matter Storage Matrix
 
