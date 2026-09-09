@@ -70,7 +70,10 @@ public class VisualPipeBlock extends Block {
 
     protected boolean canVisuallyConnect(LevelAccessor level, BlockPos pos, Direction direction, BlockState neighbour) {
         BlockPos neighbourPos = pos.relative(direction);
-        return neighbour.is(this) || level.getBlockEntity(neighbourPos) != null;
+        // Explicitly recognise the hybrid cable so a legacy Matter Transport Pipe grows
+        // its arm into a Hybrid Conduit even during placement ticks where the hybrid BE
+        // has not yet been observed. The hybrid side performs the reciprocal check.
+        return neighbour.is(this) || neighbour.getBlock() instanceof HybridConduitBlock || level.getBlockEntity(neighbourPos) != null;
     }
 
     private static BooleanProperty property(Direction direction) {
