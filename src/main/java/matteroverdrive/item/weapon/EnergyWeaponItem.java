@@ -580,7 +580,7 @@ public class EnergyWeaponItem extends Item {
 
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
-        return type == WeaponType.PHASER ? UseAnim.NONE : UseAnim.BOW;
+        return UseAnim.NONE;
     }
 
     @Override
