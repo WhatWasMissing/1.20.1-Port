@@ -1,0 +1,8 @@
+private void receiveEnergy(int amount) {
+    if (amount <= 0) return;
+    int remaining = Math.min(amount, energy.getMaxEnergyStored() - energy.getEnergyStored());
+    if (remaining > 0) {
+        energy.receiveEnergy(remaining, false);
+        setChanged();
+    }
+}
