@@ -107,7 +107,7 @@ def main() -> int:
     need(sounds, '"destiny_sleepersimulant_fire"', "native Sleeper fire sound definition")
     need(importer, "NATIVE_IDS", "native Destiny texture import manifest")
     need(importer, "NATIVE_SOUND_IDS", "native Destiny sound import manifest")
-    need(importer, 'parser.add_argument("--strict"', "strict native asset import mode")
+    need(importer, '--strict', "strict native asset import mode")
     for native_id in NATIVE_IDS:
         path = ROOT / ("src/main/resources/assets/matteroverdrive/models/item/" + native_id + ".json")
         try:
