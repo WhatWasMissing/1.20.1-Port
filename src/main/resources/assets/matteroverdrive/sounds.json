@@ -595,5 +595,509 @@
         "stream": false
       }
     ]
+  },
+  "destiny_khvostov_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_khvostov_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_khvostov_draw": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_khvostov_draw",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_khvostov_first": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_khvostov_first",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_khvostov_last": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_khvostov_last",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_khvostov_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_khvostov_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_khvostov_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_khvostov_unload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_khvostov7g02": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_khvostov7g02",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_marshala1": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_marshala1",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_marshal_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_marshal_unload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_marshal_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_marshal_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_marshal_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_marshal_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_eyasluna": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_eyasluna",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_close": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon_close",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_draw": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon_draw",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_eject": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon_eject",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_insert": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon_insert",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_open": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon_open",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_rest": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon_rest",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_up": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_hawkmoon_up",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_surosregime": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_surosregime",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_surosregime_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_surosregime_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_surosregime_load": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_surosregime_load",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_montecarlo": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_montecarlo",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_montecarlo_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_montecarlo_unload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_montecarlo_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_montecarlo_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_montecarlo_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_montecarlo_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_traxmallus1_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_traxmallus1_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_traxmallus1_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_traxmallus1_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_traxmallus1_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_traxmallus1_unload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_traxcallum1": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_traxcallum1",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_proximacentauriii": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_proximacentauriii",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_midamultitool": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_midamultitool",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_midamultitool_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_midamultitool_unload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_midamultitool_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_midamultitool_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_chaosdogma": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_chaosdogma",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_cd_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_cd_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_cd_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_cd_unload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_cd_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_cd_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thelastword": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_thelastword",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_aceofspades": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_aceofspades",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_aos_spin": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_aos_spin",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_aos_open": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_aos_open",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_aos_insert": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_aos_insert",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_aos_close": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_aos_close",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thorn": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_thorn",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thorn_close": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_thorn_close",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thorn_open": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_thorn_open",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thorn_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_thorn_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thorn_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_thorn_unload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_sleepersimulant_draw": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_sleepersimulant_draw",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_sleepersimulant_charge": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_sleepersimulant_charge",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_sleepersimulant_fire": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_sleepersimulant_fire",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_sleepersimulant_hit": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_sleepersimulant_hit",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_sleepersimulant_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_sleepersimulant_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_sleepersimulant_unload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny_sleepersimulant_unload",
+        "stream": false
+      }
+    ]
   }
 }

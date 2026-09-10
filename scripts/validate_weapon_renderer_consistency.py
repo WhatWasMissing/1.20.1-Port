@@ -15,6 +15,8 @@ FILES = {
     "native_library": ROOT / "src/main/java/matteroverdrive/client/NativeDestinyVisualLibrary.java",
     "native_item": ROOT / "src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponItem.java",
     "destiny_items": ROOT / "src/main/java/matteroverdrive/registry/ModDestinyItems.java",
+    "sounds": ROOT / "src/main/resources/assets/matteroverdrive/sounds.json",
+    "importer": ROOT / "scripts/import_destiny_assets.py",
 }
 MODEL_IDS = ("phaser", "phaser_rifle", "ion_sniper", "plasma_shotgun")
 NATIVE_IDS = (
@@ -71,6 +73,8 @@ def main() -> int:
     native_library = read("native_library")
     native_item = read("native_item")
     destiny_items = read("destiny_items")
+    sounds = read("sounds")
+    importer = read("importer")
 
     need(effects, "event.getHand() == InteractionHand.OFF_HAND", "off-hand suppression")
     need(effects, "event.setCanceled(true);", "owned first-person hand cancellation")
@@ -99,6 +103,11 @@ def main() -> int:
     need(native_library, "weapons_01.b64", "staged native geometry bundle part 01")
     need(native_item, "transferReloadEnergy", "native weapon battery/energy-pack reload path")
     need(destiny_items, "NativeDestinyWeaponProfile.values()", "all native Destiny profiles registered")
+    need(sounds, '"destiny_aceofspades"', "native Destiny sound definitions")
+    need(sounds, '"destiny_sleepersimulant_fire"', "native Sleeper fire sound definition")
+    need(importer, "NATIVE_IDS", "native Destiny texture import manifest")
+    need(importer, "NATIVE_SOUND_IDS", "native Destiny sound import manifest")
+    need(importer, 'parser.add_argument("--strict"', "strict native asset import mode")
     for native_id in NATIVE_IDS:
         path = ROOT / ("src/main/resources/assets/matteroverdrive/models/item/" + native_id + ".json")
         try:

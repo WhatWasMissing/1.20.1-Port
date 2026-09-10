@@ -64,3 +64,22 @@ Verify each native weapon for:
 5. Relog/reload persistence for magazine, energy, modules and animation-safe state.
 
 A missing native geometry part or profile registration is a hard failure; the native renderer gate checks both staged payload parts and all 14 item-model entry points before Forge compilation.
+
+
+## Native resource import
+
+The connected source folder contains the native binary resources under `destiny-ext 0.5.1/assets/pointblank`. The repository keeps the import deterministic rather than relying on a manually copied subset.
+
+After extracting that folder, run from the repository root:
+
+```bash
+python scripts/import_destiny_assets.py --source "/path/to/destiny-ext 0.5.1" --strict
+```
+
+On Windows, the equivalent is:
+
+```powershell
+py scripts/import_destiny_assets.py --source "C:/path/to/destiny-ext 0.5.1" --strict
+```
+
+This copies the 14 native weapon textures to `assets/matteroverdrive/textures/native_destiny` and the 56 matching OGG files to `assets/matteroverdrive/sounds`. The staged native geometry and animation bundle is already in the branch. The larger `Destiny_GunPack_v1.5.2` remains a separate expansion pass because it contains additional weapons and a different Bedrock geometry format.
