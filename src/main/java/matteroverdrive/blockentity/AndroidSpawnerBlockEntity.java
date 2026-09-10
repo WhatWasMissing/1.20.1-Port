@@ -169,7 +169,7 @@ public class AndroidSpawnerBlockEntity extends BlockEntity implements MenuProvid
             BlockPos candidate = spawnerPos.offset(offset[0], offset[1], offset[2]);
             if (!level.getWorldBorder().isWithinBounds(candidate)) continue;
             if (!level.hasChunksAt(candidate.offset(-1,-1,-1), candidate.offset(1,3,1))) continue;
-            RogueAndroidEntity android = level.random.nextInt(100) >= (facilityProfile.isEmpty() ? 70 : facilityRangedChance) ? ModEntities.ROGUE_ANDROID.get().create(level) : ModEntities.RANGED_ROGUE_ANDROID.get().create(level);
+            RogueAndroidEntity android = level.random.nextInt(100) < (facilityProfile.isEmpty() ? 30 : facilityRangedChance) ? ModEntities.RANGED_ROGUE_ANDROID.get().create(level) : ModEntities.ROGUE_ANDROID.get().create(level);
             if (android == null) return false;
             android.moveTo(candidate.getX() + 0.5D, candidate.getY(), candidate.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
             if (!level.noCollision(android)) { android.discard(); continue; }
