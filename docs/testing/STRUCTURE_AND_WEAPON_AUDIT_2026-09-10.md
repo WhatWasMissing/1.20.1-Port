@@ -26,6 +26,10 @@ The facility system is correctly using native `StructurePiece` generation and ch
 - Loot is seeded from facility-specific chest profiles, but the generated container must be checked in-game for every facility/layout combination.
 - Damage variants are deterministic per piece and therefore chunk-safe.
 
+## Confirmed encounter bug fixed
+
+Facility Android spawners interpreted the configured ranged chance backwards. A value of 25 produced ranged units about 75% of the time, and 85 produced about 15%. The selection now uses the configured percentage directly. The generic non-facility default remains 30% ranged.
+
 ## Required runtime audit matrix
 
 For each facility, test layouts 0, 1 and 2:
