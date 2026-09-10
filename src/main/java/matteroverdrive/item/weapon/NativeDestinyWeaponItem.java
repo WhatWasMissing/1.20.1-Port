@@ -1,6 +1,7 @@
 package matteroverdrive.item.weapon;
 
 import matteroverdrive.registry.ModDestinySounds;
+import matteroverdrive.registry.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
@@ -26,6 +27,8 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.energy.IEnergyStorage;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
@@ -57,9 +60,7 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         ItemStack weapon = player.getItemInHand(hand);
         if (hand == InteractionHand.OFF_HAND) return InteractionResultHolder.pass(weapon);
         if (player.isShiftKeyDown()) {
-            if (getMagazine(weapon) >= profile.magazine()) return InteractionResultHolder.sidedSuccess(weapon, level.isClientSide);
             beginReload(level, player, weapon);
-            super.use(level, player, hand);
             return InteractionResultHolder.sidedSuccess(weapon, level.isClientSide);
         }
         if (isReloading(level, weapon)) {
@@ -111,9 +112,10 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
     private void beginReload(Level level, Player player, ItemStack weapon) {
         CompoundTag tag = weapon.getOrCreateTag();
         if (isReloading(level, weapon)) return;
+        boolean transferred = !level.isClientSide && transferReloadEnergy(level, player, weapon);
         triggerAnimation(level, weapon, reloadAnimation(weapon));
         tag.putLong(RELOAD_END_TAG, level.getGameTime() + profile.reloadTicks());
-        if (!level.isClientSide) {
+        if (!level.isClientSide && !transferred) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(), matteroverdrive.registry.ModSounds.get("weapons.reload").get(), SoundSource.PLAYERS, 0.75F, 1.0F);
         }
     }
@@ -132,6 +134,53 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
                     empty ? "animation.model.reloadempty" : "animation.model.reload";
             default -> "animation.model.reload";
         };
+    }
+
+    private boolean transferReloadEnergy(Level level, Player player, ItemStack weapon) {
+        if (getEnergyStored(weapon) == Integer.MAX_VALUE) return false;
+        int required = Math.min(getCapacity(weapon), Math.max(1, profile.energyPerShot()));
+        if (getEnergyStored(weapon) >= required) return false;
+        boolean transferred = false;
+        for (int slot = 0; slot < player.getInventory().getContainerSize() && getEnergyStored(weapon) < required; slot++) {
+            ItemStack candidate = player.getInventory().getItem(slot);
+            if (candidate.is(ModItems.get("energy_pack").get())) {
+                if (!player.getAbilities().instabuild) candidate.shrink(1);
+                setEnergyStored(weapon, getEnergyStored(weapon) + EnergyPackItem.ENERGY_AMOUNT);
+                transferred = true;
+            }
+        }
+        for (int slot = 0; slot < player.getInventory().getContainerSize() && getEnergyStored(weapon) < required; slot++) {
+            transferred |= transferBatteryEnergy(weapon, player, player.getInventory().getItem(slot)) > 0;
+        }
+        if (getEnergyStored(weapon) < required) {
+            transferred |= transferBatteryEnergy(weapon, player, player.getOffhandItem()) > 0;
+        }
+        if (transferred && !level.isClientSide) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                    matteroverdrive.registry.ModSounds.get("weapons.reload").get(), SoundSource.PLAYERS, 0.8F, 1.0F);
+        }
+        return transferred;
+    }
+
+    private int transferBatteryEnergy(ItemStack weapon, Player player, ItemStack candidate) {
+        if (candidate.isEmpty() || candidate == weapon || !(candidate.getItem() instanceof WeaponBatteryItem)) return 0;
+        IEnergyStorage storage = candidate.getCapability(ForgeCapabilities.ENERGY).orElse(null);
+        if (storage == null || storage.getEnergyStored() <= 0) return 0;
+        int needed = Math.max(0, getCapacity(weapon) - getEnergyStored(weapon));
+        if (needed <= 0) return 0;
+        if (player.getAbilities().instabuild) {
+            setEnergyStored(weapon, getCapacity(weapon));
+            return needed;
+        }
+        int moved = 0;
+        while (needed > 0 && storage.getEnergyStored() > 0) {
+            int extracted = storage.extractEnergy(needed, false);
+            if (extracted <= 0) break;
+            setEnergyStored(weapon, getEnergyStored(weapon) + extracted);
+            moved += extracted;
+            needed -= extracted;
+        }
+        return moved;
     }
 
     private boolean fire(Level level, Player shooter, ItemStack weapon) {

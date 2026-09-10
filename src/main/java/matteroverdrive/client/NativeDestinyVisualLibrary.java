@@ -39,8 +39,9 @@ import java.util.zip.GZIPInputStream;
  */
 public final class NativeDestinyVisualLibrary {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final ResourceLocation DATA =
-            new ResourceLocation(MatterOverdrive.MOD_ID, "native_destiny/weapons.json.gz.b64");
+    private static final List<ResourceLocation> DATA_PARTS = List.of(
+            new ResourceLocation(MatterOverdrive.MOD_ID, "native_destiny/weapons_00.b64"),
+            new ResourceLocation(MatterOverdrive.MOD_ID, "native_destiny/weapons_01.b64"));
     private static final Map<String, WeaponVisual> VISUALS = new HashMap<>();
     private static boolean loaded;
 
@@ -55,14 +56,22 @@ public final class NativeDestinyVisualLibrary {
         if (loaded) return;
         loaded = true;
         Minecraft minecraft = Minecraft.getInstance();
-        var resource = minecraft.getResourceManager().getResource(DATA);
-        if (resource.isEmpty()) {
-            LOGGER.error("Native Destiny visual bundle {} is missing", DATA);
-            return;
+        StringBuilder encoded = new StringBuilder();
+        for (ResourceLocation part : DATA_PARTS) {
+            var resource = minecraft.getResourceManager().getResource(part);
+            if (resource.isEmpty()) {
+                LOGGER.error("Native Destiny visual bundle part {} is missing", part);
+                return;
+            }
+            try (var input = resource.get().open()) {
+                encoded.append(new String(input.readAllBytes(), StandardCharsets.UTF_8).replaceAll("\\s+", ""));
+            } catch (Exception ex) {
+                LOGGER.error("Failed to read native Destiny visual bundle part {}", part, ex);
+                return;
+            }
         }
-        try (var input = resource.get().open()) {
-            String encoded = new String(input.readAllBytes(), StandardCharsets.UTF_8).replaceAll("\\s+", "");
-            byte[] compressed = Base64.getDecoder().decode(encoded);
+        try {
+            byte[] compressed = Base64.getDecoder().decode(encoded.toString());
             try (var reader = new InputStreamReader(
                     new GZIPInputStream(new ByteArrayInputStream(compressed)), StandardCharsets.UTF_8)) {
                 JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();

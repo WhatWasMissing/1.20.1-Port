@@ -49,3 +49,18 @@ The compatibility table reserves Matter values for these weapons so the Matter O
 ## Asset policy
 
 The supplied Destiny content pack is an external companion pack. Its meshes, textures, animations and audio remain outside the Matter Overdrive JAR. Matter Overdrive only references the registered item IDs at runtime.
+
+
+## Native Matter Overdrive weapon pass
+
+The native path is self-contained and does not require Point Blank. It loads the supplied Destiny geometry/animation bundle from the staged `weapons_00.b64` and `weapons_01.b64` resources, registers all 14 profiles in the Matter Overdrive creative tab, and uses the native renderer for inventory, ground, third-person item, and dedicated first-person view-model rendering.
+
+Verify each native weapon for:
+
+1. Creative-tab visibility and a non-missing item model.
+2. First-person geometry visibility, correct forward orientation, draw animation, ADS movement, recoil, fire animation, and reload animation.
+3. Magazine depletion, shift-right-click reload, charged battery/Energy Pack transfer, and FE consumption.
+4. Server-side damage, range, spread and automatic-fire cadence in a multiplayer test.
+5. Relog/reload persistence for magazine, energy, modules and animation-safe state.
+
+A missing native geometry part or profile registration is a hard failure; the native renderer gate checks both staged payload parts and all 14 item-model entry points before Forge compilation.

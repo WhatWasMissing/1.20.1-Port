@@ -11,8 +11,19 @@ FILES = {
     "renderer": ROOT / "src/main/java/matteroverdrive/client/WeaponItemRenderer.java",
     "profile": ROOT / "src/main/java/matteroverdrive/client/WeaponRenderProfile.java",
     "weapon": ROOT / "src/main/java/matteroverdrive/item/weapon/EnergyWeaponItem.java",
+    "native_renderer": ROOT / "src/main/java/matteroverdrive/client/NativeDestinyWeaponRenderer.java",
+    "native_library": ROOT / "src/main/java/matteroverdrive/client/NativeDestinyVisualLibrary.java",
+    "native_item": ROOT / "src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponItem.java",
+    "destiny_items": ROOT / "src/main/java/matteroverdrive/registry/ModDestinyItems.java",
 }
 MODEL_IDS = ("phaser", "phaser_rifle", "ion_sniper", "plasma_shotgun")
+NATIVE_IDS = (
+    "destiny_aceofspades", "destiny_chaosdogma", "destiny_eyasluna",
+    "destiny_hawkmoon", "destiny_khvostov7g02", "destiny_marshala1",
+    "destiny_midamultitool", "destiny_montecarlo", "destiny_proximacentauriii",
+    "destiny_sleepersimulant", "destiny_surosregime", "destiny_thelastword",
+    "destiny_thorn", "destiny_traxcallum1",
+)
 errors: list[str] = []
 
 
@@ -56,6 +67,10 @@ def main() -> int:
     renderer = read("renderer")
     profile = read("profile")
     weapon = read("weapon")
+    native_renderer = read("native_renderer")
+    native_library = read("native_library")
+    native_item = read("native_item")
+    destiny_items = read("destiny_items")
 
     need(effects, "event.getHand() == InteractionHand.OFF_HAND", "off-hand suppression")
     need(effects, "event.setCanceled(true);", "owned first-person hand cancellation")
@@ -77,6 +92,22 @@ def main() -> int:
     need(profile, "recoilPitch", "per-weapon recoil tuning")
 
     need(weapon, "new matteroverdrive.client.WeaponItemRenderer()", "EnergyWeaponItem client renderer registration")
+    need(renderer, "nativeDestinyRenderer().renderNative", "native Destiny first-person renderer dispatch")
+    need(renderer, "nativeDestinyRenderer().renderByItem", "native Destiny item-context renderer dispatch")
+    need(native_renderer, "NativeDestinyVisualLibrary.get", "native visual lookup")
+    need(native_library, "weapons_00.b64", "staged native geometry bundle part 00")
+    need(native_library, "weapons_01.b64", "staged native geometry bundle part 01")
+    need(native_item, "transferReloadEnergy", "native weapon battery/energy-pack reload path")
+    need(destiny_items, "NativeDestinyWeaponProfile.values()", "all native Destiny profiles registered")
+    for native_id in NATIVE_IDS:
+        path = ROOT / ("src/main/resources/assets/matteroverdrive/models/item/" + native_id + ".json")
+        try:
+            obj = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"cannot parse {path.relative_to(ROOT)}: {exc}")
+            continue
+        if obj.get("parent") != "builtin/entity":
+            errors.append(f"{native_id} must use builtin/entity for the native BEWLR")
     check_models()
 
     if errors:

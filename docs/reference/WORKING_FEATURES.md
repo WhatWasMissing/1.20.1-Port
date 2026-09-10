@@ -94,7 +94,7 @@ Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are im
 4. Generic legacy machine redstone/configuration modes where backend equivalents are absent.
 5. Remaining machine-specific GUI pages that map to real backend state.
 6. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
-7. Remaining weapon module mesh positioning and full first-person hand/weapon animation choreography.
+7. Remaining weapon module mesh positioning and full first-person hand/weapon animation choreography for the original Matter Overdrive guns; the native Destiny weapon path now has its own geometry, animation, input and renderer contract.
 8. Deeper dispatcher/broadcaster network concepts where cleanly mappable to the working Forge routing core.
 9. Richer dialogue presentation and remaining source-backed quest detail.
 
