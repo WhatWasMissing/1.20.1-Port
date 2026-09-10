@@ -3,7 +3,7 @@
 Date: 2026-09-10
 Repository: https://github.com/WhatWasMissing/1.20.1-Port
 Target branch: main
-Latest main commit: b1a80629545d9f76143687e3dca1676b0d67e8f5
+Latest main commit: 7c2c0b1 (the handoff update commit)
 
 ## Objective
 
@@ -225,7 +225,7 @@ Desktop mode still needs user-provided evidence for things it cannot observe dir
 ~~~text
 Continue Matter Overdrive Forge 1.20.1 development from the local checkout at C:/Users/novel/Desktop/MatterOverdrive-1.20.1 test/MatterOverdrive-1.20.1-port-M2-Network-alpha4.1/MatterOverdrive-1.20.1-port.
 
-Read docs/handoffs/MATTER_OVERDRIVE_DESKTOP_HANDOFF_2026-09-10.md first. Work from main, fetch the latest remote state, and inspect git status before editing. The expected current remote commit is b1a80629545d9f76143687e3dca1676b0d67e8f5.
+Read docs/handoffs/MATTER_OVERDRIVE_DESKTOP_HANDOFF_2026-09-10.md first. Work from main, fetch the latest remote state, and inspect git status before editing. The expected current remote commit is 7c2c0b1.
 
 The native Destiny importer already reported 14/14 textures and 56/56 sounds, and the renderer consistency script passed. Previous builds failed because bundled documentation mirrors were stale; those were fixed in e84390d and b1a8062. Run gradlew.bat build now, fix only the first real failure if one remains, and preserve the imported untracked assets. Do not skip verification tasks. After a successful build, inspect the generated JAR and prepare the native Destiny weapon test checklist. Do not claim Destiny_GunPack_v1.5.2 is ported; it is a separate larger geometry-adapter pass.
 ~~~
