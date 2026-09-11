@@ -41,7 +41,7 @@ public final class ModNetwork {
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h) {
-        int loreMask = StructureLoreSavedData.get(p.serverLevel()).mask(p.getUUID());
+        int loreMask = StructureLoreSavedData.get(p.serverLevel().getServer().overworld()).mask(p.getUUID());
         openDataPad(p, h, loreMask);
     }
 
