@@ -1,0 +1,13 @@
+{
+  "parent": "matteroverdrive:campaign/frontier_expedition",
+  "display": {
+    "icon": {"item": "matteroverdrive:recovered_lore_fragment"},
+    "title": {"text": "Field Archivist"},
+    "description": {"text": "Authenticate 16 optional facility logs and preserve the human and synthetic details behind the Incident."},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {"earned": {"trigger": "minecraft:impossible"}}
+}
