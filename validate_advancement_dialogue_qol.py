@@ -40,16 +40,10 @@ defector = text("src/main/java/matteroverdrive/entity/DefectorAndroidEntity.java
 data_packet = text("src/main/java/matteroverdrive/network/DataPadOpenPacket.java")
 voice = text("src/main/java/matteroverdrive/pda/PdaVoiceLineCatalog.java")
 audio = text("src/main/java/matteroverdrive/client/PdaEmbeddedAudio.java")
+manifest_text = text("src/main/resources/assets/matteroverdrive/pda_voice/voice_bank_manifest.json")
 
-for token in [
-    'PROTOCOL = "17"',
-    "DialogueChoicePacket.class",
-    "openBranchingDialogue",
-    "sendDialogueView",
-    "chooseDialogue",
-]:
+for token in ['PROTOCOL = "17"', "DialogueChoicePacket.class", "openBranchingDialogue", "sendDialogueView", "chooseDialogue"]:
     require(network, token, "ModNetwork")
-
 for token in ["dialogueId", "nodeId", "ChoiceOption", "choices", "Compatibility constructor"]:
     require(packet, token, "NpcDialoguePacket")
 for token in ["DialogueSessionManager.choose", "context.getSender()"]:
@@ -63,8 +57,7 @@ for token in ["ModNetwork.chooseDialogue", "ChoiceOption", "READ ALOUD", "SYNTHE
 
 profile_ids = [
     "researcher.field", "researcher.salvager", "researcher.recovery", "researcher.icarus",
-    "researcher.janus", "researcher.archivist", "synthetic.morrow", "synthetic.chorus",
-    "synthetic.hephaestus",
+    "researcher.janus", "researcher.archivist", "synthetic.morrow", "synthetic.chorus", "synthetic.hephaestus",
 ]
 for profile_id in profile_ids:
     require(catalog, f'add("{profile_id}"', "DialogueCatalog")
@@ -74,7 +67,7 @@ for token in ["researcher.field", "researcher.salvager", "researcher.recovery", 
     require(researcher, token, "FacilityResearcherEntity")
 for token in ["synthetic.morrow", "synthetic.chorus", "synthetic.hephaestus"]:
     require(defector, token, "DefectorAndroidEntity")
-for token in ["field_liaison", "synthetic_liaison", "incident_analyst", "fieldTrust", "syntheticTrust", "archiveInsight"]:
+for token in ["field_liaison", "synthetic_liaison", "incident_analyst", "fieldTrust", "syntheticTrust", "archiveInsight", "sendPdaVoice"]:
     require(awards, token, "DialogueAdvancementEvents")
 for token in ["fieldTrust", "syntheticTrust", "archiveInsight"]:
     require(data_packet, token, "DataPadOpenPacket")
@@ -120,12 +113,21 @@ for name in ["field_liaison.json", "synthetic_liaison.json", "incident_analyst.j
 voice_ids = [
     "field_link", "record_recovered", "reconstruction_complete", "matter_resonance",
     "anomaly_warning", "pressure_warning", "structural_warning", "signal_echo",
-    "orpheus_security", "icarus_warning", "synthetic_contact", "closed_loop", "database_ready",
+    "orpheus_security", "icarus_warning", "synthetic_contact", "field_liaison",
+    "synthetic_liaison", "incident_analyst", "closed_loop", "database_ready",
 ]
 for line_id in voice_ids:
     require(voice, f'LINES.put("{line_id}"', "PdaVoiceLineCatalog")
-for token in ["System.Speech", "powershell.exe", "espeak", "spd-say", "PdaVoiceLineCatalog.line"]:
+for token in ["System.Speech", "powershell.exe", "espeak", "spd-say", "PdaVoiceLineCatalog.line",
+              "pda_voice/", "config", "recordedStream"]:
     require(audio, token, "PdaEmbeddedAudio")
+try:
+    manifest = json.loads(manifest_text)
+    manifest_ids = [entry.get("id") for entry in manifest.get("lines", [])]
+    if manifest_ids != voice_ids:
+        ERRORS.append("voice_bank_manifest.json IDs/order do not match PdaVoiceLineCatalog validator contract")
+except Exception as exc:
+    ERRORS.append(f"voice bank manifest invalid JSON: {exc}")
 
 for owner, blob in [("DialogueCatalog", catalog), ("DialogueStateSavedData", state),
                     ("DialogueSessionManager", sessions), ("DialogueAdvancementEvents", awards)]:
