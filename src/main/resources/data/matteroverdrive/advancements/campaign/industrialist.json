@@ -1,0 +1,13 @@
+{
+  "parent": "matteroverdrive:campaign/automation",
+  "display": {"icon":{"item":"matteroverdrive:transporter"},"title":{"text":"Industrialist"},"description":{"text":"Build the support infrastructure that turns isolated machines into a functioning technology base."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "transporter":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:transporter"]}]}},
+    "charging":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:charging_station"]}]}},
+    "accelerator":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:spacetime_accelerator"]}]}},
+    "inscriber":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:inscriber"]}]}},
+    "recycler":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:matter_recycler"]}]}}
+  },
+  "requirements": [["transporter"],["charging"],["accelerator"],["inscriber"],["recycler"]],
+  "rewards":{"experience":250}
+}
