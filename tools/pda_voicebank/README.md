@@ -38,8 +38,15 @@ The generated production queue then appends all current `tech_*` discovery callo
 3. Name each source `<line_id>.mp3` (WAV/OGG/FLAC/M4A are also accepted).
 4. Put sources in `tools/pda_voicebank/raw/`.
 5. Run `PROCESS_PDA_VOICE_BANK.bat`.
-6. Review the generated 48 kHz mono WAVs in `src/main/resources/assets/matteroverdrive/pda_voice/` or keep them in the local/modpack override bank.
+6. Review the generated 48 kHz mono WAVs in `src/main/resources/assets/matteroverdrive/pda_voice/`.
 7. Compare important warnings and several ordinary lines against the approved ICARUS synthetic-VA reference before shipping.
+8. Either run the normal Gradle build so those WAVs are bundled automatically, or inject them into an already-built JAR with:
+
+```bat
+INJECT_PDA_VOICES_INTO_JAR.bat build\libs\matteroverdrive-0.6.jar
+```
+
+The injector creates a separate `matteroverdrive-0.6-pda-voice.jar` and leaves the original build untouched.
 
 The processor preserves the dry performance and adds only a quiet synthetic character layer: opposing micro-pitch ghosts, millisecond offsets, communications EQ/compression, tiny digital reflection and the Matter Overdrive PDA identification chime.
 
@@ -53,11 +60,19 @@ Core lines include startup, database, hazard, social-progression and Incident-re
 
 `tech_*` lines play only when that technology family is first authenticated for that player/world. Variant items deliberately share a canonical record where separate narration would be noise: crate colours, Android body parts, chassis modules, storage-cell tiers, machine upgrades, security media, weapon modules, Tritanium tools and Tritanium armour are grouped into families.
 
-## Runtime fallback
+## Runtime playback order
 
-`PdaEmbeddedAudio` tries a processed prerecorded WAV first, then `config/matteroverdrive/pda_voice/<line_id>.wav`, local OS TTS, Minecraft Narrator and captions. Missing audio must therefore never break gameplay or hide information.
+`PdaEmbeddedAudio` uses this order:
 
-This is why binary voice assets do not need to be committed to GitHub. A local/modpack voice bank can be injected after the normal Gradle build and the Java catalogue will still work when some or all recordings are absent.
+1. `config/matteroverdrive/pda_voice/<line_id>.wav` — local/modpack override;
+2. bundled `/assets/matteroverdrive/pda_voice/<line_id>.wav` inside the JAR;
+3. local OS speech synthesis;
+4. Minecraft Narrator;
+5. captions/text remain available regardless.
+
+That means a processed WAV can be tested without rebuilding the mod: put it in the Minecraft instance's `config/matteroverdrive/pda_voice/` directory and restart the game. The local file intentionally overrides the copy bundled inside the JAR.
+
+Binary voice assets therefore do not need to be committed to GitHub. When a bank is approved, either bundle it during the normal build or use the local JAR injector.
 
 ## Pronunciation
 
