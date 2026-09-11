@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:orbital_recovery_array",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
