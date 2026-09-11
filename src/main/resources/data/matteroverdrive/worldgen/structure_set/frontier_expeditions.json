@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {"structure": "matteroverdrive:deep_matter_vault", "weight": 1},
+    {"structure": "matteroverdrive:autonomous_drone_foundry", "weight": 1},
+    {"structure": "matteroverdrive:anomaly_quarantine_site", "weight": 1},
+    {"structure": "matteroverdrive:orbital_recovery_array", "weight": 1}
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "salt": 77110911,
+    "spacing": 88,
+    "separation": 32
+  }
+}
