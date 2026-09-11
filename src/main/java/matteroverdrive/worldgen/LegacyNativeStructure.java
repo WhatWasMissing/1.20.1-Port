@@ -38,12 +38,7 @@ public final class LegacyNativeStructure extends Structure {
             int surfaceY = context.chunkGenerator().getBaseHeight(
                     x, z, heightmap, context.heightAccessor(), context.randomState());
 
-            // Every legacy site is authored from a naturally approachable terrain
-            // level. The underwater base uses the ocean floor; the other five use
-            // world surface. No structure requires flight, pillaring or mining to
-            // reach its intended entrance.
             int y = surfaceY;
-
             BlockPos origin = new BlockPos(x, y, z);
             long elapsed = System.nanoTime() - started;
             if (elapsed >= SLOW_GENERATION_POINT_NANOS) {
@@ -53,8 +48,14 @@ public final class LegacyNativeStructure extends Structure {
                 LOGGER.debug("M2 STRUCTURE TRACE: scheduled kind={} chunk={} origin={} surfaceY={}",
                         kind, context.chunkPos(), origin, surfaceY);
             }
-            return Optional.of(new GenerationStub(origin,
-                    builder -> builder.addPiece(new LegacyVanillaStructurePiece(kind, origin))));
+            return Optional.of(new GenerationStub(origin, builder -> {
+                builder.addPiece(new LegacyVanillaStructurePiece(kind, origin));
+                // The laboratory shell intersects its descending route. Author the
+                // final staircase afterwards so the room cannot clear the path.
+                if (kind == LegacyParityStructureFeature.Kind.MAD_SCIENTIST_HOUSE) {
+                    builder.addPiece(new LegacyTraversalRepairPiece(origin));
+                }
+            }));
         } catch (RuntimeException | Error error) {
             LOGGER.error("M2 STRUCTURE ERROR: generation-point lookup failed kind={} chunk={}",
                     kind, context.chunkPos(), error);
