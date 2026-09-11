@@ -45,7 +45,7 @@ public final class NpcDialogueScreen extends Screen {
             if (!wrapped.isEmpty()) wrapped.add(FormattedCharSequence.EMPTY);
             wrapped.addAll(font.split(Component.literal(line == null ? "" : line), textWidth));
         }
-        if (wrapped.isEmpty()) wrapped.add(FormattedCharSequence.forward("...", net.minecraft.network.chat.Style.EMPTY));
+        if (wrapped.isEmpty()) wrapped.addAll(font.split(Component.literal("..."), textWidth));
         linesPerPage = Math.max(1, (boxHeight - 92) / LINE_HEIGHT);
         page = Math.max(0, Math.min(page, pageCount() - 1));
         rebuildButtons();
