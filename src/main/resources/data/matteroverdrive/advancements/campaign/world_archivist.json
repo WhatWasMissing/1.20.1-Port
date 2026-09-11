@@ -1,0 +1,23 @@
+{
+  "parent": "matteroverdrive:campaign/frontier_expedition",
+  "display": {"icon":{"item":"matteroverdrive:current_features_reference"},"title":{"text":"World Archivist"},"description":{"text":"Visit every Matter Overdrive structure family."},"frame":"challenge","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "crashed_ship":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:crashed_ship"}}}]}},
+    "cargo_ship":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:cargo_ship"}}}]}},
+    "underwater_base":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:underwater_base"}}}]}},
+    "mad_scientist_house":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:mad_scientist_house"}}}]}},
+    "android_house":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:android_house"}}}]}},
+    "sand_pit":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:sand_pit"}}}]}},
+    "manufacturing":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:synthetic_manufacturing_plant"}}}]}},
+    "refinery":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:matter_refinery"}}}]}},
+    "relay":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:quantum_relay_station"}}}]}},
+    "bunker":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:android_command_bunker"}}}]}},
+    "fusion_complex":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:fusion_research_complex"}}}]}},
+    "black_site":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:black_site"}}}]}},
+    "vault":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:deep_matter_vault"}}}]}},
+    "foundry":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:autonomous_drone_foundry"}}}]}},
+    "quarantine":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:anomaly_quarantine_site"}}}]}},
+    "array":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:orbital_recovery_array"}}}]}}
+  },
+  "rewards": {"experience": 1000}
+}
