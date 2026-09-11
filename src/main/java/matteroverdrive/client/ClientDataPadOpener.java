@@ -11,8 +11,8 @@ public final class ClientDataPadOpener {
 
     private ClientDataPadOpener() { }
 
-    public static void open(List<String> history, int loreMask) {
-        Minecraft.getInstance().setScreen(new DataPadScreen(history, loreMask));
+    public static void open(List<String> history, int loreMask, int fieldTrust, int syntheticTrust, int archiveInsight) {
+        Minecraft.getInstance().setScreen(new DataPadScreen(history, loreMask, fieldTrust, syntheticTrust, archiveInsight));
         if (!startupAnnounced) {
             startupAnnounced = true;
             ClientPdaVoiceOpener.play("database_ready");
