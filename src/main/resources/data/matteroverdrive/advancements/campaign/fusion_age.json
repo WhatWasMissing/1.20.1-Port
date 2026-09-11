@@ -1,0 +1,6 @@
+{
+  "parent": "matteroverdrive:campaign/automation",
+  "display": {"icon":{"item":"matteroverdrive:fusion_reactor_controller"},"title":{"text":"Build the Impossible"},"description":{"text":"Assemble the heart of a Matter Overdrive fusion reactor."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {"controller":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:fusion_reactor_controller"]}]}}},
+  "requirements": [["controller"]]
+}
