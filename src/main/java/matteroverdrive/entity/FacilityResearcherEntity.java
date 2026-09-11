@@ -57,6 +57,16 @@ public class FacilityResearcherEntity extends Villager {
 
     public Role getRole() { return role; }
 
+    /**
+     * Field-team NPCs are dialogue/progression witnesses rather than combat bait.
+     * Players can still interact with and damage them normally, but hostile mob AI
+     * will not erase them before their dialogue can be discovered.
+     */
+    @Override
+    public boolean canBeSeenAsEnemy() {
+        return false;
+    }
+
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!level().isClientSide && player instanceof ServerPlayer serverPlayer) {
