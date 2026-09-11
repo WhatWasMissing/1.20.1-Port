@@ -1,9 +1,12 @@
 package matteroverdrive.client.screen;
 
+import matteroverdrive.client.ClientDocumentationOpener;
 import matteroverdrive.client.GuideMeCompatEvents;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
+import matteroverdrive.world.StructureLoreCatalog;
+import matteroverdrive.world.StructureLoreCatalog.LoreRecord;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -13,113 +16,135 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Player-specific Matter Overdrive PDA.
+ *
+ * This screen owns discovery/progression presentation. GuideME remains the full
+ * technical manual and is deliberately opened only from the dedicated manual
+ * action, never as a replacement for the PDA itself.
+ */
 public class DataPadScreen extends Screen {
-    private static final int PANEL_COLOR = 0xE6101820;
-    private static final int BORDER_COLOR = 0xFF33CCFF;
-    private static final int TEXT_COLOR = 0xFFE6F7FF;
-    private static final int MUTED_COLOR = 0xFF9BB6C3;
-    private static final int ACTIVE_CONTRACTS_PAGE = 6;
-    private static final int HISTORY_PAGE = 7;
+    private static final int BACKGROUND = 0xF0061018;
+    private static final int PANEL = 0xE80A1822;
+    private static final int PANEL_ALT = 0xD90C202B;
+    private static final int CYAN = 0xFF38D8F2;
+    private static final int CYAN_DIM = 0xFF18879A;
+    private static final int ORANGE = 0xFFFFA642;
+    private static final int TEXT = 0xFFE9FBFF;
+    private static final int MUTED = 0xFF8EADB7;
+    private static final int GOOD = 0xFF62E39A;
+    private static final int LOCKED = 0xFF526771;
     private static final int MAX_MANAGED_CONTRACTS = 4;
 
-    private static final List<String> TITLES = List.of(
-            "Overview",
-            "Matter Replication",
-            "Power and Machines",
-            "Fusion Reactor",
-            "Android System",
-            "Survival Progression",
-            "Active Contracts",
-            "Scan History"
-    );
+    private enum Tab {
+        OVERVIEW("OVERVIEW"),
+        DATA_BANK("DATA BANK"),
+        FACILITIES("FACILITIES"),
+        RESEARCH("RESEARCH"),
+        OPERATIONS("OPERATIONS"),
+        CONTRACTS("CONTRACTS"),
+        SCANS("SCAN LOG");
 
-    private static final List<List<String>> GUIDE_PAGES = List.of(
-            List.of(
-                    "Matter Overdrive turns stored matter and Forge Energy into a connected technology chain.",
-                    "The Data Pad is your standalone field console: track research, manage contracts and review scan history without opening an external manual."
-            ),
-            List.of(
-                    "Decompose supported items into matter, analyse items into patterns, store those patterns on Pattern Drives, then queue them through the Pattern Monitor and Replicator.",
-                    "The Matter Scanner is the handheld analyser. Sneak-use it on powered Pattern Storage, then hold-use it on a valid block for three seconds. A successful scan consumes the block and adds 10% progress."
-            ),
-            List.of(
-                    "Solar Panels generate daylight FE. Heavy Energy Cables carry FE. Charging Stations charge compatible batteries and handheld tools.",
-                    "The Microwave cooks food. The Space-Time Accelerator spends FE and matter to pulse extra ticks into nearby random-tick blocks and block entities."
-            ),
-            List.of(
-                    "Build the 11 x 11 reactor ring with the controller on an edge, coil/IO positions around the ring and the anomaly at its centre.",
-                    "Feed matter through Reactor IO. Reactor output scales with anomaly mass and efficiency. Stabilizers require FE, a clear beam and correct facing."
-            ),
-            List.of(
-                    "Blue Pills convert players, Red Pills deactivate Android state and Yellow Pills restore Android FE.",
-                    "The Android Station installs Head, Chest, Arms and Legs parts. They unlock Cloak, Force Field, Sonic Shockwave and Ender Teleport; use V to cycle and B to activate by default."
-            ),
-            List.of(
-                    "Tritanium generates from Y -32 to 64. Dilithium generates from Y -64 to 16 in fresh Overworld chunks.",
-                    "Mine both ores with an iron-tier pickaxe or better, then process them in a furnace or blast furnace."
-            )
-    );
+        private final String label;
+        Tab(String label) { this.label = label; }
+    }
 
-    private final List<String> history;
+    private final List<String> journal;
+    private final int loreMask;
+    private final List<Button> tabButtons = new ArrayList<>();
     private final List<Button> abandonButtons = new ArrayList<>();
     private final int[] managedSlots = new int[MAX_MANAGED_CONTRACTS];
-    private int page;
+
+    private Tab tab = Tab.OVERVIEW;
+    private int archiveCursor;
+    private int facilityPage;
     private int armedAbandonSlot = -1;
     private long abandonArmedUntil;
     private Button previousButton;
     private Button nextButton;
-    private Button guideButton;
+    private Button manualButton;
 
-    public DataPadScreen(List<String> history) {
-        super(Component.literal("Matter Overdrive Data Pad"));
-        this.history = new ArrayList<>(history);
-        java.util.Arrays.fill(managedSlots, -1);
+    public DataPadScreen(List<String> journal, int loreMask) {
+        super(Component.literal("Matter Overdrive PDA"));
+        this.journal = new ArrayList<>(journal);
+        this.loreMask = loreMask & StructureLoreCatalog.ALL_RECORDS_MASK;
+        this.archiveCursor = firstRecoveredOrZero();
+        Arrays.fill(managedSlots, -1);
     }
 
     @Override
     protected void init() {
-        int y = height - 32;
-        int guideY = height - 56;
-        int navGap = 6;
-        int navWidth = Math.max(120, Math.min(220, width - 24));
-        int navButtonWidth = Math.max(54, (navWidth - navGap) / 2);
-        int navLeft = Math.max(8, (width - (navButtonWidth * 2 + navGap)) / 2);
-        previousButton = addRenderableWidget(Button.builder(Component.literal("< Previous"),
-                button -> setPage(page - 1)).bounds(navLeft, y, navButtonWidth, 20).build());
-        nextButton = addRenderableWidget(Button.builder(Component.literal("Next >"),
-                button -> setPage(page + 1)).bounds(navLeft + navButtonWidth + navGap, y, navButtonWidth, 20).build());
-        int guideWidth = Math.min(180, Math.max(120, width - 24));
-        guideButton = addRenderableWidget(Button.builder(Component.literal("OPEN GUIDE"),
-                button -> openGuide()).bounds(Math.max(8, (width - guideWidth) / 2), guideY, guideWidth, 20).build());
-        guideButton.active = GuideMeCompatEvents.isAvailable();
+        tabButtons.clear();
+        abandonButtons.clear();
+        Arrays.fill(managedSlots, -1);
 
+        int left = panelLeft();
+        int top = panelTop();
+        int sidebarX = left + 8;
+        int buttonY = top + 42;
+        for (Tab value : Tab.values()) {
+            Button button = addRenderableWidget(Button.builder(Component.literal(value.label),
+                    ignored -> selectTab(value)).bounds(sidebarX, buttonY, 100, 18).build());
+            tabButtons.add(button);
+            buttonY += 21;
+        }
 
-        int right = Math.max(24, Math.min(width - 12, width / 2 + 190));
-        int top = 12;
+        String manualLabel = GuideMeCompatEvents.isAvailable() ? "TECH MANUAL • GUIDEME" : "TECH MANUAL • BUILT-IN";
+        manualButton = addRenderableWidget(Button.builder(Component.literal(manualLabel),
+                ignored -> ClientDocumentationOpener.openTechnicalManual())
+                .bounds(sidebarX, panelBottom() - 28, 100, 20).build());
+
+        int contentLeft = left + 122;
+        int contentRight = panelRight() - 10;
+        int navWidth = 76;
+        int navY = panelBottom() - 28;
+        previousButton = addRenderableWidget(Button.builder(Component.literal("< PREV"), ignored -> navigate(-1))
+                .bounds(contentLeft, navY, navWidth, 20).build());
+        nextButton = addRenderableWidget(Button.builder(Component.literal("NEXT >"), ignored -> navigate(1))
+                .bounds(contentRight - navWidth, navY, navWidth, 20).build());
+
         for (int row = 0; row < MAX_MANAGED_CONTRACTS; row++) {
             final int buttonIndex = row;
-            Button button = addRenderableWidget(Button.builder(Component.literal("ABANDON"),
-                    ignored -> abandon(buttonIndex))
-                    .bounds(right - 72, top + 48 + row * 42, 58, 16).build());
+            Button button = addRenderableWidget(Button.builder(Component.literal("ABANDON"), ignored -> abandon(buttonIndex))
+                    .bounds(contentRight - 66, top + 66 + row * 43, 58, 16).build());
             abandonButtons.add(button);
         }
-        setPage(page);
+        refreshControls();
     }
 
-    private void openGuide() {
-        if (!GuideMeCompatEvents.openGuide() && Minecraft.getInstance().player != null) {
-            Minecraft.getInstance().player.displayClientMessage(
-                    Component.literal("GuideME is not installed; the Data Pad pages remain available."), true);
-        }
-    }
-
-    private void setPage(int nextPage) {
-        page = Math.max(0, Math.min(TITLES.size() - 1, nextPage));
+    private void selectTab(Tab next) {
+        tab = next;
         armedAbandonSlot = -1;
-        if (previousButton != null) previousButton.active = page > 0;
-        if (nextButton != null) nextButton.active = page < TITLES.size() - 1;
+        refreshControls();
+    }
+
+    private void navigate(int direction) {
+        if (tab == Tab.DATA_BANK) {
+            archiveCursor = Math.max(0, Math.min(StructureLoreCatalog.RECORD_COUNT - 1, archiveCursor + direction));
+        } else if (tab == Tab.FACILITIES) {
+            facilityPage = Math.max(0, Math.min(1, facilityPage + direction));
+        }
+        refreshControls();
+    }
+
+    private void refreshControls() {
+        for (int i = 0; i < tabButtons.size(); i++) {
+            tabButtons.get(i).active = Tab.values()[i] != tab;
+        }
+        boolean navigable = tab == Tab.DATA_BANK || tab == Tab.FACILITIES;
+        if (previousButton != null) {
+            previousButton.visible = navigable;
+            previousButton.active = tab == Tab.DATA_BANK ? archiveCursor > 0 : facilityPage > 0;
+        }
+        if (nextButton != null) {
+            nextButton.visible = navigable;
+            nextButton.active = tab == Tab.DATA_BANK
+                    ? archiveCursor < StructureLoreCatalog.RECORD_COUNT - 1
+                    : facilityPage < 1;
+        }
         refreshContractButtons();
     }
 
@@ -152,7 +177,7 @@ public class DataPadScreen extends Screen {
 
     private void refreshContractButtons() {
         if (abandonButtons.isEmpty()) return;
-        List<ContractRef> refs = page == ACTIVE_CONTRACTS_PAGE ? contractRefs() : List.of();
+        List<ContractRef> refs = tab == Tab.CONTRACTS ? contractRefs() : List.of();
         long now = System.currentTimeMillis();
         if (armedAbandonSlot >= 0 && now > abandonArmedUntil) armedAbandonSlot = -1;
         for (int i = 0; i < abandonButtons.size(); i++) {
@@ -168,101 +193,267 @@ public class DataPadScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         refreshContractButtons();
-        renderBackground(graphics);
-        int left = Math.max(12, width / 2 - 190);
-        int right = Math.max(24, Math.min(width - 12, width / 2 + 190));
-        int top = 12;
-        int bottom = height - 42;
+        graphics.fill(0, 0, width, height, BACKGROUND);
 
-        graphics.fill(left, top, right, bottom, PANEL_COLOR);
-        graphics.fill(left, top, right, top + 1, BORDER_COLOR);
-        graphics.fill(left, bottom - 1, right, bottom, BORDER_COLOR);
-        graphics.fill(left, top, left + 1, bottom, BORDER_COLOR);
-        graphics.fill(right - 1, top, right, bottom, BORDER_COLOR);
+        int left = panelLeft();
+        int right = panelRight();
+        int top = panelTop();
+        int bottom = panelBottom();
+        int contentLeft = left + 118;
 
-        graphics.drawCenteredString(font, title, width / 2, top + 10, BORDER_COLOR);
-        graphics.drawCenteredString(font,
-                Component.literal((page + 1) + "/" + TITLES.size() + " — " + TITLES.get(page)),
-                width / 2, top + 26, TEXT_COLOR);
+        graphics.fill(left, top, right, bottom, PANEL);
+        graphics.fill(left, top, left + 112, bottom, PANEL_ALT);
+        border(graphics, left, top, right, bottom, CYAN_DIM);
+        graphics.fill(left + 112, top, left + 113, bottom, CYAN_DIM);
 
-        int textX = left + 14;
-        int textY = top + 48;
-        int maxWidth = right - left - 28;
-        if (page == HISTORY_PAGE) {
-            renderHistory(graphics, textX, textY, maxWidth);
-        } else if (page == ACTIVE_CONTRACTS_PAGE) {
-            renderContracts(graphics, textX, textY, maxWidth, bottom);
-        } else {
-            for (String paragraph : GUIDE_PAGES.get(page)) {
-                for (FormattedCharSequence line : font.split(Component.literal(paragraph), maxWidth)) {
-                    graphics.drawString(font, line, textX, textY, TEXT_COLOR, false);
-                    textY += 11;
-                }
-                textY += 7;
-            }
+        graphics.drawString(font, Component.literal("MO // PERSONAL DATA ASSISTANT"), left + 9, top + 9, CYAN, false);
+        graphics.drawString(font, Component.literal("ARCHIVE " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT),
+                right - 92, top + 9, recoveredCount() == StructureLoreCatalog.RECORD_COUNT ? GOOD : ORANGE, false);
+        graphics.drawString(font, Component.literal(tab.label), contentLeft + 10, top + 30, TEXT, false);
+        graphics.fill(contentLeft + 10, top + 43, right - 10, top + 44, CYAN_DIM);
+
+        int x = contentLeft + 10;
+        int y = top + 54;
+        int maxWidth = Math.max(80, right - x - 12);
+        int contentBottom = bottom - 38;
+
+        switch (tab) {
+            case OVERVIEW -> renderOverview(graphics, x, y, maxWidth, contentBottom);
+            case DATA_BANK -> renderDataBank(graphics, x, y, maxWidth, contentBottom);
+            case FACILITIES -> renderFacilities(graphics, x, y, maxWidth, contentBottom);
+            case RESEARCH -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, researchLines(), "No research programme data available.");
+            case OPERATIONS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, operationLines(), "No active Field Operations data available.");
+            case CONTRACTS -> renderContracts(graphics, x, y, maxWidth, contentBottom);
+            case SCANS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, scanLines(), "No block scans recorded yet.");
         }
 
-        graphics.drawString(font, Component.literal(fit(page == ACTIVE_CONTRACTS_PAGE
-                        ? "Completed contracts redeem at a Contract Market. Abandon requires two clicks."
-                        : "Use on blocks to add scan-history entries.", maxWidth)),
-                textX, bottom - 15, MUTED_COLOR, false);
+        graphics.drawString(font,
+                Component.literal(GuideMeCompatEvents.isAvailable()
+                        ? "TECHNICAL MANUAL LINK: GUIDEME ONLINE"
+                        : "TECHNICAL MANUAL LINK: INTERNAL ARCHIVE"),
+                left + 9, bottom - 41, GuideMeCompatEvents.isAvailable() ? GOOD : MUTED, false);
         super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    private void renderOverview(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
+        graphics.drawString(font, Component.literal("OVERDRIVE INCIDENT RECONSTRUCTION"), x, y, ORANGE, false);
+        y += 14;
+        y = paragraph(graphics, "Recovered records: " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT
+                + ". Records are displayed in canonical historical order regardless of the order you discover structures.", x, y, maxWidth, TEXT);
+        y += 5;
+        int next = firstMissing();
+        if (next < 0) {
+            y = paragraph(graphics, "ARCHIVE COMPLETE — the Closed Loop has been reconstructed. Further answers lie beyond the recovered incident chain.",
+                    x, y, maxWidth, GOOD);
+        } else {
+            LoreRecord record = StructureLoreCatalog.byBit(next);
+            y = paragraph(graphics, "Unresolved archive slots remain. Cross-references in recovered records may identify new facilities without requiring a fixed discovery order.",
+                    x, y, maxWidth, MUTED);
+            if (record != null) {
+                y += 4;
+                graphics.drawString(font, Component.literal("Next canonical gap: Archive Entry " + record.archiveIndex()), x, y, CYAN, false);
+                y += 12;
+            }
+        }
+        y += 7;
+        graphics.drawString(font, Component.literal("CURRENT FIELD JOURNAL"), x, y, CYAN, false);
+        y += 13;
+        List<String> summary = researchLines();
+        for (int i = 0; i < Math.min(6, summary.size()) && y < bottom - 10; i++) {
+            y = paragraph(graphics, summary.get(i), x, y, maxWidth, i == 0 ? TEXT : MUTED);
+        }
+    }
+
+    private void renderDataBank(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
+        LoreRecord record = StructureLoreCatalog.byBit(archiveCursor);
+        if (record == null) return;
+        boolean recovered = StructureLoreCatalog.recovered(loreMask, record);
+
+        graphics.drawString(font, Component.literal("ARCHIVE ENTRY " + record.archiveIndex() + "/" + StructureLoreCatalog.RECORD_COUNT), x, y, CYAN, false);
+        graphics.drawString(font, Component.literal(record.chapter()), x + Math.max(120, maxWidth - 128), y, MUTED, false);
+        y += 16;
+
+        if (!recovered) {
+            graphics.drawString(font, Component.literal("[ RECORD NOT RECOVERED ]"), x, y, LOCKED, false);
+            y += 15;
+            paragraph(graphics,
+                    "This historical slot is unresolved. Explore Matter Overdrive structures and recover local facility records to reconstruct it.",
+                    x, y, maxWidth, MUTED);
+            return;
+        }
+
+        graphics.drawString(font, Component.literal(record.title()), x, y, ORANGE, false);
+        y += 13;
+        graphics.drawString(font, Component.literal(record.facility()), x, y, CYAN, false);
+        y += 12;
+        graphics.drawString(font, Component.literal("SOURCE: " + record.author()), x, y, MUTED, false);
+        y += 18;
+        y = paragraph(graphics, record.summary(), x, y, maxWidth, TEXT);
+        y += 9;
+        y = paragraph(graphics, record.link(), x, y, maxWidth, CYAN);
+        y += 9;
+        if (y < bottom - 20) {
+            graphics.drawString(font, Component.literal("RECOVERY STATUS: AUTHENTICATED"), x, y, GOOD, false);
+            graphics.drawString(font, Component.literal("RECONSTRUCTION: " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT),
+                    x, y + 12, ORANGE, false);
+        }
+    }
+
+    private void renderFacilities(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
+        int from = facilityPage * 8;
+        int to = Math.min(from + 8, StructureLoreCatalog.RECORD_COUNT);
+        graphics.drawString(font, Component.literal("DISCOVERED FACILITY INDEX // " + (facilityPage + 1) + "/2"), x, y, CYAN, false);
+        y += 16;
+        for (int i = from; i < to && y < bottom - 12; i++) {
+            LoreRecord record = StructureLoreCatalog.byBit(i);
+            boolean recovered = StructureLoreCatalog.recovered(loreMask, record);
+            String prefix = recovered ? "[✓] " : "[ ] ";
+            String name = recovered ? record.facility() : "UNKNOWN FACILITY";
+            int color = recovered ? TEXT : LOCKED;
+            graphics.drawString(font, Component.literal(prefix + String.format("%02d", record.archiveIndex()) + "  " + fit(name, maxWidth - 46)), x, y, color, false);
+            y += 11;
+            if (recovered) {
+                graphics.drawString(font, Component.literal("    " + fit(record.chapter(), maxWidth - 24)), x, y, MUTED, false);
+                y += 11;
+            } else {
+                y += 5;
+            }
+        }
     }
 
     private void renderContracts(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
         List<ContractRef> contracts = contractRefs();
         if (contracts.isEmpty()) {
-            graphics.drawString(font, Component.literal("No active contracts in your inventory."), x, y, MUTED_COLOR, false);
+            graphics.drawString(font, Component.literal("No active contracts in your inventory."), x, y, MUTED, false);
             return;
         }
 
         int visible = Math.min(MAX_MANAGED_CONTRACTS, contracts.size());
         for (int i = 0; i < visible; i++) {
             ItemStack contract = contracts.get(i).stack();
-            int titleColor = ContractItem.complete(contract) ? 0xFF57C47A : TEXT_COLOR;
+            int titleColor = ContractItem.complete(contract) ? GOOD : TEXT;
             String stage = ContractStageSupport.stageLabel(contract);
-            graphics.drawString(font, Component.literal(fit((i + 1) + ". " + ContractItem.title(contract), maxWidth)), x, y, titleColor, false);
+            graphics.drawString(font, Component.literal(fit((i + 1) + ". " + ContractItem.title(contract), maxWidth - 70)), x, y, titleColor, false);
             String objective = ContractItem.objectiveText(contract);
             if (!stage.isBlank()) objective = stage + " — " + objective;
-            graphics.drawString(font, Component.literal(fit(objective, Math.max(1, maxWidth - 8))), x + 8, y + 11, MUTED_COLOR, false);
+            graphics.drawString(font, Component.literal(fit(objective, Math.max(1, maxWidth - 78))), x + 8, y + 11, MUTED, false);
             String progress = ContractItem.complete(contract)
                     ? "READY TO REDEEM"
                     : "Progress " + ContractItem.progress(contract) + " / " + ContractItem.goal(contract);
             if (ContractItem.xp(contract) > 0) progress += "   XP " + ContractItem.xp(contract);
-            graphics.drawString(font, Component.literal(fit(progress, Math.max(1, maxWidth - 8))), x + 8, y + 22,
-                    ContractItem.complete(contract) ? 0xFF57C47A : BORDER_COLOR, false);
-            y += 42;
-            if (y > bottom - 45) break;
+            graphics.drawString(font, Component.literal(fit(progress, Math.max(1, maxWidth - 78))), x + 8, y + 22,
+                    ContractItem.complete(contract) ? GOOD : CYAN, false);
+            y += 43;
+            if (y > bottom - 36) break;
         }
-        if (contracts.size() > visible && y <= bottom - 30) {
-            graphics.drawString(font, Component.literal("+ " + (contracts.size() - visible) + " more carried contract(s)"),
-                    x, y, MUTED_COLOR, false);
+        if (contracts.size() > visible && y <= bottom - 16) {
+            graphics.drawString(font, Component.literal("+ " + (contracts.size() - visible) + " more carried contract(s)"), x, y, MUTED, false);
         }
     }
 
-    private int renderHistory(GuiGraphics graphics, int x, int y, int maxWidth) {
-        if (history.isEmpty()) {
-            graphics.drawString(font, Component.literal("No blocks recorded yet."), x, y, MUTED_COLOR, false);
-            return y + 11;
+    private void renderJournalSection(GuiGraphics graphics, int x, int y, int maxWidth, int bottom,
+                                      List<String> lines, String emptyMessage) {
+        if (lines.isEmpty()) {
+            graphics.drawString(font, Component.literal(emptyMessage), x, y, MUTED, false);
+            return;
         }
-        for (int i = 0; i < history.size(); i++) {
-            Component entry = Component.literal((i + 1) + ". " + history.get(i));
-            for (FormattedCharSequence line : font.split(entry, maxWidth)) {
-                graphics.drawString(font, line, x, y, TEXT_COLOR, false);
-                y += 10;
-            }
-            if (y > height - 70) {
-                graphics.drawString(font, Component.literal("More entries are stored; increase GUI height to view."),
-                        x, y, MUTED_COLOR, false);
+        for (String line : lines) {
+            if (y >= bottom - 9) {
+                graphics.drawString(font, Component.literal("… additional entries retained in PDA memory"), x, y, MUTED, false);
                 break;
             }
+            int color = line.startsWith("===") || line.startsWith("---") ? CYAN : TEXT;
+            y = paragraph(graphics, stripHeading(line), x, y, maxWidth, color);
+            y += 2;
+        }
+    }
+
+    private List<String> researchLines() {
+        List<String> result = new ArrayList<>();
+        boolean progression = false;
+        for (String line : journal) {
+            if (line.equals("--- Field Operations ---")) break;
+            result.add(line);
+        }
+        for (String line : journal) {
+            if (line.equals("--- Progression ---")) {
+                progression = true;
+                result.add(line);
+                continue;
+            }
+            if (line.equals("--- Scan History ---")) break;
+            if (progression) result.add(line);
+        }
+        return result;
+    }
+
+    private List<String> operationLines() {
+        return between("--- Field Operations ---", "--- Progression ---");
+    }
+
+    private List<String> scanLines() {
+        List<String> lines = new ArrayList<>();
+        boolean capture = false;
+        for (String line : journal) {
+            if (line.equals("--- Scan History ---")) {
+                capture = true;
+                continue;
+            }
+            if (capture) lines.add(line);
+        }
+        return lines;
+    }
+
+    private List<String> between(String start, String end) {
+        List<String> lines = new ArrayList<>();
+        boolean capture = false;
+        for (String line : journal) {
+            if (line.equals(start)) {
+                capture = true;
+                continue;
+            }
+            if (capture && line.equals(end)) break;
+            if (capture) lines.add(line);
+        }
+        return lines;
+    }
+
+    private int paragraph(GuiGraphics graphics, String text, int x, int y, int maxWidth, int color) {
+        for (FormattedCharSequence line : font.split(Component.literal(text), maxWidth)) {
+            graphics.drawString(font, line, x, y, color, false);
+            y += 10;
         }
         return y;
     }
 
-    private static String trim(String text, int max) {
-        if (text == null) return "";
-        return text.length() <= max ? text : text.substring(0, Math.max(0, max - 1)) + "…";
+    private int firstRecoveredOrZero() {
+        for (int i = 0; i < StructureLoreCatalog.RECORD_COUNT; i++) {
+            if ((loreMask & (1 << i)) != 0) return i;
+        }
+        return 0;
+    }
+
+    private int firstMissing() {
+        for (int i = 0; i < StructureLoreCatalog.RECORD_COUNT; i++) {
+            if ((loreMask & (1 << i)) == 0) return i;
+        }
+        return -1;
+    }
+
+    private int recoveredCount() {
+        return Integer.bitCount(loreMask);
+    }
+
+    private int panelLeft() { return Math.max(8, width / 2 - Math.min(270, Math.max(210, width / 2 - 10))); }
+    private int panelRight() { return Math.min(width - 8, width / 2 + Math.min(270, Math.max(210, width / 2 - 10))); }
+    private int panelTop() { return 8; }
+    private int panelBottom() { return height - 8; }
+
+    private void border(GuiGraphics graphics, int left, int top, int right, int bottom, int color) {
+        graphics.fill(left, top, right, top + 1, color);
+        graphics.fill(left, bottom - 1, right, bottom, color);
+        graphics.fill(left, top, left + 1, bottom, color);
+        graphics.fill(right - 1, top, right, bottom, color);
     }
 
     private String fit(String text, int maxWidth) {
@@ -271,8 +462,14 @@ public class DataPadScreen extends Screen {
         return font.plainSubstrByWidth(text, usable) + "…";
     }
 
+    private static String stripHeading(String value) {
+        return value.replace("===", "").replace("---", "").trim();
+    }
+
     @Override
-    public boolean isPauseScreen() { return false; }
+    public boolean isPauseScreen() {
+        return false;
+    }
 
     private record ContractRef(int slot, ItemStack stack) {}
 }
