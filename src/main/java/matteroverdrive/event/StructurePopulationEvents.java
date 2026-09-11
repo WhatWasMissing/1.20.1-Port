@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
@@ -173,10 +174,10 @@ public final class StructurePopulationEvents {
 
     private static int hostile(ServerLevel level, BlockPos origin,
                                net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.structure.Structure> structure,
-                               List<BlockPos> occupied, EntityType<? extends Mob> type) {
+                               List<BlockPos> occupied, EntityType<? extends PathfinderMob> type) {
         BlockPos pos = findSafePosition(level, origin, structure, occupied);
         if (pos == null) return 0;
-        Mob entity = type.create(level);
+        PathfinderMob entity = type.create(level);
         if (entity == null) return 0;
         prepare(entity, level, pos);
         entity.setPersistenceRequired();
