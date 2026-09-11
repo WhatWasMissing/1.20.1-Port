@@ -1,6 +1,7 @@
 package matteroverdrive.item;
 
 import matteroverdrive.event.ContractEvents;
+import matteroverdrive.event.TechnologyLoreEvents;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.FieldOperations;
@@ -127,6 +128,12 @@ public class DataPadItem extends Item {
         ItemStack dataPad = context.getItemInHand();
         BlockState state = context.getLevel().getBlockState(context.getClickedPos());
         ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+
+        // Scanning an intact MO machine counts as genuine first discovery even if the player has
+        // not dismantled or crafted it yet. The shared discovery path deduplicates the record.
+        if (context.getPlayer() instanceof ServerPlayer scanningPlayer) {
+            TechnologyLoreEvents.discoverTechnology(scanningPlayer, blockId);
+        }
 
         if (isLegacyQuestScanner(dataPad) && context.getPlayer() instanceof ServerPlayer serverPlayer && isLegacyScanTarget(blockId)) {
             ItemStack blockItem = new ItemStack(state.getBlock().asItem());
