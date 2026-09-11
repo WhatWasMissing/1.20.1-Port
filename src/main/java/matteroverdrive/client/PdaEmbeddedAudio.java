@@ -3,25 +3,29 @@ package matteroverdrive.client;
 import matteroverdrive.pda.PdaVoiceLineCatalog;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 
 /**
- * Offline audio backend for the PDA presentation layer.
+ * PDA audio backend.
  *
- * Voice callouts use speech engines already present on the operating system:
- * Windows System.Speech via PowerShell, macOS `say`, or Linux `espeak`/`spd-say`.
- * Nothing is uploaded and no cloud account is required. If none are available,
- * the notification manager transparently falls back to Minecraft Narrator.
+ * Playback order for short authored callouts:
+ * 1. processed neural-VA WAV from bundled assets or config/matteroverdrive/pda_voice,
+ * 2. local operating-system speech synthesis,
+ * 3. Minecraft Narrator (handled by ClientPdaNotificationManager).
  *
- * Short UI cues are synthesized directly in Java, so startup, archive, hazard,
- * facility and comm sounds are always original and require no binary assets.
+ * Nothing is uploaded at runtime. Short UI cues are synthesized directly in Java.
  */
 public final class PdaEmbeddedAudio {
     private static Process activeVoice;
+    private static Clip activeRecordedVoice;
 
     private PdaEmbeddedAudio() {}
 
@@ -29,6 +33,10 @@ public final class PdaEmbeddedAudio {
         String text = PdaVoiceLineCatalog.line(id);
         if (text.isBlank()) return 0;
         stopVoice();
+
+        int recordedDuration = playRecordedVoice(id);
+        if (recordedDuration > 0) return recordedDuration;
+
         Process process = startOfflineTts(text);
         if (process == null) return 0;
         activeVoice = process;
@@ -45,18 +53,70 @@ public final class PdaEmbeddedAudio {
     }
 
     public static synchronized void stopVoice() {
+        Clip recorded = activeRecordedVoice;
+        activeRecordedVoice = null;
+        if (recorded != null) {
+            try {
+                recorded.stop();
+                recorded.close();
+            } catch (Throwable ignored) { }
+        }
+
         Process process = activeVoice;
         activeVoice = null;
-        if (process == null) return;
-        try {
-            process.destroy();
-            if (process.isAlive()) process.destroyForcibly();
-        } catch (Throwable ignored) {
+        if (process != null) {
+            try {
+                process.destroy();
+                if (process.isAlive()) process.destroyForcibly();
+            } catch (Throwable ignored) { }
         }
     }
 
     public static synchronized boolean isVoicePlaying() {
-        return activeVoice != null && activeVoice.isAlive();
+        return (activeRecordedVoice != null && activeRecordedVoice.isOpen() && activeRecordedVoice.isRunning())
+                || (activeVoice != null && activeVoice.isAlive());
+    }
+
+    private static int playRecordedVoice(String id) {
+        try {
+            AudioInputStream source = recordedStream(id);
+            if (source == null) return 0;
+            Clip clip = AudioSystem.getClip();
+            clip.open(source);
+            source.close();
+            activeRecordedVoice = clip;
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    synchronized (PdaEmbeddedAudio.class) {
+                        if (activeRecordedVoice == clip) activeRecordedVoice = null;
+                    }
+                    try { clip.close(); } catch (Throwable ignored) { }
+                }
+            });
+            clip.start();
+            return Math.max(20, (int) Math.ceil(clip.getMicrosecondLength() / 50_000.0D));
+        } catch (Throwable ignored) {
+            activeRecordedVoice = null;
+            return 0;
+        }
+    }
+
+    private static AudioInputStream recordedStream(String id) {
+        String safeId = id == null ? "" : id.replaceAll("[^a-z0-9_\\-]", "");
+        if (safeId.isBlank()) return null;
+        String resource = "/assets/matteroverdrive/pda_voice/" + safeId + ".wav";
+        try {
+            InputStream stream = PdaEmbeddedAudio.class.getResourceAsStream(resource);
+            if (stream != null) return AudioSystem.getAudioInputStream(stream);
+        } catch (Throwable ignored) { }
+
+        Path override = Path.of("config", "matteroverdrive", "pda_voice", safeId + ".wav");
+        if (!Files.isRegularFile(override)) return null;
+        try {
+            return AudioSystem.getAudioInputStream(override.toFile());
+        } catch (Throwable ignored) {
+            return null;
+        }
     }
 
     public static boolean playUi(String id) {
@@ -108,9 +168,7 @@ public final class PdaEmbeddedAudio {
             builder.environment().put("MO_PDA_TEXT", text);
             return start(builder);
         }
-        if (os.contains("mac")) {
-            return start(new ProcessBuilder("say", "-r", "170", text));
-        }
+        if (os.contains("mac")) return start(new ProcessBuilder("say", "-r", "170", text));
         Process linux = start(new ProcessBuilder("espeak", "-v", "en+f3", "-s", "154", "-p", "40", "-a", "125", text));
         if (linux != null) return linux;
         return start(new ProcessBuilder("spd-say", "-r", "-10", "-p", "-15", text));
