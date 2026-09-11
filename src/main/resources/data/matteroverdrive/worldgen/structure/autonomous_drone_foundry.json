@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:autonomous_drone_foundry",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures",
+  "spawn_overrides": {}
+}
