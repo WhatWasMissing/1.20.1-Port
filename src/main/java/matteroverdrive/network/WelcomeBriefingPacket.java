@@ -16,7 +16,7 @@ public record WelcomeBriefingPacket() {
     public static void handle(WelcomeBriefingPacket packet, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-                () -> ClientWelcomeOpener::openFirstWorldBriefing));
+                () -> () -> ClientWelcomeOpener.openFirstWorldBriefing()));
         context.setPacketHandled(true);
     }
 }
