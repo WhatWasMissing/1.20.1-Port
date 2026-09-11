@@ -60,7 +60,7 @@ public final class NpcDialogueScreen extends Screen {
 
         addRenderableWidget(Button.builder(Component.literal(PdaNarrationController.isSpeaking() ? "STOP VOICE" : "READ ALOUD"), b -> {
             if (PdaNarrationController.isSpeaking()) PdaNarrationController.stop();
-            else PdaNarrationController.read(speaker + ". " + heading + ". " + currentPageText());
+            else PdaNarrationController.read(speaker + ". " + heading + ". " + currentDialogueText());
             rebuildButtons();
         }).bounds(left + 12, buttonY, 92, 20).build());
 
@@ -88,19 +88,8 @@ public final class NpcDialogueScreen extends Screen {
         return Math.max(1, (wrapped.size() + Math.max(1, linesPerPage) - 1) / Math.max(1, linesPerPage));
     }
 
-    private String currentPageText() {
-        if (sourceLines.isEmpty()) return "No dialogue data received.";
-        // Reading the source lines gives the narrator natural sentence boundaries;
-        // page segmentation remains visual rather than an accessibility requirement.
-        if (pageCount() <= 1) return String.join(" ", sourceLines);
-        int visualStart = page * linesPerPage;
-        int visualEnd = Math.min(wrapped.size(), visualStart + linesPerPage);
-        StringBuilder result = new StringBuilder();
-        for (int i = visualStart; i < visualEnd; i++) {
-            String value = wrapped.get(i).getString();
-            if (!value.isBlank()) result.append(value).append(' ');
-        }
-        return result.toString().trim();
+    private String currentDialogueText() {
+        return sourceLines.isEmpty() ? "No dialogue data received." : String.join(" ", sourceLines);
     }
 
     @Override
