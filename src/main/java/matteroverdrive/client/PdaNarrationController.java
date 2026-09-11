@@ -4,13 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
-/**
- * Client-only spoken playback for recovered PDA lore.
- *
- * This deliberately uses Minecraft's built-in narrator instead of bundled voice
- * assets. Players therefore retain their normal platform narrator voice and can
- * stop playback instantly from the PDA.
- */
+/** Client-only long-form read-aloud controller for PDA pages and NPC dialogue. */
 public final class PdaNarrationController {
     private static boolean speaking;
     private static String lastText = "";
@@ -24,7 +18,7 @@ public final class PdaNarrationController {
         if (!minecraft.getNarrator().isActive()) {
             if (minecraft.player != null) {
                 minecraft.player.displayClientMessage(Component.literal(
-                        "PDA audio log unavailable: enable Minecraft Narrator (System or All) in Accessibility settings.")
+                        "Long-form read aloud requires Minecraft Narrator (System or All) in Accessibility settings. Short PDA callouts still use the local offline voice engine when available.")
                         .withStyle(ChatFormatting.YELLOW), true);
             }
             speaking = false;
@@ -41,13 +35,14 @@ public final class PdaNarrationController {
     }
 
     public static void stop() {
+        PdaEmbeddedAudio.stopVoice();
         Minecraft.getInstance().getNarrator().clear();
         speaking = false;
         lastText = "";
     }
 
     public static boolean isSpeaking() {
-        return speaking;
+        return speaking || PdaEmbeddedAudio.isVoicePlaying();
     }
 
     public static String lastText() {
