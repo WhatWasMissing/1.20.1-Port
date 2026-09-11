@@ -15,7 +15,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "15";
+    private static final String PROTOCOL = "16";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "network"))
@@ -37,6 +37,8 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
         CHANNEL.registerMessage(nextId++, NpcDialoguePacket.class, NpcDialoguePacket::encode, NpcDialoguePacket::decode, NpcDialoguePacket::handle);
         CHANNEL.registerMessage(nextId++, PdaVoicePacket.class, PdaVoicePacket::encode, PdaVoicePacket::decode, PdaVoicePacket::handle);
+        CHANNEL.registerMessage(nextId++, FacilityDiscoveryPacket.class, FacilityDiscoveryPacket::encode, FacilityDiscoveryPacket::decode, FacilityDiscoveryPacket::handle);
+        CHANNEL.registerMessage(nextId++, EnvironmentalHazardPacket.class, EnvironmentalHazardPacket::encode, EnvironmentalHazardPacket::decode, EnvironmentalHazardPacket::handle);
         CHANNEL.registerMessage(nextId++, WelcomeBriefingPacket.class, WelcomeBriefingPacket::encode, WelcomeBriefingPacket::decode, WelcomeBriefingPacket::handle);
         CHANNEL.registerMessage(nextId++, DroneCommandPacket.class, DroneCommandPacket::encode, DroneCommandPacket::decode, DroneCommandPacket::handle);
         CHANNEL.registerMessage(nextId++, DroneStatusPacket.class, DroneStatusPacket::encode, DroneStatusPacket::decode, DroneStatusPacket::handle);
@@ -54,6 +56,12 @@ public final class ModNetwork {
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
     public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines)); }
     public static void sendPdaVoice(ServerPlayer p, String lineId) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new PdaVoicePacket(lineId)); }
+    public static void sendFacilityDiscovery(ServerPlayer p, String siteId, String facility, String recordTitle, int archiveIndex, String classification) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new FacilityDiscoveryPacket(siteId, facility, recordTitle, archiveIndex, classification));
+    }
+    public static void sendEnvironmentalHazard(ServerPlayer p, String id, String title, String detail, int severity) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new EnvironmentalHazardPacket(id, title, detail, severity));
+    }
     public static void openWelcomeBriefing(ServerPlayer p) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new WelcomeBriefingPacket()); }
     public static void fireOmniTool() { CHANNEL.sendToServer(new OmniToolFirePacket()); }
     public static void weaponTrigger(boolean pressed, boolean aiming) { CHANNEL.sendToServer(new WeaponTriggerPacket(pressed, aiming)); }
