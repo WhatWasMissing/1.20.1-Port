@@ -10,6 +10,8 @@ import matteroverdrive.quest.ResearchProgression;
 import matteroverdrive.quest.ScientistStoryQuestFlow;
 import matteroverdrive.world.AmbientLoreCatalog;
 import matteroverdrive.world.AmbientLoreSavedData;
+import matteroverdrive.world.TechnologyLoreCatalog;
+import matteroverdrive.world.TechnologyLoreSavedData;
 import matteroverdrive.world.TechnologySiteDiscoverySavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -74,6 +76,17 @@ public class DataPadItem extends Item {
             }
         }
 
+        TechnologyLoreSavedData technology = TechnologyLoreSavedData.get(player.serverLevel());
+        List<TechnologyLoreCatalog.TechRecord> technologyEntries = technology.entries(player.getUUID());
+        lines.add("Technology codex: " + technologyEntries.size() + "/" + TechnologyLoreCatalog.count());
+        if (!technologyEntries.isEmpty()) {
+            lines.add("Recently indexed technology:");
+            int shown = 0;
+            for (int i = technologyEntries.size() - 1; i >= 0 && shown < 5; i--, shown++) {
+                lines.add("  - " + technologyEntries.get(i).title());
+            }
+        }
+
         CompoundTag encounterResearch = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)
                 .getCompound("MatterOverdriveEncounterResearch");
         lines.add("Encounter evidence: " + encounterResearch.getAllKeys().size() + " faction(s) logged");
@@ -90,6 +103,9 @@ public class DataPadItem extends Item {
 
         lines.add("--- Recovered Logs ---");
         for (AmbientLoreCatalog.Entry entry : ambientEntries) lines.add("@lore:" + entry.id());
+
+        lines.add("--- Technology Codex ---");
+        for (TechnologyLoreCatalog.TechRecord entry : technologyEntries) lines.add("@tech:" + entry.id());
 
         lines.add("--- Field Operations ---");
         lines.add(FieldOperations.status(player));
@@ -180,7 +196,7 @@ public class DataPadItem extends Item {
             tooltip.add(Component.literal("Standalone field console, research journal and block scan history").withStyle(ChatFormatting.AQUA));
         }
         tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Field operations, recovered logs and encounter evidence are shown in the journal.").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.add(Component.literal("Incident archives, technology discoveries, field operations and encounter evidence are shown in the journal.").withStyle(ChatFormatting.DARK_AQUA));
         if (!history.isEmpty()) tooltip.add(Component.literal("Latest: " + history.get(0)).withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("Use on a block to record it; use in air to open the field console.").withStyle(ChatFormatting.DARK_GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
