@@ -94,8 +94,8 @@ public final class NpcDialogueScreen extends Screen {
                     .bounds(right - 100, buttonY, 88, 20).build());
             if (!dialogueId.isBlank() && !nodeId.isBlank() && !choices.isEmpty()) {
                 int count = Math.min(3, choices.size());
-                int choiceWidth = Math.max(150, Math.min(430, width - 150));
-                int choiceX = (width - choiceWidth) / 2;
+                int choiceWidth = Math.max(100, Math.min(430, width - 60));
+                int choiceX = Math.max(10, (width - choiceWidth) / 2);
                 int firstY = buttonY - count * 23 - 7;
                 for (int i = 0; i < count; i++) {
                     NpcDialoguePacket.ChoiceOption choice = choices.get(i);
