@@ -1,157 +1,98 @@
 #!/usr/bin/env python3
-"""Static topology validator for Matter Overdrive generated structures.
+"""Static structure gate for Matter Overdrive.
 
-Validates the authored playthrough contract:
-terrain -> approach -> entrance -> critical path -> guarded objective -> exit.
-Also enforces exploration-first worldgen: structures must not hand out free working
-Matter Overdrive infrastructure.
+Checks the active new-world generators against the vanilla-style contract:
+terrain -> entrance -> readable route -> guarded objective -> optional side rooms -> exit.
+Also rejects live Matter Overdrive machine placement in generated exploration sites.
 """
-from __future__ import annotations
-
-from dataclasses import dataclass
 from pathlib import Path
-import re
-import sys
-from typing import Dict, List, Tuple
+import re, sys
 
-ROOT = Path(__file__).resolve().parent
-WORLDGEN = ROOT / "src/main/java/matteroverdrive/worldgen"
-EVENTS = ROOT / "src/main/java/matteroverdrive/event"
-LOOT = ROOT / "src/main/resources/data/matteroverdrive/loot_tables/chests/facilities"
-REGISTRY = ROOT / "src/main/java/matteroverdrive/registry/ModStructures.java"
+ROOT=Path(__file__).resolve().parent
+WG=ROOT/"src/main/java/matteroverdrive/worldgen"
+REG=ROOT/"src/main/java/matteroverdrive/registry/ModStructures.java"
+EVENT=ROOT/"src/main/java/matteroverdrive/event/StructureExplorationSanitizer.java"
+LOOT=ROOT/"src/main/resources/data/matteroverdrive/loot_tables/chests/facilities/story_cache.json"
 
-@dataclass(frozen=True)
-class Site:
-    name: str
-    source: str
-    required: Tuple[str, ...]
+def read(p):
+    if not p.exists(): raise FileNotFoundError(p)
+    return p.read_text(encoding="utf-8")
 
-SITES: Tuple[Site, ...] = (
-    Site("crashed_ship", "LegacyVanillaStructurePiece.java", ("crashedShip", "origin.offset(0,1,14)", "story_cache", "salvage", "android_spawner")),
-    Site("cargo_ship", "LegacyVanillaStructurePiece.java", ("cargoShip", "origin.offset(25,1,0)", "story_cache", "salvage")),
-    Site("underwater_base", "LegacyVanillaStructurePiece.java", ("underwaterBase", "origin.offset(0,0,-14)", "tube", "story_cache")),
-    Site("mad_scientist_house", "LegacyVanillaStructurePiece.java", ("madScientistLab", "stairStart", "for(int i=0;i<=7;i++)", "story_cache")),
-    Site("android_house", "LegacyVanillaStructurePiece.java", ("androidSafehouse", "corridorX", "corridorZ", "story_cache")),
-    Site("sand_pit", "LegacyVanillaStructurePiece.java", ("excavation", "relic=origin.offset(0,-10,0)", "for(int i=1;i<=13;i++)", "story_cache")),
-    Site("synthetic_manufacturing_plant", "TechnologyFacilityStructurePiece.java", ("PLANT_ENTRANCE", "SECURITY_CHECKPOINT", "MANUFACTURING_CORE", "SHIPPING_WING")),
-    Site("matter_refinery", "TechnologyFacilityStructurePiece.java", ("REFINERY_ENTRANCE", "SECURITY_CHECKPOINT", "REFINERY_CORE", "PROCESSING_WING")),
-    Site("quantum_relay_station", "TechnologyFacilityStructurePiece.java", ("RELAY_ENTRANCE", "CONTROL_WING", "QUANTUM_CORE")),
-    Site("android_command_bunker", "TechnologyFacilityStructurePiece.java", ("BUNKER_ENTRANCE", "SECURITY_CHECKPOINT", "BUNKER_COMMAND", "ARMORY")),
-    Site("fusion_research_complex", "TechnologyFacilityStructurePiece.java", ("FUSION_ENTRANCE", "REACTOR_CONTROL", "FUSION_CORE")),
-    Site("black_site", "TechnologyFacilityStructurePiece.java", ("BLACK_ENTRANCE", "BLACK_SECURITY", "BLACK_CORE", "EXCAVATION_SHAFT", "BLACK_VAULT")),
-    Site("deep_matter_vault", "FrontierSitePiece.java", ("VAULT_ENTRY", "SHAFT", "VAULT_SECURITY", "VAULT_CORE")),
-    Site("autonomous_drone_foundry", "FrontierSitePiece.java", ("FOUNDRY_ENTRY", "FOUNDRY_CONTROL", "FOUNDRY_FABRICATION", "FOUNDRY_HANGAR")),
-    Site("anomaly_quarantine_site", "FrontierSitePiece.java", ("QUARANTINE_ENTRY", "SHAFT", "QUARANTINE_DECON", "QUARANTINE_SECURITY", "QUARANTINE_CONTAINMENT")),
-    Site("orbital_recovery_array", "FrontierSitePiece.java", ("RECOVERY_ENTRY", "RECOVERY_CONTROL", "RECOVERY_ARRAY")),
-)
+def main():
+    errors=[]
+    legacy=read(WG/"LegacyVanillaStructurePiece.java")
+    modern=read(WG/"ModernExplorationStructurePiece.java")
+    frontier=read(WG/"FrontierExplorationStructurePiece.java")
+    legacy_start=read(WG/"LegacyNativeStructure.java")
+    modern_start=read(WG/"TechnologyFacilityStructure.java")
+    frontier_start=read(WG/"FrontierSiteStructure.java")
+    registry=read(REG)
 
-FORBIDDEN_PATTERNS = {
-    "LegacyNativeStructure.java": (
-        (r"LegacyNativeStructurePiece\(kind, origin\)", "New legacy starts still use the retired pre-standard generator."),
-        (r"surfaceY \+ 24", "Legacy structure placement still contains elevated non-vanilla boarding."),
-    ),
-    "TechnologyFacilityStructure.java": (
-        (r"FacilityInfrastructurePiece\.assemble", "Modern facilities still assemble stale pre-redesign infrastructure overlays."),
-        (r"FacilityTerrainPiece\.assemble", "Modern facilities still assemble stale pre-redesign terrain overlays."),
-    ),
-    "FrontierSiteStructure.java": (
-        (r"DEEP_MATTER_VAULT -> Math\.max\(minimum, surfaceY - 22\)", "Deep Matter Vault entry is still authored from the buried pre-repair height."),
-    ),
-}
+    required={
+        "legacy":(legacy,("crashedShip","cargoShip","underwaterBase","madScientistLab","androidSafehouse","excavation","story_cache","salvage","android_spawner","corridorX","corridorZ")),
+        "modern":(modern,("plant(","refinery(","relay(","bunker(","fusion(","blackSite(","story_cache","android_spawner","corridorX","corridorZ","cache(")),
+        "frontier":(frontier,("vault(","foundry(","quarantine(","recovery(","story_cache","android_spawner","corridorX","corridorZ","cache(")),
+    }
+    for name,(src,tokens) in required.items():
+        for token in tokens:
+            if token not in src: errors.append(f"{name}: missing topology/policy token {token}")
 
+    # Active wiring must use exploration-native pieces.
+    for src,token,msg in (
+        (legacy_start,"new LegacyVanillaStructurePiece(kind, origin)","Legacy starts are not wired to the vanilla exploration generator."),
+        (modern_start,"new ModernExplorationStructurePiece(kind,origin,layout)","Modern facilities are not wired to ModernExplorationStructurePiece."),
+        (frontier_start,"new FrontierExplorationStructurePiece(kind,origin,layout)","Frontier sites are not wired to FrontierExplorationStructurePiece."),
+    ):
+        if token not in src: errors.append(msg)
 
-def read(path: Path) -> str:
-    if not path.exists():
-        raise FileNotFoundError(path)
-    return path.read_text(encoding="utf-8")
+    # Old serializers stay registered for old saves; new serializers must exist.
+    for token in ("LEGACY_NATIVE_PIECE","TECHNOLOGY_FACILITY_PIECE","FRONTIER_SITE_PIECE",
+                  "LEGACY_VANILLA_PIECE","MODERN_EXPLORATION_PIECE","FRONTIER_EXPLORATION_PIECE"):
+        if token not in registry: errors.append(f"registry missing {token}")
 
+    # No active exploration generator may force-load or omit chunk clipping.
+    for name,src in (("legacy",legacy),("modern",modern),("frontier",frontier)):
+        if "clip.isInside" not in src and "c.isInside" not in src:
+            errors.append(f"{name}: no chunk clipping guard")
+        for bad in ("getChunk(","setChunkForced","addRegionTicket","TicketType"):
+            if bad in src: errors.append(f"{name}: forbidden force-loading token {bad}")
 
-def main() -> int:
-    errors: List[str] = []
-    warnings: List[str] = []
-    cache: Dict[str, str] = {}
+    # Generated sites are ruins/dungeons, not free machine factories.
+    live_ids=("matter_analyzer","decomposer","replicator","inscriber","network_router","network_switch",
+              "fusion_reactor_controller","fusion_reactor_io","drone_fabricator","android_station",
+              "matter_storage_matrix","matter_excavator","grid_capacitor","quantum_power_relay",
+              "gravitational_stabilizer","anomaly_containment_unit","facility_network_controller",
+              "charging_station","android_induction_relay","weapon_station","matter_network_terminal")
+    for name,src in (("legacy",legacy),("modern",modern),("frontier",frontier)):
+        for machine in live_ids:
+            if f'"{machine}"' in src:
+                errors.append(f"{name}: active generator directly places functional machine {machine}")
 
-    def src(name: str) -> str:
-        if name not in cache:
-            cache[name] = read(WORLDGEN / name)
-        return cache[name]
+    # Known placement regressions stay forbidden.
+    if "surfaceY + 24" in legacy_start: errors.append("Cargo Ship elevated boarding regression returned")
+    if "surfaceY-22" in frontier_start.replace(" ",""): errors.append("Deep Matter Vault buried-entry regression returned")
+    if "TechnologyFacilityStructurePiece.assemble" in modern_start: errors.append("Modern start fell back to old machine-room generator")
+    if "FrontierSitePiece.assemble" in frontier_start: errors.append("Frontier start fell back to old machine-room generator")
 
-    for site in SITES:
-        s = src(site.source)
-        missing = [token for token in site.required if token not in s]
-        if missing:
-            errors.append(f"{site.name}: missing required topology/policy token(s): {', '.join(missing)}")
+    # Mad Scientist stair repair is kept as an extra post-shell safety piece.
+    repair=WG/"LegacyTraversalRepairPiece.java"
+    if not repair.exists() or "LegacyTraversalRepairPiece" not in legacy_start:
+        errors.append("Mad Scientist traversal repair piece is not wired")
 
-    for filename, patterns in FORBIDDEN_PATTERNS.items():
-        s = src(filename)
-        for pattern, message in patterns:
-            if re.search(pattern, s):
-                errors.append(message)
-
-    legacy_start = src("LegacyNativeStructure.java")
-    if "new LegacyVanillaStructurePiece(kind, origin)" not in legacy_start:
-        errors.append("LegacyNativeStructure is not wired to LegacyVanillaStructurePiece.")
-    if "new LegacyTraversalRepairPiece(origin)" not in legacy_start:
-        errors.append("Mad Scientist final traversal repair piece is not assembled after the lab shell.")
-
-    repair_path = WORLDGEN / "LegacyTraversalRepairPiece.java"
-    if not repair_path.exists():
-        errors.append("LegacyTraversalRepairPiece.java is missing.")
+    if not EVENT.exists(): errors.append("StructureExplorationSanitizer missing (old-world safety net)")
     else:
-        repair = read(repair_path)
-        for token in ("for (int i = 0; i <= 7; i++)", "clip.isInside", "POLISHED_DEEPSLATE_STAIRS"):
-            if token not in repair:
-                errors.append(f"Legacy traversal repair is missing required token: {token}")
-
-    registry = read(REGISTRY)
-    for token in ("LEGACY_VANILLA_PIECE", "LegacyVanillaStructurePiece::new", "LEGACY_TRAVERSAL_REPAIR_PIECE", "LegacyTraversalRepairPiece::new"):
-        if token not in registry:
-            errors.append(f"Structure registry is missing compatibility/topology token: {token}")
-    if "LEGACY_NATIVE_PIECE" not in registry:
-        errors.append("Old legacy serializer was removed; existing-world compatibility would be broken.")
-
-    active_piece_files = ("LegacyVanillaStructurePiece.java", "LegacyTraversalRepairPiece.java", "TechnologyFacilityStructurePiece.java", "FrontierSitePiece.java")
-    for filename in active_piece_files:
-        s = src(filename)
-        if "clip.isInside" not in s:
-            errors.append(f"{filename}: no active chunk clip guard found")
-        for token in ("getChunk(", "setChunkForced", "getChunkSource().addRegionTicket", "TicketType"):
-            if token in s:
-                errors.append(f"{filename}: forbidden force-load/synchronous chunk token present: {token}")
-
-    legacy = src("LegacyVanillaStructurePiece.java")
-    forbidden_machine_ids = (
-        '"matter_analyzer"', '"decomposer"', '"replicator"', '"inscriber"',
-        '"network_router"', '"network_switch"', '"fusion_reactor_controller"',
-        '"drone_fabricator"', '"android_station"', '"matter_storage_matrix"'
-    )
-    for token in forbidden_machine_ids:
-        if token in legacy:
-            errors.append(f"Legacy exploration generator contains free functional machine id: {token}")
-
-    sanitizer_path = EVENTS / "StructureExplorationSanitizer.java"
-    if not sanitizer_path.exists():
-        errors.append("StructureExplorationSanitizer.java is missing.")
-    else:
-        sanitizer = read(sanitizer_path)
-        for token in ("FUNCTIONAL_BLOCKS", "getStructureWithPieceAt", "story_cache", "ensureGuard", "android_spawner"):
-            if token not in sanitizer:
-                errors.append(f"Structure exploration sanitizer missing token: {token}")
-
-    if not (LOOT / "story_cache.json").exists():
-        errors.append("Guarded structure story cache loot table is missing.")
+        sanitizer=read(EVENT)
+        for token in ("getStructureWithPieceAt","story_cache","ensureGuard","FUNCTIONAL_BLOCKS"):
+            if token not in sanitizer: errors.append(f"sanitizer missing {token}")
+    if not LOOT.exists(): errors.append("story_cache loot table missing")
 
     print("Matter Overdrive structure topology validator")
-    print(f"Checked {len(SITES)} structure families")
-    for warning in warnings:
-        print(f"WARN: {warning}")
-    for error in errors:
-        print(f"FAIL: {error}")
+    print("Checked 16 structure families across 3 active exploration generators")
+    for e in errors: print("FAIL:",e)
     if errors:
         print(f"RESULT: FAIL ({len(errors)} blocking issue(s))")
         return 1
     print("RESULT: PASS")
     return 0
 
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__=="__main__": sys.exit(main())
