@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:deep_matter_vault",
+  "biomes": "#minecraft:is_overworld",
+  "step": "underground_structures",
+  "spawn_overrides": {}
+}
