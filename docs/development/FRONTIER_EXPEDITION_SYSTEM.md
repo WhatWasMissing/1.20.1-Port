@@ -46,6 +46,14 @@ Rewards:
 
 The completion reward is issued only when the unique-site mask transitions to all four classes.
 
+## Facility threat clearance
+
+`FrontierThreatEvents` adds a second objective layer. Hostile `MobCategory.MONSTER` kills made by a player are counted only when the killed entity is inside a Frontier Expedition structure according to the native `StructureManager`.
+
+Per-player, per-structure progress is stored in `FrontierSecuritySavedData`. Clearance targets are intentionally different by facility role: Deep Matter Vault 4, Autonomous Drone Foundry 6, Anomaly Quarantine Site 5, Orbital Recovery Array 4. Progress is shown through the action bar. Completing a facility awards 60 XP and a `facility_research` dossier tagged with `FrontierSecurityArchive` and `Secured=true`; completion state persists so the same structure cannot be farmed repeatedly by the same player.
+
+This turns occupied variants into an actual gameplay objective while leaving peaceful/damaged sites explorable without requiring combat for the four-site discovery chain.
+
 ## Performance and safety contract
 
 - generation uses independent native structure pieces;
@@ -53,7 +61,8 @@ The completion reward is issued only when the unique-site mask transitions to al
 - no structure code force-loads chunks;
 - layout state is serialized with each piece;
 - discovery work is one native `StructureManager` membership query per candidate site class, only after a player crosses into a different chunk;
-- saved data caps discovery keys and player entries and rejects oversized state growth;
+- threat-clearance lookups run only when a qualifying hostile actually dies;
+- saved data caps discovery/security keys and rejects oversized state growth;
 - missing Matter Overdrive decorative/machine blocks fall back to vanilla blocks during generation instead of crashing worldgen.
 
 ## Files added/changed
@@ -61,7 +70,9 @@ The completion reward is issued only when the unique-site mask transitions to al
 - `src/main/java/matteroverdrive/worldgen/FrontierSiteStructure.java`
 - `src/main/java/matteroverdrive/worldgen/FrontierSitePiece.java`
 - `src/main/java/matteroverdrive/world/FrontierExpeditionSavedData.java`
+- `src/main/java/matteroverdrive/world/FrontierSecuritySavedData.java`
 - `src/main/java/matteroverdrive/event/FrontierExpeditionEvents.java`
+- `src/main/java/matteroverdrive/event/FrontierThreatEvents.java`
 - `src/main/java/matteroverdrive/registry/ModStructures.java`
 - four structure JSONs under `data/matteroverdrive/worldgen/structure/`
 - `data/matteroverdrive/worldgen/structure_set/frontier_expeditions.json`
