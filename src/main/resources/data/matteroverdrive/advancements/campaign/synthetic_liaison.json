@@ -1,0 +1,7 @@
+{
+  "parent": "matteroverdrive:campaign/android_path",
+  "display": {"icon":{"item":"matteroverdrive:integration_matrix"},"title":{"text":"Synthetic Liaison"},"description":{"text":"Earn the trust of independent synthetic survivors without treating the Chorus as a single faction."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {"earned":{"trigger":"minecraft:impossible"}},
+  "requirements": [["earned"]],
+  "rewards":{"experience":150}
+}
