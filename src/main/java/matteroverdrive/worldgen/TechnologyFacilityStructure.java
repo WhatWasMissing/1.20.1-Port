@@ -44,6 +44,12 @@ public final class TechnologyFacilityStructure extends Structure {
             if(kind==Kind.MATTER_REFINERY || kind==Kind.BLACK_SITE) {
                 builder.addPiece(new ModernTraversalRepairPiece(kind,origin));
             }
+            // Layout 2 is the rare deterministic variant: add an optional raised archive
+            // inside the main volume without changing the mandatory ground-level route.
+            if(layout==2) {
+                builder.addPiece(new RareArchiveMezzaninePiece(origin,
+                        kind.name().toLowerCase(java.util.Locale.ROOT)));
+            }
         }));
     }
 
