@@ -1,27 +1,29 @@
 package matteroverdrive.worldgen;
 
-import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModStructures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
- * Native, chunk-clipped reconstructions of the classic Matter Overdrive sites.
+ * Playability-first native reconstructions of the classic Matter Overdrive sites.
  *
- * The silhouettes and roles remain recognisable, but the actual builds now use a
- * more contemporary sci-fi language: layered hulls, structural ribs, framed
- * glazing, recessed lights, service bays, consoles and intentional interior
- * zoning rather than flat single-material walls.
+ * Every structure is deliberately shaped around a readable player route instead of
+ * a rectangular shell: entries are explicit, major rooms are spatially distinct,
+ * vertical movement uses broad stepped routes, and damage never removes the only
+ * required path. All writes remain clipped to the active StructurePiece chunk box.
  */
 public final class LegacyNativeStructurePiece extends StructurePiece {
     private final LegacyParityStructureFeature.Kind kind;
@@ -60,251 +62,408 @@ public final class LegacyNativeStructurePiece extends StructurePiece {
         }
     }
 
+    /** A torn two-deck survey vessel with a readable nose -> service -> engineering route. */
     private void crashedShip(WorldGenLevel level, BoundingBox clip) {
-        BlockPos base = origin.below();
-        BlockState hull = block("decorative.tritanium_plate");
-        BlockState accent = block("decorative.tritanium_plate_stripe");
-        BlockState floor = block("decorative.floor_tiles");
-        BlockState beam = block("decorative.beams");
-        BlockState lamp = block("decorative.tritanium_lamp");
-        for (int z = -17; z <= 17; z++) {
-            int nose = Math.min(z + 17, 17 - z);
-            int half = Math.max(1, Math.min(5, 1 + nose / 3));
+        BlockPos c = origin.below(2);
+        BlockState hull = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
+        BlockState dark = mod("decorative.carbon_fiber_plate", Blocks.DEEPSLATE_TILES);
+        BlockState stripe = mod("decorative.tritanium_plate_stripe", Blocks.YELLOW_CONCRETE);
+        BlockState floor = mod("decorative.floor_tiles", Blocks.SMOOTH_STONE);
+        BlockState beam = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        BlockState lamp = mod("decorative.tritanium_lamp", Blocks.SEA_LANTERN);
+
+        // Tapered hull. The south side is intentionally split open so the entrance is obvious.
+        for (int z = -23; z <= 19; z++) {
+            int half = z < -16 ? 2 + (z + 23) / 2 : z > 13 ? Math.max(2, 7 - (z - 13)) : 7;
+            half = Math.max(2, Math.min(7, half));
             for (int x = -half; x <= half; x++) {
-                set(level, clip, base.offset(x, 0, z), ((z & 5) == 0) ? accent : floor);
-                if (Math.abs(x) == half) {
-                    set(level, clip, base.offset(x, 1, z), ((z & 3) == 0) ? beam : hull);
-                    if (Math.abs(z) < 12 && z % 3 != 0) set(level, clip, base.offset(x, 2, z), hull);
+                set(level, clip, c.offset(x, 0, z), Math.abs(x) == half ? beam : floor);
+                for (int y = 1; y <= 6; y++) {
+                    boolean side = Math.abs(x) == half;
+                    boolean breach = z >= 5 && z <= 12 && x >= half - 1 && y <= 4;
+                    boolean southEntry = z <= -19 && Math.abs(x) <= 2 && y <= 3;
+                    if (!side || breach || southEntry) set(level, clip, c.offset(x, y, z), Blocks.AIR.defaultBlockState());
+                    else if (y == 2 || y == 3) set(level, clip, c.offset(x, y, z), (z % 4 == 0) ? glass : hull);
+                    else set(level, clip, c.offset(x, y, z), (z % 5 == 0) ? beam : hull);
                 }
-            }
-            if (z % 6 == 0 && Math.abs(z) < 14) {
-                set(level, clip, base.offset(-half, 3, z), beam);
-                set(level, clip, base.offset(half, 3, z), beam);
-                set(level, clip, base.offset(0, 3, z), lamp);
+                if (Math.abs(x) <= half - 1) set(level, clip, c.offset(x, 7, z), (x == 0 || z % 6 == 0) ? beam : hull);
             }
         }
-        // A torn-open service section makes the wreck read as damaged rather than
-        // simply as an intact ship sitting on the terrain.
-        for (int z = 3; z <= 8; z++) for (int y = 1; y <= 3; y++)
-            set(level, clip, base.offset(4, y, z), Blocks.AIR.defaultBlockState());
-        set(level, clip, base.offset(0, 1, 4), block("tritanium_crate"));
-        set(level, clip, base.offset(2, 1, -4), block("holo_sign"));
-        set(level, clip, base.offset(-2, 1, -6), block("grid_capacitor"));
+
+        // Central illuminated route survives every breach.
+        for (int z = -20; z <= 16; z++) {
+            set(level, clip, c.offset(0, 0, z), (z % 5 == 0) ? stripe : floor);
+            if (z % 5 == 0) set(level, clip, c.offset(0, 6, z), lamp);
+        }
+
+        // Cockpit: raised nose with clear glazing and a short 3-wide step ramp.
+        for (int z = -22; z <= -16; z++) for (int x = -3; x <= 3; x++) {
+            int step = Math.max(0, Math.min(2, (z + 22) / 2));
+            set(level, clip, c.offset(x, step, z), dark);
+            if (Math.abs(x) == 3 && step + 2 <= 5) set(level, clip, c.offset(x, step + 2, z), glass);
+        }
+        set(level, clip, c.offset(-2, 3, -19), mod("holographic_status_panel", Blocks.SEA_LANTERN));
+        set(level, clip, c.offset(2, 3, -19), mod("network_switch", Blocks.IRON_BLOCK));
+
+        // Midship service bulkheads create rooms without blocking the main aisle.
+        for (int z : new int[]{-10, 1}) for (int x = -6; x <= 6; x++) {
+            if (Math.abs(x) <= 1) continue;
+            for (int y = 1; y <= 5; y++) set(level, clip, c.offset(x, y, z), y == 3 ? glass : dark);
+        }
+        set(level, clip, c.offset(-4, 1, -5), mod("tritanium_crate", Blocks.BARREL));
+        set(level, clip, c.offset(4, 1, -5), mod("grid_capacitor", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(-4, 1, 6), mod("matter_analyzer", Blocks.LECTERN));
+
+        // Engineering tail has a raised ring and visible coils.
+        for (int z = 13; z <= 18; z++) for (int x = -5; x <= 5; x++) {
+            if (Math.abs(x) >= 4) set(level, clip, c.offset(x, 1, z), beam);
+        }
+        set(level, clip, c.offset(-3, 1, 15), mod("decorative.coils", Blocks.COPPER_BLOCK));
+        set(level, clip, c.offset(3, 1, 15), mod("decorative.coils", Blocks.COPPER_BLOCK));
+
+        // Impact scar and debris on the breached side, never across the centre route.
+        for (int z = 6; z <= 13; z++) {
+            set(level, clip, c.offset(8, -1, z), Blocks.COARSE_DIRT.defaultBlockState());
+            if ((z & 1) == 0) set(level, clip, c.offset(7, 0, z), Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState());
+        }
     }
 
+    /** A broad industrial freighter with bridge, two cargo bays, engineering and loading lanes. */
     private void cargoShip(WorldGenLevel level, BoundingBox clip) {
-        BlockPos base = origin.above();
-        BlockState hull = block("decorative.tritanium_plate");
-        BlockState stripe = block("decorative.tritanium_plate_stripe");
-        BlockState floor = block("decorative.floor_tiles");
-        BlockState glass = block("industrial_glass");
-        BlockState beam = block("decorative.beams");
-        BlockState lamp = block("decorative.tritanium_lamp");
-        for (int x = -29; x <= 28; x++) {
-            int end = Math.min(x + 29, 28 - x);
-            int halfZ = Math.max(2, Math.min(11, 2 + end / 4));
+        BlockPos c = origin;
+        BlockState hull = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
+        BlockState dark = mod("decorative.carbon_fiber_plate", Blocks.DEEPSLATE_TILES);
+        BlockState stripe = mod("decorative.tritanium_plate_stripe", Blocks.YELLOW_CONCRETE);
+        BlockState floor = mod("decorative.floor_tiles", Blocks.SMOOTH_STONE);
+        BlockState beam = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        BlockState lamp = mod("decorative.tritanium_lamp", Blocks.SEA_LANTERN);
+
+        // Long stepped hull with chamfered bow/stern instead of a cuboid.
+        for (int x = -32; x <= 31; x++) {
+            int halfZ = Math.abs(x) > 26 ? 5 : Math.abs(x) > 21 ? 9 : 13;
             for (int z = -halfZ; z <= halfZ; z++) {
-                set(level, clip, base.offset(x, 0, z), ((x & 7) == 0) ? stripe : floor);
-                if (Math.abs(z) == halfZ) {
-                    set(level, clip, base.offset(x, 1, z), ((x & 3) == 0) ? beam : hull);
-                    set(level, clip, base.offset(x, 2, z), (Math.abs(x) < 20 && (x & 1) == 0) ? glass : hull);
+                set(level, clip, c.offset(x, 0, z), Math.abs(z) == halfZ ? beam : floor);
+                boolean edge = Math.abs(z) == halfZ;
+                for (int y = 1; y <= 8; y++) {
+                    boolean loader = x >= -4 && x <= 12 && Math.abs(z) == halfZ && y <= 4;
+                    if (!edge || loader) set(level, clip, c.offset(x, y, z), Blocks.AIR.defaultBlockState());
+                    else if (y >= 3 && y <= 5 && Math.abs(x) < 23 && x % 3 != 0) set(level, clip, c.offset(x, y, z), glass);
+                    else set(level, clip, c.offset(x, y, z), ((x + y) % 6 == 0) ? beam : hull);
                 }
-            }
-            if (Math.abs(x) < 23 && x % 5 == 0) {
-                set(level, clip, base.offset(x, 3, -4), beam);
-                set(level, clip, base.offset(x, 3, 4), beam);
-                set(level, clip, base.offset(x, 4, 0), lamp);
+                if (Math.abs(z) <= halfZ - 1) set(level, clip, c.offset(x, 9, z), ((x + z) & 7) == 0 ? beam : hull);
             }
         }
-        // Raised central spine / cargo tram corridor.
-        for (int x = -22; x <= 20; x++) {
-            for (int z = -3; z <= 3; z++) set(level, clip, base.offset(x, 3, z), z == 0 ? stripe : hull);
-            if ((x & 3) == 0) set(level, clip, base.offset(x, 4, 0), lamp);
+
+        // Main longitudinal circulation spine: 5 blocks wide and visually obvious.
+        for (int x = -28; x <= 27; x++) for (int z = -2; z <= 2; z++) {
+            set(level, clip, c.offset(x, 0, z), z == 0 ? stripe : floor);
+            for (int y = 1; y <= 5; y++) set(level, clip, c.offset(x, y, z), Blocks.AIR.defaultBlockState());
+            if (x % 6 == 0) set(level, clip, c.offset(x, 6, 0), lamp);
         }
-        set(level, clip, base.offset(-25, 1, 0), block("holo_sign"));
-        set(level, clip, base.offset(10, 1, 0), block("transporter"));
-        set(level, clip, base.offset(12, 1, 0), block("network_switch"));
-        set(level, clip, base.offset(14, 1, 0), block("network_pipe"));
-        set(level, clip, base.offset(-10, 1, 3), block("tritanium_crate_red"));
-        set(level, clip, base.offset(-8, 1, 3), block("tritanium_crate_cyan"));
-        set(level, clip, base.offset(10, 1, 3), block("tritanium_crate_lime"));
-        set(level, clip, base.offset(12, 1, 3), block("tritanium_crate_blue"));
+
+        // Bridge at the bow, raised by broad steps rather than an inaccessible platform.
+        for (int x = -31; x <= -24; x++) for (int z = -5; z <= 5; z++) {
+            int rise = Math.max(0, Math.min(3, (-24 - x) / 2));
+            if (Math.abs(z) <= 5 - rise) set(level, clip, c.offset(x, rise, z), dark);
+        }
+        set(level, clip, c.offset(-28, 4, -3), mod("holographic_status_panel", Blocks.SEA_LANTERN));
+        set(level, clip, c.offset(-28, 4, 0), mod("facility_network_controller", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(-28, 4, 3), mod("network_switch", Blocks.IRON_BLOCK));
+
+        // Two cargo bays with generous aisles between rack rows.
+        cargoRacks(level, clip, c.offset(-13, 0, 0), -7, 7);
+        cargoRacks(level, clip, c.offset(9, 0, 0), -7, 7);
+
+        // Engineering stern and service machinery.
+        for (int x = 22; x <= 29; x++) for (int z = -7; z <= 7; z++) {
+            if (Math.abs(z) >= 5) set(level, clip, c.offset(x, 1, z), beam);
+        }
+        set(level, clip, c.offset(25, 1, -4), mod("grid_capacitor", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(25, 1, 0), mod("transporter", Blocks.RESPAWN_ANCHOR));
+        set(level, clip, c.offset(25, 1, 4), mod("network_router", Blocks.IRON_BLOCK));
+
+        // Loading lane ties the open hull doors to the cargo spine.
+        for (int z = -12; z <= 12; z++) for (int x = 2; x <= 6; x++) {
+            set(level, clip, c.offset(x, 0, z), (x == 4) ? stripe : floor);
+            for (int y = 1; y <= 4; y++) set(level, clip, c.offset(x, y, z), Blocks.AIR.defaultBlockState());
+        }
     }
 
+    private void cargoRacks(WorldGenLevel level, BoundingBox clip, BlockPos centre, int zMin, int zMax) {
+        BlockState rack = mod("decorative.beams", Blocks.IRON_BARS);
+        for (int x = -6; x <= 6; x += 4) for (int z = zMin; z <= zMax; z += 4) {
+            if (Math.abs(z) <= 1) continue;
+            set(level, clip, centre.offset(x, 1, z), rack);
+            set(level, clip, centre.offset(x, 2, z), ((x + z) & 4) == 0 ? mod("tritanium_crate_blue", Blocks.BARREL) : mod("tritanium_crate", Blocks.BARREL));
+        }
+    }
+
+    /** Radial pressure base: airlock -> hub -> four clearly separated research/service pods. */
     private void underwaterBase(WorldGenLevel level, BoundingBox clip) {
-        BlockPos c = origin.above();
-        BlockState hull = block("decorative.tritanium_plate");
-        BlockState beam = block("decorative.beams");
-        BlockState glass = block("industrial_glass");
-        BlockState floor = block("decorative.floor_tiles");
-        BlockState lamp = block("decorative.tritanium_lamp");
-        for (int x = -21; x <= 21; x++) for (int z = -21; z <= 21; z++) {
-            double d = Math.sqrt(x * x + z * z);
-            if (d <= 19.5D) {
-                set(level, clip, c.offset(x, 0, z), floor);
-                for (int y = 1; y <= 5; y++) set(level, clip, c.offset(x, y, z), Blocks.AIR.defaultBlockState());
-            }
-            if (d >= 19.3D && d <= 21.1D) {
-                for (int y = 1; y <= 5; y++) {
-                    boolean rib = ((Math.abs(x) + Math.abs(z)) % 7) == 0;
-                    set(level, clip, c.offset(x, y, z), rib ? beam : (y == 2 || y == 3) ? glass : hull);
-                }
-            }
-            if (d <= 18.5D) set(level, clip, c.offset(x, 6, z), d > 14.0D ? glass : hull);
-        }
-        // Lit radial service spokes break up the huge circular interior.
-        for (int i = -15; i <= 15; i++) {
-            set(level, clip, c.offset(i, 1, 0), (i % 5 == 0) ? lamp : block("decorative.floor_tile_white"));
-            set(level, clip, c.offset(0, 1, i), (i % 5 == 0) ? lamp : block("decorative.floor_tile_white"));
-        }
-        set(level, clip, c.offset(0, 1, 0), block("matter_analyzer"));
-        set(level, clip, c.offset(5, 1, 0), block("pattern_storage"));
-        set(level, clip, c.offset(-5, 1, 0), block("pattern_monitor"));
-        set(level, clip, c.offset(8, 1, 5), block("tritanium_crate_blue"));
-        set(level, clip, c.offset(-8, 1, 5), block("matter_storage_matrix"));
-        set(level, clip, c.offset(0, 1, -8), block("holographic_status_panel"));
-    }
+        BlockPos c = origin;
+        BlockState hull = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
+        BlockState beam = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        BlockState floor = mod("decorative.floor_tiles", Blocks.SMOOTH_STONE);
+        BlockState white = mod("decorative.white_plate", Blocks.QUARTZ_BLOCK);
+        BlockState lamp = mod("decorative.tritanium_lamp", Blocks.SEA_LANTERN);
 
-    private void madScientistHouse(WorldGenLevel level, BoundingBox clip) {
-        BlockState wall = block("decorative.white_plate");
-        BlockState dark = block("decorative.carbon_fiber_plate");
-        BlockState beam = block("decorative.beams");
-        BlockState floor = block("decorative.floor_tile_white");
-        BlockState glass = block("industrial_glass");
-        BlockState lamp = block("decorative.tritanium_lamp");
+        pressurePod(level, clip, c, 10, 6, hull, floor, beam, glass);
+        pressurePod(level, clip, c.offset(-18, 0, 0), 7, 5, white, floor, beam, glass);
+        pressurePod(level, clip, c.offset(18, 0, 0), 7, 5, hull, floor, beam, glass);
+        pressurePod(level, clip, c.offset(0, 0, 18), 7, 5, hull, floor, beam, glass);
+        pressurePod(level, clip, c.offset(0, 0, -18), 7, 5, white, floor, beam, glass);
 
-        // Keep the classic small footprint, but turn it into a compact research
-        // pavilion with a dark structural frame, glass curtain walls and overhang.
-        for (int x = -5; x <= 5; x++) for (int z = -5; z <= 5; z++) {
-            if (Math.abs(x) <= 4 && Math.abs(z) <= 4) set(level, clip, origin.offset(x, 0, z), floor);
-            boolean frame = (Math.abs(x) == 4 && Math.abs(z) <= 4) || (Math.abs(z) == 4 && Math.abs(x) <= 4);
+        tube(level, clip, c.offset(-13, 0, 0), true, 6);
+        tube(level, clip, c.offset(13, 0, 0), true, 6);
+        tube(level, clip, c.offset(0, 0, 13), false, 6);
+        tube(level, clip, c.offset(0, 0, -13), false, 6);
+
+        // South airlock continues beyond the pod and gives the base a readable entrance.
+        for (int z = -29; z <= -23; z++) for (int x = -3; x <= 3; x++) {
+            set(level, clip, c.offset(x, 0, z), floor);
             for (int y = 1; y <= 4; y++) {
-                if (!frame) continue;
-                boolean door = z == -4 && Math.abs(x) <= 1 && y <= 3;
-                boolean corner = Math.abs(x) == 4 && Math.abs(z) == 4;
-                boolean glazing = !corner && y >= 2 && y <= 3;
-                set(level, clip, origin.offset(x, y, z), door ? Blocks.AIR.defaultBlockState() : corner ? beam : glazing ? glass : wall);
+                boolean side = Math.abs(x) == 3;
+                set(level, clip, c.offset(x, y, z), side ? (y == 2 ? glass : hull) : Blocks.AIR.defaultBlockState());
             }
-            if (Math.abs(x) <= 5 && Math.abs(z) <= 5) set(level, clip, origin.offset(x, 5, z), (Math.abs(x) == 5 || Math.abs(z) == 5) ? dark : wall);
+            set(level, clip, c.offset(x, 5, z), hull);
         }
-        for (int x : new int[]{-3, 0, 3}) set(level, clip, origin.offset(x, 4, 0), lamp);
-        // Split wet-lab / fabrication zones with a low service divider.
-        for (int x = -3; x <= 3; x++) if (Math.abs(x) > 1) set(level, clip, origin.offset(x, 1, 1), dark);
-        set(level, clip, origin.offset(-2, 1, 2), block("inscriber"));
-        set(level, clip, origin.offset(0, 1, 2), block("matter_analyzer"));
-        set(level, clip, origin.offset(2, 1, 2), block("decomposer"));
-        set(level, clip, origin.offset(-2, 1, -2), block("tritanium_crate"));
-        set(level, clip, origin.offset(2, 1, -2), block("holographic_status_panel"));
+        for (int y = 1; y <= 3; y++) for (int x = -1; x <= 1; x++) set(level, clip, c.offset(x, y, -29), Blocks.AIR.defaultBlockState());
+        set(level, clip, c.offset(0, 4, -27), mod("holo_sign", Blocks.SEA_LANTERN));
+
+        // Central hub and pod functions.
+        for (int a = 0; a < 360; a += 45) {
+            double r = Math.toRadians(a);
+            int x = (int)Math.round(Math.cos(r) * 6), z = (int)Math.round(Math.sin(r) * 6);
+            set(level, clip, c.offset(x, 1, z), lamp);
+        }
+        set(level, clip, c.offset(0, 1, 0), mod("facility_network_controller", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(-18, 1, 0), mod("matter_analyzer", Blocks.LECTERN));
+        set(level, clip, c.offset(-16, 1, 2), mod("pattern_storage", Blocks.CHISELED_BOOKSHELF));
+        set(level, clip, c.offset(18, 1, 0), mod("matter_storage_matrix", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(16, 1, 2), mod("decomposer", Blocks.BLAST_FURNACE));
+        set(level, clip, c.offset(0, 1, 18), mod("tritanium_crate_blue", Blocks.BARREL));
+        set(level, clip, c.offset(0, 1, 16), mod("charging_station", Blocks.LODESTONE));
+        set(level, clip, c.offset(0, 1, -18), mod("holographic_status_panel", Blocks.SEA_LANTERN));
     }
 
-    private void androidHouse(WorldGenLevel level, BoundingBox clip) {
-        BlockPos base = origin.below(2);
-        BlockState hull = block("decorative.tritanium_plate");
-        BlockState dark = block("decorative.carbon_fiber_plate");
-        BlockState wall = block("decorative.white_plate");
-        BlockState beam = block("decorative.beams");
-        BlockState floor = block("decorative.floor_tiles");
-        BlockState accentFloor = block("decorative.floor_tile_white");
-        BlockState glass = block("industrial_glass");
-        BlockState lamp = block("decorative.tritanium_lamp");
-
-        // Modern synthetic safehouse: broad low profile, framed glass facade,
-        // recessed entrance, central illuminated spine and two equipment wings.
-        for (int x = -10; x <= 10; x++) for (int z = -10; z <= 10; z++) {
-            boolean inside = Math.abs(x) <= 10 && Math.abs(z) <= 10;
-            if (!inside) continue;
-            set(level, clip, base.offset(x, 0, z), (x == 0 || z == 0) ? accentFloor : floor);
-            boolean edge = Math.abs(x) == 10 || Math.abs(z) == 10;
-            for (int y = 1; y <= 5; y++) {
-                if (!edge) {
-                    set(level, clip, base.offset(x, y, z), Blocks.AIR.defaultBlockState());
-                    continue;
+    private void pressurePod(WorldGenLevel level, BoundingBox clip, BlockPos c, int r, int h, BlockState wall,
+                             BlockState floor, BlockState beam, BlockState glass) {
+        for (int x = -r; x <= r; x++) for (int z = -r; z <= r; z++) {
+            double d = Math.sqrt(x * x + z * z);
+            if (d <= r - 0.8) {
+                set(level, clip, c.offset(x, 0, z), floor);
+                for (int y = 1; y <= h; y++) set(level, clip, c.offset(x, y, z), Blocks.AIR.defaultBlockState());
+            }
+            if (d > r - 1.2 && d <= r + 0.35) {
+                for (int y = 1; y <= h; y++) {
+                    BlockState state = y == 1 || y == h || ((x + z) & 5) == 0 ? beam : (y >= 2 && y <= h - 1 ? glass : wall);
+                    set(level, clip, c.offset(x, y, z), state);
                 }
-                boolean door = z == -10 && Math.abs(x) <= 2 && y <= 3;
-                boolean cornerRib = (Math.abs(x) >= 9 && Math.abs(z) == 10) || (Math.abs(z) >= 9 && Math.abs(x) == 10);
-                boolean windowBand = y >= 2 && y <= 3 && !cornerRib && ((Math.abs(x) == 10 && Math.abs(z) <= 7) || (Math.abs(z) == 10 && Math.abs(x) >= 3));
-                BlockState state = door ? Blocks.AIR.defaultBlockState() : cornerRib ? beam : windowBand ? glass : ((x + z + y & 1) == 0 ? hull : wall);
-                set(level, clip, base.offset(x, y, z), state);
             }
-            set(level, clip, base.offset(x, 6, z), (Math.abs(x) >= 8 || Math.abs(z) >= 8) ? dark : hull);
+            if (d <= r) set(level, clip, c.offset(x, h + 1, z), ((x + z) & 5) == 0 ? beam : wall);
         }
-
-        // Exterior entry canopy + light rails.
-        for (int z = -13; z <= -9; z++) for (int x = -3; x <= 3; x++) {
-            set(level, clip, base.offset(x, 4, z), dark);
-            if (Math.abs(x) == 3) set(level, clip, base.offset(x, 3, z), beam);
+        // Cardinal doors are always retained for radial routing.
+        for (int y = 1; y <= 3; y++) for (int w = -1; w <= 1; w++) {
+            set(level, clip, c.offset(w, y, -r), Blocks.AIR.defaultBlockState());
+            set(level, clip, c.offset(w, y, r), Blocks.AIR.defaultBlockState());
+            set(level, clip, c.offset(-r, y, w), Blocks.AIR.defaultBlockState());
+            set(level, clip, c.offset(r, y, w), Blocks.AIR.defaultBlockState());
         }
-        for (int z = -8; z <= 8; z += 4) {
-            set(level, clip, base.offset(0, 5, z), lamp);
-            set(level, clip, base.offset(-6, 5, z), lamp);
-            set(level, clip, base.offset(6, 5, z), lamp);
-        }
-
-        // Equipment wings. Star Map is intentionally absent: it is retired.
-        set(level, clip, base.offset(-6, 1, -6), block("android_station"));
-        set(level, clip, base.offset(-3, 1, -6), block("replicator"));
-        set(level, clip, base.offset(0, 1, -6), block("facility_network_controller"));
-        set(level, clip, base.offset(3, 1, -6), block("charging_station"));
-        set(level, clip, base.offset(6, 1, -6), block("android_induction_relay"));
-
-        set(level, clip, base.offset(-6, 1, 6), block("network_router"));
-        set(level, clip, base.offset(-3, 1, 6), block("tritanium_crate_blue"));
-        set(level, clip, base.offset(0, 1, 6), block("holographic_status_panel"));
-        set(level, clip, base.offset(3, 1, 6), block("tritanium_crate"));
-        set(level, clip, base.offset(6, 1, 6), block("grid_capacitor"));
-
-        // Central holo table / social operations space.
-        for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++)
-            if (Math.abs(x) == 2 || Math.abs(z) == 2) set(level, clip, base.offset(x, 1, z), dark);
-        set(level, clip, base.offset(0, 1, 0), block("decorative.holo_matrix"));
-        set(level, clip, base.offset(0, 2, 0), block("holo_sign"));
     }
 
+    private void tube(WorldGenLevel level, BoundingBox clip, BlockPos c, boolean xAxis, int half) {
+        BlockState hull = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
+        BlockState floor = mod("decorative.floor_tile_white", Blocks.SMOOTH_STONE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        for (int a = -half; a <= half; a++) for (int b = -2; b <= 2; b++) {
+            int x = xAxis ? a : b, z = xAxis ? b : a;
+            set(level, clip, c.offset(x, 0, z), floor);
+            for (int y = 1; y <= 4; y++) {
+                boolean side = Math.abs(b) == 2;
+                set(level, clip, c.offset(x, y, z), side ? (y == 2 || y == 3 ? glass : hull) : Blocks.AIR.defaultBlockState());
+            }
+            set(level, clip, c.offset(x, 5, z), hull);
+        }
+    }
+
+    /** Small residence above a much larger hidden basement laboratory. */
+    private void madScientistHouse(WorldGenLevel level, BoundingBox clip) {
+        BlockState white = mod("decorative.white_plate", Blocks.QUARTZ_BLOCK);
+        BlockState dark = mod("decorative.carbon_fiber_plate", Blocks.DEEPSLATE_TILES);
+        BlockState floor = mod("decorative.floor_tile_white", Blocks.SMOOTH_STONE);
+        BlockState labFloor = mod("decorative.floor_tiles", Blocks.SMOOTH_STONE);
+        BlockState beam = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+
+        // Asymmetric above-ground residence/pavilion.
+        roomShell(level, clip, origin, 6, 5, 5, white, floor, beam, glass, true);
+        roomShell(level, clip, origin.offset(7, 0, 2), 4, 3, 4, dark, floor, beam, glass, false);
+        for (int y = 1; y <= 3; y++) for (int x = -1; x <= 1; x++) set(level, clip, origin.offset(x, y, -5), Blocks.AIR.defaultBlockState());
+        set(level, clip, origin.offset(0, 4, -4), mod("holo_sign", Blocks.SEA_LANTERN));
+
+        // Broad hidden stairwell behind the east annex, one-block descent per two z.
+        for (int i = 0; i <= 6; i++) {
+            int y = -i;
+            int z = 4 + i * 2;
+            for (int x = 5; x <= 7; x++) {
+                set(level, clip, origin.offset(x, y, z), labFloor);
+                for (int h = 1; h <= 3; h++) set(level, clip, origin.offset(x, y + h, z), Blocks.AIR.defaultBlockState());
+            }
+        }
+
+        BlockPos lab = origin.offset(0, -6, 15);
+        roomShell(level, clip, lab, 10, 8, 5, dark, labFloor, beam, glass, true);
+        // Divide wet lab / fabrication / specimens, keeping a 3-wide central route.
+        for (int x = -9; x <= 9; x++) if (Math.abs(x) > 1) for (int y = 1; y <= 4; y++) {
+            set(level, clip, lab.offset(x, y, 0), y == 2 || y == 3 ? glass : white);
+        }
+        set(level, clip, lab.offset(-6, 1, -4), mod("inscriber", Blocks.ANVIL));
+        set(level, clip, lab.offset(-3, 1, -4), mod("decomposer", Blocks.BLAST_FURNACE));
+        set(level, clip, lab.offset(4, 1, -4), mod("matter_analyzer", Blocks.LECTERN));
+        set(level, clip, lab.offset(7, 1, -4), mod("pattern_storage", Blocks.CHISELED_BOOKSHELF));
+        set(level, clip, lab.offset(-6, 1, 4), mod("tritanium_crate", Blocks.BARREL));
+        set(level, clip, lab.offset(6, 1, 4), mod("android_spawner", Blocks.IRON_BLOCK));
+    }
+
+    /** A disguised low-profile safehouse with public atrium, charging wings and rear service yard. */
+    private void androidHouse(WorldGenLevel level, BoundingBox clip) {
+        BlockPos c = origin.below();
+        BlockState hull = mod("decorative.tritanium_plate", Blocks.IRON_BLOCK);
+        BlockState white = mod("decorative.white_plate", Blocks.QUARTZ_BLOCK);
+        BlockState dark = mod("decorative.carbon_fiber_plate", Blocks.DEEPSLATE_TILES);
+        BlockState floor = mod("decorative.floor_tiles", Blocks.SMOOTH_STONE);
+        BlockState beam = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState glass = mod("industrial_glass", Blocks.TINTED_GLASS);
+        BlockState stripe = mod("decorative.tritanium_plate_stripe", Blocks.YELLOW_CONCRETE);
+
+        // Central atrium plus offset wings creates an H-like footprint rather than a box.
+        roomShell(level, clip, c, 7, 8, 6, white, floor, beam, glass, true);
+        roomShell(level, clip, c.offset(-11, 0, 3), 5, 6, 5, hull, floor, beam, glass, false);
+        roomShell(level, clip, c.offset(11, 0, 3), 5, 6, 5, hull, floor, beam, glass, false);
+        roomShell(level, clip, c.offset(0, 0, 12), 8, 4, 5, dark, floor, beam, glass, true);
+
+        // Open the explicit connectors between volumes and front entrance.
+        openDoor(level, clip, c.offset(0, 0, -8), false);
+        openDoor(level, clip, c.offset(-7, 0, 3), true);
+        openDoor(level, clip, c.offset(7, 0, 3), true);
+        openDoor(level, clip, c.offset(0, 0, 8), false);
+        for (int z = -12; z <= -8; z++) for (int x = -3; x <= 3; x++) {
+            set(level, clip, c.offset(x, 0, z), x == 0 ? stripe : floor);
+            if (Math.abs(x) == 3) for (int y = 1; y <= 4; y++) set(level, clip, c.offset(x, y, z), beam);
+            set(level, clip, c.offset(x, 5, z), dark);
+        }
+
+        // Centre operations; west charging/maintenance; east logistics; rear secure room.
+        set(level, clip, c.offset(0, 1, 0), mod("decorative.holo_matrix", Blocks.SEA_LANTERN));
+        set(level, clip, c.offset(0, 2, 0), mod("holo_sign", Blocks.SEA_LANTERN));
+        set(level, clip, c.offset(-11, 1, 0), mod("android_station", Blocks.SMITHING_TABLE));
+        set(level, clip, c.offset(-11, 1, 4), mod("charging_station", Blocks.LODESTONE));
+        set(level, clip, c.offset(-11, 1, 7), mod("android_induction_relay", Blocks.LODESTONE));
+        set(level, clip, c.offset(11, 1, 0), mod("replicator", Blocks.SMITHING_TABLE));
+        set(level, clip, c.offset(11, 1, 4), mod("network_router", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(11, 1, 7), mod("grid_capacitor", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(0, 1, 12), mod("facility_network_controller", Blocks.IRON_BLOCK));
+        set(level, clip, c.offset(-4, 1, 12), mod("tritanium_crate_blue", Blocks.BARREL));
+        set(level, clip, c.offset(4, 1, 12), mod("tritanium_crate_red", Blocks.BARREL));
+    }
+
+    /** Terraced excavation with a walkable ramp, exposed relic and surface operations gantry. */
     private void sandPit(WorldGenLevel level, BoundingBox clip) {
-        BlockPos floor = origin.below(9);
-        for (int x = -12; x <= 11; x++) for (int z = -12; z <= 11; z++) {
-            double nx = (x + 0.5D) / 12.0D;
-            double nz = (z + 0.5D) / 12.0D;
-            double d = Math.sqrt(nx * nx + nz * nz);
-            int depth = d < .30D ? 9 : d < .50D ? 7 : d < .70D ? 5 : d < .88D ? 3 : d <= 1.0D ? 1 : 0;
+        BlockState sandstone = Blocks.CUT_SANDSTONE.defaultBlockState();
+        BlockState floor = mod("decorative.floor_tiles", Blocks.SMOOTH_STONE);
+        BlockState beam = mod("decorative.beams", Blocks.POLISHED_DEEPSLATE);
+        BlockState stripe = mod("decorative.tritanium_plate_stripe", Blocks.YELLOW_CONCRETE);
+        BlockPos bottom = origin.below(11);
+
+        // Four broad terraces. The stepped west/south edge leaves a continuous route down.
+        for (int x = -17; x <= 17; x++) for (int z = -17; z <= 17; z++) {
+            int r = Math.max(Math.abs(x), Math.abs(z));
+            int depth = r <= 6 ? 11 : r <= 10 ? 8 : r <= 14 ? 4 : r <= 17 ? 2 : 0;
             if (depth == 0) continue;
-            BlockPos surface = origin.offset(x, -1, z);
-            for (int y = 0; y < depth; y++) set(level, clip, surface.below(y), Blocks.AIR.defaultBlockState());
-            set(level, clip, surface.below(depth), d < .55D ? Blocks.CUT_SANDSTONE.defaultBlockState() : Blocks.SANDSTONE.defaultBlockState());
+            for (int y = 1; y <= depth; y++) set(level, clip, origin.offset(x, -y, z), Blocks.AIR.defaultBlockState());
+            set(level, clip, origin.offset(x, -depth - 1, z), sandstone);
         }
-        // Reframe the old pit as a buried industrial excavation rather than an
-        // unexplained hole: exposed hull, gantry ribs, lighting and equipment.
-        for (int z = -5; z <= 5; z++) {
-            int half = Math.max(1, 4 - Math.abs(z) / 2);
-            for (int x = -half; x <= half; x++) set(level, clip, floor.offset(x, 0, z), block("decorative.tritanium_plate"));
+
+        // Safe zig-zag descent ramp, three blocks wide.
+        for (int i = 0; i <= 10; i++) {
+            int y = -1 - i;
+            int x = i < 6 ? -15 + i * 2 : -5;
+            int z = i < 6 ? 12 : 12 - (i - 5) * 3;
+            for (int w = -1; w <= 1; w++) {
+                set(level, clip, origin.offset(x + w, y, z), sandstone);
+                set(level, clip, origin.offset(x + w, y + 1, z), Blocks.AIR.defaultBlockState());
+                set(level, clip, origin.offset(x + w, y + 2, z), Blocks.AIR.defaultBlockState());
+            }
         }
-        for (int z = -5; z <= 5; z += 5) for (int y = 1; y <= 4; y++) {
-            set(level, clip, floor.offset(-4, y, z), block("decorative.beams"));
-            set(level, clip, floor.offset(4, y, z), block("decorative.beams"));
+
+        // Buried relic floor with clear 3-wide aisle.
+        for (int x = -7; x <= 7; x++) for (int z = -7; z <= 7; z++) {
+            boolean chamfer = Math.abs(x) + Math.abs(z) > 11;
+            if (!chamfer) set(level, clip, bottom.offset(x, 0, z), Math.abs(x) <= 1 ? stripe : floor);
         }
-        for (int z = -5; z <= 5; z += 2) set(level, clip, floor.offset(0, 4, z), block("decorative.tritanium_lamp"));
-        set(level, clip, floor.offset(-3, 1, 0), block("decorative.coils"));
-        set(level, clip, floor.offset(3, 1, 0), block("decorative.coils"));
-        set(level, clip, floor.offset(0, 1, 2), block("tritanium_crate"));
-        set(level, clip, floor.offset(0, 1, -2), block("matter_excavator"));
+        for (int z = -6; z <= 6; z += 6) for (int y = 1; y <= 5; y++) {
+            set(level, clip, bottom.offset(-7, y, z), beam);
+            set(level, clip, bottom.offset(7, y, z), beam);
+        }
+        for (int x = -6; x <= 6; x++) set(level, clip, bottom.offset(x, 5, -6), beam);
+        set(level, clip, bottom.offset(-4, 1, 0), mod("matter_excavator", Blocks.BLAST_FURNACE));
+        set(level, clip, bottom.offset(4, 1, 0), mod("matter_analyzer", Blocks.LECTERN));
+        set(level, clip, bottom.offset(0, 1, 4), mod("tritanium_crate", Blocks.BARREL));
+
+        // Surface crane/gantry makes the site readable before descending.
+        BlockPos crane = origin.offset(10, 0, -8);
+        for (int y = 0; y <= 11; y++) set(level, clip, crane.offset(0, y, 0), beam);
+        for (int x = -8; x <= 2; x++) set(level, clip, crane.offset(x, 11, 0), beam);
+        for (int y = 7; y <= 10; y++) set(level, clip, crane.offset(-7, y, 0), Blocks.CHAIN.defaultBlockState());
+    }
+
+    private void roomShell(WorldGenLevel level, BoundingBox clip, BlockPos c, int hx, int hz, int h,
+                           BlockState wall, BlockState floor, BlockState beam, BlockState glass, boolean chamfer) {
+        for (int x = -hx; x <= hx; x++) for (int z = -hz; z <= hz; z++) {
+            if (chamfer && Math.abs(x) >= hx - 1 && Math.abs(z) >= hz - 1) continue;
+            set(level, clip, c.offset(x, 0, z), floor);
+            boolean edge = Math.abs(x) == hx || Math.abs(z) == hz;
+            boolean innerChamfer = chamfer && (Math.abs(x) == hx - 1 && Math.abs(z) >= hz - 1 || Math.abs(z) == hz - 1 && Math.abs(x) >= hx - 1);
+            for (int y = 1; y <= h; y++) {
+                if (!edge && !innerChamfer) set(level, clip, c.offset(x, y, z), Blocks.AIR.defaultBlockState());
+                else if (y == 1 || y == h || ((x + z) & 5) == 0) set(level, clip, c.offset(x, y, z), beam);
+                else if (y == 2 || y == 3) set(level, clip, c.offset(x, y, z), glass);
+                else set(level, clip, c.offset(x, y, z), wall);
+            }
+            set(level, clip, c.offset(x, h + 1, z), ((x + z) & 7) == 0 ? beam : wall);
+        }
+    }
+
+    private void openDoor(WorldGenLevel level, BoundingBox clip, BlockPos p, boolean xWall) {
+        for (int y = 1; y <= 3; y++) for (int w = -1; w <= 1; w++) {
+            BlockPos pos = xWall ? p.offset(0, y, w) : p.offset(w, y, 0);
+            set(level, clip, pos, Blocks.AIR.defaultBlockState());
+        }
     }
 
     private static BoundingBox boxFor(LegacyParityStructureFeature.Kind kind, BlockPos p) {
         return switch (kind) {
-            case CRASHED_SHIP -> new BoundingBox(p.getX() - 5, p.getY() - 1, p.getZ() - 17, p.getX() + 5, p.getY() + 4, p.getZ() + 17);
-            case CARGO_SHIP -> new BoundingBox(p.getX() - 29, p.getY(), p.getZ() - 11, p.getX() + 28, p.getY() + 6, p.getZ() + 11);
-            case UNDERWATER_BASE -> new BoundingBox(p.getX() - 21, p.getY(), p.getZ() - 21, p.getX() + 21, p.getY() + 7, p.getZ() + 21);
-            case MAD_SCIENTIST_HOUSE -> new BoundingBox(p.getX() - 5, p.getY(), p.getZ() - 5, p.getX() + 5, p.getY() + 5, p.getZ() + 5);
-            case ANDROID_HOUSE -> new BoundingBox(p.getX() - 10, p.getY() - 2, p.getZ() - 13, p.getX() + 10, p.getY() + 4, p.getZ() + 10);
-            case SAND_PIT -> new BoundingBox(p.getX() - 12, p.getY() - 9, p.getZ() - 12, p.getX() + 11, p.getY(), p.getZ() + 11);
+            case CRASHED_SHIP -> new BoundingBox(p.getX() - 9, p.getY() - 3, p.getZ() - 24, p.getX() + 9, p.getY() + 7, p.getZ() + 20);
+            case CARGO_SHIP -> new BoundingBox(p.getX() - 32, p.getY(), p.getZ() - 13, p.getX() + 31, p.getY() + 10, p.getZ() + 13);
+            case UNDERWATER_BASE -> new BoundingBox(p.getX() - 26, p.getY(), p.getZ() - 30, p.getX() + 26, p.getY() + 8, p.getZ() + 26);
+            case MAD_SCIENTIST_HOUSE -> new BoundingBox(p.getX() - 11, p.getY() - 6, p.getZ() - 6, p.getX() + 11, p.getY() + 6, p.getZ() + 23);
+            case ANDROID_HOUSE -> new BoundingBox(p.getX() - 16, p.getY() - 1, p.getZ() - 13, p.getX() + 16, p.getY() + 7, p.getZ() + 16);
+            case SAND_PIT -> new BoundingBox(p.getX() - 18, p.getY() - 12, p.getZ() - 18, p.getX() + 18, p.getY() + 12, p.getZ() + 18);
         };
     }
 
-    private static BlockState block(String id) {
-        return ModBlocks.get(id).get().defaultBlockState();
+    private static BlockState mod(String id, Block fallback) {
+        ResourceLocation key = ResourceLocation.tryParse("matteroverdrive:" + id);
+        Block block = key == null ? null : ForgeRegistries.BLOCKS.getValue(key);
+        return block == null || block == Blocks.AIR ? fallback.defaultBlockState() : block.defaultBlockState();
     }
 
     private static void set(WorldGenLevel level, BoundingBox clip, BlockPos pos, BlockState state) {
-        if (clip.isInside(pos)) level.setBlock(pos, state, 2);
+        if (!clip.isInside(pos)) return;
+        if (level.getBlockState(pos).is(Blocks.BEDROCK)) return;
+        level.setBlock(pos, state, 2);
     }
 }
