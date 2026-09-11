@@ -1,0 +1,13 @@
+{
+  "parent": "matteroverdrive:campaign/automation",
+  "display": {"icon":{"item":"matteroverdrive:network_flash_drive"},"title":{"text":"Network Specialist"},"description":{"text":"Build a routed Matter network with filtering, switching and long-range pylon support."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "pipe":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:network_pipe"]}]}},
+    "router":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:network_router"]}]}},
+    "switch":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:network_switch"]}]}},
+    "pylon":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:pylon"]}]}},
+    "filter":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:network_flash_drive"]}]}}
+  },
+  "requirements": [["pipe"],["router"],["switch"],["pylon"],["filter"]],
+  "rewards":{"experience":200}
+}
