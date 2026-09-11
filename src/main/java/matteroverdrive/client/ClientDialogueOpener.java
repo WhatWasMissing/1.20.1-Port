@@ -13,4 +13,8 @@ public final class ClientDialogueOpener {
                             List<String> lines, List<NpcDialoguePacket.ChoiceOption> choices) {
         Minecraft.getInstance().setScreen(new NpcDialogueScreen(dialogueId, nodeId, speaker, title, lines, choices));
     }
+
+    public static void open(String speaker, String title, List<String> lines) {
+        open("", "", speaker, title, lines, List.of());
+    }
 }
