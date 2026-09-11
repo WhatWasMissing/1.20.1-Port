@@ -17,6 +17,9 @@ Raw clips must use the exact `PdaVoiceLineCatalog` IDs:
 - `orpheus_security`
 - `icarus_warning`
 - `synthetic_contact`
+- `field_liaison`
+- `synthetic_liaison`
+- `incident_analyst`
 - `closed_loop`
 - `database_ready`
 
