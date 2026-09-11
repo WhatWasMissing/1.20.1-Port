@@ -34,6 +34,8 @@ The prerecorded PDA bank is optional at runtime. Missing recordings fall back to
 
 Matter Overdrive 0.6 consolidates the 0.5 campaign/world-content line with the current matter-economy work and the existing machine, Android, reactor, weapon and exploration systems.
 
+For the current post-Star-Map source inventory, including the newer PDA/lore/dialogue/structure/voice systems, see **[Current Feature Inventory — 2026-09-11](docs/reference/CURRENT_FEATURES_2026-09-11.md)**.
+
 ### Matter economy and diagnostics
 
 - Recursive recipe-derived matter values for craftable items.
@@ -120,6 +122,8 @@ The port is still under active testing. A system being listed above means it has
 
 For the most useful current references, see:
 
+- [`docs/reference/CURRENT_FEATURES_2026-09-11.md`](docs/reference/CURRENT_FEATURES_2026-09-11.md)
+- [`docs/SETUP_AND_PDA_VOICE_GUIDE.md`](docs/SETUP_AND_PDA_VOICE_GUIDE.md)
 - [`docs/testing/TO_TEST.md`](docs/testing/TO_TEST.md)
 - [`docs/reference/WORKING_FEATURES.md`](docs/reference/WORKING_FEATURES.md)
 - [`docs/reference/MATTER_VALUE_COVERAGE.md`](docs/reference/MATTER_VALUE_COVERAGE.md)
