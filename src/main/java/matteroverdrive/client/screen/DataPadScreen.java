@@ -7,6 +7,7 @@ import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
 import matteroverdrive.world.StructureLoreCatalog;
 import matteroverdrive.world.StructureLoreCatalog.LoreRecord;
+import matteroverdrive.world.StructureLoreCatalog.Reconstruction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -22,9 +23,9 @@ import java.util.List;
 /**
  * Player-specific Matter Overdrive PDA.
  *
- * This screen owns discovery/progression presentation. GuideME remains the full
- * technical manual and is deliberately opened only from the dedicated manual
- * action, never as a replacement for the PDA itself.
+ * The PDA owns personal discovery, story reconstruction, field operations and
+ * contract presentation. GuideME remains the full technical manual and is opened
+ * only from the dedicated manual action; it never replaces this screen.
  */
 public class DataPadScreen extends Screen {
     private static final int BACKGROUND = 0xF0061018;
@@ -37,11 +38,14 @@ public class DataPadScreen extends Screen {
     private static final int MUTED = 0xFF8EADB7;
     private static final int GOOD = 0xFF62E39A;
     private static final int LOCKED = 0xFF526771;
+    private static final int DANGER = 0xFFFF6666;
     private static final int MAX_MANAGED_CONTRACTS = 4;
+    private static final int ARCHIVE_SECTIONS = 3;
 
     private enum Tab {
         OVERVIEW("OVERVIEW"),
         DATA_BANK("DATA BANK"),
+        INCIDENT("INCIDENT"),
         FACILITIES("FACILITIES"),
         RESEARCH("RESEARCH"),
         OPERATIONS("OPERATIONS"),
@@ -60,6 +64,8 @@ public class DataPadScreen extends Screen {
 
     private Tab tab = Tab.OVERVIEW;
     private int archiveCursor;
+    private int archiveSection;
+    private int reconstructionCursor;
     private int facilityPage;
     private int armedAbandonSlot = -1;
     private long abandonArmedUntil;
@@ -71,7 +77,8 @@ public class DataPadScreen extends Screen {
         super(Component.literal("Matter Overdrive PDA"));
         this.journal = new ArrayList<>(journal);
         this.loreMask = loreMask & StructureLoreCatalog.ALL_RECORDS_MASK;
-        this.archiveCursor = firstRecoveredOrZero();
+        this.archiveCursor = firstRecoveredArchiveOrZero();
+        this.reconstructionCursor = firstIncompleteReconstructionOrLast();
         Arrays.fill(managedSlots, -1);
     }
 
@@ -84,12 +91,12 @@ public class DataPadScreen extends Screen {
         int left = panelLeft();
         int top = panelTop();
         int sidebarX = left + 8;
-        int buttonY = top + 42;
+        int buttonY = top + 40;
         for (Tab value : Tab.values()) {
             Button button = addRenderableWidget(Button.builder(Component.literal(value.label),
-                    ignored -> selectTab(value)).bounds(sidebarX, buttonY, 100, 18).build());
+                    ignored -> selectTab(value)).bounds(sidebarX, buttonY, 100, 16).build());
             tabButtons.add(button);
-            buttonY += 21;
+            buttonY += 18;
         }
 
         String manualLabel = GuideMeCompatEvents.isAvailable() ? "TECH MANUAL • GUIDEME" : "TECH MANUAL • BUILT-IN";
@@ -122,8 +129,27 @@ public class DataPadScreen extends Screen {
     }
 
     private void navigate(int direction) {
+        if (direction == 0) return;
         if (tab == Tab.DATA_BANK) {
-            archiveCursor = Math.max(0, Math.min(StructureLoreCatalog.RECORD_COUNT - 1, archiveCursor + direction));
+            if (direction > 0) {
+                if (archiveSection < ARCHIVE_SECTIONS - 1) {
+                    archiveSection++;
+                } else if (archiveCursor < StructureLoreCatalog.RECORD_COUNT - 1) {
+                    archiveCursor++;
+                    archiveSection = 0;
+                }
+            } else {
+                if (archiveSection > 0) {
+                    archiveSection--;
+                } else if (archiveCursor > 0) {
+                    archiveCursor--;
+                    archiveSection = ARCHIVE_SECTIONS - 1;
+                }
+            }
+        } else if (tab == Tab.INCIDENT) {
+            reconstructionCursor = Math.max(0, Math.min(
+                    StructureLoreCatalog.reconstructions().size() - 1,
+                    reconstructionCursor + direction));
         } else if (tab == Tab.FACILITIES) {
             facilityPage = Math.max(0, Math.min(1, facilityPage + direction));
         }
@@ -134,16 +160,26 @@ public class DataPadScreen extends Screen {
         for (int i = 0; i < tabButtons.size(); i++) {
             tabButtons.get(i).active = Tab.values()[i] != tab;
         }
-        boolean navigable = tab == Tab.DATA_BANK || tab == Tab.FACILITIES;
+
+        boolean navigable = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FACILITIES;
         if (previousButton != null) {
             previousButton.visible = navigable;
-            previousButton.active = tab == Tab.DATA_BANK ? archiveCursor > 0 : facilityPage > 0;
+            previousButton.active = switch (tab) {
+                case DATA_BANK -> archiveCursor > 0 || archiveSection > 0;
+                case INCIDENT -> reconstructionCursor > 0;
+                case FACILITIES -> facilityPage > 0;
+                default -> false;
+            };
         }
         if (nextButton != null) {
             nextButton.visible = navigable;
-            nextButton.active = tab == Tab.DATA_BANK
-                    ? archiveCursor < StructureLoreCatalog.RECORD_COUNT - 1
-                    : facilityPage < 1;
+            nextButton.active = switch (tab) {
+                case DATA_BANK -> archiveCursor < StructureLoreCatalog.RECORD_COUNT - 1
+                        || archiveSection < ARCHIVE_SECTIONS - 1;
+                case INCIDENT -> reconstructionCursor < StructureLoreCatalog.reconstructions().size() - 1;
+                case FACILITIES -> facilityPage < 1;
+                default -> false;
+            };
         }
         refreshContractButtons();
     }
@@ -220,6 +256,7 @@ public class DataPadScreen extends Screen {
         switch (tab) {
             case OVERVIEW -> renderOverview(graphics, x, y, maxWidth, contentBottom);
             case DATA_BANK -> renderDataBank(graphics, x, y, maxWidth, contentBottom);
+            case INCIDENT -> renderIncident(graphics, x, y, maxWidth, contentBottom);
             case FACILITIES -> renderFacilities(graphics, x, y, maxWidth, contentBottom);
             case RESEARCH -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, researchLines(), "No research programme data available.");
             case OPERATIONS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, operationLines(), "No active Field Operations data available.");
@@ -238,65 +275,171 @@ public class DataPadScreen extends Screen {
     private void renderOverview(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
         graphics.drawString(font, Component.literal("OVERDRIVE INCIDENT RECONSTRUCTION"), x, y, ORANGE, false);
         y += 14;
-        y = paragraph(graphics, "Recovered records: " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT
-                + ". Records are displayed in canonical historical order regardless of the order you discover structures.", x, y, maxWidth, TEXT);
+        y = paragraph(graphics, "Recovered primary records: " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT
+                + ". Authenticated reconstructions: " + unlockedReconstructions() + "/"
+                + StructureLoreCatalog.reconstructions().size() + ".", x, y, maxWidth, TEXT);
         y += 5;
-        int next = firstMissing();
-        if (next < 0) {
-            y = paragraph(graphics, "ARCHIVE COMPLETE — the Closed Loop has been reconstructed. Further answers lie beyond the recovered incident chain.",
+        y = paragraph(graphics,
+                "Archive entries are displayed in actual incident chronology. Your discovery order remains non-linear: any facility can provide evidence for later or earlier events.",
+                x, y, maxWidth, MUTED);
+        y += 7;
+
+        if (recoveredCount() == StructureLoreCatalog.RECORD_COUNT) {
+            y = paragraph(graphics,
+                    "ARCHIVE COMPLETE — THE CLOSED LOOP is authenticated. M-0, OVERDRIVE and the ICARUS event form a causal chain with no identified external beginning.",
                     x, y, maxWidth, GOOD);
+            y += 5;
+            y = paragraph(graphics, "STANDING INSTRUCTION: DO NOT COMPLETE THE LOOP.", x, y, maxWidth, DANGER);
         } else {
-            LoreRecord record = StructureLoreCatalog.byBit(next);
-            y = paragraph(graphics, "Unresolved archive slots remain. Cross-references in recovered records may identify new facilities without requiring a fixed discovery order.",
-                    x, y, maxWidth, MUTED);
-            if (record != null) {
+            int next = firstMissingArchive();
+            if (next >= 0) {
+                LoreRecord record = StructureLoreCatalog.byArchiveIndex(next + 1);
+                y = paragraph(graphics,
+                        "Unresolved evidence remains. Cross-references may reveal facilities without requiring a fixed quest sequence.",
+                        x, y, maxWidth, MUTED);
                 y += 4;
-                graphics.drawString(font, Component.literal("Next canonical gap: Archive Entry " + record.archiveIndex()), x, y, CYAN, false);
-                y += 12;
+                graphics.drawString(font,
+                        Component.literal("Earliest canonical gap: Archive Entry " + (record == null ? next + 1 : record.archiveIndex())),
+                        x, y, CYAN, false);
+                y += 13;
             }
         }
-        y += 7;
-        graphics.drawString(font, Component.literal("CURRENT FIELD JOURNAL"), x, y, CYAN, false);
-        y += 13;
-        List<String> summary = researchLines();
-        for (int i = 0; i < Math.min(6, summary.size()) && y < bottom - 10; i++) {
-            y = paragraph(graphics, summary.get(i), x, y, maxWidth, i == 0 ? TEXT : MUTED);
+
+        if (y < bottom - 40) {
+            Reconstruction nextReconstruction = nextIncompleteReconstruction();
+            graphics.drawString(font, Component.literal("ACTIVE THEORY"), x, y, CYAN, false);
+            y += 13;
+            if (nextReconstruction == null) {
+                y = paragraph(graphics, "All five incident reconstructions are authenticated.", x, y, maxWidth, GOOD);
+            } else {
+                int have = StructureLoreCatalog.reconstructionEvidenceCount(loreMask, nextReconstruction);
+                y = paragraph(graphics, nextReconstruction.title() + " — evidence " + have + "/"
+                        + nextReconstruction.evidenceRequired(), x, y, maxWidth, ORANGE);
+                y = paragraph(graphics, nextReconstruction.subtitle(), x, y + 2, maxWidth, MUTED);
+            }
         }
     }
 
     private void renderDataBank(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
-        LoreRecord record = StructureLoreCatalog.byBit(archiveCursor);
+        LoreRecord record = StructureLoreCatalog.byArchiveIndex(archiveCursor + 1);
         if (record == null) return;
         boolean recovered = StructureLoreCatalog.recovered(loreMask, record);
 
-        graphics.drawString(font, Component.literal("ARCHIVE ENTRY " + record.archiveIndex() + "/" + StructureLoreCatalog.RECORD_COUNT), x, y, CYAN, false);
-        graphics.drawString(font, Component.literal(record.chapter()), x + Math.max(120, maxWidth - 128), y, MUTED, false);
+        graphics.drawString(font,
+                Component.literal("ARCHIVE " + record.archiveIndex() + "/" + StructureLoreCatalog.RECORD_COUNT
+                        + " // FILE " + (archiveSection + 1) + "/" + ARCHIVE_SECTIONS),
+                x, y, CYAN, false);
+        graphics.drawString(font, Component.literal(record.timestamp()), x + Math.max(130, maxWidth - 92), y, MUTED, false);
         y += 16;
 
         if (!recovered) {
             graphics.drawString(font, Component.literal("[ RECORD NOT RECOVERED ]"), x, y, LOCKED, false);
             y += 15;
             paragraph(graphics,
-                    "This historical slot is unresolved. Explore Matter Overdrive structures and recover local facility records to reconstruct it.",
+                    "This chronological slot is unresolved. Locate Matter Overdrive facilities and recover their local records to authenticate the missing evidence.",
                     x, y, maxWidth, MUTED);
             return;
         }
 
-        graphics.drawString(font, Component.literal(record.title()), x, y, ORANGE, false);
-        y += 13;
-        graphics.drawString(font, Component.literal(record.facility()), x, y, CYAN, false);
-        y += 12;
-        graphics.drawString(font, Component.literal("SOURCE: " + record.author()), x, y, MUTED, false);
-        y += 18;
-        y = paragraph(graphics, record.summary(), x, y, maxWidth, TEXT);
-        y += 9;
-        y = paragraph(graphics, record.link(), x, y, maxWidth, CYAN);
-        y += 9;
-        if (y < bottom - 20) {
-            graphics.drawString(font, Component.literal("RECOVERY STATUS: AUTHENTICATED"), x, y, GOOD, false);
-            graphics.drawString(font, Component.literal("RECONSTRUCTION: " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT),
-                    x, y + 12, ORANGE, false);
+        if (archiveSection == 0) {
+            graphics.drawString(font, Component.literal(record.title()), x, y, ORANGE, false);
+            y += 13;
+            graphics.drawString(font, Component.literal(record.facility()), x, y, CYAN, false);
+            y += 12;
+            graphics.drawString(font, Component.literal(record.classification()), x, y, MUTED, false);
+            y += 12;
+            graphics.drawString(font, Component.literal("SOURCE: " + record.author()), x, y, MUTED, false);
+            y += 17;
+            graphics.drawString(font, Component.literal("SITE FUNCTION"), x, y, CYAN, false);
+            y += 12;
+            y = paragraph(graphics, record.sitePurpose(), x, y, maxWidth, TEXT);
+            y += 7;
+            if (y < bottom - 20) {
+                graphics.drawString(font, Component.literal("PRIMARY RECORD"), x, y, CYAN, false);
+                y += 12;
+                paragraph(graphics, record.summary(), x, y, maxWidth, TEXT);
+            }
+        } else if (archiveSection == 1) {
+            graphics.drawString(font, Component.literal(record.title()), x, y, ORANGE, false);
+            y += 15;
+            graphics.drawString(font, Component.literal("RECOVERED EXCERPT"), x, y, CYAN, false);
+            y += 13;
+            y = paragraph(graphics, record.excerpt(), x, y, maxWidth, TEXT);
+            y += 8;
+            if (y < bottom - 25) {
+                graphics.drawString(font, Component.literal("PDA FORENSIC ANALYSIS"), x, y, CYAN, false);
+                y += 13;
+                paragraph(graphics, record.analysis(), x, y, maxWidth, MUTED);
+            }
+        } else {
+            graphics.drawString(font, Component.literal(record.title()), x, y, ORANGE, false);
+            y += 15;
+            graphics.drawString(font, Component.literal("INCIDENT IMPLICATION"), x, y, CYAN, false);
+            y += 13;
+            y = paragraph(graphics, record.implication(), x, y, maxWidth, TEXT);
+            y += 9;
+            graphics.drawString(font, Component.literal("CROSS-REFERENCE"), x, y, CYAN, false);
+            y += 13;
+            y = paragraph(graphics, record.link(), x, y, maxWidth, MUTED);
+            y += 9;
+            if (y < bottom - 22) {
+                graphics.drawString(font, Component.literal("RECOVERY STATUS: AUTHENTICATED"), x, y, GOOD, false);
+                graphics.drawString(font,
+                        Component.literal("RECONSTRUCTION: " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT),
+                        x, y + 12, ORANGE, false);
+            }
         }
+    }
+
+    private void renderIncident(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
+        Reconstruction reconstruction = StructureLoreCatalog.reconstructionByIndex(reconstructionCursor);
+        if (reconstruction == null) return;
+        boolean unlocked = StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstruction);
+        int have = StructureLoreCatalog.reconstructionEvidenceCount(loreMask, reconstruction);
+
+        graphics.drawString(font,
+                Component.literal("RECONSTRUCTION " + (reconstructionCursor + 1) + "/"
+                        + StructureLoreCatalog.reconstructions().size()), x, y, CYAN, false);
+        graphics.drawString(font,
+                Component.literal("EVIDENCE " + have + "/" + reconstruction.evidenceRequired()),
+                x + Math.max(128, maxWidth - 92), y, unlocked ? GOOD : ORANGE, false);
+        y += 16;
+        graphics.drawString(font, Component.literal(reconstruction.title()), x, y, unlocked ? ORANGE : LOCKED, false);
+        y += 13;
+        y = paragraph(graphics, reconstruction.subtitle(), x, y, maxWidth, MUTED);
+        y += 7;
+
+        if (!unlocked) {
+            graphics.drawString(font, Component.literal("[ INSUFFICIENT CORROBORATION ]"), x, y, LOCKED, false);
+            y += 15;
+            y = paragraph(graphics,
+                    "This theory remains quarantined until every required source has been independently recovered.",
+                    x, y, maxWidth, MUTED);
+            y += 7;
+            graphics.drawString(font, Component.literal("REQUIRED SOURCE CHAIN"), x, y, CYAN, false);
+            y += 13;
+            for (LoreRecord record : StructureLoreCatalog.archiveRecords()) {
+                if ((reconstruction.requiredMask() & record.mask()) == 0 || y >= bottom - 10) continue;
+                boolean recovered = StructureLoreCatalog.recovered(loreMask, record);
+                graphics.drawString(font,
+                        Component.literal((recovered ? "[✓] " : "[ ] ") + "Archive " + record.archiveIndex() + " — "
+                                + (recovered ? fit(record.facility(), maxWidth - 92) : "UNRESOLVED SOURCE")),
+                        x, y, recovered ? TEXT : LOCKED, false);
+                y += 11;
+            }
+            return;
+        }
+
+        graphics.drawString(font, Component.literal("AUTHENTICATED RECONSTRUCTION"), x, y, GOOD, false);
+        y += 15;
+        y = paragraph(graphics, reconstruction.lead(), x, y, maxWidth, TEXT);
+        y += 7;
+        if (y < bottom - 28) y = paragraph(graphics, reconstruction.evidence(), x, y, maxWidth, TEXT);
+        y += 7;
+        if (y < bottom - 28) y = paragraph(graphics, reconstruction.analysis(), x, y, maxWidth, MUTED);
+        y += 8;
+        if (y < bottom - 20) paragraph(graphics, reconstruction.conclusion(), x, y, maxWidth,
+                reconstruction.id().equals("closed_loop") ? DANGER : ORANGE);
     }
 
     private void renderFacilities(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
@@ -305,15 +448,20 @@ public class DataPadScreen extends Screen {
         graphics.drawString(font, Component.literal("DISCOVERED FACILITY INDEX // " + (facilityPage + 1) + "/2"), x, y, CYAN, false);
         y += 16;
         for (int i = from; i < to && y < bottom - 12; i++) {
-            LoreRecord record = StructureLoreCatalog.byBit(i);
+            LoreRecord record = StructureLoreCatalog.byArchiveIndex(i + 1);
+            if (record == null) continue;
             boolean recovered = StructureLoreCatalog.recovered(loreMask, record);
             String prefix = recovered ? "[✓] " : "[ ] ";
             String name = recovered ? record.facility() : "UNKNOWN FACILITY";
             int color = recovered ? TEXT : LOCKED;
-            graphics.drawString(font, Component.literal(prefix + String.format("%02d", record.archiveIndex()) + "  " + fit(name, maxWidth - 46)), x, y, color, false);
+            graphics.drawString(font,
+                    Component.literal(prefix + String.format("%02d", record.archiveIndex()) + "  " + fit(name, maxWidth - 46)),
+                    x, y, color, false);
             y += 11;
             if (recovered) {
-                graphics.drawString(font, Component.literal("    " + fit(record.chapter(), maxWidth - 24)), x, y, MUTED, false);
+                graphics.drawString(font,
+                        Component.literal("    " + fit(record.timestamp() + " // " + record.chapter(), maxWidth - 24)),
+                        x, y, MUTED, false);
                 y += 11;
             } else {
                 y += 5;
@@ -333,21 +481,28 @@ public class DataPadScreen extends Screen {
             ItemStack contract = contracts.get(i).stack();
             int titleColor = ContractItem.complete(contract) ? GOOD : TEXT;
             String stage = ContractStageSupport.stageLabel(contract);
-            graphics.drawString(font, Component.literal(fit((i + 1) + ". " + ContractItem.title(contract), maxWidth - 70)), x, y, titleColor, false);
+            graphics.drawString(font,
+                    Component.literal(fit((i + 1) + ". " + ContractItem.title(contract), maxWidth - 70)),
+                    x, y, titleColor, false);
             String objective = ContractItem.objectiveText(contract);
             if (!stage.isBlank()) objective = stage + " — " + objective;
-            graphics.drawString(font, Component.literal(fit(objective, Math.max(1, maxWidth - 78))), x + 8, y + 11, MUTED, false);
+            graphics.drawString(font,
+                    Component.literal(fit(objective, Math.max(1, maxWidth - 78))),
+                    x + 8, y + 11, MUTED, false);
             String progress = ContractItem.complete(contract)
                     ? "READY TO REDEEM"
                     : "Progress " + ContractItem.progress(contract) + " / " + ContractItem.goal(contract);
             if (ContractItem.xp(contract) > 0) progress += "   XP " + ContractItem.xp(contract);
-            graphics.drawString(font, Component.literal(fit(progress, Math.max(1, maxWidth - 78))), x + 8, y + 22,
-                    ContractItem.complete(contract) ? GOOD : CYAN, false);
+            graphics.drawString(font,
+                    Component.literal(fit(progress, Math.max(1, maxWidth - 78))),
+                    x + 8, y + 22, ContractItem.complete(contract) ? GOOD : CYAN, false);
             y += 43;
             if (y > bottom - 36) break;
         }
         if (contracts.size() > visible && y <= bottom - 16) {
-            graphics.drawString(font, Component.literal("+ " + (contracts.size() - visible) + " more carried contract(s)"), x, y, MUTED, false);
+            graphics.drawString(font,
+                    Component.literal("+ " + (contracts.size() - visible) + " more carried contract(s)"),
+                    x, y, MUTED, false);
         }
     }
 
@@ -426,26 +581,53 @@ public class DataPadScreen extends Screen {
         return y;
     }
 
-    private int firstRecoveredOrZero() {
-        for (int i = 0; i < StructureLoreCatalog.RECORD_COUNT; i++) {
-            if ((loreMask & (1 << i)) != 0) return i;
+    private int firstRecoveredArchiveOrZero() {
+        for (int archive = 1; archive <= StructureLoreCatalog.RECORD_COUNT; archive++) {
+            LoreRecord record = StructureLoreCatalog.byArchiveIndex(archive);
+            if (StructureLoreCatalog.recovered(loreMask, record)) return archive - 1;
         }
         return 0;
     }
 
-    private int firstMissing() {
-        for (int i = 0; i < StructureLoreCatalog.RECORD_COUNT; i++) {
-            if ((loreMask & (1 << i)) == 0) return i;
+    private int firstMissingArchive() {
+        for (int archive = 1; archive <= StructureLoreCatalog.RECORD_COUNT; archive++) {
+            LoreRecord record = StructureLoreCatalog.byArchiveIndex(archive);
+            if (!StructureLoreCatalog.recovered(loreMask, record)) return archive - 1;
         }
         return -1;
+    }
+
+    private int firstIncompleteReconstructionOrLast() {
+        List<Reconstruction> reconstructions = StructureLoreCatalog.reconstructions();
+        for (int i = 0; i < reconstructions.size(); i++) {
+            if (!StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstructions.get(i))) return i;
+        }
+        return Math.max(0, reconstructions.size() - 1);
+    }
+
+    private Reconstruction nextIncompleteReconstruction() {
+        for (Reconstruction reconstruction : StructureLoreCatalog.reconstructions()) {
+            if (!StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstruction)) return reconstruction;
+        }
+        return null;
     }
 
     private int recoveredCount() {
         return Integer.bitCount(loreMask);
     }
 
-    private int panelLeft() { return Math.max(8, width / 2 - Math.min(270, Math.max(210, width / 2 - 10))); }
-    private int panelRight() { return Math.min(width - 8, width / 2 + Math.min(270, Math.max(210, width / 2 - 10))); }
+    private int unlockedReconstructions() {
+        return StructureLoreCatalog.unlockedReconstructionCount(loreMask);
+    }
+
+    private int panelLeft() {
+        return Math.max(8, width / 2 - Math.min(270, Math.max(210, width / 2 - 10)));
+    }
+
+    private int panelRight() {
+        return Math.min(width - 8, width / 2 + Math.min(270, Math.max(210, width / 2 - 10)));
+    }
+
     private int panelTop() { return 8; }
     private int panelBottom() { return height - 8; }
 
