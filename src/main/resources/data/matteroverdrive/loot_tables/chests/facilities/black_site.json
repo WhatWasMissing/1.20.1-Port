@@ -2,61 +2,33 @@
   "type": "minecraft:chest",
   "pools": [
     {
-      "rolls": {
-        "min": 3,
-        "max": 5,
-        "type": "minecraft:uniform"
-      },
+      "rolls": { "min": 3, "max": 5, "type": "minecraft:uniform" },
       "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:trilithium_crystal",
-          "weight": 4
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:isolinear_circuit_mk3",
-          "weight": 4
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:weapon_module_barrel_damage",
-          "weight": 1
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:chassis_optics_precision",
-          "weight": 1
-        }
+        { "type": "minecraft:item", "name": "matteroverdrive:trilithium_crystal", "weight": 4 },
+        { "type": "minecraft:item", "name": "matteroverdrive:isolinear_circuit_mk3", "weight": 4 },
+        { "type": "minecraft:item", "name": "matteroverdrive:weapon_module_barrel_damage", "weight": 1 },
+        { "type": "minecraft:item", "name": "matteroverdrive:chassis_optics_precision", "weight": 1 }
       ]
     },
     {
       "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "matteroverdrive:facility_research",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{FacilityArchive:\"BLACK_SITE\"}" }]
+      }]
+    },
+    {
+      "rolls": 1,
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.60 }],
       "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:facility_research",
-          "functions": [
-            {
-              "function": "minecraft:set_nbt",
-              "tag": "{FacilityArchive:\"BLACK_SITE\"}"
-            }
-          ]
-        }
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"orpheus_redaction_key\"}"}]},
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"orpheus_director_memo\"}"}]}
       ]
     },
     {
-      "rolls": {
-        "min": 1,
-        "max": 2,
-        "type": "minecraft:uniform"
-      },
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:emergency_ration"
-        }
-      ]
+      "rolls": { "min": 1, "max": 2, "type": "minecraft:uniform" },
+      "entries": [{ "type": "minecraft:item", "name": "matteroverdrive:emergency_ration" }]
     }
   ]
 }
