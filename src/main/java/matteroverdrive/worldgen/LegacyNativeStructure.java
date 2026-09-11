@@ -38,16 +38,11 @@ public final class LegacyNativeStructure extends Structure {
             int surfaceY = context.chunkGenerator().getBaseHeight(
                     x, z, heightmap, context.heightAccessor(), context.randomState());
 
-            // Vanilla-style exploration rule: every legacy site must be naturally
-            // approachable from ordinary terrain. The old cargo ship floated more
-            // than twenty blocks above the landscape and therefore required pillars,
-            // flight or block placement just to enter. It now rests on/just above the
-            // local surface like a grounded derelict transport.
-            int y = switch (kind) {
-                case CARGO_SHIP -> surfaceY + 1;
-                case SAND_PIT -> surfaceY;
-                default -> surfaceY;
-            };
+            // Every legacy site is authored from a naturally approachable terrain
+            // level. The underwater base uses the ocean floor; the other five use
+            // world surface. No structure requires flight, pillaring or mining to
+            // reach its intended entrance.
+            int y = surfaceY;
 
             BlockPos origin = new BlockPos(x, y, z);
             long elapsed = System.nanoTime() - started;
@@ -59,7 +54,7 @@ public final class LegacyNativeStructure extends Structure {
                         kind, context.chunkPos(), origin, surfaceY);
             }
             return Optional.of(new GenerationStub(origin,
-                    builder -> builder.addPiece(new LegacyNativeStructurePiece(kind, origin))));
+                    builder -> builder.addPiece(new LegacyVanillaStructurePiece(kind, origin))));
         } catch (RuntimeException | Error error) {
             LOGGER.error("M2 STRUCTURE ERROR: generation-point lookup failed kind={} chunk={}",
                     kind, context.chunkPos(), error);
