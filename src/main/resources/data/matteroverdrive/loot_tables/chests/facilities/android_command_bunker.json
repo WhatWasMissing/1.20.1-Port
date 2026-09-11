@@ -2,61 +2,33 @@
   "type": "minecraft:chest",
   "pools": [
     {
-      "rolls": {
-        "min": 3,
-        "max": 5,
-        "type": "minecraft:uniform"
-      },
+      "rolls": { "min": 3, "max": 5, "type": "minecraft:uniform" },
       "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:rogue_android_part_arms",
-          "weight": 4
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:rogue_android_part_head",
-          "weight": 4
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:battery",
-          "weight": 1
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:weapon_module_holo_sights",
-          "weight": 1
-        }
+        { "type": "minecraft:item", "name": "matteroverdrive:rogue_android_part_arms", "weight": 4 },
+        { "type": "minecraft:item", "name": "matteroverdrive:rogue_android_part_head", "weight": 4 },
+        { "type": "minecraft:item", "name": "matteroverdrive:battery", "weight": 1 },
+        { "type": "minecraft:item", "name": "matteroverdrive:weapon_module_holo_sights", "weight": 1 }
       ]
     },
     {
       "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "matteroverdrive:facility_research",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{FacilityArchive:\"ANDROID_COMMAND_BUNKER\"}" }]
+      }]
+    },
+    {
+      "rolls": 1,
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.55 }],
       "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:facility_research",
-          "functions": [
-            {
-              "function": "minecraft:set_nbt",
-              "tag": "{FacilityArchive:\"ANDROID_COMMAND_BUNKER\"}"
-            }
-          ]
-        }
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"bastion_kade_draft\"}"}]},
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"bastion_armory_notice\"}"}]}
       ]
     },
     {
-      "rolls": {
-        "min": 1,
-        "max": 2,
-        "type": "minecraft:uniform"
-      },
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:emergency_ration"
-        }
-      ]
+      "rolls": { "min": 1, "max": 2, "type": "minecraft:uniform" },
+      "entries": [{ "type": "minecraft:item", "name": "matteroverdrive:emergency_ration" }]
     }
   ]
 }
