@@ -4,27 +4,42 @@ The approved Matter Overdrive PDA direction is a natural neural voice-actor perf
 
 ## Catalogue contract
 
-The authoritative voice IDs and transcripts are now stored in both:
+The prerecorded campaign/facility/field-log bank is defined by:
 
 - `src/main/java/matteroverdrive/pda/PdaVoiceLineCatalog.java`
 - `src/main/resources/assets/matteroverdrive/pda_voice/voice_bank_manifest.json`
 
-The validator requires the two files to have exactly the same IDs in the same order. The bank currently contains **64 authored lines**:
+Major technology discovery callouts are authored beside their full codex entries in:
+
+- `src/main/java/matteroverdrive/world/TechnologyLoreCatalog.java`
+
+This avoids maintaining the same machine/item text in two handwritten catalogues. `PdaVoiceLineCatalog.line(...)` resolves both the core bank and `tech_*` technology IDs at runtime, so a missing prerecorded technology WAV automatically falls through to local OS speech, Minecraft Narrator and captions.
+
+For voice production, run:
+
+```bat
+EXPORT_PDA_VOICE_QUEUE.bat
+```
+
+That writes `tools/pda_voicebank/voice_generation_queue.json` by merging the stable packaged manifest with every technology discovery line. The exporter validates duplicate/empty IDs and reports the live catalogue counts, so future technology additions are automatically included.
+
+The packaged bank currently starts with the original 64 authored lines:
 
 - 16 core/system/campaign callouts;
 - 16 unique facility-discovery callouts, one for every canonical structure;
 - 32 physical-lore interpretation lines, one for every optional recovered field record.
 
-Do not maintain another handwritten ID list here. Use the manifest when generating or auditing audio so future additions remain scalable.
+The generated production queue then appends all current `tech_*` discovery callouts for functional machines, networks, reactor/anomaly hardware, weapons, Android/drone systems, field tools, storage media and progression equipment.
 
 ## Workflow
 
-1. Generate or record a natural performance for each manifest line.
-2. Name each source `<line_id>.mp3` (WAV/OGG/FLAC/M4A are also accepted).
-3. Put sources in `tools/pda_voicebank/raw/`.
-4. Run `PROCESS_PDA_VOICE_BANK.bat`.
-5. Review the generated 48 kHz mono WAVs in `src/main/resources/assets/matteroverdrive/pda_voice/`.
-6. Compare important warnings and several ordinary lines against the approved ICARUS synthetic-VA reference before shipping.
+1. Run `EXPORT_PDA_VOICE_QUEUE.bat` to produce the complete live generation queue.
+2. Generate or record a natural performance for each queue line that does not already have an approved master.
+3. Name each source `<line_id>.mp3` (WAV/OGG/FLAC/M4A are also accepted).
+4. Put sources in `tools/pda_voicebank/raw/`.
+5. Run `PROCESS_PDA_VOICE_BANK.bat`.
+6. Review the generated 48 kHz mono WAVs in `src/main/resources/assets/matteroverdrive/pda_voice/` or keep them in the local/modpack override bank.
+7. Compare important warnings and several ordinary lines against the approved ICARUS synthetic-VA reference before shipping.
 
 The processor preserves the dry performance and adds only a quiet synthetic character layer: opposing micro-pitch ghosts, millisecond offsets, communications EQ/compression, tiny digital reflection and the Matter Overdrive PDA identification chime.
 
@@ -36,9 +51,11 @@ Core lines include startup, database, hazard, social-progression and Incident-re
 
 `lore_*` lines are short PDA interpretations of optional physical notes found in crates, salvage and archive caches. The full recovered note remains readable in the physical item and the PDA `FIELD LOGS` tab; the voice should summarize rather than recite the entire document.
 
+`tech_*` lines play only when that technology family is first authenticated for that player/world. Variant items deliberately share a canonical record where separate narration would be noise: crate colours, Android body parts, chassis modules, storage-cell tiers, machine upgrades, security media, weapon modules, Tritanium tools and Tritanium armour are grouped into families.
+
 ## Runtime fallback
 
-`PdaEmbeddedAudio` tries the processed bank first, then `config/matteroverdrive/pda_voice/<line_id>.wav`, local OS TTS, Minecraft Narrator and captions. Missing audio must therefore never break gameplay or hide information.
+`PdaEmbeddedAudio` tries a processed prerecorded WAV first, then `config/matteroverdrive/pda_voice/<line_id>.wav`, local OS TTS, Minecraft Narrator and captions. Missing audio must therefore never break gameplay or hide information.
 
 This is why binary voice assets do not need to be committed to GitHub. A local/modpack voice bank can be injected after the normal Gradle build and the Java catalogue will still work when some or all recordings are absent.
 
