@@ -12,11 +12,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Locale;
 
-/**
- * Serializes short PDA callouts so spoken lines and captions never overlap.
- * It also owns the transient facility banner and persistent hazard state used by
- * PresentationOverlay.
- */
+/** Serializes PDA callouts and owns transient facility/hazard presentation state. */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class ClientPdaNotificationManager {
     public record FacilityBanner(String siteId, String facility, String recordTitle,
@@ -24,7 +20,6 @@ public final class ClientPdaNotificationManager {
     public record Hazard(String id, String title, String detail, int severity) {
         public boolean active() { return id != null && !id.isBlank() && !"none".equals(id); }
     }
-
     private record Pending(String lineId, String text, int priority) { }
 
     private static final Deque<Pending> QUEUE = new ArrayDeque<>();
@@ -32,7 +27,6 @@ public final class ClientPdaNotificationManager {
     private static int activeTicks;
     private static int activeAge;
     private static String lastQueuedId = "";
-
     private static String bannerSite = "";
     private static String bannerFacility = "";
     private static String bannerRecord = "";
@@ -40,7 +34,6 @@ public final class ClientPdaNotificationManager {
     private static int bannerArchiveIndex;
     private static int bannerTicks;
     private static int bannerAge;
-
     private static Hazard hazard = new Hazard("none", "", "", 0);
 
     private ClientPdaNotificationManager() {}
@@ -80,11 +73,9 @@ public final class ClientPdaNotificationManager {
     }
 
     public static synchronized FacilityBanner banner() {
-        return bannerTicks <= 0 ? null : new FacilityBanner(
-                bannerSite, bannerFacility, bannerRecord, bannerArchiveIndex,
-                bannerClassification, bannerAge, bannerTicks);
+        return bannerTicks <= 0 ? null : new FacilityBanner(bannerSite, bannerFacility, bannerRecord,
+                bannerArchiveIndex, bannerClassification, bannerAge, bannerTicks);
     }
-
     public static synchronized Hazard hazard() { return hazard; }
     public static synchronized String caption() { return active == null ? "" : active.text(); }
     public static synchronized int captionAge() { return activeAge; }
@@ -111,12 +102,7 @@ public final class ClientPdaNotificationManager {
                 if (active != null || !QUEUE.isEmpty() || bannerTicks > 0) clear();
                 return;
             }
-
-            if (bannerTicks > 0) {
-                bannerTicks--;
-                bannerAge++;
-            }
-
+            if (bannerTicks > 0) { bannerTicks--; bannerAge++; }
             if (active != null) {
                 activeTicks--;
                 activeAge++;
@@ -127,28 +113,25 @@ public final class ClientPdaNotificationManager {
                     PdaNarrationController.stop();
                 }
             }
-
-            if (active == null && !QUEUE.isEmpty()) startNext(minecraft);
+            // Long-form dossier/NPC narration has priority. Closing/changing the
+            // page calls PdaNarrationController.stop(), after which queued alerts resume.
+            if (active == null && !QUEUE.isEmpty() && !PdaNarrationController.isSpeaking()) startNext(minecraft);
         }
     }
 
     private static void startNext(Minecraft minecraft) {
         active = QUEUE.removeFirst();
         activeAge = 0;
-
         if ("database_ready".equals(active.lineId()) || "field_link".equals(active.lineId())) {
             PdaEmbeddedAudio.playUi("ui_startup");
         } else {
             PdaEmbeddedAudio.playUi("ui_record");
         }
-
         int offlineDuration = PdaEmbeddedAudio.playVoice(active.lineId());
         if (offlineDuration > 0) {
             activeTicks = offlineDuration + 14;
             return;
         }
-
-        // Cross-platform fallback when no local OS speech engine is available.
         if (minecraft.getNarrator().isActive()) PdaNarrationController.read("P D A. " + active.text());
         activeTicks = Math.max(70, Math.min(260, 30 + active.text().length() * 2));
     }
@@ -156,9 +139,9 @@ public final class ClientPdaNotificationManager {
     private static int priority(String lineId) {
         return switch (lineId) {
             case "closed_loop" -> 10;
-            case "icarus_warning", "anomaly_warning" -> 8;
+            case "icarus_warning", "anomaly_warning", "signal_echo" -> 8;
             case "orpheus_security", "matter_resonance" -> 7;
-            case "reconstruction_complete" -> 6;
+            case "reconstruction_complete", "pressure_warning", "structural_warning" -> 6;
             case "field_link", "synthetic_contact" -> 5;
             case "record_recovered" -> 3;
             default -> 1;
