@@ -1,10 +1,13 @@
 package matteroverdrive.item;
 
+import matteroverdrive.MatterOverdrive;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.world.AmbientLoreCatalog;
 import matteroverdrive.world.AmbientLoreSavedData;
 import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -58,16 +61,26 @@ public final class RecoveredLoreFragmentItem extends Item {
 
             if (first) {
                 serverPlayer.giveExperiencePoints(15);
+                int recovered = data.count(serverPlayer.getUUID());
                 serverPlayer.sendSystemMessage(Component.literal("Archive authenticated. +15 XP • Optional lore "
-                        + data.count(serverPlayer.getUUID()) + "/" + AmbientLoreCatalog.count())
+                        + recovered + "/" + AmbientLoreCatalog.count())
                         .withStyle(ChatFormatting.GREEN));
                 ModNetwork.sendPdaVoice(serverPlayer, entry.voiceLine());
+                if (recovered >= 16) grant(serverPlayer, "field_archivist");
+                if (recovered >= AmbientLoreCatalog.count()) grant(serverPlayer, "every_scrap_matters");
             } else {
                 serverPlayer.sendSystemMessage(Component.literal("Duplicate archive copy. Existing PDA record retained.")
                         .withStyle(ChatFormatting.DARK_GRAY));
             }
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+    }
+
+    private static void grant(ServerPlayer player, String path) {
+        Advancement advancement = player.server.getAdvancements().getAdvancement(
+                ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "campaign/" + path));
+        if (advancement == null || player.getAdvancements().getOrStartProgress(advancement).isDone()) return;
+        for (String criterion : advancement.getCriteria().keySet()) player.getAdvancements().award(advancement, criterion);
     }
 
     @Override
