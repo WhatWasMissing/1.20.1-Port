@@ -1,6 +1,54 @@
 # Matter Overdrive Tech Overhaul Test Plan
 
-This file tracks focused runtime checks for `testing/tech-overhaul`.
+This file tracks focused runtime checks for the active technology/gameplay expansion work.
+
+## Field Operations progression pass
+
+The Data Pad now exposes repeatable research-stage operations that connect existing generated technology sites and anomaly gameplay to three doctrines: Recovery, Systems, and Anomaly.
+
+### Assignment and persistence
+
+- Run `/matteroverdrive research field status` before assigning anything; confirm it reports no active operation.
+- Run `/matteroverdrive research field assign recovery`, `systems`, and `anomaly` at several research stages.
+- Confirm only operations valid for the player's current `ResearchProgression.Stage` are selected.
+- Confirm requesting a doctrine with no eligible operation falls back only when appropriate and never grants a future-stage objective.
+- Save/reload the world and reconnect; confirm active operation, progress, and completion count persist.
+- Confirm assigning another doctrine replaces the current operation cleanly without duplicating a reward.
+
+### Recovery doctrine
+
+- Assign Recovery and visit matching `abandoned_matter_lab` / `android_relay_outpost` compact sites.
+- Confirm repeat visits to valid site instances advance the operation but the one-time discovery dossier/XP path still only rewards first discovery of that exact site position.
+- Complete a Recovery operation and confirm one recovered Android artifact/protocol is awarded.
+- Complete several Recovery operations and verify protocol selection varies deterministically rather than producing an invalid `NONE` artifact.
+
+### Systems doctrine
+
+- Assign Systems and visit matching `field_logistics_depot` / `matter_observatory` sites.
+- Confirm the operation advances from the same bounded local site recognizer used by the research discovery system.
+- Complete several operations and confirm rewards rotate between Speed and periodic Parallel Processing upgrades.
+
+### Anomaly doctrine
+
+- At Fusion Research, assign Anomaly and visit matching `anomaly_research_site` structures.
+- At Anomaly Engineering, verify `Horizon Exposure` can be selected.
+- Enter a live event horizon with Horizon Exposure active and confirm it completes without requiring a contract item.
+- Verify normal anomaly contracts still progress in parallel when held.
+- Complete several Anomaly operations and confirm Dilithium rewards plus periodic Failsafe upgrades.
+
+### Data Pad / diagnostics
+
+- Open the Data Pad and confirm the journal has a `Field Operations` section.
+- Verify title, doctrine, progress/goal, description, and completed-operation count match `/matteroverdrive research field status`.
+- Confirm `/matteroverdrive research status` includes the active field operation alongside campaign/site state.
+- Test with two players and verify operation state/rewards remain per-player.
+
+### Performance and abuse checks
+
+- Confirm no global mission tick manager was introduced; operation progress is event-driven from existing discovery/anomaly events.
+- Walk across chunk boundaries near a compact site and verify discovery recognition remains bounded to the existing local 25x13x25 scan cadence.
+- Confirm one site recognition cannot award the one-time discovery dossier repeatedly.
+- Confirm completion XP scales to a bounded maximum and operation completion count cannot overflow normal progression state.
 
 ## Hybrid conduit visual/junction pass
 
