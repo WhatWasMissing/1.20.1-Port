@@ -1,0 +1,14 @@
+{
+  "parent": "matteroverdrive:campaign/field_archivist",
+  "display": {
+    "icon": {"item": "matteroverdrive:data_pad"},
+    "title": {"text": "Every Scrap Matters"},
+    "description": {"text": "Authenticate all 32 optional facility records."},
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {"earned": {"trigger": "minecraft:impossible"}},
+  "rewards": {"experience": 500}
+}
