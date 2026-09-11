@@ -1,0 +1,7 @@
+{
+  "parent": "matteroverdrive:campaign/first_contact",
+  "display": {"icon":{"item":"matteroverdrive:data_pad"},"title":{"text":"Field Liaison"},"description":{"text":"Earn enough trust for contemporary recovery teams to share unsanitized field context."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {"earned":{"trigger":"minecraft:impossible"}},
+  "requirements": [["earned"]],
+  "rewards":{"experience":100}
+}
