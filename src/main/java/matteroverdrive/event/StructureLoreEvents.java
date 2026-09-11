@@ -1,6 +1,7 @@
 package matteroverdrive.event;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.network.ModNetwork;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.world.StructureLoreCatalog;
 import matteroverdrive.world.StructureLoreCatalog.LoreRecord;
@@ -73,7 +74,10 @@ public final class StructureLoreEvents {
             player.sendSystemMessage(Component.literal(record.timestamp() + " // " + record.chapter())
                     .withStyle(ChatFormatting.DARK_AQUA));
 
-            announceNewReconstructions(player, oldMask, newMask);
+            boolean reconstructionUnlocked = announceNewReconstructions(player, oldMask, newMask);
+            if (!reconstructionUnlocked) {
+                ModNetwork.sendPdaVoice(player, voiceLineFor(record.id()));
+            }
 
             if (data.complete(player.getUUID())) {
                 player.giveExperiencePoints(500);
@@ -84,9 +88,21 @@ public final class StructureLoreEvents {
                         .withStyle(ChatFormatting.GOLD));
                 player.sendSystemMessage(Component.literal("Standing instruction retained: DO NOT COMPLETE THE LOOP.")
                         .withStyle(ChatFormatting.RED));
+                ModNetwork.sendPdaVoice(player, "closed_loop");
             }
             return;
         }
+    }
+
+    private static String voiceLineFor(String site) {
+        return switch (site == null ? "" : site) {
+            case "black_site", "android_command_bunker", "synthetic_manufacturing_plant" -> "orpheus_security";
+            case "fusion_research_complex" -> "icarus_warning";
+            case "anomaly_quarantine_site", "underwater_base" -> "anomaly_warning";
+            case "android_house", "autonomous_drone_foundry" -> "synthetic_contact";
+            case "matter_refinery", "deep_matter_vault", "sand_pit" -> "matter_resonance";
+            default -> "record_recovered";
+        };
     }
 
     private static ItemStack createDossier(LoreRecord record, int progress) {
@@ -128,7 +144,8 @@ public final class StructureLoreEvents {
         return StringTag.valueOf(Component.Serializer.toJson(Component.literal(text).withStyle(style)));
     }
 
-    private static void announceNewReconstructions(ServerPlayer player, int oldMask, int newMask) {
+    private static boolean announceNewReconstructions(ServerPlayer player, int oldMask, int newMask) {
+        boolean announced = false;
         for (Reconstruction reconstruction : StructureLoreCatalog.reconstructions()) {
             boolean wasUnlocked = StructureLoreCatalog.reconstructionUnlocked(oldMask, reconstruction);
             boolean isUnlocked = StructureLoreCatalog.reconstructionUnlocked(newMask, reconstruction);
@@ -137,7 +154,10 @@ public final class StructureLoreEvents {
             player.sendSystemMessage(Component.literal("ARCHIVE RECONSTRUCTION COMPLETE: " + reconstruction.title())
                     .withStyle(ChatFormatting.GOLD));
             player.sendSystemMessage(Component.literal(reconstruction.subtitle()).withStyle(ChatFormatting.YELLOW));
+            announced = true;
         }
+        if (announced) ModNetwork.sendPdaVoice(player, "reconstruction_complete");
+        return announced;
     }
 
     private static ItemStack createClosedLoopArtifact() {
