@@ -13,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +22,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +35,7 @@ import java.util.UUID;
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class StructureLoreEvents {
     private static final Map<UUID, Long> LAST_SCANNED_CELL = new HashMap<>();
+    private static final int ANOMALY_WARNING_RADIUS = 8;
 
     private StructureLoreEvents() {}
 
@@ -40,11 +43,8 @@ public final class StructureLoreEvents {
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
         if (player.tickCount % 20 != 0) return;
-
-        BlockPos playerPos = player.blockPosition();
-        // Match the population layer: an eight-block movement cell catches a player
-        // entering a structure within one chunk without scanning while standing still.
-        long cell = BlockPos.asLong(playerPos.getX() >> 3, playerPos.getY() >> 3, playerPos.getZ() >> 3);
+        BlockPos pos = player.blockPosition();
+        long cell = BlockPos.asLong(pos.getX() >> 3, pos.getY() >> 3, pos.getZ() >> 3);
         Long previous = LAST_SCANNED_CELL.put(player.getUUID(), cell);
         if (previous != null && previous == cell) return;
         scan(player);
@@ -58,9 +58,18 @@ public final class StructureLoreEvents {
     private static void scan(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) return;
         BlockPos pos = player.blockPosition();
+        boolean anomalyNearby = nearNaturalAnomaly(level, pos);
+        if (anomalyNearby) {
+            ModNetwork.sendEnvironmentalHazard(player, "gravitational_anomaly",
+                    "GRAVITATIONAL DISTORTION",
+                    "Event-horizon exposure risk. Maintain a clear escape vector.", 3);
+        }
+
         for (LoreRecord record : StructureLoreCatalog.records()) {
             StructureStart start = level.structureManager().getStructureWithPieceAt(pos, record.structureKey());
             if (start == null || !start.isValid()) continue;
+
+            if (!anomalyNearby) sendStructureHazard(player, record.id());
 
             StructureLoreSavedData data = StructureLoreSavedData.get(level);
             int oldMask = data.mask(player.getUUID());
@@ -77,6 +86,9 @@ public final class StructureLoreEvents {
                     .withStyle(ChatFormatting.AQUA));
             player.sendSystemMessage(Component.literal(record.timestamp() + " // " + record.chapter())
                     .withStyle(ChatFormatting.DARK_AQUA));
+
+            ModNetwork.sendFacilityDiscovery(player, record.id(), record.facility(), record.title(),
+                    record.archiveIndex(), record.classification());
 
             boolean reconstructionUnlocked = announceNewReconstructions(player, oldMask, newMask);
             if (!reconstructionUnlocked) {
@@ -96,6 +108,50 @@ public final class StructureLoreEvents {
             }
             return;
         }
+
+        if (!anomalyNearby) ModNetwork.sendEnvironmentalHazard(player, "none", "", "", 0);
+    }
+
+    private static void sendStructureHazard(ServerPlayer player, String site) {
+        switch (site == null ? "" : site) {
+            case "black_site", "android_command_bunker", "synthetic_manufacturing_plant", "quantum_relay_station" ->
+                    ModNetwork.sendEnvironmentalHazard(player, "legacy_security",
+                            "LEGACY SECURITY GRID", "Automated threat response remains active.", 2);
+            case "fusion_research_complex" ->
+                    ModNetwork.sendEnvironmentalHazard(player, "icarus_containment",
+                            "ICARUS CONTAINMENT FIELD", "Historical shutdown integrity is not trustworthy.", 3);
+            case "anomaly_quarantine_site" ->
+                    ModNetwork.sendEnvironmentalHazard(player, "anomaly_containment",
+                            "ANOMALY CONTAINMENT ZONE", "Resonance and gravity readings are outside baseline.", 2);
+            case "matter_refinery", "deep_matter_vault", "sand_pit" ->
+                    ModNetwork.sendEnvironmentalHazard(player, "m0_resonance",
+                            "M-0 RESONANCE", "Pattern provenance and local timestamps may be unreliable.", 2);
+            case "underwater_base" ->
+                    ModNetwork.sendEnvironmentalHazard(player, "pressure_damage",
+                            "PRESSURE-COMPROMISED HABITAT", "Failed seals and flooded sections may remain.", 1);
+            case "crashed_ship", "cargo_ship", "orbital_recovery_array" ->
+                    ModNetwork.sendEnvironmentalHazard(player, "structural_damage",
+                            "STRUCTURAL DAMAGE", "Unstable wreckage detected. Verify the return route.", 1);
+            default -> ModNetwork.sendEnvironmentalHazard(player, "none", "", "", 0);
+        }
+    }
+
+    private static boolean nearNaturalAnomaly(ServerLevel level, BlockPos center) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        int r2 = ANOMALY_WARNING_RADIUS * ANOMALY_WARNING_RADIUS;
+        for (int dx = -ANOMALY_WARNING_RADIUS; dx <= ANOMALY_WARNING_RADIUS; dx++) {
+            for (int dy = -ANOMALY_WARNING_RADIUS; dy <= ANOMALY_WARNING_RADIUS; dy++) {
+                for (int dz = -ANOMALY_WARNING_RADIUS; dz <= ANOMALY_WARNING_RADIUS; dz++) {
+                    if (dx * dx + dy * dy + dz * dz > r2) continue;
+                    cursor.set(center.getX() + dx, center.getY() + dy, center.getZ() + dz);
+                    if (!level.hasChunkAt(cursor)) continue;
+                    ResourceLocation key = ForgeRegistries.BLOCKS.getKey(level.getBlockState(cursor).getBlock());
+                    if (key != null && MatterOverdrive.MOD_ID.equals(key.getNamespace())
+                            && "gravitational_anomaly".equals(key.getPath())) return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static String voiceLineFor(String site) {
