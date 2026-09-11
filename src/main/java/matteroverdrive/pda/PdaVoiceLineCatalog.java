@@ -3,12 +3,7 @@ package matteroverdrive.pda;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Original short-form PDA callouts for the Overdrive Incident campaign.
- *
- * These are intentionally concise situational advisories rather than readings of
- * whole archive pages. Long-form records still use the Data Pad read-aloud path.
- */
+/** Original short-form PDA callouts for the Overdrive Incident campaign. */
 public final class PdaVoiceLineCatalog {
     private static final Map<String, String> LINES = new LinkedHashMap<>();
 
@@ -23,6 +18,12 @@ public final class PdaVoiceLineCatalog {
                 "Caution. M-zero resonance detected. Do not assume duplicated matter, synthetic memory, or impossible timestamps are causally local.");
         LINES.put("anomaly_warning",
                 "Warning. Gravitational distortion is elevated. Keep a clear return route and avoid unshielded event-horizon exposure.");
+        LINES.put("pressure_warning",
+                "Caution. Pressure-compromised habitat detected. Bulkheads and flooded sections may no longer match the original emergency route.");
+        LINES.put("structural_warning",
+                "Structural integrity is degraded. Treat open hull sections as impact damage, not entrances, and verify a return path before descending.");
+        LINES.put("signal_echo",
+                "Acausal telemetry signature detected. Local timestamps may describe events that have not occurred yet. Archive the signal before trusting it.");
         LINES.put("orpheus_security",
                 "ORPHEUS security protocol detected. Legacy authorization is still being enforced. The organization that issued it is not required to still exist.");
         LINES.put("icarus_warning",
