@@ -150,7 +150,8 @@ public final class ClientPdaNotificationManager {
             case "closed_loop" -> 10;
             case "icarus_warning", "anomaly_warning", "signal_echo" -> 8;
             case "orpheus_security", "matter_resonance" -> 7;
-            case "reconstruction_complete", "pressure_warning", "structural_warning" -> 6;
+            case "reconstruction_complete", "pressure_warning", "structural_warning",
+                    "field_liaison", "synthetic_liaison", "incident_analyst" -> 6;
             case "field_link", "synthetic_contact" -> 5;
             case "record_recovered" -> 3;
             default -> 1;
