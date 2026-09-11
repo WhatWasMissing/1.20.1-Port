@@ -50,7 +50,7 @@ Three advancements use `minecraft:impossible` criteria and are awarded by author
 - **Synthetic Liaison** — Synthetic Trust >= 8.
 - **Incident Analyst** — Archive Insight >= 18.
 
-This prevents inventory or client spoofing from granting social/progression milestones.
+Each first unlock also queues a PDA milestone acknowledgement. This prevents inventory or client spoofing from granting social/progression milestones while keeping the result visible in both vanilla advancements and the PDA presentation layer.
 
 ## Expanded advancement tree
 
@@ -69,7 +69,7 @@ The item-driven branches reward actual Matter Overdrive system coverage rather t
 
 ## PDA voice-bank architecture
 
-The canonical short-form bank remains 13 line IDs. The approved production direction is a natural neural VA performance with synthetic post-processing based on the accepted ICARUS sample.
+The canonical short-form bank now contains **16 line IDs**: the original discovery/hazard/archive set plus `field_liaison`, `synthetic_liaison` and `incident_analyst`. The approved production direction is a natural neural VA performance with synthetic post-processing based on the accepted ICARUS sample.
 
 Runtime fallback order is now:
 1. processed neural-VA WAV from `assets/matteroverdrive/pda_voice/<line_id>.wav`;
@@ -78,7 +78,7 @@ Runtime fallback order is now:
 4. Minecraft Narrator;
 5. on-screen caption remains available regardless of audio.
 
-The manifest is `src/main/resources/assets/matteroverdrive/pda_voice/voice_bank_manifest.json`.
+The manifest is `src/main/resources/assets/matteroverdrive/pda_voice/voice_bank_manifest.json` and the reproducible processor is `tools/pda_voicebank/process_voice_bank.py` / `PROCESS_PDA_VOICE_BANK.bat`.
 
 The ICARUS processed sample approved during development is the mix reference: natural VA timing first, restrained synthetic double/ghost layers and communications processing second. The synthetic effect should never damage intelligibility.
 
