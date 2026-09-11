@@ -31,7 +31,15 @@ public final class FrontierSiteStructure extends Structure {
         int layout=Math.floorMod(context.chunkPos().x*1103515245 ^ context.chunkPos().z*12345 ^ kind.ordinal()*7919,3);
         BlockPos origin=new BlockPos(x,y,z);
         LOGGER.debug("M2 FRONTIER TRACE: exploration-native kind={} chunk={} origin={} layout={}",kind,context.chunkPos(),origin,layout);
-        return Optional.of(new GenerationStub(origin,builder -> builder.addPiece(new FrontierExplorationStructurePiece(kind,origin,layout))));
+        return Optional.of(new GenerationStub(origin,builder -> {
+            builder.addPiece(new FrontierExplorationStructurePiece(kind,origin,layout));
+            // Layout 2 carries a rare raised archive inside the core room. It is an
+            // optional reward branch and never replaces the normal entrance/core path.
+            if(layout==2) {
+                builder.addPiece(new RareArchiveMezzaninePiece(origin,
+                        kind.name().toLowerCase(java.util.Locale.ROOT)));
+            }
+        }));
     }
 
     @Override public StructureType<?> type(){return switch(kind){
