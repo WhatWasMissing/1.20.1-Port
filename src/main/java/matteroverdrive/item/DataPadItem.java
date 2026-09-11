@@ -87,6 +87,10 @@ public class DataPadItem extends Item {
                     .replace('_', ' ');
             lines.add("Investigation " + investigationStep + "/" + sites.chainLength() + ": next lead - " + nextSite);
         }
+
+        lines.add("--- Recovered Logs ---");
+        for (AmbientLoreCatalog.Entry entry : ambientEntries) lines.add("@lore:" + entry.id());
+
         lines.add("--- Field Operations ---");
         lines.add(FieldOperations.status(player));
         lines.add("Completed operations: " + FieldOperations.completions(player));
