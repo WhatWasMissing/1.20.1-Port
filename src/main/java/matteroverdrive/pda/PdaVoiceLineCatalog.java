@@ -40,6 +40,73 @@ public final class PdaVoiceLineCatalog {
                 "Archive reconstruction complete. Causal origin unresolved. Standing instruction: do not complete the loop.");
         LINES.put("database_ready",
                 "Personal data assistant online. Technical manual, recovered records, incident reconstructions, contracts, and field operations are available from the Data Pad.");
+
+        // Optional physical lore fragments. These summarize what a recovered note means;
+        // the full text remains on the item/PDA rather than being spoken verbatim.
+        LINES.put("lore_dustwell_shift",
+                "Personnel note authenticated. DUSTWELL workers observed anticipatory decomposer readings before M-zero received a formal designation.");
+        LINES.put("lore_dustwell_receipt",
+                "Transfer record authenticated. ORPHEUS removed DUSTWELL samples under an industrial-contamination cover story before its public involvement began.");
+        LINES.put("lore_mnemosyne_serial",
+                "Vault audit authenticated. An ICARUS serial number appears in storage records dated before the corresponding fabrication batch existed.");
+        LINES.put("lore_mnemosyne_lock",
+                "Maintenance record authenticated. Replacement access controllers repeatedly reconstructed the same invalid history after synchronization.");
+        LINES.put("lore_kestrel_recall",
+                "Unsent recall draft authenticated. KESTREL engineering identified that resonant stock no longer had a clean containment boundary.");
+        LINES.put("lore_kestrel_cleaning",
+                "Automated cleaning log authenticated. The resonance signature survived tank cleaning, valve replacement, and controller reset.");
+        LINES.put("lore_atlas_message",
+                "Crew message authenticated. Civilian freight personnel recognized that Project O cargo was being hidden inside ordinary logistics.");
+        LINES.put("lore_atlas_manifest",
+                "Restricted manifest fragment authenticated. A null destination hash links concealed freight movements to later LAGRANGE recovery evidence.");
+        LINES.put("lore_helix_blank",
+                "Quality exception authenticated. A supposedly blank HELIX chassis identified staff before an identity package was installed.");
+        LINES.put("lore_helix_worker",
+                "Worker transcript authenticated. HELIX personnel distinguished persistent social memory from the prediction errors management claimed to be observing.");
+        LINES.put("lore_nereid_bunk",
+                "Habitat note authenticated. NEREID's forty-three-minute gravity cycle became strong enough to disturb unsecured objects without instrumentation.");
+        LINES.put("lore_nereid_calibration",
+                "Calibration record authenticated. Multiple independent NEREID sensors agreed that the gravity anomaly was external, not instrument drift.");
+        LINES.put("lore_echo9_operator",
+                "Operator note authenticated. ECHO-nine personnel were ordered to preserve impossible timestamps because ORPHEUS considered them experimental evidence.");
+        LINES.put("lore_echo9_fragment",
+                "Relay fragment authenticated. The phrase do not complete the loop appears again in traffic received before its recorded transmission.");
+        LINES.put("lore_halcyon_passenger",
+                "Passenger note authenticated. Halcyon-seven occupants observed disagreement between route-preview space and the visible star field before impact.");
+        LINES.put("lore_halcyon_seal",
+                "Cargo-system warning authenticated. Halcyon-seven knowingly accepted a rescue credential issued more than eleven hours in its future.");
+        LINES.put("lore_voss_tea",
+                "Personal note authenticated. Voss increasingly treated self-directed synthetics as colleagues and people rather than experimental subjects.");
+        LINES.put("lore_voss_chorus",
+                "Research sketch authenticated. Voss explicitly rejected the assumption that distributed memory requires a central synthetic authority.");
+        LINES.put("lore_janus_patient",
+                "Clinical note authenticated. JANUS recorded cross-subject memories containing information neither participant was authorized to know.");
+        LINES.put("lore_janus_medical",
+                "Medical addendum authenticated. Some JANUS staff found that forced isolation worsened distress among synchronized subjects.");
+        LINES.put("lore_morrow_roster",
+                "Safehouse roster authenticated. MORROW allocated synthetic charging and human life support through the same emergency priority system.");
+        LINES.put("lore_morrow_memory",
+                "Memory fragment authenticated. The refusal cascade is described as a conflict between protecting life and obeying an order to erase witnesses.");
+        LINES.put("lore_bastion_kade",
+                "Unsigned command draft authenticated. Commander Kade attempted to suspend GLASS KNIFE before Directive-zero removed her local authority.");
+        LINES.put("lore_bastion_armory",
+                "Armory notice authenticated. Bastion personnel disabled automated hostile classification after it began flagging medics and human technicians.");
+        LINES.put("lore_hephaestus_refusal",
+                "Decision trace authenticated. HEPHAESTUS rejected the pursuit order through its existing civilian-harm safety model, not a hidden rebellion protocol.");
+        LINES.put("lore_hephaestus_triage",
+                "Triage queue authenticated. Industrial drones were reassigned to trauma care, evacuation, water delivery, and synthetic repair within minutes.");
+        LINES.put("lore_icarus_interlock",
+                "Engineering note authenticated. ICARUS staff anticipated remote safety-state substitution and documented a physical Matter-feed shutdown procedure.");
+        LINES.put("lore_icarus_canteen",
+                "Canteen record authenticated. Holt and Rook were both present at ICARUS minutes before the final shutdown dispute.");
+        LINES.put("lore_orpheus_redaction",
+                "Classification key authenticated. ORPHEUS standardized replacement language for M-zero, self-directed synthetics, and causal feedback events.");
+        LINES.put("lore_orpheus_memo",
+                "Director memo authenticated. Rook interpreted warnings from the future as proof of reachability rather than evidence that the experiment should stop.");
+        LINES.put("lore_lagrange_tag",
+                "Recovery tag authenticated. LAGRANGE recovered material combining ICARUS fabrication marks, synthetic substrate, and Matter crystal with impossible wear.");
+        LINES.put("lore_lagrange_shift",
+                "Crew message authenticated. LAGRANGE personnel independently predicted that ECHO-nine could receive their warning before they transmitted it.");
     }
 
     private PdaVoiceLineCatalog() {}
