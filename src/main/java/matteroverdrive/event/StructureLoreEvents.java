@@ -28,10 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * One-time narrative discovery layer for all sixteen Matter Overdrive structures.
- * The records form one connected, non-linear campaign arc: The Overdrive Incident.
- */
+/** One-time narrative discovery layer for all sixteen Matter Overdrive structures. */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class StructureLoreEvents {
     private static final Map<UUID, Long> LAST_SCANNED_CELL = new HashMap<>();
@@ -91,9 +88,7 @@ public final class StructureLoreEvents {
                     record.archiveIndex(), record.classification());
 
             boolean reconstructionUnlocked = announceNewReconstructions(player, oldMask, newMask);
-            if (!reconstructionUnlocked) {
-                ModNetwork.sendPdaVoice(player, voiceLineFor(record.id()));
-            }
+            if (!reconstructionUnlocked) ModNetwork.sendPdaVoice(player, voiceLineFor(record.id()));
 
             if (data.complete(player.getUUID())) {
                 player.giveExperiencePoints(500);
@@ -159,14 +154,22 @@ public final class StructureLoreEvents {
 
     private static String voiceLineFor(String site) {
         return switch (site == null ? "" : site) {
-            case "black_site", "android_command_bunker", "synthetic_manufacturing_plant" -> "orpheus_security";
-            case "quantum_relay_station", "orbital_recovery_array" -> "signal_echo";
-            case "fusion_research_complex" -> "icarus_warning";
-            case "anomaly_quarantine_site" -> "anomaly_warning";
-            case "underwater_base" -> "pressure_warning";
-            case "crashed_ship", "cargo_ship" -> "structural_warning";
-            case "android_house", "autonomous_drone_foundry" -> "synthetic_contact";
-            case "matter_refinery", "deep_matter_vault", "sand_pit" -> "matter_resonance";
+            case "sand_pit" -> "site_dustwell";
+            case "deep_matter_vault" -> "site_mnemosyne";
+            case "matter_refinery" -> "site_kestrel";
+            case "cargo_ship" -> "site_atlas";
+            case "synthetic_manufacturing_plant" -> "site_helix";
+            case "underwater_base" -> "site_nereid";
+            case "quantum_relay_station" -> "site_echo9";
+            case "crashed_ship" -> "site_halcyon";
+            case "mad_scientist_house" -> "site_voss";
+            case "anomaly_quarantine_site" -> "site_janus";
+            case "android_house" -> "site_morrow";
+            case "android_command_bunker" -> "site_bastion";
+            case "autonomous_drone_foundry" -> "site_hephaestus";
+            case "fusion_research_complex" -> "site_icarus";
+            case "black_site" -> "site_orpheus";
+            case "orbital_recovery_array" -> "site_lagrange";
             default -> "record_recovered";
         };
     }
