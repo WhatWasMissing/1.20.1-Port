@@ -1,127 +1,149 @@
 package matteroverdrive.client;
 
+import matteroverdrive.pda.PdaVoiceLineCatalog;
+
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineEvent;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Locale;
 
 /**
- * Plays the original offline-generated PDA voice/UI assets embedded in the jar.
- * The compressed WAV pack is stored as small base64 text chunks because the
- * repository connector is text-only. Runtime playback performs no file writes,
- * downloads or cloud TTS calls.
+ * Offline audio backend for the PDA presentation layer.
+ *
+ * Voice callouts use speech engines already present on the operating system:
+ * Windows System.Speech via PowerShell, macOS `say`, or Linux `espeak`/`spd-say`.
+ * Nothing is uploaded and no cloud account is required. If none are available,
+ * the notification manager transparently falls back to Minecraft Narrator.
+ *
+ * Short UI cues are synthesized directly in Java, so startup, archive, hazard,
+ * facility and comm sounds are always original and require no binary assets.
  */
 public final class PdaEmbeddedAudio {
-    private static final int PACK_PARTS = 16;
-    private static final Map<String, byte[]> WAVS = new HashMap<>();
-    private static boolean loaded;
-    private static Clip activeVoice;
+    private static Process activeVoice;
 
     private PdaEmbeddedAudio() {}
 
     public static synchronized int playVoice(String id) {
+        String text = PdaVoiceLineCatalog.line(id);
+        if (text.isBlank()) return 0;
         stopVoice();
-        Clip clip = open(id + ".wav", true);
-        if (clip == null) return 0;
-        activeVoice = clip;
-        clip.start();
-        return Math.max(20, (int) Math.ceil(clip.getMicrosecondLength() / 50_000.0D));
+        Process process = startOfflineTts(text);
+        if (process == null) return 0;
+        activeVoice = process;
+
+        Thread waiter = new Thread(() -> {
+            try { process.waitFor(); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
+            synchronized (PdaEmbeddedAudio.class) {
+                if (activeVoice == process) activeVoice = null;
+            }
+        }, "matteroverdrive-pda-voice");
+        waiter.setDaemon(true);
+        waiter.start();
+        return estimateDurationTicks(text);
     }
 
     public static synchronized void stopVoice() {
-        if (activeVoice == null) return;
-        try {
-            activeVoice.stop();
-            activeVoice.close();
-        } catch (Exception ignored) {
-        }
+        Process process = activeVoice;
         activeVoice = null;
+        if (process == null) return;
+        try {
+            process.destroy();
+            if (process.isAlive()) process.destroyForcibly();
+        } catch (Throwable ignored) {
+        }
     }
 
     public static boolean playUi(String id) {
-        Clip clip = open(id + ".wav", false);
-        if (clip == null) return false;
-        clip.start();
-        return true;
+        double[][] pattern = switch (id == null ? "" : id) {
+            case "ui_startup" -> new double[][]{{620, 70}, {880, 80}, {1240, 120}};
+            case "ui_record" -> new double[][]{{880, 55}, {1320, 60}, {1760, 90}};
+            case "ui_facility" -> new double[][]{{440, 65}, {660, 75}, {990, 120}};
+            case "ui_hazard" -> new double[][]{{360, 95}, {0, 55}, {360, 95}};
+            case "ui_comm" -> new double[][]{{1180, 45}, {760, 70}};
+            default -> null;
+        };
+        if (pattern == null) return false;
+        try {
+            final int sampleRate = 16_000;
+            byte[] pcm = synthesize(pattern, sampleRate);
+            AudioFormat format = new AudioFormat(sampleRate, 16, 1, true, false);
+            Clip clip = AudioSystem.getClip();
+            clip.open(format, pcm, 0, pcm.length);
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    try { clip.close(); } catch (Throwable ignored) { }
+                }
+            });
+            clip.start();
+            return true;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     public static boolean has(String id) {
-        ensureLoaded();
-        return WAVS.containsKey(id + ".wav");
+        if (PdaVoiceLineCatalog.contains(id)) return true;
+        return switch (id == null ? "" : id) {
+            case "ui_startup", "ui_record", "ui_facility", "ui_hazard", "ui_comm" -> true;
+            default -> false;
+        };
     }
 
-    private static Clip open(String name, boolean voice) {
+    private static Process startOfflineTts(String text) {
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        if (os.contains("win")) {
+            String script = "Add-Type -AssemblyName System.Speech; "
+                    + "$s=New-Object System.Speech.Synthesis.SpeechSynthesizer; "
+                    + "$v=$s.GetInstalledVoices() | Where-Object {$_.Enabled -and $_.VoiceInfo.Culture.Name -like 'en-*' -and $_.VoiceInfo.Gender -eq 'Female'} | Select-Object -First 1; "
+                    + "if(-not $v){$v=$s.GetInstalledVoices() | Where-Object {$_.Enabled -and $_.VoiceInfo.Culture.Name -like 'en-*'} | Select-Object -First 1}; "
+                    + "if($v){$s.SelectVoice($v.VoiceInfo.Name)}; $s.Rate=-1; $s.Volume=78; $s.Speak($env:MO_PDA_TEXT); $s.Dispose();";
+            ProcessBuilder builder = new ProcessBuilder("powershell.exe", "-NoProfile", "-NonInteractive",
+                    "-ExecutionPolicy", "Bypass", "-Command", script);
+            builder.environment().put("MO_PDA_TEXT", text);
+            return start(builder);
+        }
+        if (os.contains("mac")) {
+            return start(new ProcessBuilder("say", "-r", "170", text));
+        }
+        Process linux = start(new ProcessBuilder("espeak", "-v", "en+f3", "-s", "154", "-p", "40", "-a", "125", text));
+        if (linux != null) return linux;
+        return start(new ProcessBuilder("spd-say", "-r", "-10", "-p", "-15", text));
+    }
+
+    private static Process start(ProcessBuilder builder) {
         try {
-            ensureLoaded();
-            byte[] wav = WAVS.get(name);
-            if (wav == null) return null;
-            AudioInputStream source = AudioSystem.getAudioInputStream(new ByteArrayInputStream(wav));
-            AudioFormat base = source.getFormat();
-            AudioFormat pcm = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
-                    base.getSampleRate(), 16, base.getChannels(),
-                    Math.max(1, base.getChannels()) * 2, base.getSampleRate(), false);
-            AudioInputStream decoded = AudioSystem.isConversionSupported(pcm, base)
-                    ? AudioSystem.getAudioInputStream(pcm, source) : source;
-            Clip clip = AudioSystem.getClip();
-            clip.open(decoded);
-            decoded.close();
-            if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-                FloatControl gain = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-                gain.setValue(Math.max(gain.getMinimum(), Math.min(gain.getMaximum(), voice ? -7.0F : -10.0F)));
-            }
-            clip.addLineListener(event -> {
-                if (event.getType() == LineEvent.Type.STOP) {
-                    try { clip.close(); } catch (Exception ignored) { }
-                    synchronized (PdaEmbeddedAudio.class) {
-                        if (clip == activeVoice) activeVoice = null;
-                    }
-                }
-            });
-            return clip;
+            builder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+            builder.redirectError(ProcessBuilder.Redirect.DISCARD);
+            return builder.start();
         } catch (Throwable ignored) {
             return null;
         }
     }
 
-    private static synchronized void ensureLoaded() {
-        if (loaded) return;
-        loaded = true;
-        try {
-            StringBuilder encoded = new StringBuilder(800_000);
-            for (int i = 0; i < PACK_PARTS; i++) {
-                encoded.append(readText(String.format(
-                        "/assets/matteroverdrive/pda_audio/pda_audio_pack.part%02d.b64", i)));
-            }
-            if (encoded.isEmpty()) return;
-            byte[] zipBytes = Base64.getMimeDecoder().decode(encoded.toString());
-            try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
-                ZipEntry entry;
-                while ((entry = zip.getNextEntry()) != null) {
-                    if (!entry.isDirectory() && entry.getName().endsWith(".wav")) {
-                        WAVS.put(entry.getName(), zip.readAllBytes());
-                    }
-                    zip.closeEntry();
-                }
-            }
-        } catch (Throwable ignored) {
-            WAVS.clear();
-        }
+    private static int estimateDurationTicks(String text) {
+        String trimmed = text.trim();
+        int words = trimmed.isEmpty() ? 0 : trimmed.split("\\s+").length;
+        return Math.max(55, Math.min(360, 24 + words * 8));
     }
 
-    private static String readText(String resource) throws Exception {
-        try (InputStream stream = PdaEmbeddedAudio.class.getResourceAsStream(resource)) {
-            if (stream == null) throw new IllegalStateException("Missing embedded PDA audio chunk: " + resource);
-            return new String(stream.readAllBytes(), StandardCharsets.US_ASCII).replaceAll("\\s+", "");
+    private static byte[] synthesize(double[][] pattern, int sampleRate) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        for (double[] step : pattern) {
+            double frequency = step[0];
+            int samples = Math.max(1, (int) Math.round(sampleRate * step[1] / 1000.0D));
+            for (int i = 0; i < samples; i++) {
+                double edge = Math.min(1.0D, Math.min(i / 80.0D, (samples - 1 - i) / 80.0D));
+                double wave = frequency <= 0.0D ? 0.0D
+                        : Math.sin(2.0D * Math.PI * frequency * i / sampleRate)
+                        + 0.16D * Math.sin(4.0D * Math.PI * frequency * i / sampleRate);
+                short sample = (short) Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE,
+                        wave * edge * 0.16D * Short.MAX_VALUE));
+                out.write(sample & 0xFF);
+                out.write((sample >>> 8) & 0xFF);
+            }
         }
+        return out.toByteArray();
     }
 }
