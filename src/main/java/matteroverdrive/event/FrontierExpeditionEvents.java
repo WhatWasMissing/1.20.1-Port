@@ -5,29 +5,37 @@ import matteroverdrive.registry.ModItems;
 import matteroverdrive.world.FrontierExpeditionSavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * Bounded, server-authoritative discovery loop for Frontier Expedition sites.
- * Detection is signature-based so damaged variants remain discoverable even if
- * individual decorative blocks are missing.
+ * Server-authoritative discovery loop for Frontier Expedition sites.
+ * Detection queries Minecraft's native structure manager only when the player
+ * crosses into another chunk, avoiding block-radius scans and false positives
+ * against older Matter Overdrive facilities.
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class FrontierExpeditionEvents {
     private static final Map<UUID, Long> LAST_SCANNED_CHUNK = new HashMap<>();
+    private static final ResourceKey<Structure> DEEP_MATTER_VAULT = key("deep_matter_vault");
+    private static final ResourceKey<Structure> AUTONOMOUS_DRONE_FOUNDRY = key("autonomous_drone_foundry");
+    private static final ResourceKey<Structure> ANOMALY_QUARANTINE_SITE = key("anomaly_quarantine_site");
+    private static final ResourceKey<Structure> ORBITAL_RECOVERY_ARRAY = key("orbital_recovery_array");
 
     private FrontierExpeditionEvents() {}
 
@@ -35,7 +43,7 @@ public final class FrontierExpeditionEvents {
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
         if (player.tickCount % 20 != 0) return;
-        long chunk = ((long) player.chunkPosition().x << 32) ^ (player.chunkPosition().z & 0xffffffffL);
+        long chunk = player.chunkPosition().toLong();
         Long previous = LAST_SCANNED_CHUNK.put(player.getUUID(), chunk);
         if (previous != null && previous == chunk) return;
         scan(player);
@@ -48,57 +56,27 @@ public final class FrontierExpeditionEvents {
 
     private static void scan(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) return;
-        boolean controller = false;
-        boolean matrix = false;
-        boolean redCrate = false;
-        boolean charger = false;
-        boolean containment = false;
-        boolean stabilizer = false;
-        boolean quantumRelay = false;
-        boolean networkSwitch = false;
-        BlockPos anchor = null;
-
-        BlockPos centre = player.blockPosition();
-        for (BlockPos mutable : BlockPos.betweenClosed(centre.offset(-18, -8, -18), centre.offset(18, 8, 18))) {
-            ResourceLocation id = ForgeRegistries.BLOCKS.getKey(level.getBlockState(mutable).getBlock());
-            if (id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) continue;
-            String path = id.getPath();
-            switch (path) {
-                case "facility_network_controller" -> { controller = true; if (anchor == null) anchor = mutable.immutable(); }
-                case "matter_storage_matrix" -> matrix = true;
-                case "tritanium_crate_red" -> redCrate = true;
-                case "charging_station" -> charger = true;
-                case "anomaly_containment_unit" -> { containment = true; if (anchor == null) anchor = mutable.immutable(); }
-                case "gravitational_stabilizer" -> stabilizer = true;
-                case "quantum_power_relay" -> { quantumRelay = true; if (anchor == null) anchor = mutable.immutable(); }
-                case "network_switch" -> networkSwitch = true;
-                default -> { }
-            }
-        }
-
-        String site = null;
-        int bit = 0;
-        // Signatures are deliberately concentrated around each site's control/core room.
-        // This keeps discovery bounded while avoiding dependence on decorative blocks.
-        if (controller && matrix && redCrate) { site = "deep_matter_vault"; bit = 1; }
-        else if (controller && charger && !containment) { site = "autonomous_drone_foundry"; bit = 2; }
-        else if (containment && stabilizer && controller) { site = "anomaly_quarantine_site"; bit = 4; }
-        else if (quantumRelay && networkSwitch && controller) { site = "orbital_recovery_array"; bit = 8; }
-        if (site == null || anchor == null) return;
+        BlockPos pos = player.blockPosition();
+        SiteMatch match = match(level, pos, DEEP_MATTER_VAULT, "deep_matter_vault", 1);
+        if (match == null) match = match(level, pos, AUTONOMOUS_DRONE_FOUNDRY, "autonomous_drone_foundry", 2);
+        if (match == null) match = match(level, pos, ANOMALY_QUARANTINE_SITE, "anomaly_quarantine_site", 4);
+        if (match == null) match = match(level, pos, ORBITAL_RECOVERY_ARRAY, "orbital_recovery_array", 8);
+        if (match == null) return;
 
         FrontierExpeditionSavedData ledger = FrontierExpeditionSavedData.get(level);
-        FrontierExpeditionSavedData.DiscoveryResult result = ledger.discover(level, player.getUUID(), site, bit, anchor.asLong());
+        FrontierExpeditionSavedData.DiscoveryResult result = ledger.discover(
+                level, player.getUUID(), match.site(), match.bit(), match.startChunk());
         if (result == FrontierExpeditionSavedData.DiscoveryResult.REJECTED
                 || result == FrontierExpeditionSavedData.DiscoveryResult.ALREADY_LOGGED) return;
 
         int unique = ledger.uniqueSiteCount(player.getUUID());
         player.giveExperiencePoints(result == FrontierExpeditionSavedData.DiscoveryResult.NEW_LOCATION ? 15 : 40);
         ItemStack dossier = new ItemStack(ModItems.get("facility_research").get());
-        dossier.getOrCreateTag().putString("FrontierArchive", site.toUpperCase(java.util.Locale.ROOT));
+        dossier.getOrCreateTag().putString("FrontierArchive", match.site().toUpperCase(java.util.Locale.ROOT));
         dossier.getOrCreateTag().putInt("FrontierProgress", unique);
         if (!player.getInventory().add(dossier)) player.drop(dossier, false);
 
-        player.sendSystemMessage(Component.literal("FRONTIER EXPEDITION: " + readable(site) + " logged (" + unique + "/4 unique sites).")
+        player.sendSystemMessage(Component.literal("FRONTIER EXPEDITION: " + readable(match.site()) + " logged (" + unique + "/4 unique sites).")
                 .withStyle(ChatFormatting.AQUA));
         if (result == FrontierExpeditionSavedData.DiscoveryResult.NEW_LOCATION) {
             player.sendSystemMessage(Component.literal("Additional site coordinates added to the expedition archive.")
@@ -113,6 +91,17 @@ public final class FrontierExpeditionEvents {
         }
     }
 
+    private static SiteMatch match(ServerLevel level, BlockPos pos, ResourceKey<Structure> key, String site, int bit) {
+        StructureStart start = level.structureManager().getStructureWithPieceAt(pos, key);
+        if (start == null || !start.isValid()) return null;
+        return new SiteMatch(site, bit, start.getChunkPos().toLong());
+    }
+
+    private static ResourceKey<Structure> key(String path) {
+        return ResourceKey.create(Registries.STRUCTURE,
+                ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, path));
+    }
+
     private static String readable(String id) {
         String[] words = id.split("_");
         StringBuilder result = new StringBuilder();
@@ -123,4 +112,6 @@ public final class FrontierExpeditionEvents {
         }
         return result.toString();
     }
+
+    private record SiteMatch(String site, int bit, long startChunk) {}
 }
