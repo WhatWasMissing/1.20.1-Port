@@ -8,6 +8,7 @@ import matteroverdrive.item.MatterScannerItem;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
+import matteroverdrive.quest.FieldOperations;
 import matteroverdrive.world.TechnologySiteDiscoverySavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -84,7 +85,8 @@ public final class ContractEvents {
             if (dx * dx + dy * dy + dz * dz >= 64.0D && wasOnTransporter(player, previous)) recordTransport(player);
         }
 
-        if (hasIncompleteType(player, "anomaly") && insideAnomalyHorizon(player)) recordAnomalyHorizon(player);
+        if ((hasIncompleteType(player, "anomaly") || FieldOperations.active(player) == FieldOperations.Operation.HORIZON_EXPOSURE)
+                && insideAnomalyHorizon(player)) recordAnomalyHorizon(player);
         if (hasIncompleteType(player, "scan")) pollScanner(player);
         if (player.tickCount % 20 == 0) discoverTechnologySite(player);
         if (player.tickCount % 20 == 0) ModNetwork.syncQuestTracker(player);
@@ -116,6 +118,7 @@ public final class ContractEvents {
     public static void recordAnomalyHorizon(ServerPlayer player) {
         if (player == null) return;
         advanceMatching(player, 1, ContractItem::advancesWithAnomaly);
+        FieldOperations.recordAnomalyHorizon(player);
     }
 
     private static void pollScanner(ServerPlayer player) {
@@ -197,7 +200,9 @@ public final class ContractEvents {
         BlockPos anchor = site == null ? null : anchors.get(site);
         if (site == null || anchor == null || !(player.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
         TechnologySiteDiscoverySavedData discoveries = TechnologySiteDiscoverySavedData.get(level);
-        if (!discoveries.discover(level, player.getUUID(), site, anchor.asLong())) return;
+        boolean firstDiscovery = discoveries.discover(level, player.getUUID(), site, anchor.asLong());
+        FieldOperations.recordSite(player, site);
+        if (!firstDiscovery) return;
         int chainStage = discoveries.advanceChain(player.getUUID(), site);
         player.giveExperiencePoints(25);
         ItemStack pad = new ItemStack(ModItems.get("data_pad").get());
