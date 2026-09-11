@@ -15,19 +15,39 @@ public final class LegacyEntityRenderers {
     /** Uses the original Matter Overdrive 64x32 Android UV atlas. */
     public static final class RogueAndroidRenderer extends HumanoidMobRenderer<RogueAndroidEntity, ZombieModel<RogueAndroidEntity>> {
         private static final ResourceLocation T = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/entities/android.png");
-        public RogueAndroidRenderer(EntityRendererProvider.Context c) {
-            super(c, new ZombieModel<>(c.bakeLayer(LegacyEntityClientEvents.ROGUE_ANDROID_LAYER)), 0.5F);
-        }
+        public RogueAndroidRenderer(EntityRendererProvider.Context c) { super(c, new ZombieModel<>(c.bakeLayer(LegacyEntityClientEvents.ROGUE_ANDROID_LAYER)), 0.5F); }
         @Override public ResourceLocation getTextureLocation(RogueAndroidEntity e) { return T; }
     }
 
     /** The legacy ranged Android model explicitly used a 96x64 atlas. */
     public static final class RangedRogueAndroidRenderer extends HumanoidMobRenderer<RangedRogueAndroidEntity, ZombieModel<RangedRogueAndroidEntity>> {
         private static final ResourceLocation T = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/entities/android_ranged.png");
-        public RangedRogueAndroidRenderer(EntityRendererProvider.Context c) {
-            super(c, new ZombieModel<>(c.bakeLayer(LegacyEntityClientEvents.RANGED_ANDROID_LAYER)), 0.5F);
-        }
+        public RangedRogueAndroidRenderer(EntityRendererProvider.Context c) { super(c, new ZombieModel<>(c.bakeLayer(LegacyEntityClientEvents.RANGED_ANDROID_LAYER)), 0.5F); }
         @Override public ResourceLocation getTextureLocation(RangedRogueAndroidEntity e) { return T; }
+    }
+
+    public static final class DefectorAndroidRenderer extends HumanoidMobRenderer<DefectorAndroidEntity, ZombieModel<DefectorAndroidEntity>> {
+        private static final ResourceLocation T = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/entities/android_colorless.png");
+        public DefectorAndroidRenderer(EntityRendererProvider.Context c) { super(c, new ZombieModel<>(c.bakeLayer(LegacyEntityClientEvents.ROGUE_ANDROID_LAYER)), 0.5F); }
+        @Override public ResourceLocation getTextureLocation(DefectorAndroidEntity e) { return T; }
+    }
+
+    public static final class OrpheusSecurityRenderer extends HumanoidMobRenderer<OrpheusSecurityEntity, ZombieModel<OrpheusSecurityEntity>> {
+        private static final ResourceLocation T = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/entities/android_ranged.png");
+        public OrpheusSecurityRenderer(EntityRendererProvider.Context c) { super(c, new ZombieModel<>(c.bakeLayer(LegacyEntityClientEvents.RANGED_ANDROID_LAYER)), 0.55F); }
+        @Override public ResourceLocation getTextureLocation(OrpheusSecurityEntity e) { return T; }
+    }
+
+    public static final class ResonantAndroidRenderer extends HumanoidMobRenderer<ResonantAndroidEntity, ZombieModel<ResonantAndroidEntity>> {
+        private static final ResourceLocation T = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/entities/android_holo.png");
+        public ResonantAndroidRenderer(EntityRendererProvider.Context c) { super(c, new ZombieModel<>(c.bakeLayer(LegacyEntityClientEvents.ROGUE_ANDROID_LAYER)), 0.5F); }
+        @Override public ResourceLocation getTextureLocation(ResonantAndroidEntity e) { return T; }
+    }
+
+    public static final class FacilityResearcherRenderer extends MobRenderer<FacilityResearcherEntity, VillagerModel<FacilityResearcherEntity>> {
+        private static final ResourceLocation T = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/entities/mad_scientist.png");
+        public FacilityResearcherRenderer(EntityRendererProvider.Context c) { super(c, new VillagerModel<>(c.bakeLayer(ModelLayers.VILLAGER)), 0.5F); }
+        @Override public ResourceLocation getTextureLocation(FacilityResearcherEntity e) { return T; }
     }
 
     public static final class MutantScientistRenderer extends HumanoidMobRenderer<MutantScientistEntity, HumanoidModel<MutantScientistEntity>> { private static final ResourceLocation T=ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID,"textures/entities/hulking_scinetist.png"); public MutantScientistRenderer(EntityRendererProvider.Context c){super(c,new HumanoidModel<>(c.bakeLayer(ModelLayers.PLAYER)),0.9F);} @Override public ResourceLocation getTextureLocation(MutantScientistEntity e){return T;} }
