@@ -19,12 +19,13 @@ import java.util.zip.ZipInputStream;
  * Plays the original offline-generated PDA voice/UI assets embedded in the jar.
  *
  * GitHub's text-only connector cannot commit binary audio directly, so the WAV
- * pack is stored as base64 text and decoded in memory. No files are written and
- * no network/TTS service is required at runtime. Java Sound failures are treated
- * as optional-audio failures; the PDA caption/narrator fallbacks remain usable.
+ * pack is stored as split base64 text and decoded in memory. No files are written
+ * and no network/TTS service is required at runtime. Java Sound failures are
+ * treated as optional-audio failures; captions/narrator fallback remain usable.
  */
 public final class PdaEmbeddedAudio {
-    private static final String PACK_RESOURCE = "/assets/matteroverdrive/pda_audio/pda_audio_pack.zip.b64";
+    private static final String PACK_PART_0 = "/assets/matteroverdrive/pda_audio/pda_audio_pack.part0.b64";
+    private static final String PACK_PART_1 = "/assets/matteroverdrive/pda_audio/pda_audio_pack.part1.b64";
     private static final Map<String, byte[]> WAVS = new HashMap<>();
     private static boolean loaded;
     private static Clip activeVoice;
@@ -106,9 +107,9 @@ public final class PdaEmbeddedAudio {
     private static synchronized void ensureLoaded() {
         if (loaded) return;
         loaded = true;
-        try (InputStream stream = PdaEmbeddedAudio.class.getResourceAsStream(PACK_RESOURCE)) {
-            if (stream == null) return;
-            String encoded = new String(stream.readAllBytes(), StandardCharsets.US_ASCII);
+        try {
+            String encoded = readText(PACK_PART_0) + readText(PACK_PART_1);
+            if (encoded.isBlank()) return;
             byte[] zipBytes = Base64.getMimeDecoder().decode(encoded);
             try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
                 ZipEntry entry;
@@ -121,6 +122,13 @@ public final class PdaEmbeddedAudio {
             }
         } catch (Throwable ignored) {
             WAVS.clear();
+        }
+    }
+
+    private static String readText(String resource) throws Exception {
+        try (InputStream stream = PdaEmbeddedAudio.class.getResourceAsStream(resource)) {
+            if (stream == null) return "";
+            return new String(stream.readAllBytes(), StandardCharsets.US_ASCII).replaceAll("\\s+", "");
         }
     }
 }
