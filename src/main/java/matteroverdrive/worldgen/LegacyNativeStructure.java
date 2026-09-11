@@ -37,11 +37,18 @@ public final class LegacyNativeStructure extends Structure {
                     : Heightmap.Types.WORLD_SURFACE_WG;
             int surfaceY = context.chunkGenerator().getBaseHeight(
                     x, z, heightmap, context.heightAccessor(), context.randomState());
+
+            // Vanilla-style exploration rule: every legacy site must be naturally
+            // approachable from ordinary terrain. The old cargo ship floated more
+            // than twenty blocks above the landscape and therefore required pillars,
+            // flight or block placement just to enter. It now rests on/just above the
+            // local surface like a grounded derelict transport.
             int y = switch (kind) {
-                case CARGO_SHIP -> Math.max(86, surfaceY + 24);
+                case CARGO_SHIP -> surfaceY + 1;
                 case SAND_PIT -> surfaceY;
                 default -> surfaceY;
             };
+
             BlockPos origin = new BlockPos(x, y, z);
             long elapsed = System.nanoTime() - started;
             if (elapsed >= SLOW_GENERATION_POINT_NANOS) {
