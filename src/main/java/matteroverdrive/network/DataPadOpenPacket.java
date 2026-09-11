@@ -1,6 +1,7 @@
 package matteroverdrive.network;
 
 import matteroverdrive.client.ClientDataPadOpener;
+import matteroverdrive.world.StructureLoreCatalog;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -10,9 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public record DataPadOpenPacket(List<String> history) {
+/** Opens the PDA with the player's server-authoritative journal and lore archive state. */
+public record DataPadOpenPacket(List<String> history, int loreMask) {
     public DataPadOpenPacket {
         history = List.copyOf(history);
+        loreMask &= StructureLoreCatalog.ALL_RECORDS_MASK;
     }
 
     public static void encode(DataPadOpenPacket packet, FriendlyByteBuf buffer) {
@@ -20,6 +23,7 @@ public record DataPadOpenPacket(List<String> history) {
         for (String entry : packet.history) {
             buffer.writeUtf(entry, 512);
         }
+        buffer.writeVarInt(packet.loreMask & StructureLoreCatalog.ALL_RECORDS_MASK);
     }
 
     public static DataPadOpenPacket decode(FriendlyByteBuf buffer) {
@@ -28,13 +32,14 @@ public record DataPadOpenPacket(List<String> history) {
         for (int i = 0; i < count; i++) {
             history.add(buffer.readUtf(512));
         }
-        return new DataPadOpenPacket(history);
+        int loreMask = buffer.readVarInt() & StructureLoreCatalog.ALL_RECORDS_MASK;
+        return new DataPadOpenPacket(history, loreMask);
     }
 
     public static void handle(DataPadOpenPacket packet, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(
-                Dist.CLIENT, () -> () -> ClientDataPadOpener.open(packet.history)));
+                Dist.CLIENT, () -> () -> ClientDataPadOpener.open(packet.history, packet.loreMask)));
         context.setPacketHandled(true);
     }
 }
