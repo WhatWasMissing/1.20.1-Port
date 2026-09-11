@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "primary_format": "wav",
+  "primary_path": "assets/matteroverdrive/pda_voice/<line_id>.wav",
+  "override_path": "config/matteroverdrive/pda_voice/<line_id>.wav",
+  "fallback_order": ["processed_neural_va", "local_os_tts", "minecraft_narrator", "caption"],
+  "processing_reference": "ICARUS approved synthetic VA preset 2026-09-11",
+  "lines": [
+    {"id":"field_link","text":"Field link established. Matter Overdrive infrastructure has been detected in this world. Recover records, learn the machines, and decide how much of the incident should be rebuilt."},
+    {"id":"record_recovered","text":"New archive entry authenticated. Cross-reference added to the Overdrive Incident reconstruction."},
+    {"id":"reconstruction_complete","text":"Evidence threshold reached. A new incident reconstruction is available in your P D A."},
+    {"id":"matter_resonance","text":"Caution. M-zero resonance detected. Do not assume duplicated matter, synthetic memory, or impossible timestamps are causally local."},
+    {"id":"anomaly_warning","text":"Warning. Gravitational distortion is elevated. Keep a clear return route and avoid unshielded event-horizon exposure."},
+    {"id":"pressure_warning","text":"Caution. Pressure-compromised habitat detected. Bulkheads and flooded sections may no longer match the original emergency route."},
+    {"id":"structural_warning","text":"Structural integrity is degraded. Treat open hull sections as impact damage, not entrances, and verify a return path before descending."},
+    {"id":"signal_echo","text":"Acausal telemetry signature detected. Local timestamps may describe events that have not occurred yet. Archive the signal before trusting it."},
+    {"id":"orpheus_security","text":"ORPHEUS security protocol detected. Legacy authorization is still being enforced. The organization that issued it is not required to still exist."},
+    {"id":"icarus_warning","text":"ICARUS containment architecture identified. Historical records indicate the shutdown chain was overridden. Recreating the original configuration is not advised."},
+    {"id":"synthetic_contact","text":"Independent synthetic signatures detected. Not all Android networks are hostile. Confirm affiliation before engaging."},
+    {"id":"closed_loop","text":"Archive reconstruction complete. Causal origin unresolved. Standing instruction: do not complete the loop."},
+    {"id":"database_ready","text":"Personal data assistant online. Technical manual, recovered records, incident reconstructions, contracts, and field operations are available from the Data Pad."}
+  ]
+}
