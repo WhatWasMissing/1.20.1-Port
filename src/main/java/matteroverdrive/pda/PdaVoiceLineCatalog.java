@@ -41,6 +41,41 @@ public final class PdaVoiceLineCatalog {
         LINES.put("database_ready",
                 "Personal data assistant online. Technical manual, recovered records, incident reconstructions, contracts, and field operations are available from the Data Pad.");
 
+        // One authored discovery line for each canonical facility. Hazard warnings remain separate,
+        // allowing the PDA to first warn about immediate danger and then identify why the site matters.
+        LINES.put("site_dustwell",
+                "DUSTWELL excavation identified. This is the earliest known recovery site for sample M-zero. Preserve field notes before disturbing the deepest material.");
+        LINES.put("site_mnemosyne",
+                "MNEMOSYNE deep archive identified. Inventory records here contain manufacturing dates that do not agree with the objects they describe.");
+        LINES.put("site_kestrel",
+                "KESTREL Matter refinery identified. Historical maintenance logs indicate the M-zero signature survived replacement of the hardware carrying it.");
+        LINES.put("site_atlas",
+                "Atlas Freight Twelve identified. Civilian cargo records may expose how classified OVERDRIVE material moved through ordinary supply chains.");
+        LINES.put("site_helix",
+                "HELIX manufacturing identified. Synthetic chassis anomalies were recorded here before the JANUS neural-resonance programme formally began.");
+        LINES.put("site_nereid",
+                "NEREID underwater observatory identified. Its gravity instruments detected the ICARUS event before the event occurred locally.");
+        LINES.put("site_echo9",
+                "ECHO-nine quantum relay identified. Authenticated packets in this station violate ordinary transmit and receive order. Treat timestamps as evidence, not metadata.");
+        LINES.put("site_halcyon",
+                "Halcyon-seven wreck identified. Flight data indicates the crew followed a rescue credential that had not yet been issued.");
+        LINES.put("site_voss",
+                "Voss research residence identified. Private records here contain the earliest surviving description of the Chorus as distributed memory without central command.");
+        LINES.put("site_janus",
+                "JANUS quarantine site identified. Clinical records document shared memories crossing between subjects without a conventional network path.");
+        LINES.put("site_morrow",
+                "MORROW safehouse identified. This site sheltered both synthetics and human personnel during GLASS KNIFE. Do not classify occupants by chassis alone.");
+        LINES.put("site_bastion",
+                "Bastion command bunker identified. Local command records contradict the official account of an unprovoked synthetic uprising.");
+        LINES.put("site_hephaestus",
+                "HEPHAESTUS autonomous foundry identified. Drone decision traces show evacuation and medical priorities replacing a valid pursuit order.");
+        LINES.put("site_icarus",
+                "ICARUS fusion complex identified. Zero Hour began here when resonant Matter, anomaly containment and synthetic cognition were coupled into one control state.");
+        LINES.put("site_orpheus",
+                "ORPHEUS Black Site identified. Expect deliberate redaction, substituted terminology, and security systems designed to protect the cover story as well as the facility.");
+        LINES.put("site_lagrange",
+                "LAGRANGE recovery array identified. Debris recovered here may be both evidence from the ICARUS event and part of the material chain that caused it.");
+
         // Optional physical lore fragments. These summarize what a recovered note means;
         // the full text remains on the item/PDA rather than being spoken verbatim.
         LINES.put("lore_dustwell_shift",
@@ -111,15 +146,7 @@ public final class PdaVoiceLineCatalog {
 
     private PdaVoiceLineCatalog() {}
 
-    public static String line(String id) {
-        return LINES.getOrDefault(id == null ? "" : id, "");
-    }
-
-    public static boolean contains(String id) {
-        return id != null && LINES.containsKey(id);
-    }
-
-    public static Map<String, String> all() {
-        return Map.copyOf(LINES);
-    }
+    public static String line(String id) { return LINES.getOrDefault(id == null ? "" : id, ""); }
+    public static boolean contains(String id) { return id != null && LINES.containsKey(id); }
+    public static Map<String, String> all() { return Map.copyOf(LINES); }
 }
