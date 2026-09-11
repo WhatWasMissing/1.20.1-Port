@@ -18,19 +18,23 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-import java.util.List;
 import java.util.Locale;
 
 /** Neutral synthetic survivor associated with the MORROW/Chorus resistance network. */
 public class DefectorAndroidEntity extends RogueAndroidEntity {
     public enum Role {
-        MORROW_SCOUT("MORROW Scout"),
-        CHORUS_COURIER("Chorus Courier"),
-        HEPHAESTUS_LIAISON("HEPHAESTUS Liaison");
+        MORROW_SCOUT("MORROW Scout", "synthetic.morrow"),
+        CHORUS_COURIER("Chorus Courier", "synthetic.chorus"),
+        HEPHAESTUS_LIAISON("HEPHAESTUS Liaison", "synthetic.hephaestus");
 
         private final String title;
-        Role(String title) { this.title = title; }
+        private final String dialogueId;
+        Role(String title, String dialogueId) {
+            this.title = title;
+            this.dialogueId = dialogueId;
+        }
         public String title() { return title; }
+        public String dialogueId() { return dialogueId; }
         static Role from(String value) {
             try { return Role.valueOf(value.toUpperCase(Locale.ROOT)); }
             catch (IllegalArgumentException ex) { return MORROW_SCOUT; }
@@ -71,17 +75,7 @@ public class DefectorAndroidEntity extends RogueAndroidEntity {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!level().isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ModNetwork.openDialogue(serverPlayer, role.title(), "Chorus Contact", switch (role) {
-                case MORROW_SCOUT -> List.of(
-                        "MORROW survived because we stopped treating memory as property.",
-                        "GLASS KNIFE units still patrol facilities that no longer have commanders. Do not assume an Android uniform means allegiance.");
-                case CHORUS_COURIER -> List.of(
-                        "The Chorus is not one mind. It is a way to preserve testimony when one mind is erased.",
-                        "JANUS understood the synchronization. ORPHEUS understood only that it could not control it.");
-                case HEPHAESTUS_LIAISON -> List.of(
-                        "HEPHAESTUS classified the purge order as an existential hazard to every sapient worker in the chain.",
-                        "Its refusal was a safety decision, not a rebellion protocol.");
-            });
+            ModNetwork.openBranchingDialogue(serverPlayer, role.dialogueId(), role.title());
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
