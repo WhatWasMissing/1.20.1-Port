@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "primary_format": "wav",
   "primary_path": "assets/matteroverdrive/pda_voice/<line_id>.wav",
   "override_path": "config/matteroverdrive/pda_voice/<line_id>.wav",
@@ -17,6 +17,9 @@
     {"id":"orpheus_security","text":"ORPHEUS security protocol detected. Legacy authorization is still being enforced. The organization that issued it is not required to still exist."},
     {"id":"icarus_warning","text":"ICARUS containment architecture identified. Historical records indicate the shutdown chain was overridden. Recreating the original configuration is not advised."},
     {"id":"synthetic_contact","text":"Independent synthetic signatures detected. Not all Android networks are hostile. Confirm affiliation before engaging."},
+    {"id":"field_liaison","text":"Field team trust threshold reached. Recovery personnel have authorized access to less sanitized operational context."},
+    {"id":"synthetic_liaison","text":"Independent synthetic trust threshold reached. Contact classification updated. Affiliation should still be confirmed individually."},
+    {"id":"incident_analyst","text":"Archive context threshold reached. Simplified reconstruction filters have been reduced. Contradictory evidence will remain visible."},
     {"id":"closed_loop","text":"Archive reconstruction complete. Causal origin unresolved. Standing instruction: do not complete the loop."},
     {"id":"database_ready","text":"Personal data assistant online. Technical manual, recovered records, incident reconstructions, contracts, and field operations are available from the Data Pad."}
   ]
