@@ -65,7 +65,6 @@ For every generated start:
 
 - [ ] Main array/mast is visible from outside and has a readable purpose.
 - [ ] Control room contains Facility Network Controller + Network Switch.
-- [ ] Quantum Power Relay is close enough to the control signature for discovery.
 - [ ] Processing and storage rooms connect logically to the control/array areas.
 - [ ] Catwalk has usable width and rails/readable edges.
 
@@ -73,8 +72,8 @@ For every generated start:
 
 Test with a fresh player profile / fresh world saved data.
 
-- [ ] Enter a Deep Matter Vault control area: system message appears, dossier is awarded, progress becomes 1/4 and 40 XP is awarded.
-- [ ] Enter the same vault again after changing chunks: no duplicate reward for the same coordinate.
+- [ ] Enter any piece of a Deep Matter Vault: system message appears, dossier is awarded, progress becomes 1/4 and 40 XP is awarded.
+- [ ] Enter the same vault again after changing chunks: no duplicate reward for the same structure start.
 - [ ] Find a second Deep Matter Vault: location is logged, dossier is awarded, only 15 XP is awarded and unique progress remains 1/4.
 - [ ] Discover the Drone Foundry, Quarantine Site and Recovery Array in any order: unique progress increases once per class.
 - [ ] Fourth unique class awards the completion message, 120 bonus XP and exactly one Parallel Processing Upgrade.
@@ -82,13 +81,32 @@ Test with a fresh player profile / fresh world saved data.
 - [ ] Inspect dossier NBT: `FrontierArchive` matches the discovered site and `FrontierProgress` matches the unique-site count at award time.
 - [ ] With two players, each player maintains independent unique-site progress and rewards.
 - [ ] Restart server between discoveries and verify saved progression survives.
+- [ ] Stand near an older Quantum Relay Station / Android Command Bunker and confirm it does not trigger Frontier Expedition discovery.
+
+## Facility threat clearance
+
+Use actual hostile mobs or structure-associated Android/drone hostiles and make sure the killing blow belongs to the test player.
+
+- [ ] Deep Matter Vault: first three qualifying hostile kills show action-bar progress; fourth completes the 4-kill target.
+- [ ] Autonomous Drone Foundry: completion occurs exactly on hostile kill 6.
+- [ ] Anomaly Quarantine Site: completion occurs exactly on hostile kill 5.
+- [ ] Orbital Recovery Array: completion occurs exactly on hostile kill 4.
+- [ ] Completion awards 60 XP and one `facility_research` dossier with `FrontierSecurityArchive` and `Secured=true`.
+- [ ] Additional kills in the same secured structure do not award another completion reward.
+- [ ] A hostile killed immediately outside the structure piece does not advance the counter.
+- [ ] Passive/creature-category deaths do not advance the counter.
+- [ ] Hostiles killed by environment, another player, a drone, or non-player source do not credit the wrong player.
+- [ ] Save/reload between kills and verify progress persists.
+- [ ] Restart after securing a structure and verify it remains secured.
+- [ ] Two players can independently secure the same generated facility and receive their own one-time reward.
 
 ## Performance / multiplayer
 
-- [ ] Cross chunk boundaries near a frontier site while watching server tick time; discovery scans should not create sustained spikes.
+- [ ] Cross chunk boundaries near a frontier site while watching server tick time; structure-manager discovery lookups should not create sustained spikes.
 - [ ] Fly rapidly across unrelated chunks; no repeated chat/reward spam and no obvious continuous scan cost.
 - [ ] Two players entering separate frontier sites simultaneously do not interfere with one another's ledger.
-- [ ] No chunk is force-loaded by generation or discovery.
+- [ ] Repeated unrelated hostile deaths outside Frontier structures do not create noticeable server load.
+- [ ] No chunk is force-loaded by generation, discovery or clearance checks.
 
 ## Failure evidence to capture
 
