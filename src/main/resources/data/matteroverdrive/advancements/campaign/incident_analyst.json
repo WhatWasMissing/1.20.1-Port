@@ -1,0 +1,7 @@
+{
+  "parent": "matteroverdrive:campaign/frontier_expedition",
+  "display": {"icon":{"item":"matteroverdrive:artifact"},"title":{"text":"Incident Analyst"},"description":{"text":"Build enough corroborative context through recovered evidence and conversations to move beyond the simplified reconstruction."},"frame":"challenge","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {"earned":{"trigger":"minecraft:impossible"}},
+  "requirements": [["earned"]],
+  "rewards":{"experience":300}
+}
