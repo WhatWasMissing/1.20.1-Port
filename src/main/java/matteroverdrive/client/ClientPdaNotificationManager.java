@@ -3,7 +3,6 @@ package matteroverdrive.client;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.pda.PdaVoiceLineCatalog;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -76,6 +75,7 @@ public final class ClientPdaNotificationManager {
         hazard = next;
         if (changed && next.active() && next.severity() >= 2) {
             PdaEmbeddedAudio.playUi("ui_hazard");
+            if ("gravitational_anomaly".equals(next.id())) enqueue("anomaly_warning");
         }
     }
 
@@ -136,17 +136,19 @@ public final class ClientPdaNotificationManager {
         active = QUEUE.removeFirst();
         activeAge = 0;
 
-        if ("database_ready".equals(active.lineId())) PdaEmbeddedAudio.playUi("ui_startup");
-        else PdaEmbeddedAudio.playUi("ui_record");
+        if ("database_ready".equals(active.lineId()) || "field_link".equals(active.lineId())) {
+            PdaEmbeddedAudio.playUi("ui_startup");
+        } else {
+            PdaEmbeddedAudio.playUi("ui_record");
+        }
 
-        int embeddedDuration = PdaEmbeddedAudio.playVoice(active.lineId());
-        if (embeddedDuration > 0) {
-            activeTicks = embeddedDuration + 14;
+        int offlineDuration = PdaEmbeddedAudio.playVoice(active.lineId());
+        if (offlineDuration > 0) {
+            activeTicks = offlineDuration + 14;
             return;
         }
 
-        // Platform fallback: if embedded Java Sound cannot open on the current
-        // machine, keep the exact same queue/caption timing and use Narrator.
+        // Cross-platform fallback when no local OS speech engine is available.
         if (minecraft.getNarrator().isActive()) PdaNarrationController.read("P D A. " + active.text());
         activeTicks = Math.max(70, Math.min(260, 30 + active.text().length() * 2));
     }
