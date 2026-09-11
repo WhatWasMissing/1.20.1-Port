@@ -12,6 +12,7 @@ import matteroverdrive.worldgen.LegacyTraversalRepairPiece;
 import matteroverdrive.worldgen.LegacyVanillaStructurePiece;
 import matteroverdrive.worldgen.LegacyParityStructureFeature;
 import matteroverdrive.worldgen.ModernExplorationStructurePiece;
+import matteroverdrive.worldgen.ModernTraversalRepairPiece;
 import matteroverdrive.worldgen.TechnologyFacilityStructure;
 import matteroverdrive.worldgen.TechnologyFacilityStructurePiece;
 import net.minecraft.core.registries.Registries;
@@ -54,6 +55,7 @@ public final class ModStructures {
 
     // New-world exploration-native pieces.
     public static final RegistryObject<StructurePieceType> MODERN_EXPLORATION_PIECE = STRUCTURE_PIECES.register("modern_exploration", () -> ModernExplorationStructurePiece::new);
+    public static final RegistryObject<StructurePieceType> MODERN_TRAVERSAL_REPAIR_PIECE = STRUCTURE_PIECES.register("modern_traversal_repair", () -> ModernTraversalRepairPiece::new);
     public static final RegistryObject<StructurePieceType> FRONTIER_EXPLORATION_PIECE = STRUCTURE_PIECES.register("frontier_exploration", () -> FrontierExplorationStructurePiece::new);
 
     private static RegistryObject<StructureType<LegacyNativeStructure>> type(String id, LegacyParityStructureFeature.Kind kind) {
