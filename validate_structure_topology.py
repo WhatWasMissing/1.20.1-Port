@@ -27,12 +27,12 @@ class Site:
     required: Tuple[str, ...]
 
 SITES: Tuple[Site, ...] = (
-    Site("crashed_ship", "LegacyVanillaStructurePiece.java", ("crashedShip", "story_cache", "salvage", "android_spawner")),
-    Site("cargo_ship", "LegacyVanillaStructurePiece.java", ("cargoShip", "story_cache", "salvage", "android_spawner")),
-    Site("underwater_base", "LegacyVanillaStructurePiece.java", ("underwaterBase", "South airlock", "story_cache")),
-    Site("mad_scientist_house", "LegacyVanillaStructurePiece.java", ("madScientistLab", "stairStart", "story_cache")),
+    Site("crashed_ship", "LegacyVanillaStructurePiece.java", ("crashedShip", "origin.offset(0,1,14)", "story_cache", "salvage", "android_spawner")),
+    Site("cargo_ship", "LegacyVanillaStructurePiece.java", ("cargoShip", "origin.offset(25,1,0)", "story_cache", "salvage")),
+    Site("underwater_base", "LegacyVanillaStructurePiece.java", ("underwaterBase", "origin.offset(0,0,-14)", "tube", "story_cache")),
+    Site("mad_scientist_house", "LegacyVanillaStructurePiece.java", ("madScientistLab", "stairStart", "for(int i=0;i<=7;i++)", "story_cache")),
     Site("android_house", "LegacyVanillaStructurePiece.java", ("androidSafehouse", "corridorX", "corridorZ", "story_cache")),
-    Site("sand_pit", "LegacyVanillaStructurePiece.java", ("excavation", "Continuous L-shaped descent", "story_cache")),
+    Site("sand_pit", "LegacyVanillaStructurePiece.java", ("excavation", "relic=origin.offset(0,-10,0)", "for(int i=1;i<=13;i++)", "story_cache")),
     Site("synthetic_manufacturing_plant", "TechnologyFacilityStructurePiece.java", ("PLANT_ENTRANCE", "SECURITY_CHECKPOINT", "MANUFACTURING_CORE", "SHIPPING_WING")),
     Site("matter_refinery", "TechnologyFacilityStructurePiece.java", ("REFINERY_ENTRANCE", "SECURITY_CHECKPOINT", "REFINERY_CORE", "PROCESSING_WING")),
     Site("quantum_relay_station", "TechnologyFacilityStructurePiece.java", ("RELAY_ENTRANCE", "CONTROL_WING", "QUANTUM_CORE")),
@@ -98,7 +98,6 @@ def main() -> int:
     if "LEGACY_NATIVE_PIECE" not in registry:
         errors.append("Old legacy serializer was removed; existing-world compatibility would be broken.")
 
-    # Chunk-safe generation and force-loading prohibition.
     active_piece_files = ("LegacyVanillaStructurePiece.java", "TechnologyFacilityStructurePiece.java", "FrontierSitePiece.java")
     for filename in active_piece_files:
         s = src(filename)
@@ -108,7 +107,6 @@ def main() -> int:
             if token in s:
                 errors.append(f"{filename}: forbidden force-load/synchronous chunk token present: {token}")
 
-    # Legacy exploration-only source must not directly place core functional machines.
     legacy = src("LegacyVanillaStructurePiece.java")
     forbidden_machine_ids = (
         '"matter_analyzer"', '"decomposer"', '"replicator"', '"inscriber"',
