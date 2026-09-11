@@ -5,6 +5,8 @@ import matteroverdrive.android.AndroidClassAbilities;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.android.AndroidUltimates;
+import matteroverdrive.dialogue.DialogueCatalog;
+import matteroverdrive.dialogue.DialogueSessionManager;
 import matteroverdrive.world.StructureLoreSavedData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,7 +17,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "16";
+    private static final String PROTOCOL = "17";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "network"))
@@ -36,6 +38,7 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, ContractAbandonPacket.class, ContractAbandonPacket::encode, ContractAbandonPacket::decode, ContractAbandonPacket::handle);
         CHANNEL.registerMessage(nextId++, QuestTrackerSyncPacket.class, QuestTrackerSyncPacket::encode, QuestTrackerSyncPacket::decode, QuestTrackerSyncPacket::handle);
         CHANNEL.registerMessage(nextId++, NpcDialoguePacket.class, NpcDialoguePacket::encode, NpcDialoguePacket::decode, NpcDialoguePacket::handle);
+        CHANNEL.registerMessage(nextId++, DialogueChoicePacket.class, DialogueChoicePacket::encode, DialogueChoicePacket::decode, DialogueChoicePacket::handle);
         CHANNEL.registerMessage(nextId++, PdaVoicePacket.class, PdaVoicePacket::encode, PdaVoicePacket::decode, PdaVoicePacket::handle);
         CHANNEL.registerMessage(nextId++, FacilityDiscoveryPacket.class, FacilityDiscoveryPacket::encode, FacilityDiscoveryPacket::decode, FacilityDiscoveryPacket::handle);
         CHANNEL.registerMessage(nextId++, EnvironmentalHazardPacket.class, EnvironmentalHazardPacket::encode, EnvironmentalHazardPacket::decode, EnvironmentalHazardPacket::handle);
@@ -54,7 +57,21 @@ public final class ModNetwork {
     }
 
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
-    public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines)); }
+    public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines));
+    }
+    public static void openBranchingDialogue(ServerPlayer p, String dialogueId, String speaker) {
+        DialogueSessionManager.open(p, dialogueId, speaker);
+    }
+    public static void sendDialogueView(ServerPlayer p, String dialogueId, DialogueCatalog.DialogueView view) {
+        List<NpcDialoguePacket.ChoiceOption> options = view.choices().stream()
+                .map(choice -> new NpcDialoguePacket.ChoiceOption(choice.id(), choice.label())).toList();
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(
+                dialogueId, view.nodeId(), view.speaker(), view.heading(), view.lines(), options));
+    }
+    public static void chooseDialogue(String dialogueId, String nodeId, String choiceId) {
+        CHANNEL.sendToServer(new DialogueChoicePacket(dialogueId, nodeId, choiceId));
+    }
     public static void sendPdaVoice(ServerPlayer p, String lineId) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new PdaVoicePacket(lineId)); }
     public static void sendFacilityDiscovery(ServerPlayer p, String siteId, String facility, String recordTitle, int archiveIndex, String classification) {
         CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new FacilityDiscoveryPacket(siteId, facility, recordTitle, archiveIndex, classification));
