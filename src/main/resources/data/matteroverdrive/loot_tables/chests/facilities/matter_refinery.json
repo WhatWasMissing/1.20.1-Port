@@ -2,61 +2,33 @@
   "type": "minecraft:chest",
   "pools": [
     {
-      "rolls": {
-        "min": 3,
-        "max": 5,
-        "type": "minecraft:uniform"
-      },
+      "rolls": { "min": 3, "max": 5, "type": "minecraft:uniform" },
       "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:tritanium_ingot",
-          "weight": 4
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:matter_dust_refined",
-          "weight": 4
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:pattern_drive",
-          "weight": 1
-        },
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:upgrade_matter_storage",
-          "weight": 1
-        }
+        { "type": "minecraft:item", "name": "matteroverdrive:tritanium_ingot", "weight": 4 },
+        { "type": "minecraft:item", "name": "matteroverdrive:matter_dust_refined", "weight": 4 },
+        { "type": "minecraft:item", "name": "matteroverdrive:pattern_drive", "weight": 1 },
+        { "type": "minecraft:item", "name": "matteroverdrive:upgrade_matter_storage", "weight": 1 }
       ]
     },
     {
       "rolls": 1,
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "matteroverdrive:facility_research",
+        "functions": [{ "function": "minecraft:set_nbt", "tag": "{FacilityArchive:\"MATTER_REFINERY\"}" }]
+      }]
+    },
+    {
+      "rolls": 1,
+      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.55 }],
       "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:facility_research",
-          "functions": [
-            {
-              "function": "minecraft:set_nbt",
-              "tag": "{FacilityArchive:\"MATTER_REFINERY\"}"
-            }
-          ]
-        }
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"kestrel_recall_draft\"}"}]},
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"kestrel_cleaning_loop\"}"}]}
       ]
     },
     {
-      "rolls": {
-        "min": 1,
-        "max": 2,
-        "type": "minecraft:uniform"
-      },
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "matteroverdrive:emergency_ration"
-        }
-      ]
+      "rolls": { "min": 1, "max": 2, "type": "minecraft:uniform" },
+      "entries": [{ "type": "minecraft:item", "name": "matteroverdrive:emergency_ration" }]
     }
   ]
 }
