@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": { "type": "minecraft:uniform", "min": 2.0, "max": 4.0 },
+      "entries": [
+        { "type": "minecraft:item", "name": "matteroverdrive:facility_research", "weight": 5 },
+        { "type": "minecraft:item", "name": "matteroverdrive:matter_dust_refined", "weight": 8,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 2.0, "max": 8.0 }}] },
+        { "type": "minecraft:item", "name": "matteroverdrive:tritanium_plate", "weight": 7,
+          "functions": [{ "function": "minecraft:set_count", "count": { "type": "minecraft:uniform", "min": 1.0, "max": 4.0 }}] },
+        { "type": "minecraft:item", "name": "matteroverdrive:isolinear_circuit_mk2", "weight": 4 },
+        { "type": "minecraft:item", "name": "matteroverdrive:isolinear_circuit_mk3", "weight": 2 },
+        { "type": "minecraft:item", "name": "matteroverdrive:energy_pack", "weight": 3 },
+        { "type": "minecraft:item", "name": "matteroverdrive:upgrade_base", "weight": 3 },
+        { "type": "minecraft:item", "name": "matteroverdrive:artifact", "weight": 1 }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        { "type": "minecraft:item", "name": "minecraft:paper", "weight": 5,
+          "functions": [{ "function": "minecraft:set_name", "name": { "text": "Recovered Facility Log", "italic": false, "color": "aqua" }}] },
+        { "type": "minecraft:item", "name": "minecraft:book", "weight": 3,
+          "functions": [{ "function": "minecraft:set_name", "name": { "text": "Damaged Operations Manual", "italic": false, "color": "gray" }}] },
+        { "type": "minecraft:item", "name": "matteroverdrive:facility_research", "weight": 2 }
+      ]
+    }
+  ]
+}
