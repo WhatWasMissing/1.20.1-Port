@@ -1,0 +1,11 @@
+{
+  "parent": "matteroverdrive:campaign/black_site",
+  "display": {"icon":{"item":"matteroverdrive:upgrade_parallel_processing"},"title":{"text":"Matter Overdrive"},"description":{"text":"Unify Frontier research, anomaly engineering and recovered experimental technology."},"frame":"challenge","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "parallel":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:upgrade_parallel_processing"]}]}},
+    "artifact":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:artifact"]}]}},
+    "reactor_remote":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:reactor_remote"]}]}}
+  },
+  "requirements": [["parallel"],["artifact"],["reactor_remote"]],
+  "rewards": {"experience": 1000}
+}
