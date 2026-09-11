@@ -1,6 +1,7 @@
 package matteroverdrive.client.screen;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.client.PdaEmbeddedAudio;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,6 +20,7 @@ public final class MatterOverdriveTitleScreen extends Screen {
     private static final int ORANGE = 0xFFFFB34E;
     private final Screen parent;
     private int page;
+    private boolean startupPlayed;
 
     public MatterOverdriveTitleScreen(Screen parent) {
         super(Component.literal("Matter Overdrive"));
@@ -28,6 +30,10 @@ public final class MatterOverdriveTitleScreen extends Screen {
     @Override
     protected void init() {
         clearWidgets();
+        if (!startupPlayed) {
+            startupPlayed = true;
+            PdaEmbeddedAudio.playUi("ui_startup");
+        }
         int y = height - 42;
         int center = width / 2;
         if (page > 0) {
