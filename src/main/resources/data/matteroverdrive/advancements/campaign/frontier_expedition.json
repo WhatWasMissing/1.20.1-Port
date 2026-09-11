@@ -1,0 +1,12 @@
+{
+  "parent": "matteroverdrive:campaign/anomaly_engineer",
+  "display": {"icon":{"item":"matteroverdrive:facility_research"},"title":{"text":"Frontier Expedition"},"description":{"text":"Explore all four Frontier facility classes."},"frame":"challenge","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "vault":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:deep_matter_vault"}}}]}},
+    "foundry":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:autonomous_drone_foundry"}}}]}},
+    "quarantine":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:anomaly_quarantine_site"}}}]}},
+    "array":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:orbital_recovery_array"}}}]}}
+  },
+  "requirements": [["vault"],["foundry"],["quarantine"],["array"]],
+  "rewards": {"experience": 250}
+}
