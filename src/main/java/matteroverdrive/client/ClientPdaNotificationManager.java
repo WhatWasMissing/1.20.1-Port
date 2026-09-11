@@ -66,9 +66,18 @@ public final class ClientPdaNotificationManager {
                 safe(title), safe(detail), Math.max(0, Math.min(3, severity)));
         boolean changed = !hazard.id().equals(next.id()) || hazard.severity() != next.severity();
         hazard = next;
-        if (changed && next.active() && next.severity() >= 2) {
-            PdaEmbeddedAudio.playUi("ui_hazard");
-            if ("gravitational_anomaly".equals(next.id())) enqueue("anomaly_warning");
+        if (!changed || !next.active()) return;
+
+        if (next.severity() >= 2) PdaEmbeddedAudio.playUi("ui_hazard");
+        switch (next.id()) {
+            case "gravitational_anomaly", "anomaly_containment" -> enqueue("anomaly_warning");
+            case "icarus_containment" -> enqueue("icarus_warning");
+            case "legacy_security" -> enqueue("orpheus_security");
+            case "m0_resonance" -> enqueue("matter_resonance");
+            case "pressure_damage" -> enqueue("pressure_warning");
+            case "structural_damage" -> enqueue("structural_warning");
+            case "signal_echo" -> enqueue("signal_echo");
+            default -> { }
         }
     }
 
