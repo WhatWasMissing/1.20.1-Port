@@ -1,9 +1,11 @@
 package matteroverdrive.pda;
 
+import matteroverdrive.world.TechnologyLoreCatalog;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Original short-form PDA callouts for the Overdrive Incident campaign. */
+/** Original short-form PDA callouts plus dynamically-authored technology discovery callouts. */
 public final class PdaVoiceLineCatalog {
     private static final Map<String, String> LINES = new LinkedHashMap<>();
 
@@ -146,7 +148,16 @@ public final class PdaVoiceLineCatalog {
 
     private PdaVoiceLineCatalog() {}
 
-    public static String line(String id) { return LINES.getOrDefault(id == null ? "" : id, ""); }
-    public static boolean contains(String id) { return id != null && LINES.containsKey(id); }
+    public static String line(String id) {
+        String key = id == null ? "" : id;
+        String core = LINES.get(key);
+        return core != null ? core : TechnologyLoreCatalog.voiceLine(key);
+    }
+
+    public static boolean contains(String id) {
+        return id != null && (LINES.containsKey(id) || TechnologyLoreCatalog.byVoiceId(id) != null);
+    }
+
+    /** Core/pre-recorded catalogue. Technology lines are resolved dynamically and currently use the same OS-TTS fallback path. */
     public static Map<String, String> all() { return Map.copyOf(LINES); }
 }
