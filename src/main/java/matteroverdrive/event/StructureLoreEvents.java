@@ -32,7 +32,7 @@ import java.util.UUID;
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class StructureLoreEvents {
-    private static final Map<UUID, Long> LAST_SCANNED_CHUNK = new HashMap<>();
+    private static final Map<UUID, Long> LAST_SCANNED_CELL = new HashMap<>();
 
     private StructureLoreEvents() {}
 
@@ -40,15 +40,19 @@ public final class StructureLoreEvents {
     public static void playerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
         if (player.tickCount % 20 != 0) return;
-        long chunk = player.chunkPosition().toLong();
-        Long previous = LAST_SCANNED_CHUNK.put(player.getUUID(), chunk);
-        if (previous != null && previous == chunk) return;
+
+        BlockPos playerPos = player.blockPosition();
+        // Match the population layer: an eight-block movement cell catches a player
+        // entering a structure within one chunk without scanning while standing still.
+        long cell = BlockPos.asLong(playerPos.getX() >> 3, playerPos.getY() >> 3, playerPos.getZ() >> 3);
+        Long previous = LAST_SCANNED_CELL.put(player.getUUID(), cell);
+        if (previous != null && previous == cell) return;
         scan(player);
     }
 
     @SubscribeEvent
     public static void logout(PlayerEvent.PlayerLoggedOutEvent event) {
-        LAST_SCANNED_CHUNK.remove(event.getEntity().getUUID());
+        LAST_SCANNED_CELL.remove(event.getEntity().getUUID());
     }
 
     private static void scan(ServerPlayer player) {
