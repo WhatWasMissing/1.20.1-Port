@@ -1,0 +1,10 @@
+{
+  "parent": "matteroverdrive:campaign/matter_age",
+  "display": {"icon":{"item":"matteroverdrive:network_router"},"title":{"text":"Networked Industry"},"description":{"text":"Connect Matter technology into a routed automation network."},"frame":"task","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "router":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:network_router"]}]}},
+    "switch":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:network_switch"]}]}},
+    "replicator":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:replicator"]}]}}
+  },
+  "requirements": [["router"],["switch"],["replicator"]]
+}
