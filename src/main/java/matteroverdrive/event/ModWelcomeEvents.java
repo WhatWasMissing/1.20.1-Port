@@ -56,6 +56,7 @@ public final class ModWelcomeEvents {
         WorldOnboardingSavedData data = WorldOnboardingSavedData.get(player.serverLevel());
         if (data.markBriefed(player.getUUID())) {
             ModNetwork.openWelcomeBriefing(player);
+            ModNetwork.sendPdaVoice(player, "field_link");
         }
     }
 
