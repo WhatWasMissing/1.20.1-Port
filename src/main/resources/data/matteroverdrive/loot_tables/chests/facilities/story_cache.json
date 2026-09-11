@@ -19,11 +19,10 @@
     {
       "rolls": 1,
       "entries": [
-        { "type": "minecraft:item", "name": "minecraft:paper", "weight": 5,
-          "functions": [{ "function": "minecraft:set_name", "name": { "text": "Recovered Facility Log", "italic": false, "color": "aqua" }}] },
-        { "type": "minecraft:item", "name": "minecraft:book", "weight": 3,
-          "functions": [{ "function": "minecraft:set_name", "name": { "text": "Damaged Operations Manual", "italic": false, "color": "gray" }}] },
-        { "type": "minecraft:item", "name": "matteroverdrive:facility_research", "weight": 2 }
+        { "type": "minecraft:loot_table", "name": "matteroverdrive:chests/facilities/ambient_lore", "weight": 6 },
+        { "type": "minecraft:item", "name": "matteroverdrive:facility_research", "weight": 2 },
+        { "type": "minecraft:item", "name": "minecraft:book", "weight": 2,
+          "functions": [{ "function": "minecraft:set_name", "name": { "text": "Damaged Operations Manual", "italic": false, "color": "gray" }}] }
       ]
     }
   ]
