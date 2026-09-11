@@ -1,0 +1,13 @@
+{
+  "parent": "matteroverdrive:campaign/automation",
+  "display": {"icon":{"item":"matteroverdrive:weapon_station"},"title":{"text":"Applied Energy Weapons"},"description":{"text":"Bring a Weapon Station online and field a modular Matter Overdrive energy weapon."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "station":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:weapon_station"]}]}},
+    "phaser":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:phaser"]}]}},
+    "rifle":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:phaser_rifle"]}]}},
+    "sniper":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:ion_sniper"]}]}},
+    "shotgun":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:plasma_shotgun"]}]}}
+  },
+  "requirements": [["station"],["phaser","rifle","sniper","shotgun"]],
+  "rewards":{"experience":150}
+}
