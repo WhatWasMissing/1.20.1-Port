@@ -64,7 +64,6 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
 
     private void crashedShip(WorldGenLevel level, BoundingBox clip) {
         BlockState hull=metal(), floor=floor(), beam=beam(), glass=glass(), stripe=stripe();
-        // Ship deck is terrain-level: the torn south ramp is bidirectionally walkable.
         for(int z=-20;z<=18;z++) {
             int half=z<-14?Math.max(3,7-(Math.abs(z+14)/2)):z>12?Math.max(3,7-(z-12)):7;
             for(int x=-half;x<=half;x++) {
@@ -78,10 +77,8 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
                 if(Math.abs(x)<half)set(level,clip,origin.offset(x,7,z),((x+z)&5)==0?beam:hull);
             }
         }
-        // Obvious exterior approach/ramp that also provides the return route.
         for(int z=-27;z<=-20;z++)for(int x=-2;x<=2;x++){set(level,clip,origin.offset(x,0,z),x==0?stripe:floor);for(int y=1;y<=3;y++)set(level,clip,origin.offset(x,y,z),Blocks.AIR.defaultBlockState());}
         for(int z=-16;z<=14;z++)set(level,clip,origin.offset(0,0,z),stripe);
-        // Story: cockpit failure, torn service bay, guarded engineering salvage.
         set(level,clip,origin.offset(-4,1,-11),Blocks.REDSTONE_LAMP.defaultBlockState());
         set(level,clip,origin.offset(4,1,-11),Blocks.CRACKED_DEEPSLATE_BRICKS.defaultBlockState());
         set(level,clip,origin.offset(-5,1,3),Blocks.COBWEB.defaultBlockState());
@@ -103,11 +100,9 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
                 if(Math.abs(z)<hz)set(level,clip,origin.offset(x,9,z),((x+z)&7)==0?beam:hull);
             }
         }
-        // Terrain-level boarding apron -> loading bay -> central spine.
         for(int z=-19;z<=-12;z++)for(int x=-3;x<=3;x++){set(level,clip,origin.offset(x,0,z),x==0?stripe:floor);for(int y=1;y<=4;y++)set(level,clip,origin.offset(x,y,z),Blocks.AIR.defaultBlockState());}
         for(int x=-26;x<=26;x++)for(int z=-2;z<=2;z++){set(level,clip,origin.offset(x,0,z),z==0?stripe:floor);for(int y=1;y<=5;y++)set(level,clip,origin.offset(x,y,z),Blocks.AIR.defaultBlockState());}
-        // Cargo racks are optional side rewards; engineering is the guarded focal room.
-        for(int cx:new int[]{-12,8})for(int x=-5;x<=5;x+=5)for(int z:new int[]{-7,7}){set(level,clip,origin.offset(cx+x,1,z),beam);if((x+z)&1==0)cache(level,clip,origin.offset(cx+x,2,z),"salvage",false,"cargo_ship");}
+        for(int cx:new int[]{-12,8})for(int x=-5;x<=5;x+=5)for(int z:new int[]{-7,7}){set(level,clip,origin.offset(cx+x,1,z),beam);if(((x+z)&1)==0)cache(level,clip,origin.offset(cx+x,2,z),"salvage",false,"cargo_ship");}
         cache(level,clip,origin.offset(25,1,0),"story_cache",true,"cargo_ship");
         set(level,clip,origin.offset(-26,1,0),Blocks.LECTERN.defaultBlockState());
     }
@@ -119,7 +114,6 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
         pod(level,clip,origin.offset(17,0,0),6,5,hull,floor,beam,glass);
         pod(level,clip,origin.offset(0,0,17),6,5,hull,floor,beam,glass);
         tube(level,clip,origin.offset(-13,0,0),true,5); tube(level,clip,origin.offset(13,0,0),true,5); tube(level,clip,origin.offset(0,0,13),false,5);
-        // South airlock is the only intended entrance and connects directly to hub.
         tube(level,clip,origin.offset(0,0,-14),false,8);
         for(int y=1;y<=3;y++)for(int x=-1;x<=1;x++)set(level,clip,origin.offset(x,y,-22),Blocks.AIR.defaultBlockState());
         cache(level,clip,origin.offset(0,1,17),"story_cache",true,"underwater_base");
@@ -130,7 +124,6 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
     private void madScientistLab(WorldGenLevel level, BoundingBox clip) {
         BlockState wall=white(), floor=floor(), dark=dark(), beam=beam(), glass=glass();
         room(level,clip,origin,7,6,5,wall,floor,beam,glass);
-        // Hidden basement at y-7. Continuous one-block-per-step stair, never gapped.
         BlockPos stairStart=origin.offset(5,0,4);
         BlockState stair=Blocks.POLISHED_DEEPSLATE_STAIRS.defaultBlockState().setValue(StairBlock.FACING,net.minecraft.core.Direction.SOUTH);
         for(int i=0;i<=7;i++){
@@ -138,7 +131,6 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
             for(int x=-1;x<=1;x++){BlockPos p=stairStart.offset(x,y,z);set(level,clip,p,stair);for(int h=1;h<=3;h++)set(level,clip,p.above(h),Blocks.AIR.defaultBlockState());}
         }
         BlockPos lab=origin.offset(0,-7,14); room(level,clip,lab,10,8,5,dark,floor,beam,glass);
-        // Failed experiments and notes tell the story; guarded cache is the objective.
         for(int x:new int[]{-6,-3,3,6})set(level,clip,lab.offset(x,1,-3),Blocks.GLASS.defaultBlockState());
         set(level,clip,lab.offset(-7,1,4),Blocks.COBWEB.defaultBlockState());
         set(level,clip,lab.offset(7,1,4),Blocks.CRYING_OBSIDIAN.defaultBlockState());
@@ -152,7 +144,6 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
         room(level,clip,origin.offset(-13,0,3),5,6,5,dark,floor,beam,glass);
         room(level,clip,origin.offset(13,0,3),5,6,5,dark,floor,beam,glass);
         room(level,clip,origin.offset(0,0,14),8,5,5,dark,floor,beam,glass);
-        // Explicit 3-wide corridors bridge the actual wall-to-wall gaps; no off-by-one doors.
         corridorX(level,clip,origin.offset(-9,0,3),4); corridorX(level,clip,origin.offset(9,0,3),4); corridorZ(level,clip,origin.offset(0,0,10),4);
         corridorZ(level,clip,origin.offset(0,0,-10),4);
         cache(level,clip,origin.offset(0,1,14),"story_cache",true,"android_house");
@@ -162,14 +153,11 @@ public final class LegacyVanillaStructurePiece extends StructurePiece {
 
     private void excavation(WorldGenLevel level, BoundingBox clip) {
         BlockState stone=Blocks.CUT_SANDSTONE.defaultBlockState(), floor=floor(), beam=beam(), stripe=stripe();
-        // Terraced bowl.
         for(int x=-17;x<=17;x++)for(int z=-17;z<=17;z++){
             int r=Math.max(Math.abs(x),Math.abs(z)); int depth=r<=6?10:r<=11?7:r<=15?3:1;
             for(int y=1;y<=depth;y++)set(level,clip,origin.offset(x,-y,z),Blocks.AIR.defaultBlockState());
             set(level,clip,origin.offset(x,-depth-1,z),stone);
         }
-        // Continuous L-shaped descent: every horizontal cell changes by <=1 Y.
-        BlockPos p=origin.offset(-15,-1,13);
         for(int i=0;i<12;i++){int y=-1-Math.min(i,9);for(int w=-1;w<=1;w++){BlockPos q=origin.offset(-15+i,y,13+w);set(level,clip,q,stone);for(int h=1;h<=3;h++)set(level,clip,q.above(h),Blocks.AIR.defaultBlockState());}}
         for(int i=1;i<=13;i++){int y=-10;for(int w=-1;w<=1;w++){BlockPos q=origin.offset(-4+w,y,13-i);set(level,clip,q,stone);for(int h=1;h<=3;h++)set(level,clip,q.above(h),Blocks.AIR.defaultBlockState());}}
         BlockPos relic=origin.offset(0,-10,0);
