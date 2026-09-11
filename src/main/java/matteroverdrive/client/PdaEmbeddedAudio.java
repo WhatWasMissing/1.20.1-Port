@@ -7,6 +7,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -78,12 +79,10 @@ public final class PdaEmbeddedAudio {
     }
 
     private static int playRecordedVoice(String id) {
-        try {
-            AudioInputStream source = recordedStream(id);
+        try (AudioInputStream source = recordedStream(id)) {
             if (source == null) return 0;
             Clip clip = AudioSystem.getClip();
             clip.open(source);
-            source.close();
             activeRecordedVoice = clip;
             clip.addLineListener(event -> {
                 if (event.getType() == LineEvent.Type.STOP) {
@@ -106,8 +105,12 @@ public final class PdaEmbeddedAudio {
         if (safeId.isBlank()) return null;
         String resource = "/assets/matteroverdrive/pda_voice/" + safeId + ".wav";
         try {
-            InputStream stream = PdaEmbeddedAudio.class.getResourceAsStream(resource);
-            if (stream != null) return AudioSystem.getAudioInputStream(stream);
+            InputStream raw = PdaEmbeddedAudio.class.getResourceAsStream(resource);
+            if (raw != null) {
+                // Java Sound probes with mark/reset; jar resource streams do not always
+                // provide it, so wrap classpath audio before handing it to AudioSystem.
+                return AudioSystem.getAudioInputStream(new BufferedInputStream(raw));
+            }
         } catch (Throwable ignored) { }
 
         Path override = Path.of("config", "matteroverdrive", "pda_voice", safeId + ".wav");
