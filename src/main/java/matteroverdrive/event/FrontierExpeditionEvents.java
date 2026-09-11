@@ -50,44 +50,40 @@ public final class FrontierExpeditionEvents {
         if (!(player.level() instanceof ServerLevel level)) return;
         boolean controller = false;
         boolean matrix = false;
-        boolean pattern = false;
-        boolean fabricator = false;
+        boolean redCrate = false;
         boolean charger = false;
-        boolean androidStation = false;
         boolean containment = false;
         boolean stabilizer = false;
         boolean quantumRelay = false;
         boolean networkSwitch = false;
-        boolean analyzer = false;
         BlockPos anchor = null;
 
         BlockPos centre = player.blockPosition();
-        for (BlockPos mutable : BlockPos.betweenClosed(centre.offset(-14, -9, -14), centre.offset(14, 9, 14))) {
+        for (BlockPos mutable : BlockPos.betweenClosed(centre.offset(-18, -8, -18), centre.offset(18, 8, 18))) {
             ResourceLocation id = ForgeRegistries.BLOCKS.getKey(level.getBlockState(mutable).getBlock());
             if (id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) continue;
             String path = id.getPath();
             switch (path) {
                 case "facility_network_controller" -> { controller = true; if (anchor == null) anchor = mutable.immutable(); }
                 case "matter_storage_matrix" -> matrix = true;
-                case "pattern_storage" -> pattern = true;
-                case "drone_fabricator" -> { fabricator = true; if (anchor == null) anchor = mutable.immutable(); }
+                case "tritanium_crate_red" -> redCrate = true;
                 case "charging_station" -> charger = true;
-                case "android_station" -> androidStation = true;
                 case "anomaly_containment_unit" -> { containment = true; if (anchor == null) anchor = mutable.immutable(); }
                 case "gravitational_stabilizer" -> stabilizer = true;
                 case "quantum_power_relay" -> { quantumRelay = true; if (anchor == null) anchor = mutable.immutable(); }
                 case "network_switch" -> networkSwitch = true;
-                case "matter_analyzer" -> analyzer = true;
                 default -> { }
             }
         }
 
         String site = null;
         int bit = 0;
-        if (controller && matrix && pattern) { site = "deep_matter_vault"; bit = 1; }
-        else if (fabricator && charger && androidStation) { site = "autonomous_drone_foundry"; bit = 2; }
+        // Signatures are deliberately concentrated around each site's control/core room.
+        // This keeps discovery bounded while avoiding dependence on decorative blocks.
+        if (controller && matrix && redCrate) { site = "deep_matter_vault"; bit = 1; }
+        else if (controller && charger && !containment) { site = "autonomous_drone_foundry"; bit = 2; }
         else if (containment && stabilizer && controller) { site = "anomaly_quarantine_site"; bit = 4; }
-        else if (quantumRelay && networkSwitch && analyzer) { site = "orbital_recovery_array"; bit = 8; }
+        else if (quantumRelay && networkSwitch && controller) { site = "orbital_recovery_array"; bit = 8; }
         if (site == null || anchor == null) return;
 
         FrontierExpeditionSavedData ledger = FrontierExpeditionSavedData.get(level);
