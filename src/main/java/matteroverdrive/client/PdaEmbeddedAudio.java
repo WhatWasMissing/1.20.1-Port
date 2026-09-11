@@ -55,6 +55,10 @@ public final class PdaEmbeddedAudio {
         }
     }
 
+    public static synchronized boolean isVoicePlaying() {
+        return activeVoice != null && activeVoice.isAlive();
+    }
+
     public static boolean playUi(String id) {
         double[][] pattern = switch (id == null ? "" : id) {
             case "ui_startup" -> new double[][]{{620, 70}, {880, 80}, {1240, 120}};
@@ -100,7 +104,7 @@ public final class PdaEmbeddedAudio {
                     + "if(-not $v){$v=$s.GetInstalledVoices() | Where-Object {$_.Enabled -and $_.VoiceInfo.Culture.Name -like 'en-*'} | Select-Object -First 1}; "
                     + "if($v){$s.SelectVoice($v.VoiceInfo.Name)}; $s.Rate=-1; $s.Volume=78; $s.Speak($env:MO_PDA_TEXT); $s.Dispose();";
             ProcessBuilder builder = new ProcessBuilder("powershell.exe", "-NoProfile", "-NonInteractive",
-                    "-ExecutionPolicy", "Bypass", "-Command", script);
+                    "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-Command", script);
             builder.environment().put("MO_PDA_TEXT", text);
             return start(builder);
         }
