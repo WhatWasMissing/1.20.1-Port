@@ -17,15 +17,12 @@ import java.util.zip.ZipInputStream;
 
 /**
  * Plays the original offline-generated PDA voice/UI assets embedded in the jar.
- *
- * GitHub's text-only connector cannot commit binary audio directly, so the WAV
- * pack is stored as split base64 text and decoded in memory. No files are written
- * and no network/TTS service is required at runtime. Java Sound failures are
- * treated as optional-audio failures; captions/narrator fallback remain usable.
+ * The compressed WAV pack is stored as small base64 text chunks because the
+ * repository connector is text-only. Runtime playback performs no file writes,
+ * downloads or cloud TTS calls.
  */
 public final class PdaEmbeddedAudio {
-    private static final String PACK_PART_0 = "/assets/matteroverdrive/pda_audio/pda_audio_pack.part0.b64";
-    private static final String PACK_PART_1 = "/assets/matteroverdrive/pda_audio/pda_audio_pack.part1.b64";
+    private static final int PACK_PARTS = 16;
     private static final Map<String, byte[]> WAVS = new HashMap<>();
     private static boolean loaded;
     private static Clip activeVoice;
@@ -68,21 +65,13 @@ public final class PdaEmbeddedAudio {
             ensureLoaded();
             byte[] wav = WAVS.get(name);
             if (wav == null) return null;
-
             AudioInputStream source = AudioSystem.getAudioInputStream(new ByteArrayInputStream(wav));
             AudioFormat base = source.getFormat();
-            AudioFormat pcm = new AudioFormat(
-                    AudioFormat.Encoding.PCM_SIGNED,
-                    base.getSampleRate(),
-                    16,
-                    base.getChannels(),
-                    Math.max(1, base.getChannels()) * 2,
-                    base.getSampleRate(),
-                    false);
+            AudioFormat pcm = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,
+                    base.getSampleRate(), 16, base.getChannels(),
+                    Math.max(1, base.getChannels()) * 2, base.getSampleRate(), false);
             AudioInputStream decoded = AudioSystem.isConversionSupported(pcm, base)
-                    ? AudioSystem.getAudioInputStream(pcm, source)
-                    : source;
-
+                    ? AudioSystem.getAudioInputStream(pcm, source) : source;
             Clip clip = AudioSystem.getClip();
             clip.open(decoded);
             decoded.close();
@@ -108,9 +97,13 @@ public final class PdaEmbeddedAudio {
         if (loaded) return;
         loaded = true;
         try {
-            String encoded = readText(PACK_PART_0) + readText(PACK_PART_1);
-            if (encoded.isBlank()) return;
-            byte[] zipBytes = Base64.getMimeDecoder().decode(encoded);
+            StringBuilder encoded = new StringBuilder(800_000);
+            for (int i = 0; i < PACK_PARTS; i++) {
+                encoded.append(readText(String.format(
+                        "/assets/matteroverdrive/pda_audio/pda_audio_pack.part%02d.b64", i)));
+            }
+            if (encoded.isEmpty()) return;
+            byte[] zipBytes = Base64.getMimeDecoder().decode(encoded.toString());
             try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
                 ZipEntry entry;
                 while ((entry = zip.getNextEntry()) != null) {
@@ -127,7 +120,7 @@ public final class PdaEmbeddedAudio {
 
     private static String readText(String resource) throws Exception {
         try (InputStream stream = PdaEmbeddedAudio.class.getResourceAsStream(resource)) {
-            if (stream == null) return "";
+            if (stream == null) throw new IllegalStateException("Missing embedded PDA audio chunk: " + resource);
             return new String(stream.readAllBytes(), StandardCharsets.US_ASCII).replaceAll("\\s+", "");
         }
     }
