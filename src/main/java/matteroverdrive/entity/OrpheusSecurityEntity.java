@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -40,5 +41,12 @@ public class OrpheusSecurityEntity extends RangedRogueAndroidEntity {
         setCustomNameVisible(true);
         setPersistenceRequired();
         return data;
+    }
+
+    /** Present-day field teams must remain interactable even in mixed encounter packages. */
+    @Override
+    public boolean canAttack(LivingEntity target) {
+        if (target instanceof FacilityResearcherEntity) return false;
+        return super.canAttack(target);
     }
 }
