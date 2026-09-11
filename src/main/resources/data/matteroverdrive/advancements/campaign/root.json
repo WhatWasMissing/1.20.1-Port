@@ -1,0 +1,13 @@
+{
+  "display": {
+    "icon": {"item": "matteroverdrive:data_pad"},
+    "title": {"text": "Matter Overdrive"},
+    "description": {"text": "Recover lost technology and rebuild the Matter Overdrive network."},
+    "background": "minecraft:textures/block/deepslate_tiles.png",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {"start": {"trigger": "minecraft:tick"}}
+}
