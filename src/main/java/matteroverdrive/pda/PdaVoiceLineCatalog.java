@@ -30,6 +30,12 @@ public final class PdaVoiceLineCatalog {
                 "ICARUS containment architecture identified. Historical records indicate the shutdown chain was overridden. Recreating the original configuration is not advised.");
         LINES.put("synthetic_contact",
                 "Independent synthetic signatures detected. Not all Android networks are hostile. Confirm affiliation before engaging.");
+        LINES.put("field_liaison",
+                "Field team trust threshold reached. Recovery personnel have authorized access to less sanitized operational context.");
+        LINES.put("synthetic_liaison",
+                "Independent synthetic trust threshold reached. Contact classification updated. Affiliation should still be confirmed individually.");
+        LINES.put("incident_analyst",
+                "Archive context threshold reached. Simplified reconstruction filters have been reduced. Contradictory evidence will remain visible.");
         LINES.put("closed_loop",
                 "Archive reconstruction complete. Causal origin unresolved. Standing instruction: do not complete the loop.");
         LINES.put("database_ready",
