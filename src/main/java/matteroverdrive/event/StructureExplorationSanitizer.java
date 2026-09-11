@@ -1,8 +1,10 @@
 package matteroverdrive.event;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.blockentity.AndroidSpawnerBlockEntity;
 import matteroverdrive.blockentity.TritaniumCrateBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -57,14 +58,17 @@ public final class StructureExplorationSanitizer {
             site("anomaly_quarantine_site"), site("orbital_recovery_array")
     );
 
+    private static final BlockPos[] GUARD_OFFSETS = {
+            new BlockPos(3, 0, 0), new BlockPos(-3, 0, 0),
+            new BlockPos(0, 0, 3), new BlockPos(0, 0, -3)
+    };
+
     private StructureExplorationSanitizer() {}
 
     @SubscribeEvent
     public static void chunkLoaded(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
 
-        // Copy positions first: replacing a block entity while iterating the chunk's
-        // backing map can invalidate the iterator.
         List<BlockPos> candidates = new ArrayList<>();
         for (Map.Entry<BlockPos, BlockEntity> entry : event.getChunk().getBlockEntities().entrySet()) {
             ResourceLocation id = ForgeRegistries.BLOCKS.getKey(entry.getValue().getBlockState().getBlock());
@@ -101,6 +105,7 @@ public final class StructureExplorationSanitizer {
                         ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "chests/facilities/story_cache"),
                         level.getSeed() ^ pos.asLong() ^ site.id().hashCode());
             }
+            ensureGuard(level, pos, site, hash);
             return;
         }
 
@@ -112,11 +117,33 @@ public final class StructureExplorationSanitizer {
         };
         level.setBlock(pos, replacement.defaultBlockState(), 3);
 
-        // Sparse debris/cobwebs add readable abandonment without touching the main
-        // route aggressively. Only use the block above the former machine footprint.
         BlockPos above = pos.above();
         if ((hash & 3L) == 0L && level.getBlockState(above).isAir()) {
             level.setBlock(above, Blocks.COBWEB.defaultBlockState(), 3);
+        }
+    }
+
+    /**
+     * Place a finite facility-security marker beside a cache only when there is a
+     * genuine side alcove: solid floor plus two blocks of clear headroom. We never
+     * overwrite a doorway/corridor just to force combat.
+     */
+    private static void ensureGuard(ServerLevel level, BlockPos cachePos, Site site, long hash) {
+        int start = Math.floorMod((int) hash, GUARD_OFFSETS.length);
+        for (int i = 0; i < GUARD_OFFSETS.length; i++) {
+            BlockPos candidate = cachePos.offset(GUARD_OFFSETS[(start + i) % GUARD_OFFSETS.length]);
+            if (!level.hasChunkAt(candidate)) continue;
+            if (!level.getBlockState(candidate).isAir() || !level.getBlockState(candidate.above()).isAir()) continue;
+            if (!level.getBlockState(candidate.below()).isFaceSturdy(level, candidate.below(), Direction.UP)) continue;
+
+            Block spawner = block("android_spawner", Blocks.IRON_BLOCK);
+            level.setBlock(candidate, spawner.defaultBlockState(), 3);
+            if (level.getBlockEntity(candidate) instanceof AndroidSpawnerBlockEntity security) {
+                int reserve = site.id().equals("black_site") ? 4 : site.id().contains("foundry") ? 3 : 2;
+                int ranged = site.id().contains("refinery") ? 35 : site.id().equals("black_site") ? 85 : 60;
+                security.configureFacility(site.id(), reserve, ranged);
+            }
+            return;
         }
     }
 
