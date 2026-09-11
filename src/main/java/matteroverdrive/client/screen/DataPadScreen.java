@@ -11,6 +11,8 @@ import matteroverdrive.world.AmbientLoreCatalog.Entry;
 import matteroverdrive.world.StructureLoreCatalog;
 import matteroverdrive.world.StructureLoreCatalog.LoreRecord;
 import matteroverdrive.world.StructureLoreCatalog.Reconstruction;
+import matteroverdrive.world.TechnologyLoreCatalog;
+import matteroverdrive.world.TechnologyLoreCatalog.TechRecord;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -45,6 +47,7 @@ public class DataPadScreen extends Screen {
         INCIDENT("INCIDENT"),
         FACILITIES("FACILITIES"),
         FIELD_LOGS("FIELD LOGS"),
+        TECHNOLOGY("TECHNOLOGY"),
         RESEARCH("RESEARCH"),
         OPERATIONS("OPERATIONS"),
         CONTRACTS("CONTRACTS"),
@@ -66,6 +69,7 @@ public class DataPadScreen extends Screen {
     private int reconstructionCursor;
     private int facilityPage;
     private int ambientCursor;
+    private int technologyCursor;
     private int armedAbandonSlot = -1;
     private long abandonArmedUntil;
     private Button previousButton;
@@ -81,6 +85,7 @@ public class DataPadScreen extends Screen {
         this.archiveCursor = firstRecoveredArchiveOrZero();
         this.reconstructionCursor = firstIncompleteReconstructionOrLast();
         this.ambientCursor = Math.max(0, ambientEntries().size() - 1);
+        this.technologyCursor = Math.max(0, technologyEntries().size() - 1);
         Arrays.fill(managedSlots, -1);
     }
 
@@ -94,17 +99,21 @@ public class DataPadScreen extends Screen {
         int top = panelTop();
         int sidebarX = left + 8;
         int buttonY = top + 40;
+        int manualY = panelBottom() - 28;
+        int available = Math.max(Tab.values().length * 9, manualY - buttonY - 5);
+        int spacing = Math.max(9, Math.min(17, available / Tab.values().length));
+        int buttonHeight = Math.max(8, spacing - 2);
         for (Tab value : Tab.values()) {
             Button button = addRenderableWidget(Button.builder(Component.literal(value.label),
-                    ignored -> selectTab(value)).bounds(sidebarX, buttonY, 100, 15).build());
+                    ignored -> selectTab(value)).bounds(sidebarX, buttonY, 100, buttonHeight).build());
             tabButtons.add(button);
-            buttonY += 17;
+            buttonY += spacing;
         }
 
         String manualLabel = GuideMeCompatEvents.isAvailable() ? "TECH MANUAL • GUIDEME" : "TECH MANUAL • BUILT-IN";
         manualButton = addRenderableWidget(Button.builder(Component.literal(manualLabel),
                 ignored -> ClientDocumentationOpener.openTechnicalManual())
-                .bounds(sidebarX, panelBottom() - 28, 100, 20).build());
+                .bounds(sidebarX, manualY, 100, 20).build());
 
         int contentLeft = left + 122;
         int contentRight = panelRight() - 10;
@@ -163,6 +172,9 @@ public class DataPadScreen extends Screen {
         } else if (tab == Tab.FIELD_LOGS) {
             int size = ambientEntries().size();
             if (size > 0) ambientCursor = Math.max(0, Math.min(size - 1, ambientCursor + direction));
+        } else if (tab == Tab.TECHNOLOGY) {
+            int size = technologyEntries().size();
+            if (size > 0) technologyCursor = Math.max(0, Math.min(size - 1, technologyCursor + direction));
         }
         refreshControls();
     }
@@ -170,7 +182,9 @@ public class DataPadScreen extends Screen {
     private void refreshControls() {
         for (int i = 0; i < tabButtons.size(); i++) tabButtons.get(i).active = Tab.values()[i] != tab;
         List<Entry> ambient = ambientEntries();
-        boolean navigable = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FACILITIES || tab == Tab.FIELD_LOGS;
+        List<TechRecord> technology = technologyEntries();
+        boolean navigable = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FACILITIES
+                || tab == Tab.FIELD_LOGS || tab == Tab.TECHNOLOGY;
         if (previousButton != null) {
             previousButton.visible = navigable;
             previousButton.active = switch (tab) {
@@ -178,6 +192,7 @@ public class DataPadScreen extends Screen {
                 case INCIDENT -> reconstructionCursor > 0;
                 case FACILITIES -> facilityPage > 0;
                 case FIELD_LOGS -> ambientCursor > 0 && !ambient.isEmpty();
+                case TECHNOLOGY -> technologyCursor > 0 && !technology.isEmpty();
                 default -> false;
             };
         }
@@ -188,17 +203,19 @@ public class DataPadScreen extends Screen {
                 case INCIDENT -> reconstructionCursor < StructureLoreCatalog.reconstructions().size() - 1;
                 case FACILITIES -> facilityPage < 1;
                 case FIELD_LOGS -> !ambient.isEmpty() && ambientCursor < ambient.size() - 1;
+                case TECHNOLOGY -> !technology.isEmpty() && technologyCursor < technology.size() - 1;
                 default -> false;
             };
         }
 
         boolean narratable = canNarrateCurrentLore();
+        boolean narrationTab = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS || tab == Tab.TECHNOLOGY;
         if (readAloudButton != null) {
-            readAloudButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS;
+            readAloudButton.visible = narrationTab;
             readAloudButton.active = narratable;
         }
         if (stopNarrationButton != null) {
-            stopNarrationButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS;
+            stopNarrationButton.visible = narrationTab;
             stopNarrationButton.active = narratable;
         }
         refreshContractButtons();
@@ -214,6 +231,7 @@ public class DataPadScreen extends Screen {
             return reconstruction != null && StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstruction);
         }
         if (tab == Tab.FIELD_LOGS) return currentAmbientEntry() != null;
+        if (tab == Tab.TECHNOLOGY) return currentTechnologyEntry() != null;
         return false;
     }
 
@@ -245,6 +263,11 @@ public class DataPadScreen extends Screen {
             Entry entry = currentAmbientEntry();
             return entry == null ? "" : entry.title() + ". Source: " + entry.source() + ". Recovered excerpt. "
                     + entry.excerpt() + ". P D A analysis. " + entry.analysis();
+        }
+        if (tab == Tab.TECHNOLOGY) {
+            TechRecord entry = currentTechnologyEntry();
+            return entry == null ? "" : entry.title() + ". " + entry.category() + ". Function. " + entry.function()
+                    + ". Archive context. " + entry.lore() + ". Field note. " + entry.fieldNote();
         }
         return "";
     }
@@ -324,13 +347,15 @@ public class DataPadScreen extends Screen {
             case INCIDENT -> renderIncident(graphics, x, y, maxWidth, contentBottom);
             case FACILITIES -> renderFacilities(graphics, x, y, maxWidth, contentBottom);
             case FIELD_LOGS -> renderFieldLogs(graphics, x, y, maxWidth, contentBottom);
+            case TECHNOLOGY -> renderTechnology(graphics, x, y, maxWidth, contentBottom);
             case RESEARCH -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, researchLines(), "No research programme data available.");
             case OPERATIONS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, operationLines(), "No active Field Operations data available.");
             case CONTRACTS -> renderContracts(graphics, x, y, maxWidth, contentBottom);
             case SCANS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, scanLines(), "No block scans recorded yet.");
         }
 
-        if ((tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS) && canNarrateCurrentLore()) {
+        if ((tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS || tab == Tab.TECHNOLOGY)
+                && canNarrateCurrentLore()) {
             graphics.drawString(font, Component.literal("AUDIO LOG: READ ALOUD AVAILABLE"),
                     contentLeft + 10, bottom - 41, CYAN, false);
         } else {
@@ -354,6 +379,11 @@ public class DataPadScreen extends Screen {
         y = paragraph(graphics, "Optional physical records: " + ambient + "/" + AmbientLoreCatalog.count()
                 + ". These preserve personal, maintenance and operational details without gating the main Incident reconstruction.",
                 x, y, maxWidth, ambient == AmbientLoreCatalog.count() ? GOOD : MUTED);
+        y += 5;
+        int technology = technologyEntries().size();
+        y = paragraph(graphics, "Technology codex: " + technology + "/" + TechnologyLoreCatalog.count()
+                + ". Major machines, field tools and equipment unlock when first acquired, crafted or placed.",
+                x, y, maxWidth, technology == TechnologyLoreCatalog.count() ? GOOD : MUTED);
         y += 6;
         y = paragraph(graphics,
                 "Archive entries are displayed in actual incident chronology. Your discovery order remains non-linear: any facility can provide evidence for later or earlier events.",
@@ -581,6 +611,48 @@ public class DataPadScreen extends Screen {
         }
     }
 
+    private void renderTechnology(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
+        List<TechRecord> entries = technologyEntries();
+        if (entries.isEmpty()) {
+            graphics.drawString(font, Component.literal("NO MAJOR TECHNOLOGY INDEXED"), x, y, LOCKED, false);
+            y += 16;
+            paragraph(graphics,
+                    "Craft, recover, pick up or place major Matter Overdrive machines and equipment. The first encounter with each technology authenticates its codex entry and queues a short PDA callout.",
+                    x, y, maxWidth, MUTED);
+            return;
+        }
+        technologyCursor = Math.max(0, Math.min(technologyCursor, entries.size() - 1));
+        TechRecord entry = entries.get(technologyCursor);
+        graphics.drawString(font,
+                Component.literal("TECH RECORD " + (technologyCursor + 1) + "/" + entries.size()
+                        + " // INDEX " + entries.size() + "/" + TechnologyLoreCatalog.count()),
+                x, y, CYAN, false);
+        y += 15;
+        graphics.drawString(font, Component.literal(entry.title()), x, y, ORANGE, false);
+        y += 13;
+        graphics.drawString(font, Component.literal(entry.category()), x, y, CYAN, false);
+        y += 11;
+        graphics.drawString(font, Component.literal("REGISTRY: matteroverdrive:" + entry.id()), x, y, MUTED, false);
+        y += 16;
+
+        graphics.drawString(font, Component.literal("FUNCTION"), x, y, CYAN, false);
+        y += 12;
+        y = paragraph(graphics, entry.function(), x, y, maxWidth, TEXT);
+        y += 7;
+
+        if (y < bottom - 42) {
+            graphics.drawString(font, Component.literal("ARCHIVE CONTEXT"), x, y, CYAN, false);
+            y += 12;
+            y = paragraph(graphics, entry.lore(), x, y, maxWidth, MUTED);
+            y += 7;
+        }
+        if (y < bottom - 28) {
+            graphics.drawString(font, Component.literal("FIELD NOTE"), x, y, CYAN, false);
+            y += 12;
+            paragraph(graphics, entry.fieldNote(), x, y, maxWidth, GOOD);
+        }
+    }
+
     private void renderContracts(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
         List<ContractRef> contracts = contractRefs();
         if (contracts.isEmpty()) {
@@ -631,7 +703,7 @@ public class DataPadScreen extends Screen {
         boolean progression = false;
         for (String line : journal) {
             if (line.equals("--- Recovered Logs ---") || line.equals("--- Field Operations ---")) break;
-            if (!line.startsWith("@lore:")) result.add(line);
+            if (!line.startsWith("@lore:") && !line.startsWith("@tech:")) result.add(line);
         }
         for (String line : journal) {
             if (line.equals("--- Progression ---")) {
@@ -640,7 +712,7 @@ public class DataPadScreen extends Screen {
                 continue;
             }
             if (line.equals("--- Scan History ---")) break;
-            if (progression && !line.startsWith("@lore:")) result.add(line);
+            if (progression && !line.startsWith("@lore:") && !line.startsWith("@tech:")) result.add(line);
         }
         return result;
     }
@@ -674,13 +746,30 @@ public class DataPadScreen extends Screen {
         return entries.get(ambientCursor);
     }
 
+    private List<TechRecord> technologyEntries() {
+        List<TechRecord> entries = new ArrayList<>();
+        for (String line : journal) {
+            if (!line.startsWith("@tech:")) continue;
+            TechRecord entry = TechnologyLoreCatalog.byItemId(line.substring("@tech:".length()));
+            if (entry != null) entries.add(entry);
+        }
+        return List.copyOf(entries);
+    }
+
+    private TechRecord currentTechnologyEntry() {
+        List<TechRecord> entries = technologyEntries();
+        if (entries.isEmpty()) return null;
+        technologyCursor = Math.max(0, Math.min(technologyCursor, entries.size() - 1));
+        return entries.get(technologyCursor);
+    }
+
     private List<String> between(String start, String end) {
         List<String> lines = new ArrayList<>();
         boolean capture = false;
         for (String line : journal) {
             if (line.equals(start)) { capture = true; continue; }
             if (capture && line.equals(end)) break;
-            if (capture && !line.startsWith("@lore:")) lines.add(line);
+            if (capture && !line.startsWith("@lore:") && !line.startsWith("@tech:")) lines.add(line);
         }
         return lines;
     }
