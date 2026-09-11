@@ -6,6 +6,8 @@ import matteroverdrive.client.PdaNarrationController;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
+import matteroverdrive.world.AmbientLoreCatalog;
+import matteroverdrive.world.AmbientLoreCatalog.Entry;
 import matteroverdrive.world.StructureLoreCatalog;
 import matteroverdrive.world.StructureLoreCatalog.LoreRecord;
 import matteroverdrive.world.StructureLoreCatalog.Reconstruction;
@@ -21,14 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Player-specific Matter Overdrive PDA.
- *
- * The PDA owns personal discovery, story reconstruction, field operations and
- * contract presentation. GuideME remains the full technical manual and is opened
- * only from the dedicated manual action; it never replaces this screen.
- * Recovered lore can be spoken through Minecraft's built-in narration service.
- */
+/** Player-specific Matter Overdrive PDA. */
 public class DataPadScreen extends Screen {
     private static final int BACKGROUND = 0xF0061018;
     private static final int PANEL = 0xE80A1822;
@@ -49,6 +44,7 @@ public class DataPadScreen extends Screen {
         DATA_BANK("DATA BANK"),
         INCIDENT("INCIDENT"),
         FACILITIES("FACILITIES"),
+        FIELD_LOGS("FIELD LOGS"),
         RESEARCH("RESEARCH"),
         OPERATIONS("OPERATIONS"),
         CONTRACTS("CONTRACTS"),
@@ -69,6 +65,7 @@ public class DataPadScreen extends Screen {
     private int archiveSection;
     private int reconstructionCursor;
     private int facilityPage;
+    private int ambientCursor;
     private int armedAbandonSlot = -1;
     private long abandonArmedUntil;
     private Button previousButton;
@@ -83,6 +80,7 @@ public class DataPadScreen extends Screen {
         this.loreMask = loreMask & StructureLoreCatalog.ALL_RECORDS_MASK;
         this.archiveCursor = firstRecoveredArchiveOrZero();
         this.reconstructionCursor = firstIncompleteReconstructionOrLast();
+        this.ambientCursor = Math.max(0, ambientEntries().size() - 1);
         Arrays.fill(managedSlots, -1);
     }
 
@@ -98,9 +96,9 @@ public class DataPadScreen extends Screen {
         int buttonY = top + 40;
         for (Tab value : Tab.values()) {
             Button button = addRenderableWidget(Button.builder(Component.literal(value.label),
-                    ignored -> selectTab(value)).bounds(sidebarX, buttonY, 100, 16).build());
+                    ignored -> selectTab(value)).bounds(sidebarX, buttonY, 100, 15).build());
             tabButtons.add(button);
-            buttonY += 18;
+            buttonY += 17;
         }
 
         String manualLabel = GuideMeCompatEvents.isAvailable() ? "TECH MANUAL • GUIDEME" : "TECH MANUAL • BUILT-IN";
@@ -150,13 +148,11 @@ public class DataPadScreen extends Screen {
                     archiveCursor++;
                     archiveSection = 0;
                 }
-            } else {
-                if (archiveSection > 0) {
-                    archiveSection--;
-                } else if (archiveCursor > 0) {
-                    archiveCursor--;
-                    archiveSection = ARCHIVE_SECTIONS - 1;
-                }
+            } else if (archiveSection > 0) {
+                archiveSection--;
+            } else if (archiveCursor > 0) {
+                archiveCursor--;
+                archiveSection = ARCHIVE_SECTIONS - 1;
             }
         } else if (tab == Tab.INCIDENT) {
             reconstructionCursor = Math.max(0, Math.min(
@@ -164,43 +160,45 @@ public class DataPadScreen extends Screen {
                     reconstructionCursor + direction));
         } else if (tab == Tab.FACILITIES) {
             facilityPage = Math.max(0, Math.min(1, facilityPage + direction));
+        } else if (tab == Tab.FIELD_LOGS) {
+            int size = ambientEntries().size();
+            if (size > 0) ambientCursor = Math.max(0, Math.min(size - 1, ambientCursor + direction));
         }
         refreshControls();
     }
 
     private void refreshControls() {
-        for (int i = 0; i < tabButtons.size(); i++) {
-            tabButtons.get(i).active = Tab.values()[i] != tab;
-        }
-
-        boolean navigable = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FACILITIES;
+        for (int i = 0; i < tabButtons.size(); i++) tabButtons.get(i).active = Tab.values()[i] != tab;
+        List<Entry> ambient = ambientEntries();
+        boolean navigable = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FACILITIES || tab == Tab.FIELD_LOGS;
         if (previousButton != null) {
             previousButton.visible = navigable;
             previousButton.active = switch (tab) {
                 case DATA_BANK -> archiveCursor > 0 || archiveSection > 0;
                 case INCIDENT -> reconstructionCursor > 0;
                 case FACILITIES -> facilityPage > 0;
+                case FIELD_LOGS -> ambientCursor > 0 && !ambient.isEmpty();
                 default -> false;
             };
         }
         if (nextButton != null) {
             nextButton.visible = navigable;
             nextButton.active = switch (tab) {
-                case DATA_BANK -> archiveCursor < StructureLoreCatalog.RECORD_COUNT - 1
-                        || archiveSection < ARCHIVE_SECTIONS - 1;
+                case DATA_BANK -> archiveCursor < StructureLoreCatalog.RECORD_COUNT - 1 || archiveSection < ARCHIVE_SECTIONS - 1;
                 case INCIDENT -> reconstructionCursor < StructureLoreCatalog.reconstructions().size() - 1;
                 case FACILITIES -> facilityPage < 1;
+                case FIELD_LOGS -> !ambient.isEmpty() && ambientCursor < ambient.size() - 1;
                 default -> false;
             };
         }
 
         boolean narratable = canNarrateCurrentLore();
         if (readAloudButton != null) {
-            readAloudButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT;
+            readAloudButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS;
             readAloudButton.active = narratable;
         }
         if (stopNarrationButton != null) {
-            stopNarrationButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT;
+            stopNarrationButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS;
             stopNarrationButton.active = narratable;
         }
         refreshContractButtons();
@@ -215,6 +213,7 @@ public class DataPadScreen extends Screen {
             Reconstruction reconstruction = StructureLoreCatalog.reconstructionByIndex(reconstructionCursor);
             return reconstruction != null && StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstruction);
         }
+        if (tab == Tab.FIELD_LOGS) return currentAmbientEntry() != null;
         return false;
     }
 
@@ -223,7 +222,6 @@ public class DataPadScreen extends Screen {
         if (!narration.isBlank()) PdaNarrationController.read(narration);
     }
 
-    /** Locked/unrecovered lore deliberately returns no spoken text. */
     private String currentLoreNarration() {
         if (tab == Tab.DATA_BANK) {
             LoreRecord record = StructureLoreCatalog.byArchiveIndex(archiveCursor + 1);
@@ -242,6 +240,11 @@ public class DataPadScreen extends Screen {
             if (reconstruction == null || !StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstruction)) return "";
             return reconstruction.title() + ". " + reconstruction.subtitle() + ". " + reconstruction.lead()
                     + " " + reconstruction.evidence() + " " + reconstruction.analysis() + " " + reconstruction.conclusion();
+        }
+        if (tab == Tab.FIELD_LOGS) {
+            Entry entry = currentAmbientEntry();
+            return entry == null ? "" : entry.title() + ". Source: " + entry.source() + ". Recovered excerpt. "
+                    + entry.excerpt() + ". P D A analysis. " + entry.analysis();
         }
         return "";
     }
@@ -320,13 +323,14 @@ public class DataPadScreen extends Screen {
             case DATA_BANK -> renderDataBank(graphics, x, y, maxWidth, contentBottom);
             case INCIDENT -> renderIncident(graphics, x, y, maxWidth, contentBottom);
             case FACILITIES -> renderFacilities(graphics, x, y, maxWidth, contentBottom);
+            case FIELD_LOGS -> renderFieldLogs(graphics, x, y, maxWidth, contentBottom);
             case RESEARCH -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, researchLines(), "No research programme data available.");
             case OPERATIONS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, operationLines(), "No active Field Operations data available.");
             case CONTRACTS -> renderContracts(graphics, x, y, maxWidth, contentBottom);
             case SCANS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, scanLines(), "No block scans recorded yet.");
         }
 
-        if ((tab == Tab.DATA_BANK || tab == Tab.INCIDENT) && canNarrateCurrentLore()) {
+        if ((tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS) && canNarrateCurrentLore()) {
             graphics.drawString(font, Component.literal("AUDIO LOG: READ ALOUD AVAILABLE"),
                     contentLeft + 10, bottom - 41, CYAN, false);
         } else {
@@ -346,6 +350,11 @@ public class DataPadScreen extends Screen {
                 + ". Authenticated reconstructions: " + unlockedReconstructions() + "/"
                 + StructureLoreCatalog.reconstructions().size() + ".", x, y, maxWidth, TEXT);
         y += 5;
+        int ambient = ambientEntries().size();
+        y = paragraph(graphics, "Optional physical records: " + ambient + "/" + AmbientLoreCatalog.count()
+                + ". These preserve personal, maintenance and operational details without gating the main Incident reconstruction.",
+                x, y, maxWidth, ambient == AmbientLoreCatalog.count() ? GOOD : MUTED);
+        y += 6;
         y = paragraph(graphics,
                 "Archive entries are displayed in actual incident chronology. Your discovery order remains non-linear: any facility can provide evidence for later or earlier events.",
                 x, y, maxWidth, MUTED);
@@ -377,12 +386,12 @@ public class DataPadScreen extends Screen {
             graphics.drawString(font, Component.literal("ACTIVE THEORY"), x, y, CYAN, false);
             y += 13;
             if (nextReconstruction == null) {
-                y = paragraph(graphics, "All five incident reconstructions are authenticated.", x, y, maxWidth, GOOD);
+                paragraph(graphics, "All five incident reconstructions are authenticated.", x, y, maxWidth, GOOD);
             } else {
                 int have = StructureLoreCatalog.reconstructionEvidenceCount(loreMask, nextReconstruction);
                 y = paragraph(graphics, nextReconstruction.title() + " — evidence " + have + "/"
                         + nextReconstruction.evidenceRequired(), x, y, maxWidth, ORANGE);
-                y = paragraph(graphics, nextReconstruction.subtitle(), x, y + 2, maxWidth, MUTED);
+                paragraph(graphics, nextReconstruction.subtitle(), x, y + 2, maxWidth, MUTED);
             }
         }
     }
@@ -536,40 +545,67 @@ public class DataPadScreen extends Screen {
         }
     }
 
+    private void renderFieldLogs(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
+        List<Entry> entries = ambientEntries();
+        if (entries.isEmpty()) {
+            graphics.drawString(font, Component.literal("NO OPTIONAL FIELD LOGS AUTHENTICATED"), x, y, LOCKED, false);
+            y += 16;
+            paragraph(graphics,
+                    "Search facility crates, salvage caches and archive rooms for physical records. Right-click a recovered fragment to authenticate it into this index.",
+                    x, y, maxWidth, MUTED);
+            return;
+        }
+        ambientCursor = Math.max(0, Math.min(ambientCursor, entries.size() - 1));
+        Entry entry = entries.get(ambientCursor);
+        graphics.drawString(font,
+                Component.literal("PHYSICAL RECORD " + (ambientCursor + 1) + "/" + entries.size()
+                        + " // COLLECTION " + entries.size() + "/" + AmbientLoreCatalog.count()),
+                x, y, CYAN, false);
+        y += 15;
+        graphics.drawString(font, Component.literal(entry.title()), x, y, ORANGE, false);
+        y += 13;
+        graphics.drawString(font, Component.literal(entry.classification()), x, y, MUTED, false);
+        y += 11;
+        graphics.drawString(font, Component.literal("SITE: " + entry.siteId().replace('_', ' ').toUpperCase()), x, y, CYAN, false);
+        y += 11;
+        graphics.drawString(font, Component.literal("SOURCE: " + fit(entry.source(), maxWidth - 50)), x, y, MUTED, false);
+        y += 16;
+        graphics.drawString(font, Component.literal("RECOVERED EXCERPT"), x, y, CYAN, false);
+        y += 12;
+        y = paragraph(graphics, entry.excerpt(), x, y, maxWidth, TEXT);
+        y += 7;
+        if (y < bottom - 30) {
+            graphics.drawString(font, Component.literal("PDA ANALYSIS"), x, y, CYAN, false);
+            y += 12;
+            paragraph(graphics, entry.analysis(), x, y, maxWidth, MUTED);
+        }
+    }
+
     private void renderContracts(GuiGraphics graphics, int x, int y, int maxWidth, int bottom) {
         List<ContractRef> contracts = contractRefs();
         if (contracts.isEmpty()) {
             graphics.drawString(font, Component.literal("No active contracts in your inventory."), x, y, MUTED, false);
             return;
         }
-
         int visible = Math.min(MAX_MANAGED_CONTRACTS, contracts.size());
         for (int i = 0; i < visible; i++) {
             ItemStack contract = contracts.get(i).stack();
             int titleColor = ContractItem.complete(contract) ? GOOD : TEXT;
             String stage = ContractStageSupport.stageLabel(contract);
-            graphics.drawString(font,
-                    Component.literal(fit((i + 1) + ". " + ContractItem.title(contract), maxWidth - 70)),
-                    x, y, titleColor, false);
+            graphics.drawString(font, Component.literal(fit((i + 1) + ". " + ContractItem.title(contract), maxWidth - 70)), x, y, titleColor, false);
             String objective = ContractItem.objectiveText(contract);
             if (!stage.isBlank()) objective = stage + " — " + objective;
-            graphics.drawString(font,
-                    Component.literal(fit(objective, Math.max(1, maxWidth - 78))),
-                    x + 8, y + 11, MUTED, false);
-            String progress = ContractItem.complete(contract)
-                    ? "READY TO REDEEM"
+            graphics.drawString(font, Component.literal(fit(objective, Math.max(1, maxWidth - 78))), x + 8, y + 11, MUTED, false);
+            String progress = ContractItem.complete(contract) ? "READY TO REDEEM"
                     : "Progress " + ContractItem.progress(contract) + " / " + ContractItem.goal(contract);
             if (ContractItem.xp(contract) > 0) progress += "   XP " + ContractItem.xp(contract);
-            graphics.drawString(font,
-                    Component.literal(fit(progress, Math.max(1, maxWidth - 78))),
-                    x + 8, y + 22, ContractItem.complete(contract) ? GOOD : CYAN, false);
+            graphics.drawString(font, Component.literal(fit(progress, Math.max(1, maxWidth - 78))), x + 8, y + 22,
+                    ContractItem.complete(contract) ? GOOD : CYAN, false);
             y += 43;
             if (y > bottom - 36) break;
         }
         if (contracts.size() > visible && y <= bottom - 16) {
-            graphics.drawString(font,
-                    Component.literal("+ " + (contracts.size() - visible) + " more carried contract(s)"),
-                    x, y, MUTED, false);
+            graphics.drawString(font, Component.literal("+ " + (contracts.size() - visible) + " more carried contract(s)"), x, y, MUTED, false);
         }
     }
 
@@ -594,8 +630,8 @@ public class DataPadScreen extends Screen {
         List<String> result = new ArrayList<>();
         boolean progression = false;
         for (String line : journal) {
-            if (line.equals("--- Field Operations ---")) break;
-            result.add(line);
+            if (line.equals("--- Recovered Logs ---") || line.equals("--- Field Operations ---")) break;
+            if (!line.startsWith("@lore:")) result.add(line);
         }
         for (String line : journal) {
             if (line.equals("--- Progression ---")) {
@@ -604,38 +640,47 @@ public class DataPadScreen extends Screen {
                 continue;
             }
             if (line.equals("--- Scan History ---")) break;
-            if (progression) result.add(line);
+            if (progression && !line.startsWith("@lore:")) result.add(line);
         }
         return result;
     }
 
-    private List<String> operationLines() {
-        return between("--- Field Operations ---", "--- Progression ---");
-    }
+    private List<String> operationLines() { return between("--- Field Operations ---", "--- Progression ---"); }
 
     private List<String> scanLines() {
         List<String> lines = new ArrayList<>();
         boolean capture = false;
         for (String line : journal) {
-            if (line.equals("--- Scan History ---")) {
-                capture = true;
-                continue;
-            }
+            if (line.equals("--- Scan History ---")) { capture = true; continue; }
             if (capture) lines.add(line);
         }
         return lines;
+    }
+
+    private List<Entry> ambientEntries() {
+        List<Entry> entries = new ArrayList<>();
+        for (String line : journal) {
+            if (!line.startsWith("@lore:")) continue;
+            Entry entry = AmbientLoreCatalog.byId(line.substring("@lore:".length()));
+            if (entry != null) entries.add(entry);
+        }
+        return List.copyOf(entries);
+    }
+
+    private Entry currentAmbientEntry() {
+        List<Entry> entries = ambientEntries();
+        if (entries.isEmpty()) return null;
+        ambientCursor = Math.max(0, Math.min(ambientCursor, entries.size() - 1));
+        return entries.get(ambientCursor);
     }
 
     private List<String> between(String start, String end) {
         List<String> lines = new ArrayList<>();
         boolean capture = false;
         for (String line : journal) {
-            if (line.equals(start)) {
-                capture = true;
-                continue;
-            }
+            if (line.equals(start)) { capture = true; continue; }
             if (capture && line.equals(end)) break;
-            if (capture) lines.add(line);
+            if (capture && !line.startsWith("@lore:")) lines.add(line);
         }
         return lines;
     }
@@ -679,22 +724,11 @@ public class DataPadScreen extends Screen {
         return null;
     }
 
-    private int recoveredCount() {
-        return Integer.bitCount(loreMask);
-    }
+    private int recoveredCount() { return Integer.bitCount(loreMask); }
+    private int unlockedReconstructions() { return StructureLoreCatalog.unlockedReconstructionCount(loreMask); }
 
-    private int unlockedReconstructions() {
-        return StructureLoreCatalog.unlockedReconstructionCount(loreMask);
-    }
-
-    private int panelLeft() {
-        return Math.max(8, width / 2 - Math.min(270, Math.max(210, width / 2 - 10)));
-    }
-
-    private int panelRight() {
-        return Math.min(width - 8, width / 2 + Math.min(270, Math.max(210, width / 2 - 10)));
-    }
-
+    private int panelLeft() { return Math.max(8, width / 2 - Math.min(270, Math.max(210, width / 2 - 10))); }
+    private int panelRight() { return Math.min(width - 8, width / 2 + Math.min(270, Math.max(210, width / 2 - 10))); }
     private int panelTop() { return 8; }
     private int panelBottom() { return height - 8; }
 
@@ -711,9 +745,7 @@ public class DataPadScreen extends Screen {
         return font.plainSubstrByWidth(text, usable) + "…";
     }
 
-    private static String stripHeading(String value) {
-        return value.replace("===", "").replace("---", "").trim();
-    }
+    private static String stripHeading(String value) { return value.replace("===", "").replace("---", "").trim(); }
 
     @Override
     public void removed() {
@@ -721,10 +753,7 @@ public class DataPadScreen extends Screen {
         super.removed();
     }
 
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
+    @Override public boolean isPauseScreen() { return false; }
 
     private record ContractRef(int slot, ItemStack stack) {}
 }
