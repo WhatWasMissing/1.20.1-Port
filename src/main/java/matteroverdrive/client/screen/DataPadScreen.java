@@ -2,6 +2,7 @@ package matteroverdrive.client.screen;
 
 import matteroverdrive.client.ClientDocumentationOpener;
 import matteroverdrive.client.GuideMeCompatEvents;
+import matteroverdrive.client.PdaNarrationController;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
@@ -26,6 +27,7 @@ import java.util.List;
  * The PDA owns personal discovery, story reconstruction, field operations and
  * contract presentation. GuideME remains the full technical manual and is opened
  * only from the dedicated manual action; it never replaces this screen.
+ * Recovered lore can be spoken through Minecraft's built-in narration service.
  */
 public class DataPadScreen extends Screen {
     private static final int BACKGROUND = 0xF0061018;
@@ -72,6 +74,8 @@ public class DataPadScreen extends Screen {
     private Button previousButton;
     private Button nextButton;
     private Button manualButton;
+    private Button readAloudButton;
+    private Button stopNarrationButton;
 
     public DataPadScreen(List<String> journal, int loreMask) {
         super(Component.literal("Matter Overdrive PDA"));
@@ -113,6 +117,12 @@ public class DataPadScreen extends Screen {
         nextButton = addRenderableWidget(Button.builder(Component.literal("NEXT >"), ignored -> navigate(1))
                 .bounds(contentRight - navWidth, navY, navWidth, 20).build());
 
+        int center = (contentLeft + contentRight) / 2;
+        readAloudButton = addRenderableWidget(Button.builder(Component.literal("READ ALOUD"), ignored -> readCurrentLore())
+                .bounds(center - 76, navY, 92, 20).build());
+        stopNarrationButton = addRenderableWidget(Button.builder(Component.literal("STOP"), ignored -> PdaNarrationController.stop())
+                .bounds(center + 20, navY, 56, 20).build());
+
         for (int row = 0; row < MAX_MANAGED_CONTRACTS; row++) {
             final int buttonIndex = row;
             Button button = addRenderableWidget(Button.builder(Component.literal("ABANDON"), ignored -> abandon(buttonIndex))
@@ -123,6 +133,7 @@ public class DataPadScreen extends Screen {
     }
 
     private void selectTab(Tab next) {
+        if (tab != next) PdaNarrationController.stop();
         tab = next;
         armedAbandonSlot = -1;
         refreshControls();
@@ -130,6 +141,7 @@ public class DataPadScreen extends Screen {
 
     private void navigate(int direction) {
         if (direction == 0) return;
+        PdaNarrationController.stop();
         if (tab == Tab.DATA_BANK) {
             if (direction > 0) {
                 if (archiveSection < ARCHIVE_SECTIONS - 1) {
@@ -181,7 +193,57 @@ public class DataPadScreen extends Screen {
                 default -> false;
             };
         }
+
+        boolean narratable = canNarrateCurrentLore();
+        if (readAloudButton != null) {
+            readAloudButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT;
+            readAloudButton.active = narratable;
+        }
+        if (stopNarrationButton != null) {
+            stopNarrationButton.visible = tab == Tab.DATA_BANK || tab == Tab.INCIDENT;
+            stopNarrationButton.active = narratable;
+        }
         refreshContractButtons();
+    }
+
+    private boolean canNarrateCurrentLore() {
+        if (tab == Tab.DATA_BANK) {
+            LoreRecord record = StructureLoreCatalog.byArchiveIndex(archiveCursor + 1);
+            return record != null && StructureLoreCatalog.recovered(loreMask, record);
+        }
+        if (tab == Tab.INCIDENT) {
+            Reconstruction reconstruction = StructureLoreCatalog.reconstructionByIndex(reconstructionCursor);
+            return reconstruction != null && StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstruction);
+        }
+        return false;
+    }
+
+    private void readCurrentLore() {
+        String narration = currentLoreNarration();
+        if (!narration.isBlank()) PdaNarrationController.read(narration);
+    }
+
+    /** Locked/unrecovered lore deliberately returns no spoken text. */
+    private String currentLoreNarration() {
+        if (tab == Tab.DATA_BANK) {
+            LoreRecord record = StructureLoreCatalog.byArchiveIndex(archiveCursor + 1);
+            if (record == null || !StructureLoreCatalog.recovered(loreMask, record)) return "";
+            return switch (archiveSection) {
+                case 0 -> record.title() + ". " + record.facility() + ". " + record.timestamp() + ". Source: "
+                        + record.author() + ". Site function. " + record.sitePurpose() + ". Primary record. " + record.summary();
+                case 1 -> record.title() + ". Recovered excerpt. " + record.excerpt()
+                        + ". P D A forensic analysis. " + record.analysis();
+                default -> record.title() + ". Incident implication. " + record.implication()
+                        + ". Cross reference. " + record.link();
+            };
+        }
+        if (tab == Tab.INCIDENT) {
+            Reconstruction reconstruction = StructureLoreCatalog.reconstructionByIndex(reconstructionCursor);
+            if (reconstruction == null || !StructureLoreCatalog.reconstructionUnlocked(loreMask, reconstruction)) return "";
+            return reconstruction.title() + ". " + reconstruction.subtitle() + ". " + reconstruction.lead()
+                    + " " + reconstruction.evidence() + " " + reconstruction.analysis() + " " + reconstruction.conclusion();
+        }
+        return "";
     }
 
     private void abandon(int buttonIndex) {
@@ -264,11 +326,16 @@ public class DataPadScreen extends Screen {
             case SCANS -> renderJournalSection(graphics, x, y, maxWidth, contentBottom, scanLines(), "No block scans recorded yet.");
         }
 
-        graphics.drawString(font,
-                Component.literal(GuideMeCompatEvents.isAvailable()
-                        ? "TECHNICAL MANUAL LINK: GUIDEME ONLINE"
-                        : "TECHNICAL MANUAL LINK: INTERNAL ARCHIVE"),
-                left + 9, bottom - 41, GuideMeCompatEvents.isAvailable() ? GOOD : MUTED, false);
+        if ((tab == Tab.DATA_BANK || tab == Tab.INCIDENT) && canNarrateCurrentLore()) {
+            graphics.drawString(font, Component.literal("AUDIO LOG: READ ALOUD AVAILABLE"),
+                    contentLeft + 10, bottom - 41, CYAN, false);
+        } else {
+            graphics.drawString(font,
+                    Component.literal(GuideMeCompatEvents.isAvailable()
+                            ? "TECHNICAL MANUAL LINK: GUIDEME ONLINE"
+                            : "TECHNICAL MANUAL LINK: INTERNAL ARCHIVE"),
+                    left + 9, bottom - 41, GuideMeCompatEvents.isAvailable() ? GOOD : MUTED, false);
+        }
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
@@ -646,6 +713,12 @@ public class DataPadScreen extends Screen {
 
     private static String stripHeading(String value) {
         return value.replace("===", "").replace("---", "").trim();
+    }
+
+    @Override
+    public void removed() {
+        PdaNarrationController.stop();
+        super.removed();
     }
 
     @Override
