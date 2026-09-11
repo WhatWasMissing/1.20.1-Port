@@ -114,9 +114,12 @@ public final class StructureLoreEvents {
 
     private static void sendStructureHazard(ServerPlayer player, String site) {
         switch (site == null ? "" : site) {
-            case "black_site", "android_command_bunker", "synthetic_manufacturing_plant", "quantum_relay_station" ->
+            case "black_site", "android_command_bunker", "synthetic_manufacturing_plant" ->
                     ModNetwork.sendEnvironmentalHazard(player, "legacy_security",
                             "LEGACY SECURITY GRID", "Automated threat response remains active.", 2);
+            case "quantum_relay_station", "orbital_recovery_array" ->
+                    ModNetwork.sendEnvironmentalHazard(player, "signal_echo",
+                            "ACAUSAL TELEMETRY", "Authenticated signal order conflicts with local time.", 2);
             case "fusion_research_complex" ->
                     ModNetwork.sendEnvironmentalHazard(player, "icarus_containment",
                             "ICARUS CONTAINMENT FIELD", "Historical shutdown integrity is not trustworthy.", 3);
@@ -129,7 +132,7 @@ public final class StructureLoreEvents {
             case "underwater_base" ->
                     ModNetwork.sendEnvironmentalHazard(player, "pressure_damage",
                             "PRESSURE-COMPROMISED HABITAT", "Failed seals and flooded sections may remain.", 1);
-            case "crashed_ship", "cargo_ship", "orbital_recovery_array" ->
+            case "crashed_ship", "cargo_ship" ->
                     ModNetwork.sendEnvironmentalHazard(player, "structural_damage",
                             "STRUCTURAL DAMAGE", "Unstable wreckage detected. Verify the return route.", 1);
             default -> ModNetwork.sendEnvironmentalHazard(player, "none", "", "", 0);
@@ -157,8 +160,11 @@ public final class StructureLoreEvents {
     private static String voiceLineFor(String site) {
         return switch (site == null ? "" : site) {
             case "black_site", "android_command_bunker", "synthetic_manufacturing_plant" -> "orpheus_security";
+            case "quantum_relay_station", "orbital_recovery_array" -> "signal_echo";
             case "fusion_research_complex" -> "icarus_warning";
-            case "anomaly_quarantine_site", "underwater_base" -> "anomaly_warning";
+            case "anomaly_quarantine_site" -> "anomaly_warning";
+            case "underwater_base" -> "pressure_warning";
+            case "crashed_ship", "cargo_ship" -> "structural_warning";
             case "android_house", "autonomous_drone_foundry" -> "synthetic_contact";
             case "matter_refinery", "deep_matter_vault", "sand_pit" -> "matter_resonance";
             default -> "record_recovered";
