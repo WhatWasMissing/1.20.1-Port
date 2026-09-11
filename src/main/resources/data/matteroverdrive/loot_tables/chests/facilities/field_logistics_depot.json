@@ -9,6 +9,11 @@
         {"type": "minecraft:item", "name": "matteroverdrive:matter_dust_refined", "weight": 3, "functions": [{"function": "minecraft:set_count", "count": {"min": 2, "max": 5}}]},
         {"type": "minecraft:item", "name": "matteroverdrive:isolinear_circuit_mk1", "weight": 1}
       ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [{"condition": "minecraft:random_chance", "chance": 0.15}],
+      "entries": [{"type": "minecraft:loot_table", "name": "matteroverdrive:chests/facilities/ambient_lore"}]
     }
   ]
 }
