@@ -34,9 +34,9 @@ Damaged rooms can contain breached walls, cracked debris, cobwebs and inert repl
 
 ## Frontier Expedition progression
 
-`FrontierExpeditionEvents` performs a bounded, server-authoritative signature scan only when a player enters a new chunk. It looks for compact machine signatures concentrated near each site's control/core area rather than scanning the entire structure or forcing chunks.
+`FrontierExpeditionEvents` performs a server-authoritative native-structure lookup only when a player enters a new chunk. It asks Minecraft's `StructureManager` whether the player's position is inside one of the four Frontier Expedition structures, so older facilities cannot accidentally satisfy the new expedition and no block-radius scan or chunk forcing is required.
 
-Discoveries are persisted through `FrontierExpeditionSavedData` per player and per site coordinate. The ledger separately tracks a four-bit site-class mask so repeated facilities can be logged without duplicating the unique-class milestone.
+Discoveries are persisted through `FrontierExpeditionSavedData` per player and per structure-start chunk. The ledger separately tracks a four-bit site-class mask so repeated facilities can be logged without duplicating the unique-class milestone.
 
 Rewards:
 
@@ -52,7 +52,7 @@ The completion reward is issued only when the unique-site mask transitions to al
 - every block write checks the current chunk clipping box;
 - no structure code force-loads chunks;
 - layout state is serialized with each piece;
-- discovery scans occur only on chunk transitions and remain bounded to an 18-block horizontal / 8-block vertical region around the player;
+- discovery work is one native `StructureManager` membership query per candidate site class, only after a player crosses into a different chunk;
 - saved data caps discovery keys and player entries and rejects oversized state growth;
 - missing Matter Overdrive decorative/machine blocks fall back to vanilla blocks during generation instead of crashing worldgen.
 
