@@ -1,0 +1,14 @@
+{
+  "parent": "matteroverdrive:campaign/anomaly_engineer",
+  "display": {"icon":{"item":"matteroverdrive:quantum_fold_manipulator"},"title":{"text":"Full-Spectrum Engineer"},"description":{"text":"Master Matter, networks, drones and containment without coupling them into another OVERDRIVE state."},"frame":"challenge","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "replicator":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:replicator"]}]}},
+    "router":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:network_router"]}]}},
+    "drone":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:drone_deployment_core"]}]}},
+    "reactor":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:fusion_reactor_controller"]}]}},
+    "stabilizer":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:gravitational_stabilizer"]}]}},
+    "weapon_station":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:weapon_station"]}]}}
+  },
+  "requirements": [["replicator"],["router"],["drone"],["reactor"],["stabilizer"],["weapon_station"]],
+  "rewards":{"experience":750}
+}
