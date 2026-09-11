@@ -3,6 +3,8 @@ package matteroverdrive.event;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.entity.DroneEntity;
 import matteroverdrive.entity.MutantScientistEntity;
+import matteroverdrive.entity.OrpheusSecurityEntity;
+import matteroverdrive.entity.ResonantAndroidEntity;
 import matteroverdrive.entity.RogueAndroidEntity;
 import matteroverdrive.registry.ModEntities;
 import net.minecraft.world.entity.SpawnPlacements;
@@ -21,9 +23,15 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class LegacyEntityEvents {
     private LegacyEntityEvents() {}
-    @SubscribeEvent public static void createAttributes(EntityAttributeCreationEvent event) {
+
+    @SubscribeEvent
+    public static void createAttributes(EntityAttributeCreationEvent event) {
         event.put(ModEntities.ROGUE_ANDROID.get(), RogueAndroidEntity.createAttributes().build());
         event.put(ModEntities.RANGED_ROGUE_ANDROID.get(), RogueAndroidEntity.createAttributes().build());
+        event.put(ModEntities.DEFECTOR_ANDROID.get(), RogueAndroidEntity.createAttributes().build());
+        event.put(ModEntities.ORPHEUS_SECURITY.get(), OrpheusSecurityEntity.createAttributes().build());
+        event.put(ModEntities.RESONANT_ANDROID.get(), ResonantAndroidEntity.createAttributes().build());
+        event.put(ModEntities.FACILITY_RESEARCHER.get(), Villager.createAttributes().build());
         event.put(ModEntities.DRONE.get(), DroneEntity.createAttributes().build());
         event.put(ModEntities.MUTANT_SCIENTIST.get(), MutantScientistEntity.createAttributes().build());
         event.put(ModEntities.MAD_SCIENTIST.get(), Villager.createAttributes().build());
@@ -32,12 +40,16 @@ public final class LegacyEntityEvents {
         event.put(ModEntities.FAILED_SHEEP.get(), Sheep.createAttributes().build());
         event.put(ModEntities.FAILED_CHICKEN.get(), Chicken.createAttributes().build());
     }
-    @SubscribeEvent public static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
+
+    @SubscribeEvent
+    public static void registerSpawnPlacements(SpawnPlacementRegisterEvent event) {
         event.register(ModEntities.ROGUE_ANDROID.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random) && random.nextFloat() < RogueAndroidEntity.NATURAL_SPAWN_CHANCE,
                 SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.RANGED_ROGUE_ANDROID.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random) && random.nextFloat() < 0.035F,
                 SpawnPlacementRegisterEvent.Operation.REPLACE);
+        // New narrative occupants do not naturally spawn. StructurePopulationEvents
+        // creates finite, persistent encounter packages only inside appropriate sites.
     }
 }
