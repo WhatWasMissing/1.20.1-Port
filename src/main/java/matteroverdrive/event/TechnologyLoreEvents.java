@@ -19,8 +19,9 @@ import net.minecraftforge.fml.common.Mod;
 
 /**
  * Authenticates major Matter Overdrive technology into the PDA on first real acquisition/use.
- * Crafting, pickup and placement are immediate; a conservative periodic inventory audit catches
- * container transfers, machine outputs, commands and creative acquisition without new packets.
+ * Crafting, pickup and placement are immediate; Data Pad inspection can authenticate intact world
+ * technology, and a conservative periodic inventory audit catches container transfers, machine
+ * outputs, commands and creative acquisition without adding another network packet.
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class TechnologyLoreEvents {
@@ -42,7 +43,7 @@ public final class TechnologyLoreEvents {
     public static void onPlaced(BlockEvent.EntityPlaceEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         ResourceLocation id = BuiltInRegistries.BLOCK.getKey(event.getPlacedBlock().getBlock());
-        if (id != null && MatterOverdrive.MOD_ID.equals(id.getNamespace())) discover(player, id.getPath());
+        discoverTechnology(player, id);
     }
 
     @SubscribeEvent
@@ -60,11 +61,17 @@ public final class TechnologyLoreEvents {
     private static boolean discoverStack(ServerPlayer player, ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        if (id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) return false;
-        return discover(player, id.getPath());
+        return discoverTechnology(player, id);
     }
 
-    private static boolean discover(ServerPlayer player, String itemId) {
+    /** Shared entry point for explicit inspection paths such as Data Pad block scanning. */
+    public static boolean discoverTechnology(ServerPlayer player, ResourceLocation id) {
+        if (player == null || id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) return false;
+        return discoverTechnology(player, id.getPath());
+    }
+
+    public static boolean discoverTechnology(ServerPlayer player, String itemId) {
+        if (player == null || itemId == null || itemId.isBlank()) return false;
         TechnologyLoreCatalog.TechRecord record = TechnologyLoreCatalog.byItemId(itemId);
         if (record == null) return false;
         TechnologyLoreSavedData data = TechnologyLoreSavedData.get(player.serverLevel());
