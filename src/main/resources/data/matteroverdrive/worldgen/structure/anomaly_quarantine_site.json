@@ -1,0 +1,6 @@
+{
+  "type": "matteroverdrive:anomaly_quarantine_site",
+  "biomes": "#minecraft:is_overworld",
+  "step": "underground_structures",
+  "spawn_overrides": {}
+}
