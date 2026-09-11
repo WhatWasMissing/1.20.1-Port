@@ -5,6 +5,7 @@ import matteroverdrive.android.AndroidClassAbilities;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.android.AndroidUltimates;
+import matteroverdrive.world.StructureLoreSavedData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkRegistry;
@@ -40,7 +41,8 @@ public final class ModNetwork {
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h) {
-        openDataPad(p, h, 0);
+        int loreMask = StructureLoreSavedData.get(p.serverLevel()).mask(p.getUUID());
+        openDataPad(p, h, loreMask);
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h, int loreMask) {
