@@ -3,6 +3,7 @@ package matteroverdrive.item;
 import matteroverdrive.event.ContractEvents;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.network.ModNetwork;
+import matteroverdrive.quest.FieldOperations;
 import matteroverdrive.quest.LegacyStoryContracts;
 import matteroverdrive.quest.ResearchCampaignQuestFlow;
 import matteroverdrive.quest.ResearchProgression;
@@ -72,6 +73,10 @@ public class DataPadItem extends Item {
                     .replace('_', ' ');
             lines.add("Investigation " + investigationStep + "/" + sites.chainLength() + ": next lead - " + nextSite);
         }
+        lines.add("--- Field Operations ---");
+        lines.add(FieldOperations.status(player));
+        lines.add("Completed operations: " + FieldOperations.completions(player));
+        lines.add("Assign/change doctrine with /matteroverdrive research field assign <recovery|systems|anomaly>.");
         lines.add("--- Progression ---");
         lines.addAll(ResearchProgression.roadmap(player));
         List<String> history = getHistory(dataPad);
@@ -157,7 +162,7 @@ public class DataPadItem extends Item {
             tooltip.add(Component.literal("Standalone field console, research journal and block scan history").withStyle(ChatFormatting.AQUA));
         }
         tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Encounter evidence: open the journal to inspect").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.add(Component.literal("Field operations and encounter evidence are shown in the journal.").withStyle(ChatFormatting.DARK_AQUA));
         if (!history.isEmpty()) tooltip.add(Component.literal("Latest: " + history.get(0)).withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("Use on a block to record it; use in air to open the field console.").withStyle(ChatFormatting.DARK_GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
