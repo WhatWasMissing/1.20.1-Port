@@ -1,0 +1,6 @@
+{
+  "parent": "matteroverdrive:campaign/automation",
+  "display": {"icon":{"item":"matteroverdrive:drone_deployment_core"},"title":{"text":"Drone Commander"},"description":{"text":"Build a configurable drone core and bring autonomous support online."},"frame":"task","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {"core":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:drone_deployment_core"]}]}}},
+  "requirements": [["core"]]
+}
