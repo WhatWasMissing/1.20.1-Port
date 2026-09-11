@@ -28,7 +28,17 @@ public final class ResearchCommands {
                                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                                                 java.util.Arrays.stream(ResearchProgression.Stage.values()).map(Enum::name).toList(), builder))
                                         .executes(context -> advance(context.getSource().getPlayerOrException(),
-                                                StringArgumentType.getString(context, "stage")))))));
+                                                StringArgumentType.getString(context, "stage")))))
+                        .then(Commands.literal("field")
+                                .then(Commands.literal("status")
+                                        .executes(context -> fieldStatus(context.getSource().getPlayerOrException())))
+                                .then(Commands.literal("assign")
+                                        .then(Commands.argument("doctrine", StringArgumentType.word())
+                                                .suggests((context, builder) -> SharedSuggestionProvider.suggest(
+                                                        java.util.Arrays.stream(FieldOperations.Doctrine.values())
+                                                                .map(value -> value.name().toLowerCase(java.util.Locale.ROOT)).toList(), builder))
+                                                .executes(context -> fieldAssign(context.getSource().getPlayerOrException(),
+                                                        StringArgumentType.getString(context, "doctrine"))))))));
     }
 
     private static int status(ServerPlayer player) {
@@ -37,7 +47,8 @@ public final class ResearchCommands {
         player.sendSystemMessage(Component.literal("Research: " + stage.title
                 + " | field sites " + sites.count(player.getUUID())
                 + " | investigation " + sites.chainStage(player.getUUID()) + "/" + sites.chainLength()
-                + " | next " + TechnologySiteDiscoverySavedData.nextChainSite(player.getUUID(), sites.chainStage(player.getUUID()))));
+                + " | next " + TechnologySiteDiscoverySavedData.nextChainSite(player.getUUID(), sites.chainStage(player.getUUID()))
+                + " | operation " + FieldOperations.status(player)));
         return stage.ordinal() + 1;
     }
 
@@ -54,5 +65,27 @@ public final class ResearchCommands {
                 ? "Research clearance advanced to " + ResearchProgression.stage(player).title + "."
                 : "Research clearance unchanged; evidence only advances one stage at a time."));
         return changed ? 1 : 0;
+    }
+
+    private static int fieldStatus(ServerPlayer player) {
+        player.sendSystemMessage(Component.literal("Field operations: " + FieldOperations.status(player)
+                + " | completed " + FieldOperations.completions(player)));
+        return FieldOperations.active(player) == null ? 0 : 1;
+    }
+
+    private static int fieldAssign(ServerPlayer player, String rawDoctrine) {
+        FieldOperations.Doctrine doctrine = FieldOperations.parseDoctrine(rawDoctrine);
+        if (doctrine == null) {
+            player.sendSystemMessage(Component.literal("Unknown doctrine: " + rawDoctrine + ". Use recovery, systems, or anomaly."));
+            return 0;
+        }
+        FieldOperations.Operation assigned = FieldOperations.assignNext(player, doctrine);
+        if (assigned == null) {
+            player.sendSystemMessage(Component.literal("No operation is available for that doctrine at your current research stage."));
+            return 0;
+        }
+        player.sendSystemMessage(Component.literal("FIELD OPERATION ASSIGNED: " + assigned.title
+                + " [" + assigned.doctrine.title + "] - " + assigned.description));
+        return 1;
     }
 }
