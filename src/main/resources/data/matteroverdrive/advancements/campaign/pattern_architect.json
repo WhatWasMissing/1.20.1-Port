@@ -1,0 +1,11 @@
+{
+  "parent": "matteroverdrive:campaign/matter_age",
+  "display": {"icon":{"item":"matteroverdrive:pattern_storage"},"title":{"text":"Pattern Architect"},"description":{"text":"Build the complete pattern workflow: store, monitor and replicate analyzed Matter."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "storage":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:pattern_storage"]}]}},
+    "monitor":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:pattern_monitor"]}]}},
+    "replicator":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:replicator"]}]}}
+  },
+  "requirements": [["storage"],["monitor"],["replicator"]],
+  "rewards":{"experience":150}
+}
