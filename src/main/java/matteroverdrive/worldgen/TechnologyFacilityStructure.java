@@ -39,7 +39,12 @@ public final class TechnologyFacilityStructure extends Structure {
         int layout=Math.floorMod(context.chunkPos().x*73428767 ^ context.chunkPos().z*912931,3);
         BlockPos origin=new BlockPos(x,y,z);
         LOGGER.debug("M2 FACILITY TRACE: exploration-native kind={} chunk={} origin={} surfaceY={} layout={}",kind,context.chunkPos(),origin,surfaceY,layout);
-        return Optional.of(new GenerationStub(origin,builder -> builder.addPiece(new ModernExplorationStructurePiece(kind,origin,layout))));
+        return Optional.of(new GenerationStub(origin,builder -> {
+            builder.addPiece(new ModernExplorationStructurePiece(kind,origin,layout));
+            if(kind==Kind.MATTER_REFINERY || kind==Kind.BLACK_SITE) {
+                builder.addPiece(new ModernTraversalRepairPiece(kind,origin));
+            }
+        }));
     }
 
     @Override public StructureType<?> type(){return switch(kind){
