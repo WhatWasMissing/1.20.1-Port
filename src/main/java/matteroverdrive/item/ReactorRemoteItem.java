@@ -105,6 +105,39 @@ public class ReactorRemoteItem extends Item {
         }, target);
     }
 
+    /**
+     * Finds one carried Remote whose controller is already loaded in this
+     * dimension.  It deliberately never calls getChunkAt: Android passives
+     * must not force-load distant chunks every second.
+     */
+    @Nullable
+    public static FusionReactorControllerBlockEntity findLinkedRunningController(ServerPlayer player) {
+        for (InteractionHand hand : InteractionHand.values()) {
+            FusionReactorControllerBlockEntity controller = linkedRunningController(player, player.getItemInHand(hand));
+            if (controller != null) return controller;
+        }
+        for (ItemStack stack : player.getInventory().items) {
+            FusionReactorControllerBlockEntity controller = linkedRunningController(player, stack);
+            if (controller != null) return controller;
+        }
+        return null;
+    }
+
+    @Nullable
+    private static FusionReactorControllerBlockEntity linkedRunningController(ServerPlayer player, ItemStack stack) {
+        if (!(stack.getItem() instanceof ReactorRemoteItem)) return null;
+        CompoundTag tag = stack.getTag();
+        if (!hasTarget(tag) || !player.serverLevel().dimension().location().toString().equals(tag.getString(DIMENSION_TAG))) {
+            return null;
+        }
+        BlockPos target = getTarget(tag);
+        ServerLevel level = player.serverLevel();
+        if (!level.hasChunkAt(target)) return null;
+        BlockEntity blockEntity = level.getBlockEntity(target);
+        return blockEntity instanceof FusionReactorControllerBlockEntity controller && controller.isRunning()
+                ? controller : null;
+    }
+
     private static boolean hasTarget(@Nullable CompoundTag tag) {
         return tag != null && tag.contains(X_TAG) && tag.contains(Y_TAG)
                 && tag.contains(Z_TAG) && tag.contains(DIMENSION_TAG);

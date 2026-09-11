@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {"min": 3, "max": 5},
+      "entries": [
+        {"type": "minecraft:item", "name": "matteroverdrive:battery", "weight": 3, "functions": [{"function": "minecraft:set_count", "count": {"min": 1, "max": 2}}]},
+        {"type": "minecraft:item", "name": "matteroverdrive:tritanium_plate", "weight": 4, "functions": [{"function": "minecraft:set_count", "count": {"min": 2, "max": 6}}]},
+        {"type": "minecraft:item", "name": "matteroverdrive:matter_dust_refined", "weight": 3, "functions": [{"function": "minecraft:set_count", "count": {"min": 2, "max": 5}}]},
+        {"type": "minecraft:item", "name": "matteroverdrive:isolinear_circuit_mk1", "weight": 1}
+      ]
+    }
+  ]
+}

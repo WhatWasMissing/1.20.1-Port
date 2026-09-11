@@ -21,6 +21,10 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.level.Level;
@@ -42,9 +46,26 @@ import java.util.List;
 import java.util.Set;
 
 public class FusionReactorControllerBlockEntity extends BlockEntity implements MenuProvider {
+    public enum OperatingMode {
+        BALANCED("Balanced", 1.0D, 1.0D),
+        OVERDRIVE("Overdrive", 1.5D, 1.75D),
+        CONSERVATION("Conservation", 0.65D, 0.5D);
+
+        public final String label;
+        public final double outputMultiplier;
+        public final double matterMultiplier;
+
+        OperatingMode(String label, double outputMultiplier, double matterMultiplier) {
+            this.label = label;
+            this.outputMultiplier = outputMultiplier;
+            this.matterMultiplier = matterMultiplier;
+        }
+    }
     public static final int ENERGY_CAPACITY = 100_000_000;
     public static final int MATTER_CAPACITY = 2_048;
     public static final int BASE_OUTPUT = 9_048;
+    public static final int MAX_HEAT = 1_000;
+    public static final int MAX_STABILITY = 1_000;
     public static final double ANOMALY_MASS_MULTIPLIER = 10.0D;
     public static final int STRUCTURE_CHECK_DELAY = 40;
     public static final int MAX_GRAVITATIONAL_ANOMALY_DISTANCE = 3;
@@ -95,6 +116,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private boolean structureValid;
     private boolean overlayEnabled;
     private boolean reactorEnabled = true;
+    private OperatingMode operatingMode = OperatingMode.BALANCED;
     /** 0 = ignored, 1 = requires signal, 2 = requires no signal. */
     private int redstoneMode;
     private BlockPos anomalyPosition;
@@ -102,11 +124,14 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
     private int outputPotential;
     private int generatedLastTick;
     private int matterConsumedLastTick;
+    private int heat;
+    private int stability = MAX_STABILITY;
     private int connectedUsage;
     private int internalPowerLastTick;
     private int tickCounter;
     private long internalPowerSequence;
     private double matterDrainRemainder;
+    private int alarmCooldown;
     private String fault = "Checking structure";
 
     private final ContainerData data = new ContainerData() {
@@ -150,6 +175,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
                 case 32 -> anomaly == null ? 0 : anomaly.getDestroyedBlocksLastCycle();
                 case 33 -> anomaly == null ? 1_000
                         : (int) Math.round(anomaly.getSuppression() * 1_000.0D);
+                case 34 -> operatingMode.ordinal();
+                case 35 -> heat;
+                case 36 -> stability;
                 default -> 0;
             };
         }
@@ -160,7 +188,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
 
         @Override
         public int getCount() {
-            return 34;
+            return 37;
         }
     };
 
@@ -175,6 +203,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             reactor.validateStructure();
         }
         reactor.generate();
+        reactor.updateContainmentState();
         reactor.powerInternalRing();
         reactor.refreshConnectedUsage();
     }
@@ -198,7 +227,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         double unsuppressedMass = anomaly.getRealMassUnsuppressed();
         double legacyMassMultiplier = unsuppressedMass * ANOMALY_MASS_MULTIPLIER;
         double rateMultiplier = generationRateMultiplier();
-        double rawOutput = BASE_OUTPUT * efficiency() * legacyMassMultiplier * rateMultiplier;
+        double rawOutput = BASE_OUTPUT * efficiency() * legacyMassMultiplier * rateMultiplier
+                * operatingMode.outputMultiplier;
         int requested = (int) Math.min(Integer.MAX_VALUE,
                 Math.max(1L, Math.round(rawOutput)));
         outputPotential = requested;
@@ -227,6 +257,7 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         }
 
         double proportionalDrain = BASE_MATTER_DRAIN * legacyMassMultiplier * rateMultiplier
+                * operatingMode.matterMultiplier
                 * (accepted / (double) requested);
         double pendingDrain = matterDrainRemainder + proportionalDrain;
         int wholeMatter = (int) Math.floor(pendingDrain);
@@ -244,6 +275,57 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         generatedLastTick = accepted;
         fault = "Running";
         setChanged();
+    }
+
+    /** Bounded thermal/stability loop makes reactor profiles a visible risk/reward choice. */
+    private void updateContainmentState() {
+        if (alarmCooldown > 0) alarmCooldown--;
+        boolean operating = structureValid && reactorEnabled && redstoneAllowsOperation() && generatedLastTick > 0;
+        if (operating) {
+            int heatGain = switch (operatingMode) {
+                case OVERDRIVE -> 4;
+                case BALANCED -> 2;
+                case CONSERVATION -> 1;
+            };
+            int cooling = Math.min(Math.max(0, heatGain - 1), getActiveStabilizerCount());
+            heat = Math.min(MAX_HEAT, heat + Math.max(0, heatGain - cooling));
+            int instability = operatingMode == OperatingMode.OVERDRIVE ? 2 : heat > 800 ? 1 : 0;
+            stability = Math.max(0, Math.min(MAX_STABILITY,
+                    stability - instability + Math.min(2, getActiveStabilizerCount())));
+            if (heat >= MAX_HEAT) {
+                reactorEnabled = false;
+                stability = 0;
+                fault = "Thermal runaway";
+                announceAlarm("REACTOR ALARM: thermal runaway — automatic SCRAM engaged.");
+            }
+        } else {
+            heat = Math.max(0, heat - 8);
+            stability = Math.min(MAX_STABILITY, stability + (heat == 0 ? 4 : 1));
+        }
+        if (heat >= 800 && reactorEnabled && alarmCooldown == 0) {
+            announceAlarm("REACTOR WARNING: containment heat above 80%. Add powered stabilizers or change profile.");
+            alarmCooldown = 100;
+        }
+        setChanged();
+    }
+
+    private void announceAlarm(String message) {
+        if (!(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        net.minecraft.world.phys.AABB area = new net.minecraft.world.phys.AABB(worldPosition).inflate(24.0D);
+        for (ServerPlayer player : server.getEntitiesOfClass(ServerPlayer.class, area, ServerPlayer::isAlive)) {
+            player.displayClientMessage(Component.literal(message), true);
+        }
+        server.sendParticles(ParticleTypes.FLAME, worldPosition.getX() + 0.5D,
+                worldPosition.getY() + 1.2D, worldPosition.getZ() + 0.5D,
+                message.contains("runaway") ? 24 : 8, 0.45D, 0.35D, 0.45D, 0.02D);
+        server.playSound(null, worldPosition, SoundEvents.NOTE_BLOCK_BASS.value(),
+                SoundSource.BLOCKS, message.contains("runaway") ? 1.0F : 0.55F,
+                message.contains("runaway") ? 0.55F : 0.85F);
+    }
+
+    private int getActiveStabilizerCount() {
+        GravitationalAnomalyBlockEntity anomaly = getAnomaly();
+        return anomaly == null ? 0 : anomaly.getActiveSuppressorCount();
     }
 
     private void validateStructure() {
@@ -612,6 +694,85 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         return received;
     }
 
+    /** Cycles the persisted output-vs-matter operating profile. */
+    public OperatingMode cycleOperatingMode() {
+        OperatingMode[] modes = OperatingMode.values();
+        operatingMode = modes[(operatingMode.ordinal() + 1) % modes.length];
+        setChanged();
+        syncState();
+        return operatingMode;
+    }
+
+    public OperatingMode getOperatingMode() {
+        return operatingMode;
+    }
+
+    public int getHeat() { return heat; }
+
+    public int getStability() { return stability; }
+
+    public String getFault() { return fault; }
+
+    /** Operator emergency shutdown; generation stops immediately and state persists. */
+    public boolean emergencyScram() {
+        if (level == null || level.isClientSide) return false;
+        reactorEnabled = false;
+        fault = "Manual SCRAM";
+        setChanged();
+        syncState();
+        return true;
+    }
+
+    /** Re-enables a manually scrammed controller only after containment is demonstrably safe. */
+    public boolean resetContainment() {
+        if (level == null || level.isClientSide || !structureValid || heat >= 500 || stability <= 0) return false;
+        reactorEnabled = true;
+        fault = "Ready";
+        setChanged();
+        syncState();
+        return true;
+    }
+
+    /**
+     * Lets a deployed reactor-maintenance drone perform a bounded containment
+     * service pulse. The controller remains authoritative: a pulse can only
+     * cool an overheated reactor, restore stability, and clear a thermal
+     * runaway after the reactor has reached a safe temperature.
+     * @return FE-equivalent drone energy spent, or zero when no service is needed
+     */
+    public int applyMaintenancePulse(int availableEnergy) {
+        if (level == null || level.isClientSide || availableEnergy < 300 || !structureValid) return 0;
+        boolean needsCooling = heat >= 650;
+        boolean needsStability = stability < MAX_STABILITY;
+        if (!needsCooling && !needsStability) return 0;
+        heat = Math.max(0, heat - 40);
+        stability = Math.min(MAX_STABILITY, stability + 30);
+        if ("Thermal runaway".equals(fault) && heat < 500) {
+            fault = "Ready";
+        }
+        setChanged();
+        syncState();
+        return 300;
+    }
+
+    /**
+     * Delivers reactor-buffered FE to a linked Android uplink.  This is kept
+     * server-side and only permits a draw while this controller actually
+     * generated power during its current tick, so a remote cannot turn stored
+     * energy from an idle/scrammed reactor into a free player battery.
+     */
+    public int drawAndroidUplinkEnergy(int limit) {
+        if (limit <= 0 || generatedLastTick <= 0 || !structureValid || !reactorEnabled
+                || !redstoneAllowsOperation()) {
+            return 0;
+        }
+        return energy.extractEnergy(Math.min(limit, energy.getEnergyStored()), false);
+    }
+
+    public boolean isRunning() {
+        return generatedLastTick > 0 && structureValid && reactorEnabled && redstoneAllowsOperation();
+    }
+
     public void outputTo(Direction side, int limit) {
         if (level == null || limit <= 0) {
             return;
@@ -696,6 +857,9 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         tag.putBoolean("OverlayEnabled", overlayEnabled);
         tag.putBoolean("ReactorEnabled", reactorEnabled);
         tag.putInt("RedstoneMode", redstoneMode);
+        tag.putInt("OperatingMode", operatingMode.ordinal());
+        tag.putInt("Heat", heat);
+        tag.putInt("Stability", stability);
     }
 
     @Override
@@ -713,6 +877,12 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
         overlayEnabled = tag.getBoolean("OverlayEnabled");
         reactorEnabled = !tag.contains("ReactorEnabled") || tag.getBoolean("ReactorEnabled");
         redstoneMode = Math.max(0, Math.min(2, tag.getInt("RedstoneMode")));
+        int mode = tag.getInt("OperatingMode");
+        operatingMode = mode >= 0 && mode < OperatingMode.values().length
+                ? OperatingMode.values()[mode] : OperatingMode.BALANCED;
+        heat = Math.max(0, Math.min(MAX_HEAT, tag.getInt("Heat")));
+        stability = Math.max(0, Math.min(MAX_STABILITY,
+                tag.contains("Stability") ? tag.getInt("Stability") : MAX_STABILITY));
         updateClientOverlayCache();
     }
 
@@ -791,6 +961,8 @@ public class FusionReactorControllerBlockEntity extends BlockEntity implements M
             case "Waiting for redstone" -> 11;
             case "Redstone shutdown" -> 12;
             case "Energy storage full" -> 13;
+            case "Thermal runaway" -> 14;
+            case "Containment failure" -> 15;
             default -> 0;
         };
     }

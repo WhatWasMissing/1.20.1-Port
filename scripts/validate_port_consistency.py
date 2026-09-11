@@ -66,6 +66,11 @@ def resolve_model(ref: str) -> Path | None:
         return None
     if ref.startswith("matteroverdrive:"):
         rel = ref.split(":", 1)[1]
+        # Forge OBJ models use a model reference such as
+        # matteroverdrive:models/block/foo.obj. The path already contains the
+        # models/ root; do not prepend it a second time.
+        if rel.startswith("models/") and rel.endswith(".obj"):
+            return ASSETS / rel
         return ASSETS / "models" / f"{rel}.json"
     return None
 

@@ -4,6 +4,7 @@ import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
+import matteroverdrive.security.ServerDebugAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
@@ -24,7 +25,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     private static final int PLAYER_END = 31;
     private static final int HOTBAR_START = 31;
     private static final int HOTBAR_END = 40;
-    private static final int DATA_COUNT = 34;
+    private static final int DATA_COUNT = 37;
     private static final int SLOT_X_OFFSET = 92;
 
     private final FusionReactorControllerBlockEntity reactor;
@@ -247,6 +248,21 @@ public class FusionReactorMenu extends AbstractContainerMenu {
         return data.get(33) / 1_000.0D;
     }
 
+    public int operatingMode() {
+        return data.get(34);
+    }
+
+    public int heat() { return data.get(35); }
+
+    public int stability() { return data.get(36); }
+
+    public String operatingModeLabel() {
+        FusionReactorControllerBlockEntity.OperatingMode[] modes =
+                FusionReactorControllerBlockEntity.OperatingMode.values();
+        int index = Math.max(0, Math.min(modes.length - 1, operatingMode()));
+        return modes[index].label;
+    }
+
     private int value(int low, int high) {
         return (data.get(low) & 0xffff) | ((data.get(high) & 0xffff) << 16);
     }
@@ -254,6 +270,7 @@ public class FusionReactorMenu extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id == 1) {
+            if (!ServerDebugAccess.require(player)) return false;
             boolean enabled = reactor.getEnergy().toggleInfiniteEnergy();
             player.displayClientMessage(net.minecraft.network.chat.Component.literal(
                     "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);
@@ -274,6 +291,12 @@ public class FusionReactorMenu extends AbstractContainerMenu {
             };
             player.displayClientMessage(net.minecraft.network.chat.Component.literal(
                     "Reactor redstone: " + label), true);
+            return true;
+        }
+        if (id == 4) {
+            String label = reactor.cycleOperatingMode().label;
+            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                    "Reactor mode: " + label), true);
             return true;
         }
         return false;

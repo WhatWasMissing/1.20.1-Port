@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": ["PTP", "CMC", "PBP"],
+  "key": {
+    "P": { "item": "matteroverdrive:tritanium_plate" },
+    "T": { "item": "matteroverdrive:tritanium_ingot" },
+    "C": { "item": "matteroverdrive:isolinear_circuit_mk3" },
+    "M": { "item": "matteroverdrive:machine_casing" },
+    "B": { "item": "matteroverdrive:charging_station" }
+  },
+  "result": { "item": "matteroverdrive:drone_fabricator" }
+}

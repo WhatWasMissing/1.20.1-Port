@@ -36,16 +36,16 @@ public class EnergyPipeScreen extends AbstractContainerScreen<EnergyPipeMenu> {
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, menu.stored() + " / " + menu.capacity() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.stored() + " / " + menu.capacity() + " FE", 130),
                 18, 31, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Last output " + menu.output() + " FE/t",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Last output " + menu.output() + " FE/t", 130),
                 20, 52, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, "Relay: all six sides",
                 20, 61, MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "ENERGY RELAY", 177, 32, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, percent() + "% full", 177, 44, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Out " + menu.output() + " FE/t", 177, 56,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "ENERGY RELAY", 70), 177, 32, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, percent() + "% full", 70), 177, 44, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Out " + menu.output() + " FE/t", 70), 177, 56,
                 menu.output() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);

@@ -28,10 +28,11 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         clearWidgets();
         for (int i = 0; i < PAGES.length; i++) {
             final int target = i;
+            int column = i & 1, row = i >> 1;
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 180 + i * 36, topPos + 29, 34, 15).build();
+            }).bounds(leftPos + 178 + column * 72, topPos + 27 + row * 17, 68, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -78,15 +79,15 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 18, 29, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.getMatter() + " / " + menu.getMatterCapacity() + " kM", 18, 39, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 130), 18, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getMatter() + " / " + menu.getMatterCapacity() + " kM", 130), 18, 39, MachineScreenStyle.MUTED, false);
         if (menu.getPatternMatter() > 0) {
-            graphics.drawString(font, "Pattern " + menu.getPatternProgress() + "% | " + menu.getPatternMatter() + " kM",
+            graphics.drawString(font, MachineScreenStyle.fit(font, "Pattern " + menu.getPatternProgress() + "% | " + menu.getPatternMatter() + " kM", 130),
                     18, 72, MachineScreenStyle.TEXT, false);
-            graphics.drawString(font, menu.getEnergyPerTick() + " FE/t", 18, 83, MachineScreenStyle.CYAN, false);
+            graphics.drawString(font, MachineScreenStyle.fit(font, menu.getEnergyPerTick() + " FE/t", 130), 18, 83, MachineScreenStyle.CYAN, false);
         }
-        graphics.drawString(font, cycleText(), 18, 94, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, failureText(), 18, 105, MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, cycleText(), 160), 18, 94, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, failureText(), 160), 18, 105, MachineScreenStyle.DANGER, false);
 
         switch (page) {
             case 1 -> renderTasks(graphics);
@@ -100,10 +101,10 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         graphics.drawString(font, "REPLICATOR STATUS", 201, 52, MachineScreenStyle.CYAN, false);
         graphics.drawString(font, menu.getPatternMatter() > 0 ? "Pattern loaded" : "Waiting for pattern", 190, 72,
                 menu.getPatternMatter() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Network queue " + menu.getNetworkTaskAmount(), 190, 88,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Network queue " + menu.getNetworkTaskAmount(), 130), 190, 88,
                 menu.getNetworkTaskAmount() > 0 ? MachineScreenStyle.CYAN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Demand " + menu.getEnergyPerTick() + " FE/t", 190, 104, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Matter cost " + menu.getPatternMatter() + " kM", 190, 120, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Demand " + menu.getEnergyPerTick() + " FE/t", 130), 190, 104, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Matter cost " + menu.getPatternMatter() + " kM", 130), 190, 120, MachineScreenStyle.MUTED, false);
     }
 
     private void renderTasks(GuiGraphics graphics) {
@@ -111,12 +112,12 @@ public class ReplicatorScreen extends AbstractContainerScreen<ReplicatorMenu> {
         graphics.drawString(font, "REPLICATION TASKS", 198, 52, MachineScreenStyle.CYAN, false);
         graphics.drawString(font, menu.getPatternMatter() > 0 ? "Local task active" : "No local task", 190, 72,
                 menu.getPatternMatter() > 0 ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Local progress " + progress + "%", 190, 88, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Pattern " + menu.getPatternProgress() + "%", 190, 104, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "Network queue " + menu.getNetworkTaskAmount(), 190, 120,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Local progress " + progress + "%", 130), 190, 88, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Pattern " + menu.getPatternProgress() + "%", 130), 190, 104, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Network queue " + menu.getNetworkTaskAmount(), 130), 190, 120,
                 menu.getNetworkTaskAmount() > 0 ? MachineScreenStyle.CYAN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, cycleText(), 190, 136, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, failureText(), 190, 152, MachineScreenStyle.DANGER, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, cycleText(), 130), 190, 136, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, failureText(), 130), 190, 152, MachineScreenStyle.DANGER, false);
     }
 
     private void renderConfig(GuiGraphics graphics) {

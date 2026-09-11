@@ -36,6 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransporterBlockEntity extends BlockEntity implements MenuProvider {
+    /** Hard bounds keep shared routing state safe under hostile or malformed input. */
+    public static final int MAX_DESTINATIONS = 64;
+    public static final int MAX_DESTINATION_NAME_LENGTH = 64;
     public static final int DRIVE_SLOT = 0;
     public static final int ENERGY_SLOT = 1;
     public static final int SLOT_COUNT = 2;
@@ -271,6 +274,7 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
 
     public boolean importDriveDestination() {
         if (level == null) return false;
+        if (destinations.size() >= MAX_DESTINATIONS) return false;
         ItemStack drive = items.getStackInSlot(DRIVE_SLOT);
         if (!TransportFlashDriveItem.hasTarget(drive, level)) return false;
 
@@ -286,6 +290,9 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
         String name = drive.hasCustomHoverName()
                 ? drive.getHoverName().getString()
                 : "Location " + (destinations.size() + 1);
+        if (name.length() > MAX_DESTINATION_NAME_LENGTH) {
+            name = name.substring(0, MAX_DESTINATION_NAME_LENGTH);
+        }
         destinations.add(new Destination(target.immutable(), name));
         selectedDestination = destinations.size() - 1;
         setChanged();
@@ -390,10 +397,13 @@ public class TransporterBlockEntity extends BlockEntity implements MenuProvider 
 
         destinations.clear();
         ListTag destinationTags = tag.getList("TransportLocations", Tag.TAG_COMPOUND);
-        for (int i = 0; i < destinationTags.size(); i++) {
+        for (int i = 0; i < destinationTags.size() && i < MAX_DESTINATIONS; i++) {
             CompoundTag entry = destinationTags.getCompound(i);
-            destinations.add(new Destination(BlockPos.of(entry.getLong("Pos")),
-                    entry.getString("Name")));
+            String name = entry.getString("Name");
+            if (name.length() > MAX_DESTINATION_NAME_LENGTH) {
+                name = name.substring(0, MAX_DESTINATION_NAME_LENGTH);
+            }
+            destinations.add(new Destination(BlockPos.of(entry.getLong("Pos")), name));
         }
         clampSelectedDestination();
     }

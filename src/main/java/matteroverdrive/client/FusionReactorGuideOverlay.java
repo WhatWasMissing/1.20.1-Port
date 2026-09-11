@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -25,7 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-@Mod.EventBusSubscriber(modid = matteroverdrive.MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = matteroverdrive.MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class FusionReactorGuideOverlay {
     private static final int[] LATERAL = {0, 1, 2, 3, 4, 5, 5, 5, 5, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -5, -5, -5, -5, -4, -3, -2, -1};
     private static final int[] FORWARD = {5, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 0};
@@ -52,6 +53,10 @@ public final class FusionReactorGuideOverlay {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (player == null || minecraft.level == null) return;
+        if (cachedLevel != minecraft.level) {
+            ENABLED_CONTROLLERS.clear();
+            cachedLevel = minecraft.level;
+        }
 
         BlockPos aimed = null;
         if (player.pick(8.0D, event.getPartialTick(), false) instanceof net.minecraft.world.phys.BlockHitResult hit

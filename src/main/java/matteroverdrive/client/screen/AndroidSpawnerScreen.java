@@ -59,27 +59,27 @@ public class AndroidSpawnerScreen extends AbstractContainerScreen<AndroidSpawner
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, menu.energy() + " / " + menu.capacity() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.energy() + " / " + menu.capacity() + " FE", 132),
                 24, 29, MachineScreenStyle.MUTED, false);
 
         int spawned = menu.spawned();
         int cap = menu.maxSpawned();
-        graphics.drawString(font, "SQUAD " + spawned + " / " + cap, 24, 50,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "SQUAD " + spawned + " / " + cap, 118), 24, 50,
                 spawned >= cap ? MachineScreenStyle.AMBER : MachineScreenStyle.TEXT, false);
         String next = spawned >= cap ? "CAP REACHED"
                 : String.format(Locale.ROOT, "NEXT UNIT %.1fs", menu.ticksUntilSpawn() / 20.0D);
-        graphics.drawString(font, next, 24, 60,
+        graphics.drawString(font, MachineScreenStyle.fit(font, next, 118), 24, 60,
                 spawned >= cap ? MachineScreenStyle.AMBER : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "PATROL DRIVES " + menu.patrolTargets() + " / 6", 24, 70,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "PATROL DRIVES " + menu.patrolTargets() + " / 6", 118), 24, 70,
                 menu.patrolTargets() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
 
         graphics.drawString(font, "SQUAD CONTROL", 174, 31, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "Color: " + menu.squadColorName(), 174, 39, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Mode: " + menu.squadModeName(), 229, 39, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Spawn mix: 30% melee / 70% ranged", 174, 129, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "ESCORT uses stable formation slots", 174, 140, MachineScreenStyle.GREEN, false);
-        graphics.drawString(font, "PATROL uses the six drive targets", 174, 151, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "HOLD stops movement; GUARD returns home", 174, 162, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Color: " + menu.squadColorName(), 48), 174, 39, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Mode: " + menu.squadModeName(), 53), 229, 39, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Spawn mix: 30% melee / 70% ranged", 110), 174, 129, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "ESCORT uses stable formation slots", 110), 174, 140, MachineScreenStyle.GREEN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "PATROL uses the six drive targets", 110), 174, 151, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "HOLD stops movement; GUARD returns home", 110), 174, 162, MachineScreenStyle.MUTED, false);
 
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
     }

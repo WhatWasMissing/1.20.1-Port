@@ -33,6 +33,9 @@ public class AndroidLoadoutScreen extends Screen {
     private int lastUltimateCooldown;
     private int view;
 
+    private boolean hasInspectionPanel() { return width >= 640; }
+    private int mainRight() { return hasInspectionPanel() ? width - 316 : Math.max(220, width - 18); }
+
     public AndroidLoadoutScreen() { super(Component.literal("ANDROID SUBCLASS")); }
 
     @Override protected void init() { cacheState(); rebuild(); }
@@ -63,8 +66,8 @@ public class AndroidLoadoutScreen extends Screen {
     }
 
     private void buildSubclassView() {
-        int mainRight = Math.max(430, width - 304), subclassY = 78;
-        int available = Math.max(360, mainRight - 36), classWidth = Math.max(82, Math.min(122, (available - 18) / 4)), startX = 18;
+        int mainRight = mainRight(), subclassY = 78;
+        int available = Math.max(220, mainRight - 36), classWidth = Math.max(54, Math.min(122, (available - 18) / 4)), startX = 18;
         AndroidLoadout.Specialization[] classes = AndroidLoadout.Specialization.values();
         for (int i = 0; i < classes.length; i++) {
             AndroidLoadout.Specialization specialization = classes[i]; boolean selected = AndroidClientState.specializationOrdinal() == i;
@@ -92,7 +95,7 @@ public class AndroidLoadoutScreen extends Screen {
     }
 
     private void buildDroneView() {
-        int mainRight = Math.max(430, width - 304), centerY = height / 2; AndroidLoadout.DronePerk[] perks = AndroidLoadout.DronePerk.values();
+        int mainRight = mainRight(), centerY = height / 2; AndroidLoadout.DronePerk[] perks = AndroidLoadout.DronePerk.values();
         int left = 42, usable = Math.max(340, mainRight - 72), step = Math.max(38, usable / Math.max(1, perks.length - 1));
         for (int i = 0; i < perks.length; i++) {
             AndroidLoadout.DronePerk perk = perks[i]; boolean selected = AndroidClientState.hasDronePerk(perk); int x = left + i * step, y = centerY + ((i & 1) == 0 ? -34 : 34);
@@ -104,7 +107,7 @@ public class AndroidLoadoutScreen extends Screen {
     /* The old Artifact slot is intentionally retained in save/network data for backwards compatibility,
        but is now presented as a single freely selectable passive protocol. */
     private void buildPassiveView() {
-        int mainRight = Math.max(430, width - 304), cols = 2;
+        int mainRight = mainRight(), cols = 2;
         int buttonWidth = Math.max(150, Math.min(220, (mainRight - 54) / cols)), index = 0;
         for (int i = 1; i < AndroidLoadout.Artifact.values().length; i++) {
             AndroidLoadout.Artifact passive = AndroidLoadout.Artifact.values()[i]; boolean selected = AndroidClientState.artifactOrdinal() == i;
@@ -116,29 +119,11 @@ public class AndroidLoadoutScreen extends Screen {
     }
 
     private static String passiveName(AndroidLoadout.Artifact passive) {
-        return switch (passive) {
-            case OVERCLOCKED_RELAY -> "Overclock Protocol";
-            case AEGIS_PRISM -> "Aegis Protocol";
-            case NANITE_CROWN -> "Nanite Recovery";
-            case HUNTER_LENS -> "Hunter Protocol";
-            case PHASE_ANCHOR -> "Phase Stability";
-            case SWARM_BEACON -> "Swarm Support";
-            case CAPACITOR_HEART -> "Capacitor Feedback";
-            default -> "No Passive";
-        };
+        return passive == AndroidLoadout.Artifact.NONE ? "No Passive" : passive.displayName;
     }
 
     private static String passiveDescription(AndroidLoadout.Artifact passive) {
-        return switch (passive) {
-            case OVERCLOCKED_RELAY -> "Ability damage +5%, but recurring loadout effects consume 10% more FE.";
-            case AEGIS_PRISM -> "Take 5% less incoming damage while Force Field is active.";
-            case NANITE_CROWN -> "Low-health nanite repair heals more and recurring passive FE costs are slightly reduced.";
-            case HUNTER_LENS -> "Hunter Array scans 12 blocks farther and linked drones hit marked targets harder.";
-            case PHASE_ANCHOR -> "Cloak and teleport movement bonuses remain active for longer.";
-            case SWARM_BEACON -> "Nearby owned drones regenerate and gain additional attack support.";
-            case CAPACITOR_HEART -> "Android ability hits restore an additional 100 FE while above half charge.";
-            default -> "No additional passive protocol is selected.";
-        };
+        return passive.description;
     }
 
     private static String shortName(String name) { return name.startsWith("Fragment of ") ? name.substring("Fragment of ".length()) : name; }
@@ -155,9 +140,10 @@ public class AndroidLoadoutScreen extends Screen {
 
     @Override public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         g.fill(0, 0, width, height, BACKDROP); drawAtmosphere(g);
-        g.drawString(font, "ANDROID // SUBCLASS MATRIX", 18, 14, TEXT, false);
-        g.drawString(font, "Define role, Ultimate, Aspects, Fragments and one Passive", 18, 27, MUTED, false);
-        g.drawString(font, "LEVEL " + AndroidClientState.level() + "   FE " + AndroidClientState.energy(), width - 175, 16, ACCENT, false);
+        g.drawString(font, fit("ANDROID // SUBCLASS MATRIX", width - 36), 18, 14, TEXT, false);
+        g.drawString(font, fit("Define role, Ultimate, Aspects, Fragments and one Passive", width - 36), 18, 27, MUTED, false);
+        g.drawString(font, fit("LEVEL " + AndroidClientState.level() + "   FE " + AndroidClientState.energy(), 150),
+                Math.max(18, width - 168), 16, ACCENT, false);
         if (view == 0) renderSubclassLabels(g); else if (view == 1) renderDroneLabels(g); else renderPassiveLabels(g);
         super.render(g, mouseX, mouseY, partialTick); renderInspectionPanel(g);
     }
@@ -165,57 +151,71 @@ public class AndroidLoadoutScreen extends Screen {
     private void drawAtmosphere(GuiGraphics g) {
         for (int x = 0; x < width; x += 54) g.fill(x, 62, x + 1, height - 40, 0x101F2B33);
         for (int y = 62; y < height - 40; y += 46) g.fill(0, y, width, y + 1, 0x101F2B33);
-        g.fill(width - 286, 62, width - 18, height - 42, PANEL); g.fill(width - 283, 65, width - 21, height - 45, 0x261AEEF2);
+        if (width >= 640) {
+            g.fill(width - 286, 62, width - 18, height - 42, PANEL);
+            g.fill(width - 283, 65, width - 21, height - 45, 0x261AEEF2);
+        }
     }
 
     private void renderSubclassLabels(GuiGraphics g) {
         AndroidLoadout.Ultimate ultimate = AndroidClientState.ultimate(); int cooldown = AndroidClientState.ultimateCooldownTicks();
-        g.drawString(font, "SUBCLASS // " + AndroidClientState.specialization().displayName.toUpperCase(), 18, 108, GOLD, false);
+        g.drawString(font, fit("SUBCLASS // " + AndroidClientState.specialization().displayName.toUpperCase(), mainRight() - 18), 18, 108, GOLD, false);
         String status = AndroidClientState.level() < AndroidUltimates.REQUIRED_LEVEL ? "LOCKED · LEVEL " + AndroidUltimates.REQUIRED_LEVEL : cooldown > 0 ? String.format("RECHARGING %.1fs", cooldown / 20.0D) : AndroidClientState.energy() < ultimate.energyCost ? "NEEDS " + ultimate.energyCost + " FE" : "READY · PRESS G";
-        g.drawString(font, status, 22, 154, cooldown <= 0 && AndroidClientState.level() >= AndroidUltimates.REQUIRED_LEVEL ? ACCENT : MUTED, false);
-        g.drawString(font, "ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, 18, 166, GOLD, false);
-        g.drawString(font, "FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), 18, 218, ACCENT, false);
+        g.drawString(font, fit(status, mainRight() - 22), 22, 154, cooldown <= 0 && AndroidClientState.level() >= AndroidUltimates.REQUIRED_LEVEL ? ACCENT : MUTED, false);
+        g.drawString(font, fit("ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, mainRight() - 18), 18, 166, GOLD, false);
+        g.drawString(font, fit("FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), mainRight() - 18), 18, 218, ACCENT, false);
     }
 
     private void renderDroneLabels(GuiGraphics g) {
-        g.drawString(font, "DRONE COMMANDER SPECIALISATION", 18, 78, DRONE, false);
-        g.drawString(font, Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS + " nodes installed · sequential progression", 18, 91, MUTED, false);
+        g.drawString(font, fit("DRONE COMMANDER SPECIALISATION", mainRight() - 18), 18, 78, DRONE, false);
+        g.drawString(font, fit(Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS + " nodes installed · sequential progression", mainRight() - 18), 18, 91, MUTED, false);
     }
 
     private void renderPassiveLabels(GuiGraphics g) {
-        g.drawString(font, "PASSIVE PROTOCOL", 18, 78, GOLD, false);
-        g.drawString(font, "Choose one always-on modifier · Current: " + passiveName(AndroidClientState.artifact()), 18, 91, MUTED, false);
+        g.drawString(font, fit("PASSIVE PROTOCOL", mainRight() - 18), 18, 78, GOLD, false);
+        g.drawString(font, fit("Choose one always-on modifier · Current: " + passiveName(AndroidClientState.artifact()), mainRight() - 18), 18, 91, MUTED, false);
     }
 
     private void renderInspectionPanel(GuiGraphics g) {
+        if (width < 640) return;
         Object inspected = null; for (Map.Entry<Button, Object> entry : inspectables.entrySet()) if (entry.getKey().isHoveredOrFocused()) { inspected = entry.getValue(); break; }
-        int x = width - 268, y = 82; g.drawString(font, "SYSTEM INSPECTION", x, y, MUTED, false);
+        int x = width - 268, y = 82;
+        // Derive the usable text column from the panel instead of relying on a fixed
+        // width; fixed widths can collapse under UI scaling and cause one-character wrapping.
+        int panelWidth = Math.max(180, width - x - 18);
+        g.drawString(font, fit("SYSTEM INSPECTION", panelWidth), x, y, MUTED, false);
         if (inspected == null) {
-            g.drawString(font, view == 0 ? AndroidClientState.specialization().displayName.toUpperCase() : view == 1 ? "DRONE COMMANDER" : "PASSIVE PROTOCOL", x, y + 24, TEXT, false);
+            g.drawString(font, fit(view == 0 ? AndroidClientState.specialization().displayName.toUpperCase() : view == 1 ? "DRONE COMMANDER" : "PASSIVE PROTOCOL", panelWidth), x, y + 24, TEXT, false);
             if (view == 0) {
-                drawWrapped(g, AndroidClientState.specialization().description, x, y + 42, 230, TEXT); g.drawString(font, "ULTIMATE", x, y + 92, MUTED, false);
-                g.drawString(font, AndroidClientState.ultimate().displayName, x, y + 105, GOLD, false); drawWrapped(g, AndroidClientState.ultimate().description, x, y + 122, 230, TEXT); g.drawString(font, "COST " + AndroidClientState.ultimate().energyCost + " FE", x, y + 174, ACCENT, false);
-            } else if (view == 1) drawWrapped(g, "A separate five-node specialist layer for owned drones. Nodes unlock by Android level and must be progressed in sequence.", x, y + 42, 230, TEXT);
-            else { g.drawString(font, passiveName(AndroidClientState.artifact()), x, y + 24, GOLD, false); drawWrapped(g, passiveDescription(AndroidClientState.artifact()), x, y + 42, 230, TEXT); }
+                drawWrapped(g, AndroidClientState.specialization().description, x, y + 42, panelWidth, TEXT); g.drawString(font, "ULTIMATE", x, y + 92, MUTED, false);
+                g.drawString(font, fit(AndroidClientState.ultimate().displayName, panelWidth), x, y + 105, GOLD, false); drawWrapped(g, AndroidClientState.ultimate().description, x, y + 122, panelWidth, TEXT); g.drawString(font, "COST " + AndroidClientState.ultimate().energyCost + " FE", x, y + 174, ACCENT, false);
+            } else if (view == 1) drawWrapped(g, "A separate five-node specialist layer for owned drones. Nodes unlock by Android level and must be progressed in sequence.", x, y + 42, panelWidth, TEXT);
+            else { g.drawString(font, fit(passiveName(AndroidClientState.artifact()), panelWidth), x, y + 24, GOLD, false); drawWrapped(g, passiveDescription(AndroidClientState.artifact()), x, y + 42, panelWidth, TEXT); }
             return;
         }
         if (inspected instanceof AndroidLoadout.Specialization specialization) {
-            g.drawString(font, specialization.displayName.toUpperCase(), x, y + 24, GOLD, false); drawWrapped(g, specialization.description, x, y + 42, 230, TEXT); g.drawString(font, "ULTIMATE", x, y + 94, MUTED, false); g.drawString(font, specialization.ultimate.displayName, x, y + 107, ACCENT, false); drawWrapped(g, specialization.ultimate.description, x, y + 124, 230, TEXT);
+            g.drawString(font, fit(specialization.displayName.toUpperCase(), panelWidth), x, y + 24, GOLD, false); drawWrapped(g, specialization.description, x, y + 42, panelWidth, TEXT); g.drawString(font, "ULTIMATE", x, y + 94, MUTED, false); g.drawString(font, fit(specialization.ultimate.displayName, panelWidth), x, y + 107, ACCENT, false); drawWrapped(g, specialization.ultimate.description, x, y + 124, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.Ultimate ultimate) {
-            g.drawString(font, ultimate.displayName.toUpperCase(), x, y + 24, GOLD, false); drawWrapped(g, ultimate.description, x, y + 42, 230, TEXT); g.drawString(font, "ENERGY COST " + ultimate.energyCost + " FE", x, y + 100, ACCENT, false); g.drawString(font, "BASE COOLDOWN " + String.format("%.0fs", ultimate.cooldownTicks / 20.0D), x, y + 114, MUTED, false);
+            g.drawString(font, fit(ultimate.displayName.toUpperCase(), panelWidth), x, y + 24, GOLD, false); drawWrapped(g, ultimate.description, x, y + 42, panelWidth, TEXT); g.drawString(font, "ENERGY COST " + ultimate.energyCost + " FE", x, y + 100, ACCENT, false); g.drawString(font, "BASE COOLDOWN " + String.format("%.0fs", ultimate.cooldownTicks / 20.0D), x, y + 114, MUTED, false);
         } else if (inspected instanceof AndroidLoadout.Aspect aspect) {
-            g.drawString(font, aspect.displayName.toUpperCase(), x, y + 24, GOLD, false); g.drawString(font, aspect.branch.toUpperCase() + " ASPECT · " + aspect.fragmentSlots + " FRAGMENT SLOTS", x, y + 39, MUTED, false); drawWrapped(g, aspect.description, x, y + 60, 230, TEXT);
+            g.drawString(font, fit(aspect.displayName.toUpperCase(), panelWidth), x, y + 24, GOLD, false); g.drawString(font, fit(aspect.branch.toUpperCase() + " ASPECT · " + aspect.fragmentSlots + " FRAGMENT SLOTS", panelWidth), x, y + 39, MUTED, false); drawWrapped(g, aspect.description, x, y + 60, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.Fragment fragment) {
-            g.drawString(font, shortName(fragment.displayName).toUpperCase(), x, y + 24, ACCENT, false); g.drawString(font, "FRAGMENT", x, y + 39, MUTED, false); drawWrapped(g, fragment.description, x, y + 60, 230, TEXT);
+            g.drawString(font, fit(shortName(fragment.displayName).toUpperCase(), panelWidth), x, y + 24, ACCENT, false); g.drawString(font, "FRAGMENT", x, y + 39, MUTED, false); drawWrapped(g, fragment.description, x, y + 60, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.Artifact passive) {
-            g.drawString(font, passiveName(passive).toUpperCase(), x, y + 24, GOLD, false); g.drawString(font, "SELECTABLE PASSIVE", x, y + 39, MUTED, false); drawWrapped(g, passiveDescription(passive), x, y + 60, 230, TEXT);
+            g.drawString(font, fit(passiveName(passive).toUpperCase(), panelWidth), x, y + 24, GOLD, false); g.drawString(font, "SELECTABLE PASSIVE", x, y + 39, MUTED, false); drawWrapped(g, passiveDescription(passive), x, y + 60, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.DronePerk perk) {
-            g.drawString(font, perk.displayName.toUpperCase(), x, y + 24, DRONE, false); g.drawString(font, "DRONE NODE · LEVEL " + perk.level, x, y + 39, MUTED, false); drawWrapped(g, perk.description, x, y + 60, 230, TEXT);
+            g.drawString(font, fit(perk.displayName.toUpperCase(), panelWidth), x, y + 24, DRONE, false); g.drawString(font, fit("DRONE NODE · LEVEL " + perk.level, panelWidth), x, y + 39, MUTED, false); drawWrapped(g, perk.description, x, y + 60, panelWidth, TEXT);
         }
     }
 
     private void drawWrapped(GuiGraphics g, String text, int x, int y, int width, int color) {
         int lineY = y; for (FormattedCharSequence line : font.split(Component.literal(text), width)) { g.drawString(font, line, x, lineY, color, false); lineY += 11; }
+    }
+
+    private String fit(String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) return text;
+        int available = Math.max(0, maxWidth - font.width("…"));
+        return font.plainSubstrByWidth(text, available) + "…";
     }
 
     @Override public boolean isPauseScreen() { return false; }

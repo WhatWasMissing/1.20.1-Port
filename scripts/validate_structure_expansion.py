@@ -82,6 +82,8 @@ if PIECE.is_file():
     if "damageVariant()" not in text: errors.append("seeded damaged-room variation missing")
     if "assemblePlant" not in text or "assembleBlackSite" not in text:
         errors.append("facility-specific layout assemblers missing")
+    for marker in ("record RoomMetadata", "metadata(Room room)", "MORole", "MORequired", "MOConnectorAxis"):
+        if marker not in text: errors.append(f"room/connector metadata contract missing: {marker}")
     if MOD_BLOCKS.is_file():
         block_registry = MOD_BLOCKS.read_text(encoding="utf-8")
         ids = set(re.findall(r'mod\("([^"]+)"', text))
@@ -125,6 +127,15 @@ if STRUCTURE.is_file():
         errors.append("layout variant is not forwarded into primary piece assembly")
     if "FacilityInfrastructurePiece.assemble(builder, kind, origin, layout)" not in text:
         errors.append("infrastructure overlay is not assembled by native structure generation")
+
+if (ROOT / "src/main/java/matteroverdrive/event/ContractEvents.java").is_file():
+    discovery_events = (ROOT / "src/main/java/matteroverdrive/event/ContractEvents.java").read_text(encoding="utf-8")
+    for marker in ("if (!discoveries.discover(level, player.getUUID(), site, anchor.asLong())) return;",
+                   "discoveries.advanceChain(player.getUUID(), site)",
+                   "player.giveExperiencePoints(25)",
+                   'putString("FacilityArchive", researchArchive(site))'):
+        if marker not in discovery_events:
+            errors.append(f"first-time discovery reward contract missing: {marker}")
 
 if MOD_STRUCTURES.is_file() and "FACILITY_INFRASTRUCTURE_PIECE" not in MOD_STRUCTURES.read_text(encoding="utf-8"):
     errors.append("facility infrastructure StructurePieceType is not registered")
@@ -194,7 +205,7 @@ if items.is_file() and archive.is_file():
 
 if LAYOUT_LAB.is_file():
     text = LAYOUT_LAB.read_text(encoding="utf-8")
-    for marker in ("FACILITY LAYOUT LAB PASSED: 18 layouts", "qa_core_link_west", "lower_lab_link", "surface_hatch", "lowered_step"):
+    for marker in ("FACILITY LAYOUT LAB V2 PASSED: 18 layouts", "qa_core_link_west", "lower_lab_link", "surface_hatch", "lowered_step"):
         if marker not in text: errors.append(f"facility visual QA lab missing regression marker: {marker}")
 
 for doc in (

@@ -25,6 +25,8 @@ public final class ResearchProgression {
     private ResearchProgression() {}
     public static Stage stage(ServerPlayer p){CompoundTag d=data(p);int i=Math.max(0,Math.min(Stage.values().length-1,d.getInt(STAGE_KEY)));return Stage.values()[i];}
     public static boolean unlock(ServerPlayer p,Stage stage){CompoundTag d=data(p);int current=Math.max(0,d.getInt(STAGE_KEY));if(stage.ordinal()<=current)return false;d.putInt(STAGE_KEY,stage.ordinal());save(p,d);return true;}
+    /** Evidence can never skip an intermediate clearance; campaign quests may still grant explicit milestones. */
+    public static boolean unlockEvidence(ServerPlayer p,Stage supported){Stage current=stage(p);if(supported.ordinal()<=current.ordinal())return false;return unlock(p,Stage.values()[Math.min(current.ordinal()+1,supported.ordinal())]);}
     public static boolean atLeast(ServerPlayer p,Stage stage){return stage(p).ordinal()>=stage.ordinal();}
     public static String status(ServerPlayer p){Stage s=stage(p);return s.title+" - "+s.description;}
     public static List<String> roadmap(ServerPlayer p){Stage current=stage(p);return java.util.Arrays.stream(Stage.values()).map(s->(s.ordinal()<current.ordinal()?"COMPLETE: ":s==current?"ACTIVE: ":"LOCKED: ")+s.title+" - "+s.description).toList();}

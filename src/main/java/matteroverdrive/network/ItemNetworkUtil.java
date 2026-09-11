@@ -119,6 +119,78 @@ public final class ItemNetworkUtil {
         return MoveResult.failed(MoveStatus.NO_ROUTE);
     }
 
+    /** Pulls a specific ingredient from a connected item network into a machine inventory. */
+    public static int pullMatchingItem(Level level, BlockPos origin, IItemHandler destination, int destinationSlot, ItemStack wanted, int maximum, long cursor) {
+        return pullMatchingItem(level, origin, destination, destinationSlot, wanted, maximum, cursor, 0);
+    }
+
+    public static int pullMatchingItem(Level level, BlockPos origin, IItemHandler destination, int destinationSlot, ItemStack wanted, int maximum, long cursor, int channel) {
+        if (maximum <= 0 || wanted == null || wanted.isEmpty()) return 0;
+        Scan scan = scan(level, origin, channel);
+        List<Endpoint> endpoints = scan.endpoints();
+        if (endpoints.isEmpty()) return 0;
+        int start = (int) Math.floorMod(cursor, (long) endpoints.size());
+        for (int offset = 0; offset < endpoints.size(); offset++) {
+            Endpoint endpoint = endpoints.get((start + offset) % endpoints.size());
+            if (endpoint.pos().equals(origin) || !MachineSideConfigurationData.allowsOutput(level, endpoint.pos(), endpoint.side(), MachineSideConfigurationData.Resource.ITEMS)) continue;
+            IItemHandler source = handler(level, endpoint);
+            if (source == null) continue;
+            for (int slot = 0; slot < source.getSlots(); slot++) {
+                ItemStack available = source.getStackInSlot(slot);
+                if (available.isEmpty() || !ItemStack.isSameItemSameTags(available, wanted)) continue;
+                int amount = Math.min(maximum, available.getCount());
+                ItemStack simulated = source.extractItem(slot, amount, true);
+                if (simulated.isEmpty()) continue;
+                ItemStack remainder = destination.insertItem(destinationSlot, simulated, true);
+                int accepted = simulated.getCount() - remainder.getCount();
+                if (accepted <= 0) continue;
+                ItemStack extracted = source.extractItem(slot, accepted, false);
+                ItemStack leftover = destination.insertItem(destinationSlot, extracted, false);
+                if (!leftover.isEmpty()) restoreRemainder(level, endpoint, source, slot, leftover);
+                return extracted.getCount() - leftover.getCount();
+            }
+        }
+        return 0;
+    }
+
+    /** Pulls one arbitrary stack from a bounded channel graph into a configured inventory target. */
+    public static int pullAnyItemToDestination(Level level, BlockPos origin, BlockPos destinationPos,
+                                                IItemHandler destination, int maximum, long cursor, int channel) {
+        if (maximum <= 0 || destination == null) return 0;
+        Scan scan = scan(level, origin, channel);
+        if (scan.endpoints().isEmpty() || !MachineSideConfigurationData.allowsInput(level, destinationPos,
+                Direction.UP, MachineSideConfigurationData.Resource.ITEMS)) return 0;
+        int start = (int) Math.floorMod(cursor, (long) scan.endpoints().size());
+        for (int offset = 0; offset < scan.endpoints().size(); offset++) {
+            Endpoint sourceEndpoint = scan.endpoints().get((start + offset) % scan.endpoints().size());
+            if (sourceEndpoint.pos().equals(destinationPos)
+                    || !MachineSideConfigurationData.allowsOutput(level, sourceEndpoint.pos(), sourceEndpoint.side(), MachineSideConfigurationData.Resource.ITEMS)) continue;
+            IItemHandler source = handler(level, sourceEndpoint);
+            if (source == null) continue;
+            for (int slot = 0; slot < source.getSlots(); slot++) {
+                ItemStack candidate = source.extractItem(slot, maximum, true);
+                if (candidate.isEmpty()) continue;
+                ItemStack remainder = destination.insertItem(0, candidate, true);
+                int accepted = candidate.getCount() - remainder.getCount();
+                if (accepted <= 0) {
+                    for (int destinationSlot = 1; destinationSlot < destination.getSlots() && accepted <= 0; destinationSlot++) {
+                        remainder = destination.insertItem(destinationSlot, candidate, true);
+                        accepted = candidate.getCount() - remainder.getCount();
+                    }
+                }
+                if (accepted <= 0) continue;
+                ItemStack extracted = source.extractItem(slot, accepted, false);
+                ItemStack leftover = extracted.copy();
+                for (int destinationSlot = 0; destinationSlot < destination.getSlots() && !leftover.isEmpty(); destinationSlot++)
+                    leftover = destination.insertItem(destinationSlot, leftover, false);
+                int moved = extracted.getCount() - leftover.getCount();
+                if (!leftover.isEmpty()) restoreRemainder(level, sourceEndpoint, source, slot, leftover);
+                if (moved > 0) return moved;
+            }
+        }
+        return 0;
+    }
+
     private static void restoreRemainder(Level level, Endpoint source, IItemHandler sourceHandler, int originalSlot, ItemStack remainder) {
         ItemStack remaining = sourceHandler.insertItem(originalSlot, remainder, false);
         for (int slot = 0; slot < sourceHandler.getSlots() && !remaining.isEmpty(); slot++) {

@@ -15,7 +15,9 @@ public record DroneCommandPacket(int action, byte mode, UUID droneId) {
     public static final int REQUEST_STATUS = 0;
     public static final int SET_ALL = 1;
     public static final int SET_ONE = 2;
+    public static final int RECALL_ALL = 3;
     private static final double MANAGEMENT_RANGE = 192.0D;
+    public static final int MAX_MANAGED_DRONES = 24;
 
     public static DroneCommandPacket requestStatus() {
         return new DroneCommandPacket(REQUEST_STATUS, DroneEntity.MODE_FOLLOW, new UUID(0L, 0L));
@@ -27,6 +29,10 @@ public record DroneCommandPacket(int action, byte mode, UUID droneId) {
 
     public static DroneCommandPacket setOne(UUID droneId, byte mode) {
         return new DroneCommandPacket(SET_ONE, mode, droneId);
+    }
+
+    public static DroneCommandPacket recallAll() {
+        return new DroneCommandPacket(RECALL_ALL, DroneEntity.MODE_FOLLOW, new UUID(0L, 0L));
     }
 
     public static void encode(DroneCommandPacket packet, FriendlyByteBuf buffer) {
@@ -47,18 +53,32 @@ public record DroneCommandPacket(int action, byte mode, UUID droneId) {
             return;
         }
         context.enqueueWork(() -> {
-            if (packet.action != REQUEST_STATUS) {
+            List<DroneEntity> drones = ownedLoadedDrones(player);
+            if (packet.action == SET_ALL || packet.action == SET_ONE) {
                 byte mode = clampMode(packet.mode);
-                List<DroneEntity> drones = ownedLoadedDrones(player);
                 if (packet.action == SET_ALL) {
                     for (DroneEntity drone : drones) drone.setCommandMode(mode);
-                } else if (packet.action == SET_ONE) {
+                } else {
                     for (DroneEntity drone : drones) {
                         if (drone.getUUID().equals(packet.droneId)) {
                             drone.setCommandMode(mode);
                             break;
                         }
                     }
+                }
+            } else if (packet.action == RECALL_ALL) {
+                int recalled = 0;
+                for (DroneEntity drone : drones) {
+                    if (drone.recallTo(player)) recalled++;
+                }
+                if (recalled > 0) {
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            "Drone recall complete: " + recalled + " linked drone" + (recalled == 1 ? "" : "s") + " returned")
+                            .withStyle(net.minecraft.ChatFormatting.AQUA), true);
+                } else if (!drones.isEmpty()) {
+                    player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            "Drone recall blocked: clear space around the operator")
+                            .withStyle(net.minecraft.ChatFormatting.GOLD), true);
                 }
             }
             ModNetwork.sendDroneStatus(player);
@@ -70,10 +90,13 @@ public record DroneCommandPacket(int action, byte mode, UUID droneId) {
         AABB area = player.getBoundingBox().inflate(MANAGEMENT_RANGE);
         UUID owner = player.getUUID();
         return player.serverLevel().getEntitiesOfClass(DroneEntity.class, area,
-                drone -> drone.isAlive() && owner.equals(drone.getOwnerUuid()));
+                        drone -> drone.isAlive() && owner.equals(drone.getOwnerUuid())).stream()
+                .sorted((a, b) -> Double.compare(a.distanceToSqr(player), b.distanceToSqr(player)))
+                .limit(MAX_MANAGED_DRONES)
+                .toList();
     }
 
     private static byte clampMode(byte mode) {
-        return (byte) Math.max(DroneEntity.MODE_FOLLOW, Math.min(DroneEntity.MODE_HOLD, mode));
+        return DroneEntity.clampCommandMode(mode);
     }
 }

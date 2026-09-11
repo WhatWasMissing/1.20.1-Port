@@ -43,18 +43,21 @@ public class ReactorAssemblyGuideScreen extends Screen {
 
     @Override
     protected void init() {
-        int left = (width - PANEL_WIDTH) / 2;
-        int top = (height - PANEL_HEIGHT) / 2;
+        int panelWidth = panelWidth();
+        int panelHeight = panelHeight();
+        int left = (width - panelWidth) / 2;
+        int top = (height - panelHeight) / 2;
+        int buttonWidth = Math.max(52, Math.min(82, (panelWidth - 36) / 3));
         previousButton = addRenderableWidget(Button.builder(Component.literal("< Previous"), button -> {
             pageIndex = Math.max(0, pageIndex - 1);
             updateButtons();
-        }).bounds(left + 12, top + PANEL_HEIGHT - 28, 82, 20).build());
+        }).bounds(left + 8, top + panelHeight - 28, buttonWidth, 20).build());
         nextButton = addRenderableWidget(Button.builder(Component.literal("Next >"), button -> {
             pageIndex = Math.min(PAGES.size() - 1, pageIndex + 1);
             updateButtons();
-        }).bounds(left + PANEL_WIDTH - 94, top + PANEL_HEIGHT - 28, 82, 20).build());
+        }).bounds(left + panelWidth - buttonWidth - 8, top + panelHeight - 28, buttonWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
-                .bounds(left + (PANEL_WIDTH - 60) / 2, top + PANEL_HEIGHT - 28, 60, 20).build());
+                .bounds(left + (panelWidth - buttonWidth) / 2, top + panelHeight - 28, buttonWidth, 20).build());
         updateButtons();
     }
 
@@ -66,36 +69,40 @@ public class ReactorAssemblyGuideScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
-        int left = (width - PANEL_WIDTH) / 2;
-        int top = (height - PANEL_HEIGHT) / 2;
-        MachineScreenStyle.drawStandaloneFrame(graphics, left, top, PANEL_WIDTH, PANEL_HEIGHT,
+        int panelWidth = panelWidth();
+        int panelHeight = panelHeight();
+        int left = (width - panelWidth) / 2;
+        int top = (height - panelHeight) / 2;
+        MachineScreenStyle.drawStandaloneFrame(graphics, left, top, panelWidth, panelHeight,
                 MachineScreenStyle.CYAN);
 
         Page page = PAGES.get(pageIndex);
-        graphics.drawCenteredString(font, Component.translatable(page.titleKey()),
+        graphics.drawCenteredString(font, fit(Component.translatable(page.titleKey()).getString(), panelWidth - 36),
                 width / 2, top + 9, MachineScreenStyle.TEXT);
-        graphics.drawString(font, (pageIndex + 1) + " / " + PAGES.size(),
-                left + PANEL_WIDTH - 35, top + 9, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, fit((pageIndex + 1) + " / " + PAGES.size(), 28),
+                left + panelWidth - 35, top + 9, MachineScreenStyle.MUTED, false);
 
-        int imageX = width / 2 - IMAGE_WIDTH / 2;
+        int imageWidth = Math.min(IMAGE_WIDTH, panelWidth - 28);
+        int imageHeight = Math.max(62, imageWidth * IMAGE_HEIGHT / IMAGE_WIDTH);
+        int imageX = width / 2 - imageWidth / 2;
         int imageY = top + 31;
         MachineScreenStyle.drawSection(graphics, imageX - 3, imageY - 3,
-                IMAGE_WIDTH + 6, IMAGE_HEIGHT + 6);
+                imageWidth + 6, imageHeight + 6);
         graphics.blit(page.texture(), imageX, imageY, 0, 0,
-                IMAGE_WIDTH, IMAGE_HEIGHT, SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT);
+                imageWidth, imageHeight, SOURCE_IMAGE_WIDTH, SOURCE_IMAGE_HEIGHT);
 
-        int textY = imageY + IMAGE_HEIGHT + 10;
+        int textY = imageY + imageHeight + 10;
         MachineScreenStyle.drawSection(graphics, left + 10, textY - 5,
-                PANEL_WIDTH - 20, PANEL_HEIGHT - (textY - top) - 34);
+                panelWidth - 20, panelHeight - (textY - top) - 34);
         if (pageIndex == 1 || pageIndex == 2) {
             graphics.drawString(font, "Overlay: blue=hull  orange=coil/IO  purple=side",
                     left + 14, textY, MachineScreenStyle.AMBER, false);
             textY += 10;
         }
         List<FormattedCharSequence> lines = font.split(
-                Component.translatable(page.bodyKey()), PANEL_WIDTH - 28);
+                Component.translatable(page.bodyKey()), panelWidth - 28);
         for (FormattedCharSequence line : lines) {
-            if (textY > top + PANEL_HEIGHT - 38) {
+            if (textY > top + panelHeight - 38) {
                 break;
             }
             graphics.drawString(font, line, left + 14, textY, MachineScreenStyle.TEXT, false);
@@ -111,7 +118,21 @@ public class ReactorAssemblyGuideScreen extends Screen {
     }
 
     private static ResourceLocation texture(String path) {
-        return new ResourceLocation(MatterOverdrive.MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, path);
+    }
+
+    private Component fit(String value, int maxWidth) {
+        if (font.width(value) <= maxWidth) return Component.literal(value);
+        int usable = Math.max(0, maxWidth - font.width("…"));
+        return Component.literal(font.plainSubstrByWidth(value, usable) + "…");
+    }
+
+    private int panelWidth() {
+        return Math.min(PANEL_WIDTH, Math.max(160, width - 20));
+    }
+
+    private int panelHeight() {
+        return Math.min(PANEL_HEIGHT, Math.max(150, height - 20));
     }
 
     private record Page(String titleKey, String bodyKey, ResourceLocation texture) {

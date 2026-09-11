@@ -33,7 +33,12 @@ public final class ServerStartupWatchdog {
     private static final AtomicBoolean CONTINUOUS_WATCHDOG_RUNNING = new AtomicBoolean(false);
     private static final AtomicBoolean STALL_REPORTED = new AtomicBoolean(false);
     private static final AtomicLong LAST_SERVER_TICK_NANOS = new AtomicLong(System.nanoTime());
-    private static final long RUNTIME_STALL_NANOS = 5_000_000_000L;
+    // An integrated server may legitimately pause while the game window loses focus or saves.
+    // Keep a lightweight warning at five seconds, but reserve the expensive full thread dump
+    // for a sustained stall long enough to distinguish that normal pause from a deadlock.
+    private static final long RUNTIME_WARNING_NANOS = 5_000_000_000L;
+    private static final long RUNTIME_STALL_NANOS = 30_000_000_000L;
+    private static final AtomicBoolean STALL_WARNING_REPORTED = new AtomicBoolean(false);
 
     private ServerStartupWatchdog() {}
 
@@ -42,6 +47,7 @@ public final class ServerStartupWatchdog {
         STARTED.set(false);
         STOPPING.set(false);
         STALL_REPORTED.set(false);
+        STALL_WARNING_REPORTED.set(false);
         LAST_SERVER_TICK_NANOS.set(System.nanoTime());
         LOGGER.warn("M2 STARTUP TRACE: ServerAboutToStartEvent reached");
     }
@@ -83,6 +89,7 @@ public final class ServerStartupWatchdog {
         STOPPING.set(true);
         STARTED.set(false);
         STALL_REPORTED.set(false);
+        STALL_WARNING_REPORTED.set(false);
     }
 
     @SubscribeEvent
@@ -90,6 +97,7 @@ public final class ServerStartupWatchdog {
         if (event.phase == TickEvent.Phase.END) {
             LAST_SERVER_TICK_NANOS.set(System.nanoTime());
             STALL_REPORTED.set(false);
+            STALL_WARNING_REPORTED.set(false);
         }
     }
 
@@ -129,9 +137,15 @@ public final class ServerStartupWatchdog {
                     Thread.sleep(1000L);
                     if (!STARTED.get() || STOPPING.get()) continue;
                     long stalledNanos = System.nanoTime() - LAST_SERVER_TICK_NANOS.get();
-                    if (stalledNanos < RUNTIME_STALL_NANOS) continue;
-                    if (!STALL_REPORTED.compareAndSet(false, true)) continue;
+                    if (stalledNanos < RUNTIME_WARNING_NANOS) continue;
                     long stalledMillis = stalledNanos / 1_000_000L;
+                    if (stalledNanos < RUNTIME_STALL_NANOS) {
+                        if (STALL_WARNING_REPORTED.compareAndSet(false, true)) {
+                            LOGGER.warn("M2 CONTINUOUS WATCHDOG: server tick heartbeat paused for {} ms; waiting before collecting a thread dump.", stalledMillis);
+                        }
+                        continue;
+                    }
+                    if (!STALL_REPORTED.compareAndSet(false, true)) continue;
                     LOGGER.error("M2 CONTINUOUS WATCHDOG: no completed server tick for {} ms. This may indicate chunk/structure generation deadlock or another blocking task.", stalledMillis);
                     dumpRelevantThreads("M2 CONTINUOUS WATCHDOG THREAD");
                 }

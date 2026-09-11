@@ -43,7 +43,7 @@ public class MadScientistEntity extends Villager {
         if(level().isClientSide)return InteractionResult.SUCCESS;
         if(hand!=InteractionHand.MAIN_HAND)return InteractionResult.PASS;
         if(!(player instanceof ServerPlayer sp))return InteractionResult.CONSUME;
-        ContractInteractionEvents.recordConversation(sp,new ResourceLocation("matteroverdrive","mad_scientist"));
+        ContractInteractionEvents.recordConversation(sp,ResourceLocation.fromNamespaceAndPath("matteroverdrive","mad_scientist"));
         CompoundTag persisted=player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG);
         boolean active=persisted.getBoolean(QUEST_ACTIVE),done=persisted.getBoolean(QUEST_DONE);
 

@@ -39,9 +39,11 @@ import java.util.zip.GZIPInputStream;
  */
 public final class NativeDestinyVisualLibrary {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final ResourceLocation COMPLETE_DATA =
+            ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "native_destiny/weapons.json.gz.b64");
     private static final List<ResourceLocation> DATA_PARTS = List.of(
-            new ResourceLocation(MatterOverdrive.MOD_ID, "native_destiny/weapons_00.b64"),
-            new ResourceLocation(MatterOverdrive.MOD_ID, "native_destiny/weapons_01.b64"));
+            ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "native_destiny/weapons_00.b64"),
+            ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "native_destiny/weapons_01.b64"));
     private static final Map<String, WeaponVisual> VISUALS = new HashMap<>();
     private static boolean loaded;
 
@@ -56,22 +58,21 @@ public final class NativeDestinyVisualLibrary {
         if (loaded) return;
         loaded = true;
         Minecraft minecraft = Minecraft.getInstance();
-        StringBuilder encoded = new StringBuilder();
-        for (ResourceLocation part : DATA_PARTS) {
-            var resource = minecraft.getResourceManager().getResource(part);
-            if (resource.isEmpty()) {
-                LOGGER.error("Native Destiny visual bundle part {} is missing", part);
-                return;
+        String encoded = readBundle(minecraft, COMPLETE_DATA);
+        if (encoded == null) {
+            StringBuilder staged = new StringBuilder();
+            for (ResourceLocation part : DATA_PARTS) {
+                String contents = readBundle(minecraft, part);
+                if (contents == null) {
+                    LOGGER.error("Native Destiny visual bundle part {} is missing", part);
+                    return;
+                }
+                staged.append(contents);
             }
-            try (var input = resource.get().open()) {
-                encoded.append(new String(input.readAllBytes(), StandardCharsets.UTF_8).replaceAll("\\s+", ""));
-            } catch (Exception ex) {
-                LOGGER.error("Failed to read native Destiny visual bundle part {}", part, ex);
-                return;
-            }
+            encoded = staged.toString();
         }
         try {
-            byte[] compressed = Base64.getDecoder().decode(encoded.toString());
+            byte[] compressed = Base64.getDecoder().decode(encoded);
             try (var reader = new InputStreamReader(
                     new GZIPInputStream(new ByteArrayInputStream(compressed)), StandardCharsets.UTF_8)) {
                 JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
@@ -91,6 +92,17 @@ public final class NativeDestinyVisualLibrary {
             }
         } catch (Exception ex) {
             LOGGER.error("Failed to load compressed native Destiny weapon visual data", ex);
+        }
+    }
+
+    private static String readBundle(Minecraft minecraft, ResourceLocation location) {
+        var resource = minecraft.getResourceManager().getResource(location);
+        if (resource.isEmpty()) return null;
+        try (var input = resource.get().open()) {
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8).replaceAll("\\s+", "");
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to read native Destiny visual bundle {}", location, ex);
+            return null;
         }
     }
 
@@ -228,7 +240,7 @@ public final class NativeDestinyVisualLibrary {
                 animations.put(animation.getKey(), AnimationClip.parse(animation.getValue().getAsJsonObject()));
             }
             return new WeaponVisual(id, root, parts, basePoses, animations,
-                    new ResourceLocation(MatterOverdrive.MOD_ID, "textures/native_destiny/" + id + ".png"));
+                    ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/native_destiny/" + id + ".png"));
         }
 
         private static PartDefinition buildPart(PartDefinition parentDef, BoneSpec spec, Vec3 parentPivot) {

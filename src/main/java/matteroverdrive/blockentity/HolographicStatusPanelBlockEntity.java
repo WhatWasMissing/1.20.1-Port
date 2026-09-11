@@ -20,20 +20,22 @@ import org.jetbrains.annotations.Nullable;
 public class HolographicStatusPanelBlockEntity extends BlockEntity {
     public enum Mode { OVERVIEW, ENERGY, MATTER, ALERTS }
     private Mode mode = Mode.OVERVIEW;
-    private int nodes, energyPercent, matterPercent, severity, alarmCount;
+    private int nodes, energyPercent, matterPercent, severity, alarmCount, reactorHeat, reactorStability = 1000;
 
     public HolographicStatusPanelBlockEntity(BlockPos pos, BlockState state) { super(ModExtraBlockEntities.HOLOGRAPHIC_STATUS_PANEL.get(), pos, state); }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HolographicStatusPanelBlockEntity panel) {
         if (level.getGameTime() % 20L != 0L) return;
         FacilityNetworkTelemetry.Snapshot snapshot = FacilityNetworkTelemetry.scan(level, pos);
-        int oldNodes = panel.nodes, oldEnergy = panel.energyPercent, oldMatter = panel.matterPercent, oldSeverity = panel.severity, oldAlarms = panel.alarmCount;
+        int oldNodes = panel.nodes, oldEnergy = panel.energyPercent, oldMatter = panel.matterPercent, oldSeverity = panel.severity, oldAlarms = panel.alarmCount, oldHeat = panel.reactorHeat, oldStability = panel.reactorStability;
         panel.nodes = snapshot.nodes();
         panel.energyPercent = snapshot.energyPercent();
         panel.matterPercent = snapshot.matterPercent();
         panel.severity = snapshot.severity();
         panel.alarmCount = snapshot.alarms().size();
-        if (oldNodes != panel.nodes || oldEnergy != panel.energyPercent || oldMatter != panel.matterPercent || oldSeverity != panel.severity || oldAlarms != panel.alarmCount) {
+        panel.reactorHeat = snapshot.reactorHeat();
+        panel.reactorStability = snapshot.reactorStability();
+        if (oldNodes != panel.nodes || oldEnergy != panel.energyPercent || oldMatter != panel.matterPercent || oldSeverity != panel.severity || oldAlarms != panel.alarmCount || oldHeat != panel.reactorHeat || oldStability != panel.reactorStability) {
             panel.setChanged();
             level.sendBlockUpdated(pos, state, state, 3);
         }
@@ -55,7 +57,7 @@ public class HolographicStatusPanelBlockEntity extends BlockEntity {
 
     public String displayLine() {
         return switch (mode) {
-            case OVERVIEW -> "MO FACILITY | " + nodes + " nodes | FE " + energyPercent + "% | M " + matterPercent + "%";
+            case OVERVIEW -> "MO FACILITY | " + nodes + " nodes | FE " + energyPercent + "% | M " + matterPercent + "% | R " + reactorHeat / 10 + "/" + reactorStability / 10;
             case ENERGY -> "POWER GRID  " + energyPercent + "%";
             case MATTER -> "MATTER GRID  " + matterPercent + "%";
             case ALERTS -> severity == 0 ? "SYSTEMS NOMINAL" : (severity == 2 ? "CRITICAL" : "WARNING") + "  x" + alarmCount;
@@ -73,10 +75,10 @@ public class HolographicStatusPanelBlockEntity extends BlockEntity {
     @Override public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) { CompoundTag tag = pkt.getTag(); if (tag != null) readState(tag); }
 
     private void writeState(CompoundTag tag) {
-        tag.putInt("Mode", mode.ordinal()); tag.putInt("Nodes", nodes); tag.putInt("EnergyPercent", energyPercent); tag.putInt("MatterPercent", matterPercent); tag.putInt("Severity", severity); tag.putInt("AlarmCount", alarmCount);
+        tag.putInt("Mode", mode.ordinal()); tag.putInt("Nodes", nodes); tag.putInt("EnergyPercent", energyPercent); tag.putInt("MatterPercent", matterPercent); tag.putInt("Severity", severity); tag.putInt("AlarmCount", alarmCount); tag.putInt("ReactorHeat", reactorHeat); tag.putInt("ReactorStability", reactorStability);
     }
     private void readState(CompoundTag tag) {
         int m = tag.getInt("Mode"); mode = m >= 0 && m < Mode.values().length ? Mode.values()[m] : Mode.OVERVIEW;
-        nodes = Math.max(0, tag.getInt("Nodes")); energyPercent = Math.max(0, Math.min(100, tag.getInt("EnergyPercent"))); matterPercent = Math.max(0, Math.min(100, tag.getInt("MatterPercent"))); severity = Math.max(0, Math.min(2, tag.getInt("Severity"))); alarmCount = Math.max(0, tag.getInt("AlarmCount"));
+        nodes = Math.max(0, tag.getInt("Nodes")); energyPercent = Math.max(0, Math.min(100, tag.getInt("EnergyPercent"))); matterPercent = Math.max(0, Math.min(100, tag.getInt("MatterPercent"))); severity = Math.max(0, Math.min(2, tag.getInt("Severity"))); alarmCount = Math.max(0, tag.getInt("AlarmCount")); reactorHeat = Math.max(0, Math.min(1000, tag.getInt("ReactorHeat"))); reactorStability = Math.max(0, Math.min(1000, tag.contains("ReactorStability") ? tag.getInt("ReactorStability") : 1000));
     }
 }

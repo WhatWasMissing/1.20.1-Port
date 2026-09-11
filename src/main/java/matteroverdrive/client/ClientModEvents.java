@@ -34,6 +34,7 @@ public final class ClientModEvents {
             MenuScreens.register(ModMenus.CONTRACT_MARKET.get(), ContractMarketScreen::new);
             MenuScreens.register(ModMenus.ENERGY_PIPE.get(), EnergyPipeScreen::new);
             MenuScreens.register(ModMenus.CHARGING_STATION.get(), ChargingStationScreen::new);
+            MenuScreens.register(ModMenus.DRONE_FABRICATOR.get(), DroneFabricatorScreen::new);
             MenuScreens.register(ModMenus.FUSION_REACTOR_CONTROLLER.get(), FusionReactorScreen::new);
             MenuScreens.register(ModMenus.GRAVITATIONAL_STABILIZER.get(), GravitationalStabilizerScreen::new);
             MenuScreens.register(ModMenus.TRANSPORTER.get(), TransporterScreen::new);
@@ -57,13 +58,13 @@ public final class ClientModEvents {
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("matter_plasma").get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.get("molten_tritanium").get(), RenderType.translucent());
 
-            ItemProperties.register(ModItems.get("matter_container").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "matter_fill"),
+            ItemProperties.register(ModItems.get("matter_container").get(), ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "matter_fill"),
                     (stack, level, entity, seed) -> MatterContainerItem.getFillFraction(stack));
-            ItemProperties.register(ModItems.get("pattern_drive").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
+            ItemProperties.register(ModItems.get("pattern_drive").get(), ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "pattern_fill"),
                     (stack, level, entity, seed) -> patternFill(stack));
-            ItemProperties.register(ModItems.get("creative_pattern_drive").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "pattern_fill"),
+            ItemProperties.register(ModItems.get("creative_pattern_drive").get(), ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "pattern_fill"),
                     (stack, level, entity, seed) -> patternFill(stack));
-            ItemProperties.register(ModItems.get("matter_scanner").get(), new ResourceLocation(MatterOverdrive.MOD_ID, "scanner_linked"),
+            ItemProperties.register(ModItems.get("matter_scanner").get(), ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "scanner_linked"),
                     (stack, level, entity, seed) -> stack.hasTag() && stack.getTag().getBoolean("ScannerLinked") ? 1.0F : 0.0F);
         });
     }

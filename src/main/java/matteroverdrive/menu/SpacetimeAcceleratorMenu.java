@@ -5,6 +5,7 @@ import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.machine.MachineRedstoneMode;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
+import matteroverdrive.security.ServerDebugAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -60,8 +61,8 @@ public class SpacetimeAcceleratorMenu extends AbstractContainerMenu {
     public int getPulseTimer(){return data.get(10);} public int getLastAcceleratedTargets(){return data.get(11);} public boolean isRedstoneBlocked(){return data.get(12)!=0;}
     public int getRedstoneMode(){return data.get(13);} public String getRedstoneModeLabel(){return MachineRedstoneMode.label(getRedstoneMode());}
     @Override public boolean clickMenuButton(Player player,int id){
-        if(id==1){boolean enabled=machine.getEnergyStorage().toggleInfiniteEnergy();player.displayClientMessage(net.minecraft.network.chat.Component.literal("[DEBUG] Infinite energy: "+(enabled?"ON":"OFF")),true);return true;}
-        if(id==2){machine.fillMatterForDebug();player.displayClientMessage(net.minecraft.network.chat.Component.literal("[DEBUG] Accelerator matter filled"),true);return true;}
+        if(id==1){if(!ServerDebugAccess.require(player))return false;boolean enabled=machine.getEnergyStorage().toggleInfiniteEnergy();player.displayClientMessage(net.minecraft.network.chat.Component.literal("[DEBUG] Infinite energy: "+(enabled?"ON":"OFF")),true);return true;}
+        if(id==2){if(!ServerDebugAccess.require(player))return false;machine.fillMatterForDebug();player.displayClientMessage(net.minecraft.network.chat.Component.literal("[DEBUG] Accelerator matter filled"),true);return true;}
         if(id==3){int mode=machine.cycleRedstoneMode();player.displayClientMessage(net.minecraft.network.chat.Component.literal("Redstone mode: "+MachineRedstoneMode.label(mode)),true);return true;}
         return false;
     }

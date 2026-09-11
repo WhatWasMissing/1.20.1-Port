@@ -45,6 +45,7 @@ public class RogueAndroidEntity extends Zombie {
     private int androidLevel;
     private boolean legendary;
     private String facilitySecurityProfile = "";
+    private EncounterFaction encounterFaction = EncounterFaction.ROGUE_ANDROID;
     @Nullable private BlockPos spawnerPosition;
     private final List<BlockPos> patrolPoints = new ArrayList<>();
     private int patrolIndex;
@@ -97,6 +98,7 @@ public class RogueAndroidEntity extends Zombie {
     /** Applies a persisted facility role after normal Android level generation. */
     public void applyFacilitySecurityProfile(String profile, int deploymentIndex) {
         facilitySecurityProfile = profile == null ? "" : profile;
+        encounterFaction = EncounterFaction.fromFacilityProfile(facilitySecurityProfile);
         int minimumLevel = switch (facilitySecurityProfile) {
             case "quantum_relay_station", "android_command_bunker" -> 1;
             case "fusion_research_complex", "black_site" -> 2;
@@ -233,6 +235,7 @@ public class RogueAndroidEntity extends Zombie {
     public int getAndroidLevel() { return androidLevel; }
     public boolean isLegendaryAndroid() { return legendary; }
     public String getFacilitySecurityProfile() { return facilitySecurityProfile; }
+    public EncounterFaction getEncounterFaction() { return encounterFaction; }
 
     public void setSpawnerPosition(@Nullable BlockPos position) {
         spawnerPosition = position == null ? null : position.immutable();
@@ -312,6 +315,7 @@ public class RogueAndroidEntity extends Zombie {
         tag.putInt("AndroidLevel", androidLevel);
         tag.putBoolean("Legendary", legendary);
         tag.putString("FacilitySecurityProfile", facilitySecurityProfile);
+        tag.putString("EncounterFaction", encounterFaction.id());
         if (spawnerPosition != null) tag.putLong("SpawnerPosition", spawnerPosition.asLong());
         tag.putLongArray("PatrolPoints", patrolPoints.stream().mapToLong(BlockPos::asLong).toArray());
         tag.putInt("PatrolIndex", patrolIndex);
@@ -326,6 +330,9 @@ public class RogueAndroidEntity extends Zombie {
         androidLevel = Mth.clamp(tag.getInt("AndroidLevel"), 0, 3);
         legendary = tag.getBoolean("Legendary");
         facilitySecurityProfile = tag.getString("FacilitySecurityProfile");
+        encounterFaction = tag.contains("EncounterFaction")
+                ? EncounterFaction.fromId(tag.getString("EncounterFaction"))
+                : EncounterFaction.fromFacilityProfile(facilitySecurityProfile);
         spawnerPosition = tag.contains("SpawnerPosition") ? BlockPos.of(tag.getLong("SpawnerPosition")) : null;
         patrolPoints.clear();
         for (long packed : tag.getLongArray("PatrolPoints")) patrolPoints.add(BlockPos.of(packed));

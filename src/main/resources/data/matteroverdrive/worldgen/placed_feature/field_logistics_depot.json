@@ -1,0 +1,8 @@
+{
+  "feature": "matteroverdrive:field_logistics_depot",
+  "placement": [
+    {"type": "minecraft:rarity_filter", "chance": 360},
+    {"type": "minecraft:in_square"},
+    {"type": "minecraft:biome"}
+  ]
+}

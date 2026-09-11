@@ -9,6 +9,11 @@ FILES = {
     "side_data": ROOT / "src/main/java/matteroverdrive/machine/MachineSideConfigurationData.java",
     "side_events": ROOT / "src/main/java/matteroverdrive/event/MachineSideConfigurationEvents.java",
     "guide": ROOT / "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/transporter_security.md",
+    "telemetry": ROOT / "src/main/java/matteroverdrive/network/FacilityNetworkTelemetry.java",
+    "panel": ROOT / "src/main/java/matteroverdrive/blockentity/HolographicStatusPanelBlockEntity.java",
+    "terminal": ROOT / "src/main/java/matteroverdrive/block/MatterNetworkTerminalBlock.java",
+    "matter_util": ROOT / "src/main/java/matteroverdrive/network/MatterNetworkUtil.java",
+    "item_util": ROOT / "src/main/java/matteroverdrive/network/ItemNetworkUtil.java",
 }
 errors = []
 
@@ -37,6 +42,11 @@ def main():
     side_data = read("side_data")
     side_events = read("side_events")
     guide = read("guide")
+    telemetry = read("telemetry")
+    panel = read("panel")
+    terminal = read("terminal")
+    matter_util = read("matter_util")
+    item_util = read("item_util")
 
     need(transporter, "distance() <= range()", "inclusive transporter range boundary")
     forbid(transporter, "distance() < range()", "exclusive transporter range regression")
@@ -57,6 +67,22 @@ def main():
 
     forbid(guide, "[Star Map]", "active retired Star Map link")
     forbid(guide, "starmap.md", "active retired Star Map page reference")
+    need(telemetry, "FusionReactorControllerBlockEntity", "reactor telemetry integration")
+    need(telemetry, "REACTOR HEAT ABOVE 80%", "reactor heat alarm")
+    need(telemetry, "REACTOR CONTAINMENT STABILITY LOW", "reactor stability alarm")
+    need(telemetry, "reactorContainmentCritical", "reactor critical severity")
+    need(telemetry, "reactorHeat", "reactor telemetry heat value")
+    need(telemetry, "reactorStability", "reactor telemetry stability value")
+    need(panel, "snapshot.reactorHeat()", "status panel reactor heat")
+    need(panel, "snapshot.reactorStability()", "status panel reactor stability")
+    need(terminal, "MatterNetworkUtil.pushMatter", "matter terminal network upload")
+    need(terminal, "TRANSFER_PER_USE = 1_000", "matter terminal transfer cap")
+    need(terminal, "Matter Container", "matter terminal player feedback")
+    need(matter_util, "public static int pushMatter", "bounded matter upload API")
+    need(matter_util, "findMatterEndpoints(level,origin)", "matter upload endpoint traversal")
+    need(item_util, "pullMatchingItem", "network ingredient pull API")
+    need(item_util, "pullAnyItemToDestination", "logistics network ingress API")
+    need(ROOT.joinpath("src/main/java/matteroverdrive/entity/DroneEntity.java").read_text(encoding="utf-8"), "LogisticsCursor", "logistics cursor persistence")
 
     if errors:
         print(f"NETWORK/TRANSPORT CONSISTENCY FAILED: {len(errors)} issue(s)")

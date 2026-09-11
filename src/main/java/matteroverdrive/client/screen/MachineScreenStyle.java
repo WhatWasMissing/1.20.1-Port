@@ -1,6 +1,7 @@
 package matteroverdrive.client.screen;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Font;
 import net.minecraft.resources.ResourceLocation;
 
 public final class MachineScreenStyle {
@@ -21,15 +22,15 @@ public final class MachineScreenStyle {
     private static final int BAR_BACK = 0xFF27343D;
 
     private static final ResourceLocation LEGACY_MACHINE_FRAME =
-            new ResourceLocation("matteroverdrive", "textures/gui/elements/base_gui_hotbar.png");
+            ResourceLocation.fromNamespaceAndPath("matteroverdrive", "textures/gui/elements/base_gui_hotbar.png");
     private static final ResourceLocation LEGACY_SLOT =
-            new ResourceLocation("matteroverdrive", "textures/gui/elements/slot_small.png");
+            ResourceLocation.fromNamespaceAndPath("matteroverdrive", "textures/gui/elements/slot_small.png");
     private static final ResourceLocation LEGACY_PROGRESS =
-            new ResourceLocation("matteroverdrive", "textures/gui/elements/progress_arrow_right.png");
+            ResourceLocation.fromNamespaceAndPath("matteroverdrive", "textures/gui/elements/progress_arrow_right.png");
     private static final ResourceLocation LEGACY_ENERGY =
-            new ResourceLocation("matteroverdrive", "textures/gui/elements/fe.png");
+            ResourceLocation.fromNamespaceAndPath("matteroverdrive", "textures/gui/elements/fe.png");
     private static final ResourceLocation LEGACY_MATTER =
-            new ResourceLocation("matteroverdrive", "textures/gui/elements/matter.png");
+            ResourceLocation.fromNamespaceAndPath("matteroverdrive", "textures/gui/elements/matter.png");
 
     private static final int FRAME_W = 92;
     private static final int FRAME_H = 77;
@@ -39,6 +40,12 @@ public final class MachineScreenStyle {
     private static final int FRAME_BOTTOM = 34;
 
     private MachineScreenStyle() {}
+
+    /** Fits dynamic machine status text to a panel without relying on character counts. */
+    public static String fit(Font font, String value, int maxWidth) {
+        if (font.width(value) <= maxWidth) return value;
+        return font.plainSubstrByWidth(value, Math.max(0, maxWidth - font.width("…"))) + "…";
+    }
 
     public static void drawFrame(GuiGraphics graphics, int x, int y, int width, int height,
                                  int inventoryLabelY, int accent) {

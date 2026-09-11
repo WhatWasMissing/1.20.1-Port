@@ -95,17 +95,17 @@ public class WeaponStationScreen extends AbstractContainerScreen<WeaponStationMe
         boolean overheated = gun.isOverheated(weapon);
         int energyColor = energy <= 0 ? MachineScreenStyle.DANGER : MachineScreenStyle.CYAN;
 
-        graphics.drawString(font, trim(weapon.getHoverName().getString(), 27), 194, 68, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Frame: " + friendlyType(gun.getWeaponType()), 194, 81, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "FE: " + (energy == Integer.MAX_VALUE ? "INFINITE" : energy + " / " + capacity), 194, 96, energyColor, false);
-        graphics.drawString(font, "Heat: " + heat + " / " + maxHeat + (overheated ? "  OVERHEATED" : ""),
+        graphics.drawString(font, MachineScreenStyle.fit(font, weapon.getHoverName().getString(), 164), 194, 68, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Frame: " + friendlyType(gun.getWeaponType()), 164), 194, 81, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "FE: " + (energy == Integer.MAX_VALUE ? "INFINITE" : energy + " / " + capacity), 164), 194, 96, energyColor, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Heat: " + heat + " / " + maxHeat + (overheated ? "  OVERHEATED" : ""), 164),
                 194, 109, overheated ? MachineScreenStyle.DANGER : MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Modules: " + WeaponSystem.installedModuleCount(weapon) + " / 6", 194, 124, MachineScreenStyle.GREEN, false);
-        graphics.drawString(font, "Sight: " + sightName(weapon), 194, 137, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Modules: " + WeaponSystem.installedModuleCount(weapon) + " / 6", 164), 194, 124, MachineScreenStyle.GREEN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Sight: " + sightName(weapon), 164), 194, 137, MachineScreenStyle.PURPLE, false);
         String readiness = overheated ? "COOL WEAPON BEFORE FIRING"
                 : energy <= 0 ? "RELOAD FROM ENERGY PACK / BATTERY"
                 : "COMBAT READY";
-        graphics.drawString(font, readiness, 194, 154,
+        graphics.drawString(font, MachineScreenStyle.fit(font, readiness, 164), 194, 154,
                 overheated || energy <= 0 ? MachineScreenStyle.AMBER : MachineScreenStyle.GREEN, false);
     }
 
@@ -122,9 +122,9 @@ public class WeaponStationScreen extends AbstractContainerScreen<WeaponStationMe
         for (int i = 0; i < 6; i++) {
             ItemStack module = menu.getSlot(i + 1).getItem();
             int color = module.isEmpty() ? MachineScreenStyle.MUTED : MachineScreenStyle.GREEN;
-            String value = module.isEmpty() ? "EMPTY" : trim(module.getHoverName().getString(), 18);
+            String value = module.isEmpty() ? "EMPTY" : module.getHoverName().getString();
             graphics.drawString(font, names[i], 194, 68 + i * 15, MachineScreenStyle.MUTED, false);
-            graphics.drawString(font, value, 253, 68 + i * 15, color, false);
+            graphics.drawString(font, MachineScreenStyle.fit(font, value, 102), 253, 68 + i * 15, color, false);
         }
         graphics.drawString(font, "Changes apply to the effective weapon snapshot immediately.",
                 194, 158, MachineScreenStyle.CYAN, false);
@@ -137,18 +137,18 @@ public class WeaponStationScreen extends AbstractContainerScreen<WeaponStationMe
             graphics.drawString(font, "Insert a weapon to inspect real stats.", 194, 72, MachineScreenStyle.MUTED, false);
             return;
         }
-        graphics.drawString(font, String.format(Locale.ROOT, "Damage       x%.2f", WeaponSystem.damageMultiplier(weapon)), 194, 69, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Energy/shot  x%.2f", WeaponSystem.energyMultiplier(weapon)), 194, 83, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Cooldown     x%.2f", WeaponSystem.cooldownMultiplier(weapon)), 194, 97, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Range        x%.2f", WeaponSystem.rangeMultiplier(weapon)), 194, 111, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Capacity     " + gun.getCapacity(weapon) + " FE", 194, 125, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Damage       x%.2f", WeaponSystem.damageMultiplier(weapon)), 164), 194, 69, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Energy/shot  x%.2f", WeaponSystem.energyMultiplier(weapon)), 164), 194, 83, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Cooldown     x%.2f", WeaponSystem.cooldownMultiplier(weapon)), 164), 194, 97, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Range        x%.2f", WeaponSystem.rangeMultiplier(weapon)), 164), 194, 111, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Capacity     " + gun.getCapacity(weapon) + " FE", 164), 194, 125, MachineScreenStyle.CYAN, false);
         boolean scope = WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.SNIPER_SCOPE);
         String zoom = scope ? "0.85x override"
                 : gun.getWeaponType() == EnergyWeaponItem.WeaponType.ION_SNIPER ? "0.40x Ion base" : "1.00x base";
-        graphics.drawString(font, "Aim zoom     " + zoom, 194, 139, scope ? MachineScreenStyle.PURPLE : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Aim zoom     " + zoom, 164), 194, 139, scope ? MachineScreenStyle.PURPLE : MachineScreenStyle.MUTED, false);
         ItemStack barrel = menu.getSlot(WeaponSystem.BARREL_SLOT + 1).getItem();
         String barrelName = barrel.getItem() instanceof WeaponModuleItem module ? module.getEffect().name() : "STANDARD";
-        graphics.drawString(font, "Barrel       " + barrelName, 194, 153,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Barrel       " + barrelName, 164), 194, 153,
                 barrel.isEmpty() ? MachineScreenStyle.MUTED : MachineScreenStyle.PURPLE, false);
         graphics.drawString(font, "All numbers above come from installed modules.", 194, 166, MachineScreenStyle.GREEN, false);
     }
@@ -171,4 +171,5 @@ public class WeaponStationScreen extends AbstractContainerScreen<WeaponStationMe
     private String trim(String value, int max) {
         return value.length() <= max ? value : value.substring(0, Math.max(0, max - 1)) + "…";
     }
+
 }

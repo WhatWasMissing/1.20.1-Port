@@ -46,26 +46,26 @@ public class PylonScreen extends AbstractContainerScreen<PylonMenu> {
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "DIMENSIONAL FIELD", 37, 31, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "FE " + menu.energy() + "/" + menu.energyCapacity(),
+        graphics.drawString(font, MachineScreenStyle.fit(font, "DIMENSIONAL FIELD", 120), 37, 31, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "FE " + menu.energy() + "/" + menu.energyCapacity(), 120),
                 31, 45, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Matter " + menu.matter() + "/" + menu.matterCapacity(),
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Matter " + menu.matter() + "/" + menu.matterCapacity(), 120),
                 31, 57, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Charge " + menu.charge() + "/" + menu.maxCharge(),
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Charge " + menu.charge() + "/" + menu.maxCharge(), 120),
                 31, 69, MachineScreenStyle.AMBER, false);
 
-        graphics.drawString(font, "1.7 DIMENSIONAL PYLON", 188, 45,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "1.7 DIMENSIONAL PYLON", 130), 188, 45,
                 MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font,
+        graphics.drawString(font, MachineScreenStyle.fit(font,
                 String.format(Locale.ROOT, "Rift strength %.1f%%", menu.dimensionalValue() * 100.0F),
-                188, 59, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Generation " + menu.generatedPerTick() + " FE/t",
+                130), 188, 59, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Generation " + menu.generatedPerTick() + " FE/t", 130),
                 188, 72, menu.generatedPerTick() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Matter drain " + menu.matterDrainPerSecond() + " /s",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Matter drain " + menu.matterDrainPerSecond() + " /s", 130),
                 188, 84, MachineScreenStyle.CYAN, false);
 
         if (!menu.formed()) {
-            graphics.drawString(font, "Structure not formed | relay " + menu.relayChannel(),
+            graphics.drawString(font, MachineScreenStyle.fit(font, "Structure not formed | relay " + menu.relayChannel(), 120),
                     31, 89, MachineScreenStyle.DANGER, false);
         }
     }

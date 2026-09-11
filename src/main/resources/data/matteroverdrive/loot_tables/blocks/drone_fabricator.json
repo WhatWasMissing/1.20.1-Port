@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [{ "rolls": 1, "entries": [{ "type": "minecraft:item", "name": "matteroverdrive:drone_fabricator" }] }],
+  "random_sequence": "matteroverdrive:blocks/drone_fabricator"
+}

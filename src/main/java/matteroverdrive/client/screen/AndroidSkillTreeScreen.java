@@ -32,6 +32,11 @@ public class AndroidSkillTreeScreen extends Screen {
     private boolean pendingRefund;
     private boolean resetArmed;
 
+    private int treeLeft() { return Math.max(18, Math.min(130, width / 2 - 300)); }
+    private int treeRight() { return Math.max(treeLeft() + 260, Math.min(width - 210, width / 2 + 300)); }
+    private int treeStep() { return Math.max(30, Math.min(68, (treeRight() - treeLeft()) / 9)); }
+    private int[] treeRows() { return new int[] {Math.max(104, height / 2 - 72), height / 2, Math.min(height - 70, height / 2 + 72)}; }
+
     public AndroidSkillTreeScreen() { super(Component.literal("ANDROID SUBSYSTEM")); }
 
     @Override
@@ -45,11 +50,9 @@ public class AndroidSkillTreeScreen extends Screen {
         clearWidgets();
         perkButtons.clear();
 
-        int treeLeft = Math.max(130, width / 2 - 300);
-        int treeRight = Math.min(width - 210, width / 2 + 300);
-        int usable = Math.max(300, treeRight - treeLeft);
-        int step = Math.max(32, usable / 9);
-        int[] rows = {height / 2 - 72, height / 2, height / 2 + 72};
+        int treeLeft = treeLeft();
+        int step = treeStep();
+        int[] rows = treeRows();
 
         for (AndroidData.Perk perk : AndroidData.Perk.values()) {
             int x = treeLeft + (perk.level - 2) * step - 14;
@@ -173,24 +176,23 @@ public class AndroidSkillTreeScreen extends Screen {
 
         g.drawString(font, "ANDROID // SYNTHETIC ASCENSION", 18, 16, TEXT, false);
         g.drawString(font, "SUBSYSTEM CALIBRATION", 18, 29, MUTED, false);
-        g.drawString(font, "POWER " + AndroidClientState.energy() + " / " + AndroidClientState.energyCapacity(),
-                width - 190, 17, ACCENT, false);
+        g.drawString(font, fit("POWER " + AndroidClientState.energy() + " / " + AndroidClientState.energyCapacity(),
+                Math.max(1, width - (width - 190) - 18)), width - 190, 17, ACCENT, false);
 
         g.fill(18, 46, width - 18, 47, 0x55FFFFFF);
         g.drawString(font, "LEVEL", 18, 59, MUTED, false);
         g.drawString(font, Integer.toString(level), 18, 72, TEXT, false);
         g.drawString(font, "ASCENSION POINTS", 72, 59, MUTED, false);
-        g.drawString(font, points + " AVAILABLE", 72, 72, points > 0 ? GOLD : TEXT, false);
-        g.drawString(font, level >= AndroidData.MAX_LEVEL ? "MAXIMUM SYNTHESIS" : currentXp + " / " + levelEnd + " XP",
-                205, 72, MUTED, false);
-        g.fill(205, 60, width - 210, 64, 0x553B424C);
-        g.fill(205, 60, 205 + (width - 415) * progress / 100, 64, ACCENT);
+        g.drawString(font, fit(points + " AVAILABLE", 120), 72, 72, points > 0 ? GOLD : TEXT, false);
+        g.drawString(font, fit(level >= AndroidData.MAX_LEVEL ? "MAXIMUM SYNTHESIS" : currentXp + " / " + levelEnd + " XP",
+                Math.max(1, width - 223)), 205, 72, MUTED, false);
+        int progressWidth = Math.max(1, width - 415);
+        g.fill(205, 60, 205 + progressWidth, 64, 0x553B424C);
+        g.fill(205, 60, 205 + progressWidth * progress / 100, 64, ACCENT);
 
-        int treeLeft = Math.max(130, width / 2 - 300);
-        int treeRight = Math.min(width - 210, width / 2 + 300);
-        int usable = Math.max(300, treeRight - treeLeft);
-        int step = Math.max(32, usable / 9);
-        int[] rows = {height / 2 - 72, height / 2, height / 2 + 72};
+        int treeLeft = treeLeft();
+        int step = treeStep();
+        int[] rows = treeRows();
         String[] branchNames = {"ASSAULT", "CHASSIS", "UTILITY"};
         String[] branchSub = {"OFFENSIVE SYSTEMS", "SURVIVABILITY", "COGNITION & SUPPORT"};
 
@@ -202,7 +204,7 @@ public class AndroidSkillTreeScreen extends Screen {
             int mastery = AndroidMastery.tierForInvestment(investment);
             g.drawString(font, branchNames[branch], 18, y - 14, branch == 0 ? DANGER : branch == 1 ? GOLD : ACCENT, false);
             g.drawString(font, branchSub[branch], 18, y - 2, MUTED, false);
-            g.drawString(font, "FOCUS " + investment + " · " + AndroidMastery.tierName(mastery),
+            g.drawString(font, fit("FOCUS " + investment + " · " + AndroidMastery.tierName(mastery), 150),
                     18, y + 10, mastery > 0 ? ACCENT : LOCKED, false);
             g.fill(treeLeft, y - 1, levelNineX, y + 1, 0x66737D88);
             int forkColor = level >= AndroidData.MAX_LEVEL ? ACCENT : LOCKED;
@@ -248,7 +250,7 @@ public class AndroidSkillTreeScreen extends Screen {
             if (entry.getKey().isHoveredOrFocused()) { inspected = entry.getValue(); break; }
         }
 
-        int x = width - 244;
+        int x = Math.max(12, width - 244);
         int y = 110;
         g.drawString(font, "NODE INSPECTION", x, y, MUTED, false);
         if (inspected == null) {
@@ -270,21 +272,23 @@ public class AndroidSkillTreeScreen extends Screen {
         int branchTotal = branchInvestment(inspected.branch);
         int mastery = AndroidMastery.tierForInvestment(branchTotal);
         boolean branchLocked = invested < required;
-        g.drawString(font, inspected.displayName.toUpperCase(), x, y + 22, owned ? SELECTED : GOLD, false);
-        g.drawString(font, (inspected.level == AndroidData.MAX_LEVEL ? "CAPSTONE" : "TIER " + inspected.level)
+        int panelWidth = Math.max(1, width - x - 30);
+        g.drawString(font, fit(inspected.displayName.toUpperCase(), panelWidth), x, y + 22, owned ? SELECTED : GOLD, false);
+        g.drawString(font, fit((inspected.level == AndroidData.MAX_LEVEL ? "CAPSTONE" : "TIER " + inspected.level)
                         + " · " + (owned ? "INSTALLED" : levelLocked || branchLocked ? "LOCKED" : "AVAILABLE"),
+                panelWidth),
                 x, y + 36, owned ? ACCENT : levelLocked || branchLocked ? LOCKED : TEXT, false);
         drawWrapped(g, inspected.description, x, y + 58, 220, TEXT);
 
         int infoY = y + 126;
         g.fill(x, infoY, width - 30, infoY + 1, 0x55FFFFFF);
         g.drawString(font, "BRANCH MASTERY", x, infoY + 10, MUTED, false);
-        g.drawString(font, branchTotal + " INVESTED · " + AndroidMastery.tierName(mastery), x, infoY + 23,
+            g.drawString(font, fit(branchTotal + " INVESTED · " + AndroidMastery.tierName(mastery), panelWidth), x, infoY + 23,
                 mastery > 0 ? ACCENT : LOCKED, false);
         infoY += 39;
         if (required > 0) {
             g.drawString(font, "NODE REQUIREMENT", x, infoY + 10, MUTED, false);
-            g.drawString(font, invested + " / " + required + " PRIOR NODES", x, infoY + 23,
+            g.drawString(font, fit(invested + " / " + required + " PRIOR NODES", panelWidth), x, infoY + 23,
                     branchLocked && !owned ? DANGER : ACCENT, false);
             infoY += 39;
         }
@@ -310,6 +314,11 @@ public class AndroidSkillTreeScreen extends Screen {
             g.drawString(font, line, x, y, color, false);
             y += 11;
         }
+    }
+
+    private String fit(String text, int maxWidth) {
+        if (maxWidth <= 0 || font.width(text) <= maxWidth) return text;
+        return font.plainSubstrByWidth(text, Math.max(0, maxWidth - font.width("…"))) + "…";
     }
 
     @Override public boolean isPauseScreen() { return false; }

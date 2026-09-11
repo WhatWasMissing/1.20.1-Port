@@ -6,6 +6,8 @@ import matteroverdrive.android.AndroidData;
 import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.entity.DroneEntity;
 import matteroverdrive.item.weapon.WeaponBatteryItem;
+import matteroverdrive.item.ReactorRemoteItem;
+import matteroverdrive.blockentity.FusionReactorControllerBlockEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -51,6 +53,19 @@ public final class AndroidLoadoutEvents {
 
         if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.CAPACITOR_HEART)
                 && AndroidData.getEnergy(player) >= capacity / 2) AndroidData.receiveEnergy(player, 250);
+
+        // The reactor remains the source of truth: a Symbiote only accepts FE
+        // that a carried Remote can withdraw from an already loaded, running
+        // linked controller.  No remote chunk loading or client prediction.
+        if (AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.REACTOR_SYMBIOTE)
+                && AndroidData.getEnergy(player) < capacity) {
+            FusionReactorControllerBlockEntity controller = ReactorRemoteItem.findLinkedRunningController(player);
+            if (controller != null) {
+                int requested = Math.min(1_200, capacity - AndroidData.getEnergy(player));
+                int drawn = controller.drawAndroidUplinkEnergy(requested);
+                if (drawn > 0) AndroidData.receiveEnergy(player, drawn);
+            }
+        }
 
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.TEMPORAL_OVERDRIVE)
                 && AndroidData.getEnergy(player) >= capacity * 3 / 4

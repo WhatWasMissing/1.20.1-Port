@@ -11,12 +11,12 @@ echo.
 
 if not exist "%LOG%" goto :fail30
 
-findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=75, blockItems=72, standaloneItems=103, sounds=57" "%LOG%" >nul
+findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=90, blockItems=87, standaloneItems=122, sounds=57, nativeDestinyWeapons=14" "%LOG%" >nul
 if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
-echo        blocks=75, blockItems=72, standaloneItems=103, sounds=57
+echo        blocks=90, blockItems=87, standaloneItems=122, sounds=57, nativeDestinyWeapons=14
 
-findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=18, menus=15" "%LOG%" >nul
+findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=19, menus=16" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"gunSystem=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
@@ -61,6 +61,12 @@ if errorlevel 1 goto :fail32
 findstr /c:"networkPipe=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"matterPipe=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"droneFabricator=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"legacyEntities=enabled" "%LOG%" >nul
+if errorlevel 1 goto :fail32
+findstr /c:"nativeStructures=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32
 findstr /c:"creativeBattery=enabled" "%LOG%" >nul
 if errorlevel 1 goto :fail32

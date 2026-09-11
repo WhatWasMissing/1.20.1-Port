@@ -38,7 +38,7 @@ public class DataPadScreen extends Screen {
     private static final List<List<String>> GUIDE_PAGES = List.of(
             List.of(
                     "Matter Overdrive turns stored matter and Forge Energy into a connected technology chain.",
-                    "GuideME is the primary manual when installed. The pages here remain available as a lightweight fallback and the Data Pad still manages scanning and contracts."
+                    "The Data Pad is your standalone field console: track research, manage contracts and review scan history without opening an external manual."
             ),
             List.of(
                     "Decompose supported items into matter, analyse items into patterns, store those patterns on Pattern Drives, then queue them through the Pattern Monitor and Replicator.",
@@ -70,7 +70,7 @@ public class DataPadScreen extends Screen {
     private long abandonArmedUntil;
     private Button previousButton;
     private Button nextButton;
-    private Button manualButton;
+    private Button guideButton;
 
     public DataPadScreen(List<String> history) {
         super(Component.literal("Matter Overdrive Data Pad"));
@@ -81,16 +81,22 @@ public class DataPadScreen extends Screen {
     @Override
     protected void init() {
         int y = height - 32;
+        int guideY = height - 56;
+        int navGap = 6;
+        int navWidth = Math.max(120, Math.min(220, width - 24));
+        int navButtonWidth = Math.max(54, (navWidth - navGap) / 2);
+        int navLeft = Math.max(8, (width - (navButtonWidth * 2 + navGap)) / 2);
         previousButton = addRenderableWidget(Button.builder(Component.literal("< Previous"),
-                button -> setPage(page - 1)).bounds(width / 2 - 105, y, 96, 20).build());
+                button -> setPage(page - 1)).bounds(navLeft, y, navButtonWidth, 20).build());
         nextButton = addRenderableWidget(Button.builder(Component.literal("Next >"),
-                button -> setPage(page + 1)).bounds(width / 2 + 9, y, 96, 20).build());
+                button -> setPage(page + 1)).bounds(navLeft + navButtonWidth + navGap, y, navButtonWidth, 20).build());
+        int guideWidth = Math.min(180, Math.max(120, width - 24));
+        guideButton = addRenderableWidget(Button.builder(Component.literal("OPEN GUIDE"),
+                button -> openGuide()).bounds(Math.max(8, (width - guideWidth) / 2), guideY, guideWidth, 20).build());
+        guideButton.active = GuideMeCompatEvents.isAvailable();
 
-        manualButton = addRenderableWidget(Button.builder(Component.literal("GuideME Manual"), button -> openManual())
-                .bounds(Math.max(14, width / 2 - 188), 18, 96, 20).build());
-        manualButton.visible = net.minecraftforge.fml.ModList.get().isLoaded("guideme");
 
-        int right = Math.min(width - 12, width / 2 + 190);
+        int right = Math.max(24, Math.min(width - 12, width / 2 + 190));
         int top = 12;
         for (int row = 0; row < MAX_MANAGED_CONTRACTS; row++) {
             final int buttonIndex = row;
@@ -102,8 +108,11 @@ public class DataPadScreen extends Screen {
         setPage(page);
     }
 
-    private void openManual() {
-        GuideMeCompatEvents.openGuide();
+    private void openGuide() {
+        if (!GuideMeCompatEvents.openGuide() && Minecraft.getInstance().player != null) {
+            Minecraft.getInstance().player.displayClientMessage(
+                    Component.literal("GuideME is not installed; the Data Pad pages remain available."), true);
+        }
     }
 
     private void setPage(int nextPage) {
@@ -161,7 +170,7 @@ public class DataPadScreen extends Screen {
         refreshContractButtons();
         renderBackground(graphics);
         int left = Math.max(12, width / 2 - 190);
-        int right = Math.min(width - 12, width / 2 + 190);
+        int right = Math.max(24, Math.min(width - 12, width / 2 + 190));
         int top = 12;
         int bottom = height - 42;
 
@@ -193,9 +202,9 @@ public class DataPadScreen extends Screen {
             }
         }
 
-        graphics.drawString(font, Component.literal(page == ACTIVE_CONTRACTS_PAGE
+        graphics.drawString(font, Component.literal(fit(page == ACTIVE_CONTRACTS_PAGE
                         ? "Completed contracts redeem at a Contract Market. Abandon requires two clicks."
-                        : "Use on blocks to add scan-history entries."),
+                        : "Use on blocks to add scan-history entries.", maxWidth)),
                 textX, bottom - 15, MUTED_COLOR, false);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
@@ -212,15 +221,15 @@ public class DataPadScreen extends Screen {
             ItemStack contract = contracts.get(i).stack();
             int titleColor = ContractItem.complete(contract) ? 0xFF57C47A : TEXT_COLOR;
             String stage = ContractStageSupport.stageLabel(contract);
-            graphics.drawString(font, Component.literal((i + 1) + ". " + trim(ContractItem.title(contract), 31)), x, y, titleColor, false);
+            graphics.drawString(font, Component.literal(fit((i + 1) + ". " + ContractItem.title(contract), maxWidth)), x, y, titleColor, false);
             String objective = ContractItem.objectiveText(contract);
             if (!stage.isBlank()) objective = stage + " — " + objective;
-            graphics.drawString(font, Component.literal(trim(objective, 39)), x + 8, y + 11, MUTED_COLOR, false);
+            graphics.drawString(font, Component.literal(fit(objective, Math.max(1, maxWidth - 8))), x + 8, y + 11, MUTED_COLOR, false);
             String progress = ContractItem.complete(contract)
                     ? "READY TO REDEEM"
                     : "Progress " + ContractItem.progress(contract) + " / " + ContractItem.goal(contract);
             if (ContractItem.xp(contract) > 0) progress += "   XP " + ContractItem.xp(contract);
-            graphics.drawString(font, Component.literal(trim(progress, 42)), x + 8, y + 22,
+            graphics.drawString(font, Component.literal(fit(progress, Math.max(1, maxWidth - 8))), x + 8, y + 22,
                     ContractItem.complete(contract) ? 0xFF57C47A : BORDER_COLOR, false);
             y += 42;
             if (y > bottom - 45) break;
@@ -254,6 +263,12 @@ public class DataPadScreen extends Screen {
     private static String trim(String text, int max) {
         if (text == null) return "";
         return text.length() <= max ? text : text.substring(0, Math.max(0, max - 1)) + "…";
+    }
+
+    private String fit(String text, int maxWidth) {
+        if (text == null || font.width(text) <= maxWidth) return text == null ? "" : text;
+        int usable = Math.max(0, maxWidth - font.width("…"));
+        return font.plainSubstrByWidth(text, usable) + "…";
     }
 
     @Override

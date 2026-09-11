@@ -1,0 +1,100 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "matteroverdrive:block/charging_station"
+	},
+	"elements": [
+		{
+			"name": "Fabricator Base",
+			"from": [0, 0, 0],
+			"to": [16, 10, 16],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 10], "texture": "#0"},
+				"east": {"uv": [0, 0, 16, 10], "texture": "#0"},
+				"south": {"uv": [0, 0, 16, 10], "texture": "#0"},
+				"west": {"uv": [0, 0, 16, 10], "texture": "#0"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#0"},
+				"down": {"uv": [0, 0, 16, 16], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Fabricator Frame Left",
+			"from": [1, 10, 1],
+			"to": [4, 16, 15],
+			"faces": {
+				"north": {"uv": [0, 0, 3, 6], "texture": "#0"},
+				"east": {"uv": [0, 0, 14, 6], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 6], "texture": "#0"},
+				"west": {"uv": [0, 0, 14, 6], "texture": "#0"},
+				"up": {"uv": [0, 0, 3, 14], "texture": "#0"},
+				"down": {"uv": [0, 0, 3, 14], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Fabricator Frame Right",
+			"from": [12, 10, 1],
+			"to": [15, 16, 15],
+			"faces": {
+				"north": {"uv": [0, 0, 3, 6], "texture": "#0"},
+				"east": {"uv": [0, 0, 14, 6], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 6], "texture": "#0"},
+				"west": {"uv": [0, 0, 14, 6], "texture": "#0"},
+				"up": {"uv": [0, 0, 3, 14], "texture": "#0"},
+				"down": {"uv": [0, 0, 3, 14], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Fabricator Gantry",
+			"from": [3, 14, 2],
+			"to": [13, 16, 14],
+			"faces": {
+				"north": {"uv": [0, 0, 10, 2], "texture": "#0"},
+				"east": {"uv": [0, 0, 12, 2], "texture": "#0"},
+				"south": {"uv": [0, 0, 10, 2], "texture": "#0"},
+				"west": {"uv": [0, 0, 12, 2], "texture": "#0"},
+				"up": {"uv": [0, 0, 10, 12], "texture": "#0"},
+				"down": {"uv": [0, 0, 10, 12], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Assembly Core",
+			"from": [5, 10, 5],
+			"to": [11, 14, 11],
+			"faces": {
+				"north": {"uv": [0, 0, 6, 4], "texture": "#0"},
+				"east": {"uv": [0, 0, 6, 4], "texture": "#0"},
+				"south": {"uv": [0, 0, 6, 4], "texture": "#0"},
+				"west": {"uv": [0, 0, 6, 4], "texture": "#0"},
+				"up": {"uv": [0, 0, 6, 6], "texture": "#0"},
+				"down": {"uv": [0, 0, 6, 6], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Core Emitter",
+			"from": [6, 11, 4],
+			"to": [10, 13, 5],
+			"faces": {
+				"north": {"uv": [0, 0, 4, 2], "texture": "#0"},
+				"east": {"uv": [0, 0, 1, 2], "texture": "#0"},
+				"south": {"uv": [0, 0, 4, 2], "texture": "#0"},
+				"west": {"uv": [0, 0, 1, 2], "texture": "#0"},
+				"up": {"uv": [0, 0, 4, 1], "texture": "#0"},
+				"down": {"uv": [0, 0, 4, 1], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Warning Beacon",
+			"from": [7, 16, 7],
+			"to": [9, 18, 9],
+			"faces": {
+				"north": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"east": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"south": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"west": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"up": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"down": {"uv": [0, 0, 2, 2], "texture": "#0"}
+			}
+		}
+	]
+}

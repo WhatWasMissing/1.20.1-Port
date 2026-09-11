@@ -28,8 +28,9 @@ public final class WeaponHudOverlay {
         int width = event.getWindow().getGuiScaledWidth();
         int height = event.getWindow().getGuiScaledHeight();
         int panelWidth = 138;
-        int x = width - panelWidth - 6;
-        int y = height - 78;
+        panelWidth = Math.min(panelWidth, Math.max(120, width - 12));
+        int x = Math.max(6, width - panelWidth - 6);
+        int y = Math.max(6, height - 78);
 
         int energy = weapon.getEnergyStored(stack);
         int capacity = weapon.getCapacity(stack);
@@ -41,7 +42,7 @@ public final class WeaponHudOverlay {
         graphics.fill(x, y, x + panelWidth, y + 62, 0xC0101820);
         graphics.fill(x, y, x + panelWidth, y + 2, overheated ? 0xFFFF4B36 : 0xFF4EDCFF);
         String name = stack.getHoverName().getString().toUpperCase();
-        graphics.drawString(minecraft.font, name, x + 6, y + 6, 0xFFE8F8FF, false);
+        graphics.drawString(minecraft.font, fit(minecraft, name, panelWidth - 54), x + 6, y + 6, 0xFFE8F8FF, false);
 
         String state = overheated ? "OVERHEATED" : empty ? "NO INTERNAL FE" : "READY";
         int stateColour = overheated || empty ? 0xFFFF5F52 : 0xFF65FF9A;
@@ -61,7 +62,7 @@ public final class WeaponHudOverlay {
         } else {
             footer = player.isUsingItem() ? "AIM / CHARGE ACTIVE" : "SHIFT + USE: RELOAD";
         }
-        graphics.drawString(minecraft.font, footer, x + 6, y + 53, 0xFF9BB6C3, false);
+        graphics.drawString(minecraft.font, fit(minecraft, footer, panelWidth - 12), x + 6, y + 53, 0xFF9BB6C3, false);
     }
 
     private static void bar(GuiGraphics graphics, int x, int y, int width, int value, int max, int colour) {
@@ -73,5 +74,11 @@ public final class WeaponHudOverlay {
     private static String compact(int value) {
         return value >= 1_000_000 ? String.format("%.1fM", value / 1_000_000.0D)
                 : value >= 1_000 ? String.format("%.1fk", value / 1_000.0D) : Integer.toString(value);
+    }
+
+    private static String fit(Minecraft minecraft, String text, int maxWidth) {
+        if (minecraft.font.width(text) <= maxWidth) return text;
+        int usable = Math.max(0, maxWidth - minecraft.font.width("…"));
+        return minecraft.font.plainSubstrByWidth(text, usable) + "…";
     }
 }

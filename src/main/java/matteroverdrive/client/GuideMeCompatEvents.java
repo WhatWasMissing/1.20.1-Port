@@ -22,8 +22,8 @@ import java.lang.reflect.Method;
  */
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public final class GuideMeCompatEvents {
-    public static final ResourceLocation GUIDE_ID = new ResourceLocation(MatterOverdrive.MOD_ID, "guide");
-    public static final ResourceLocation START_PAGE = new ResourceLocation(MatterOverdrive.MOD_ID, "index.md");
+    public static final ResourceLocation GUIDE_ID = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "guide");
+    public static final ResourceLocation START_PAGE = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "index.md");
     private static final Logger LOGGER = LogUtils.getLogger();
     private static boolean registered;
     private static Object guide;

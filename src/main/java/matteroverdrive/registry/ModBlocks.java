@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.ChargingStationBlock;
+import matteroverdrive.block.DroneFabricatorBlock;
 import matteroverdrive.block.AndroidStationBlock;
 import matteroverdrive.block.AndroidSpawnerBlock;
 import matteroverdrive.block.NetworkRouterBlock;
@@ -18,6 +19,7 @@ import matteroverdrive.block.IndustrialDetailBlock;
 import matteroverdrive.block.IndustrialGlassBlock;
 import matteroverdrive.block.SecurityDoorBlock;
 import matteroverdrive.block.MatterAnalyzerBlock;
+import matteroverdrive.block.MatterNetworkTerminalBlock;
 import matteroverdrive.block.InscriberBlock;
 import matteroverdrive.block.FusionReactorControllerBlock;
 import matteroverdrive.block.FusionReactorIOBlock;
@@ -51,8 +53,8 @@ public final class ModBlocks {
     private static final Map<String, RegistryObject<Block>> BLOCKS_BY_ID = new LinkedHashMap<>();
     public static final Set<String> NO_BLOCK_ITEM = Set.of("bounding_box", "matter_plasma", "molten_tritanium");
     private static final List<String> LEGACY_BLOCK_IDS = List.of(
-        "android_spawner", "android_station", "android_induction_relay", "bounding_box", "charging_station", "contract_market",
-        "facility_network_controller", "grid_capacitor", "quantum_power_relay", "hybrid_conduit", "matter_storage_matrix", "matter_excavator", "holographic_status_panel",
+        "android_spawner", "android_station", "android_induction_relay", "bounding_box", "charging_station", "drone_fabricator", "contract_market",
+        "facility_network_controller", "matter_network_terminal", "grid_capacitor", "quantum_power_relay", "hybrid_conduit", "matter_storage_matrix", "matter_excavator", "holographic_status_panel",
         "industrial_catwalk", "industrial_railing", "cable_tray", "warning_light", "damaged_panel", "security_door",
         "decomposer", "decorative.beams", "decorative.carbon_fiber_plate", "decorative.clean", "decorative.coils",
         "decorative.engine_exhaust_plasma", "decorative.floor_noise", "decorative.floor_tile_white", "decorative.floor_tiles",
@@ -73,6 +75,7 @@ public final class ModBlocks {
     private static void registerPlaceholder(String id) {
         if (id.equals("contract_market")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ContractMarketBlock(propertiesFor(id))));
         else if (id.equals("facility_network_controller")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FacilityNetworkControllerBlock(propertiesFor(id))));
+        else if (id.equals("matter_network_terminal")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new MatterNetworkTerminalBlock(propertiesFor(id))));
         else if (id.equals("grid_capacitor")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.GRID_CAPACITOR)));
         else if (id.equals("android_induction_relay")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.ANDROID_INDUCTION_RELAY)));
         else if (id.equals("quantum_power_relay")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new TechMachineBlock(propertiesFor(id), TechMachineBlock.Type.QUANTUM_POWER_RELAY)));
@@ -94,6 +97,7 @@ public final class ModBlocks {
         else if (id.equals("heavy_matter_pipe")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new EnergyPipeBlock(propertiesFor(id))));
         else if (id.equals("matter_pipe") || id.equals("network_pipe")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new VisualPipeBlock(propertiesFor(id))));
         else if (id.equals("charging_station")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new ChargingStationBlock(propertiesFor(id))));
+        else if (id.equals("drone_fabricator")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new DroneFabricatorBlock(propertiesFor(id))));
         else if (id.equals("fusion_reactor_controller")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorControllerBlock(propertiesFor(id))));
         else if (id.equals("fusion_reactor_io")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new FusionReactorIOBlock(propertiesFor(id))));
         else if (id.equals("gravitational_anomaly")) BLOCKS_BY_ID.put(id, BLOCKS.register(id, () -> new GravitationalAnomalyBlock(propertiesFor(id))));

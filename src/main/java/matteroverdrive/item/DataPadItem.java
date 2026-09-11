@@ -7,6 +7,7 @@ import matteroverdrive.quest.LegacyStoryContracts;
 import matteroverdrive.quest.ResearchCampaignQuestFlow;
 import matteroverdrive.quest.ResearchProgression;
 import matteroverdrive.quest.ScientistStoryQuestFlow;
+import matteroverdrive.world.TechnologySiteDiscoverySavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -31,7 +32,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Data Pad scanner plus persistent research-campaign journal. */
+/** Standalone field console: block scanner plus persistent research-campaign journal. */
 public class DataPadItem extends Item {
     public static final int HISTORY_CAPACITY = 16;
     private static final String HISTORY_TAG = "DataPadScanHistory";
@@ -47,7 +48,7 @@ public class DataPadItem extends Item {
         return InteractionResultHolder.sidedSuccess(dataPad, level.isClientSide);
     }
 
-    /** The normal Data Pad doubles as a lightweight research journal without adding another mandatory item. */
+    /** The Data Pad is the lightweight field/research console without requiring the optional GuideME integration. */
     private static List<String> journalLines(ServerPlayer player, ItemStack dataPad) {
         List<String> lines = new ArrayList<>();
         lines.add("=== RESEARCH PROGRAMME ===");
@@ -55,6 +56,22 @@ public class DataPadItem extends Item {
         lines.add("Assignment: " + (ScientistStoryQuestFlow.complete(player)
                 ? ResearchCampaignQuestFlow.status(player)
                 : ScientistStoryQuestFlow.status(player)));
+        TechnologySiteDiscoverySavedData sites = TechnologySiteDiscoverySavedData.get(player.serverLevel());
+        lines.add("Field sites discovered: " + sites.count(player.getUUID()));
+        for (String site : sites.siteNames(player.getUUID())) lines.add("  - " + site.replace('_', ' '));
+        CompoundTag encounterResearch = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)
+                .getCompound("MatterOverdriveEncounterResearch");
+        lines.add("Encounter evidence: " + encounterResearch.getAllKeys().size() + " faction(s) logged");
+        encounterResearch.getAllKeys().stream().sorted()
+                .forEach(faction -> lines.add("  - " + faction.replace('_', ' ')));
+        int investigationStep = sites.chainStage(player.getUUID());
+        if (investigationStep >= sites.chainLength()) {
+            lines.add("Investigation: COMPLETE - anomaly evidence archived.");
+        } else {
+            String nextSite = TechnologySiteDiscoverySavedData.nextChainSite(player.getUUID(), investigationStep)
+                    .replace('_', ' ');
+            lines.add("Investigation " + investigationStep + "/" + sites.chainLength() + ": next lead - " + nextSite);
+        }
         lines.add("--- Progression ---");
         lines.addAll(ResearchProgression.roadmap(player));
         List<String> history = getHistory(dataPad);
@@ -108,7 +125,7 @@ public class DataPadItem extends Item {
     }
 
     public static boolean isLegacyQuestScanner(ItemStack stack) {
-        return stack != null && !stack.isEmpty() && stack.hasTag() && stack.getTag().getBoolean(LegacyStoryContracts.LEGACY_SCAN_PAD);
+        return stack != null && !stack.isEmpty() && stack.hasTag() && stack.getOrCreateTag().getBoolean(LegacyStoryContracts.LEGACY_SCAN_PAD);
     }
 
     private static void record(ItemStack dataPad, String entry) {
@@ -124,8 +141,7 @@ public class DataPadItem extends Item {
 
     public static List<String> getHistory(ItemStack dataPad) {
         List<String> history = new ArrayList<>();
-        CompoundTag root = dataPad.getTag();
-        if (root == null) return history;
+        CompoundTag root = dataPad.getOrCreateTag();
         ListTag list = root.getList(HISTORY_TAG, Tag.TAG_STRING);
         for (int i = 0; i < list.size() && i < HISTORY_CAPACITY; i++) history.add(list.getString(i));
         return history;
@@ -138,11 +154,12 @@ public class DataPadItem extends Item {
             tooltip.add(Component.literal("Mad Scientist research scanner").withStyle(ChatFormatting.LIGHT_PURPLE));
             tooltip.add(Component.literal("Scans and destroys Wheat, Carrots and Potatoes; advances matching research quests.").withStyle(ChatFormatting.GRAY));
         } else {
-            tooltip.add(Component.literal("Research journal, guide and block scan history").withStyle(ChatFormatting.AQUA));
+            tooltip.add(Component.literal("Standalone field console, research journal and block scan history").withStyle(ChatFormatting.AQUA));
         }
         tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("Encounter evidence: open the journal to inspect").withStyle(ChatFormatting.DARK_AQUA));
         if (!history.isEmpty()) tooltip.add(Component.literal("Latest: " + history.get(0)).withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Use on a block to record it; use in air to open research status.").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Use on a block to record it; use in air to open the field console.").withStyle(ChatFormatting.DARK_GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 }

@@ -44,7 +44,7 @@ public final class DeveloperModelTransformInspector {
 
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
         String context = displayContext(minecraft, hand);
-        ResourceLocation modelFile = new ResourceLocation(itemId.getNamespace(), "models/item/" + itemId.getPath() + ".json");
+        ResourceLocation modelFile = ResourceLocation.fromNamespaceAndPath(itemId.getNamespace(), "models/item/" + itemId.getPath() + ".json");
         String cacheKey = modelFile + "#" + context;
         Optional<TransformData> transform = CACHE.computeIfAbsent(cacheKey,
                 ignored -> readTransform(minecraft, modelFile, context));

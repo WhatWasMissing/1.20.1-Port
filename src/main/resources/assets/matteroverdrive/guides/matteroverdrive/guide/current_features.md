@@ -12,7 +12,7 @@ Implemented does not mean runtime-verified. Use the repository testing documents
 
 ## Matter and machines
 
-Implemented on the core line: Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Molecular Inscriber, Matter Scanner, Portable Decomposer, Matter Containers, Matter Pipe, Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench.
+Implemented on the core line: Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Molecular Inscriber, Matter Scanner, Portable Decomposer, Matter Containers, Matter Pipe, Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Drone Fabricator, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench.
 
 Major machines expose server-backed operator pages and inventories rather than decorative controls. Machine redstone/configuration parity is restored where a real backend equivalent exists.
 
@@ -46,13 +46,13 @@ See [Advanced Infrastructure](advanced_infrastructure.md), [Matter Network](netw
 
 ## Fusion and gravity
 
-Implemented: Fusion Reactor structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behavior, Reactor Remote, persistent overlay, Gravitational Anomaly mass/pull/event horizon, Equalizer and powered Stabilizers.
+Implemented: Fusion Reactor structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behavior, Reactor Remote, persistent overlay, Gravitational Anomaly mass/pull/event horizon, Equalizer and powered Stabilizers. Recovered Reactor Symbiote protocols let an Android carrying a linked Remote draw up to 1,200 FE/s from that same-dimension loaded reactor only while it is actively generating; the lookup never force-loads its chunk.
 
 The **Anomaly Containment Unit** can capture an anomaly, preserve its mass and redeploy it elsewhere so reactor/base placement is no longer dictated by natural anomaly position.
 
 ## Matter Network
 
-Implemented core systems: Network Pipe, Network Switch, Network Router and matching-channel Pylon routing. Router filtering, Network Flash Drive destination filtering, upgrade slots, multi-stack budgets and FE/item execution accounting are present. The Matter Network remains intentionally separate from an AE2 ME network.
+Implemented core systems: Network Pipe, Network Switch, Network Router and matching-channel Pylon routing. Router filtering, Network Flash Drive destination filtering, upgrade slots, multi-stack budgets and FE/item execution accounting are present. The craftable Matter Network Terminal provides bounded remote Matter Container push/pull access with aggregate status and comparator output. The Matter Network remains intentionally separate from an AE2 ME network.
 
 The tech-overhaul branch extends this with channels, router priority, per-side resource policies, facility telemetry and the Network Diagnostic Probe.
 
@@ -60,15 +60,17 @@ The tech-overhaul branch extends this with channels, router priority, per-side r
 
 Implemented: Android conversion, FE/HUD, body parts, persistent skill tree, class/loadout systems, five-slot chassis hardware, Android Station equipment management, Android Spawner ownership/squad behavior, Rogue Android squads, Rogue/Ranged Rogue Androids, Failed creatures, Mad Scientist, Mutant Scientist and Drone.
 
-Linked Drones support FOLLOW, HOLD, DEFENSIVE, PASSIVE and AGGRESSIVE modes with a dedicated Drone Management screen. The tech-overhaul branch adds Android Induction Relay wireless charging and fixes Capacitor Core capacity so its extra 50,000 FE is usable storage.
+Linked Drones support FOLLOW, HOLD, DEFENSIVE, PASSIVE, AGGRESSIVE and persistent PATROL modes with a dedicated Drone Management screen. Reactor Maintenance drones can top up a nearby Gravitational Stabilizer from their charged reserve while their operator works in the containment room. Logistics Cores can be sneak-configured against any item inventory; a routed Logistics drone flies only to that loaded target, then moves nearby drops into it through the server-side item capability without force-loading chunks. The console displays each route and has a LOGISTICS command for configured drones. A powered Charging Station is also a Drone Bay: its bounded cached service recharges the fleet and repairs up to two nearby loaded drones per second for 400 FE per health, with live repair telemetry in the station screen. The console can safely RECALL loaded linked drones to clear formation positions around their operator, returning them to FOLLOW without allowing another player to move them. The tech-overhaul branch adds Android Induction Relay wireless charging and fixes Capacitor Core capacity so its extra 50,000 FE is usable storage.
+
+The Drone Fabricator is the fleet's survival assembly line. Feed it 1 Plasma Core, 2 Isolinear Circuit Mk2s, and 4 Tritanium Plates; connect FE and select Combat, Repair, Logistics, Survey, or Reactor before the 240-tick assembly cycle completes. It consumes 12,800 FE per core, retains inputs during a power outage, exposes its item inventory for local automation, and pulls only missing recipe ingredients from adjacent item-handler inventories at a bounded 16-item/tick rate. Two upgrade slots accept Speed or Power modules: Speed shortens the cycle while Power increases its FE/t demand. The selected role is written directly into the output Drone Core.
 
 ## Weapons
 
-Implemented: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload and module effects. Weapon Station exposes its real module slots and live statistics. Exact remaining module mesh placement and full legacy first-person animation choreography still need visual parity work.
+Implemented: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload and module effects. Recovered Thermal Lattice artifacts let Android users trade rare exploration loot for lower energy-weapon heat and faster cooling. Recovered Reactor Symbiote protocols make a linked, actively generating Fusion Reactor a portable Android charging source through the Reactor Remote. Weapon Station exposes its real module slots and live statistics. Exact remaining module mesh placement and full legacy first-person animation choreography still need visual parity work.
 
 ## World content
 
-Implemented structure families: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits, with persisted salvage and inhabitants. Natural Gravitational Anomalies generate in fresh Overworld chunks. Exact old PNG-template geometry is not yet complete for every structure.
+Implemented structure families: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits, with persisted salvage and inhabitants. Natural Gravitational Anomalies generate in fresh Overworld chunks. Compact Matter Labs, Android Relay Outposts, Anomaly Research Sites, Matter Observatories and Field Logistics Depots add stable-footprint exploration infrastructure, deterministic salvage caches, persistent Data Pad field discoveries and site-specific research dossiers. A dossier must now be secured at a powered Matter Analyzer: the 400-tick, 102,400 FE analysis job persists its operator and progress, pauses safely when its owner is offline, then awards that player’s XP, equipment and research clearance. Recovered Artifacts decode into one-use Android passive protocols directly in the field, so exploration rewards can immediately alter a build. Exact old PNG-template geometry is not yet complete for every structure.
 
 ## Dimensional Pylon
 
@@ -76,15 +78,11 @@ Implemented backend: source-backed 2x3x2 multiblock identity, shared energy/matt
 
 ## Security and quests
 
-Implemented: Empty/Claim/Access/Remove security protocols, security-aware wrench dismantling, contracts, staged objectives, restored legacy scientist quests and the modern research progression from Matter Technology through Anomaly Engineering. Quests guide progression but do not act as mandatory recipe/technology gates. Richer legacy-style cinematic dialogue remains presentation work.
+Implemented: Empty/Claim/Access/Remove security protocols, security-aware wrench dismantling, contracts, staged objectives, restored legacy scientist quests, persistent player-scoped compact-site discoveries and the modern research progression from Matter Technology through Anomaly Engineering. Each player receives their own discovery count, dossier and one-time exploration reward; archiving a dossier also advances the shared research clearance to the earliest tier supported by that facility. Quests guide progression but do not act as mandatory recipe/technology gates. Richer legacy-style cinematic dialogue remains presentation work.
 
 ## Optional integrations
 
 When GuideME is installed, this manual is the primary player-facing how-to guide and the Data Pad remains the scanning/contract tool. When Applied Energistics 2 is installed, public Forge item capabilities allow normal Storage Bus/import/export-style automation on audited Matter Overdrive inventories without merging ME and Matter Overdrive networks or inventing AE-to-FE conversion.
-
-## Permanent project direction
-
-The **Star Map system is retired**. It is not part of the active feature set or future roadmap and should not be restored as part of parity or new-content work.
 
 ## Remaining high-value work
 

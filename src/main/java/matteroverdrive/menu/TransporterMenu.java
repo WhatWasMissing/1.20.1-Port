@@ -4,6 +4,7 @@ import matteroverdrive.blockentity.TransporterBlockEntity;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
+import matteroverdrive.security.ServerDebugAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -128,6 +129,7 @@ public class TransporterMenu extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id == 1) {
+            if (!ServerDebugAccess.require(player)) return false;
             boolean enabled = transporter.getEnergy().toggleInfiniteEnergy();
             player.displayClientMessage(Component.literal(
                     "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);

@@ -153,7 +153,9 @@ public final class AndroidLoadout {
         HUNTER_LENS("Hunter Protocol", "Hunter Array range +18 blocks; marked targets take +15% player damage and +20% drone damage."),
         PHASE_ANCHOR("Phase Stability", "Cloak movement from Fragment of the Veil becomes Speed IV and lasts longer."),
         SWARM_BEACON("Swarm Support", "Nearby drones gain stronger resistance and repair, plus +18% damage."),
-        CAPACITOR_HEART("Capacitor Feedback", "Damaging ability hits restore 400 FE at high charge; while above 50% FE, regenerate 250 FE/s.");
+        CAPACITOR_HEART("Capacitor Feedback", "Damaging ability hits restore 400 FE at high charge; while above 50% FE, regenerate 250 FE/s."),
+        THERMAL_LATTICE("Thermal Lattice", "Energy weapon shots generate 35% less heat and cool twice as quickly while carried."),
+        REACTOR_SYMBIOTE("Reactor Symbiote", "A carried linked Reactor Remote can draw 1,200 FE/s from its loaded, running Fusion Reactor into your Android reserve.");
 
         public final String displayName;
         public final String description;

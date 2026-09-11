@@ -23,6 +23,12 @@ public final class MatterTooltipEvents {
             return;
         }
 
+        // MatterValueTooltipEvents owns the authoritative value line. Do not
+        // append a second value/hint when its UI-safe lookup can resolve this item.
+        if (MatterValueRegistry.getMatterValueForTooltip(stack).hasMatter()) {
+            return;
+        }
+
         if (Screen.hasShiftDown()) {
             int value = MatterValueRegistry.getMatter(stack);
             event.getToolTip().add(Component.literal("Matter value: " + value + " kM per item")

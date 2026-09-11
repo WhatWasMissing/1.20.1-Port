@@ -133,4 +133,8 @@ The Android Spawner maintains owned synthetic soldiers with persistent squad mod
 
 Android features are server-authoritative where gameplay state is concerned, so legitimate progression and equipment should survive relogging and respawn cloning.
 
+## Encounter research
+
+The first defeated Android from each encounter faction is logged as field evidence for that player. The log is stored in the player's persistent research data, so repeated kills do not duplicate the reward. Standard facility factions grant 25 XP and contribute to Automation & Drones clearance; a Black Site encounter contributes to Anomaly Engineering. Black Site Androids may also yield a recovered protocol artifact with a stable protocol identity.
+
 For Grid Capacitors, Quantum Power Relays, facility monitoring and the rest of the experimental infrastructure, see [Advanced Infrastructure](advanced_infrastructure.md).

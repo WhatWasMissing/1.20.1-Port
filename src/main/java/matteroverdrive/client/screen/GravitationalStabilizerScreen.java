@@ -29,7 +29,7 @@ public class GravitationalStabilizerScreen extends AbstractContainerScreen<Gravi
             Button tab = Button.builder(Component.literal(PAGES[i]), b -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 190 + i * 47, topPos + 29, 45, 15).build();
+            }).bounds(leftPos + 178 + (i & 1) * 72, topPos + 27 + (i >> 1) * 17, 68, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -67,11 +67,11 @@ public class GravitationalStabilizerScreen extends AbstractContainerScreen<Gravi
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, "UPGRADE BUS", 25, 29, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.energy() + " / " + menu.energyCapacity() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.energy() + " / " + menu.energyCapacity() + " FE", 130),
                 25, 49, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "DRAW " + menu.powerUsed() + " / " + menu.requiredPower() + " FE/t",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "DRAW " + menu.powerUsed() + " / " + menu.requiredPower() + " FE/t", 135),
                 20, 78, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, compactStatus(), 20, 87, statusColor(), false);
+        graphics.drawString(font, fit(compactStatus(), 145), 20, 87, statusColor(), false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
 
         switch (page) {
@@ -83,38 +83,39 @@ public class GravitationalStabilizerScreen extends AbstractContainerScreen<Gravi
 
     private void renderHome(GuiGraphics graphics) {
         graphics.drawString(font, "STABILIZER STATUS", 207, 52, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, menu.isPowered() ? "POWER LINK: ONLINE" : "POWER LINK: OFFLINE", 193, 67,
+        graphics.drawString(font, fit(menu.isPowered() ? "POWER LINK: ONLINE" : "POWER LINK: OFFLINE", 138), 193, 67,
                 menu.isPowered() ? MachineScreenStyle.GREEN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, "Redstone: " + redstoneLabel()
+        graphics.drawString(font, fit("Redstone: " + redstoneLabel()
                         + (menu.redstoneAllowsOperation() ? " / ALLOW" : " / PAUSE"),
+                138),
                 193, 80, menu.redstoneAllowsOperation() ? MachineScreenStyle.CYAN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, menu.anomalyDistance() >= 0
+        graphics.drawString(font, fit(menu.anomalyDistance() >= 0
                         ? "Anomaly lock: " + menu.anomalyDistance() + " blocks"
-                        : "Anomaly lock: NONE",
+                        : "Anomaly lock: NONE", 138),
                 193, 93, menu.anomalyDistance() >= 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
     }
 
     private void renderBeam(GuiGraphics graphics) {
         graphics.drawString(font, "BEAM TELEMETRY", 210, 52, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, menu.anomalyDistance() >= 0
+        graphics.drawString(font, fit(menu.anomalyDistance() >= 0
                         ? "LOCKED // " + menu.anomalyDistance() + " blocks"
-                        : "LOCK // NONE",
+                        : "LOCK // NONE", 138),
                 193, 67, menu.anomalyDistance() >= 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.isBeamBlocked()
+        graphics.drawString(font, fit(menu.isBeamBlocked()
                         ? "PATH // BLOCKED @ " + menu.beamBlockedDistance()
-                        : "PATH // CLEAR",
+                        : "PATH // CLEAR", 138),
                 193, 80, menu.isBeamBlocked() ? MachineScreenStyle.DANGER : MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "POWER // " + menu.powerUsed() + " / " + menu.requiredPower() + " FE/t",
+        graphics.drawString(font, fit("POWER // " + menu.powerUsed() + " / " + menu.requiredPower() + " FE/t", 138),
                 193, 93, menu.isPowered() ? MachineScreenStyle.TEXT : MachineScreenStyle.AMBER, false);
-        graphics.drawString(font, "A clear beam + FE + allowed RS is required.", 193, 109, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, fit("A clear beam + FE + allowed RS is required.", 138), 193, 109, MachineScreenStyle.MUTED, false);
     }
 
     private void renderUpgrades(GuiGraphics graphics) {
         graphics.drawString(font, "UPGRADES", 225, 52, MachineScreenStyle.CYAN, false);
         graphics.drawString(font, "4 physical slots remain active", 193, 68, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Required draw: " + menu.requiredPower() + " FE/t", 193, 82, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Use range/power upgrades to tune", 193, 98, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "beam reach and reactor-side support.", 193, 111, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, fit("Required draw: " + menu.requiredPower() + " FE/t", 138), 193, 82, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, fit("Use range/power upgrades to tune", 138), 193, 98, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, fit("beam reach and reactor-side support.", 138), 193, 111, MachineScreenStyle.MUTED, false);
     }
 
     private String compactStatus() {
@@ -136,5 +137,11 @@ public class GravitationalStabilizerScreen extends AbstractContainerScreen<Gravi
             case 2 -> "LOW";
             default -> "IGNORED";
         };
+    }
+
+    private String fit(String value, int maxWidth) {
+        if (font.width(value) <= maxWidth) return value;
+        int usable = Math.max(0, maxWidth - font.width("…"));
+        return font.plainSubstrByWidth(value, usable) + "…";
     }
 }

@@ -124,19 +124,22 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         if (!menu.androidActive()) {
-            graphics.drawString(font, "ANDROID OFFLINE - convert before installing hardware", 8, 18, MachineScreenStyle.DANGER, false);
+            graphics.drawString(font, MachineScreenStyle.fit(font,
+                    "ANDROID OFFLINE - convert before installing hardware", imageWidth - 16), 8, 18, MachineScreenStyle.DANGER, false);
         } else {
             String status = "Lv " + menu.androidLevel() + "  |  " + menu.androidEnergy() + "/" + menu.androidCapacity() + " FE"
                     + "  |  " + menu.availableSkillPoints() + " pts";
-            graphics.drawString(font, status, 8, 18, MachineScreenStyle.CYAN, false);
+            graphics.drawString(font, MachineScreenStyle.fit(font, status, imageWidth - 16), 8, 18, MachineScreenStyle.CYAN, false);
         }
 
-        graphics.drawString(font, "BODY SYSTEMS - click to install/remove", 10, 40, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "BODY SYSTEMS - click to install/remove", imageWidth - 20),
+                10, 40, MachineScreenStyle.MUTED, false);
 
         AndroidData.Ability[] abilities = AndroidData.Ability.values();
         int selected = Math.max(0, Math.min(menu.selectedAbilityOrdinal(), abilities.length - 1));
         AndroidData.Ability ability = abilities[selected];
-        graphics.drawString(font, "Core: " + ability.displayName, 222, 29, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Core: " + ability.displayName, imageWidth - 230),
+                222, 29, MachineScreenStyle.MUTED, false);
 
         for (AndroidChassisData.Slot slot : AndroidChassisData.Slot.values()) {
             int y = CHASSIS_Y + slot.ordinal() * ROW_H + 3;
@@ -145,7 +148,8 @@ public class AndroidStationScreen extends AbstractContainerScreen<AndroidStation
             graphics.drawString(font, marker + " " + prettySlot(slot), 12, y, ordinal >= 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
         }
 
-        graphics.drawString(font, "Click equipped hardware again to remove it. Swapping returns the old module.",
+        graphics.drawString(font, MachineScreenStyle.fit(font,
+                "Click equipped hardware again to remove it. Swapping returns the old module.", imageWidth - 20),
                 10, 143, MachineScreenStyle.MUTED, false);
     }
 

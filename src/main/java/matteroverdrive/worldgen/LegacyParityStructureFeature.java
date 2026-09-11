@@ -238,7 +238,9 @@ public final class LegacyParityStructureFeature extends Feature<NoneFeatureConfi
         for (int z = -6; z <= 6; z += 3) set(level, base.offset(0, 5, z), z % 6 == 0 ? holo : vent);
 
         // Recovered legacy machine palette/roles from MOAndroidHouseBuilding.
-        set(level, base.offset(-6, 1, -6), block("star_map"));
+        // The retired Star Map is not part of active worldgen. This station slot
+        // now represents the house's local facility/network control role.
+        set(level, base.offset(-6, 1, -6), block("facility_network_controller"));
         set(level, base.offset(-3, 1, -6), block("replicator"));
         set(level, base.offset(0, 1, -6), block("network_switch"));
         set(level, base.offset(1, 1, -6), block("network_pipe"));
@@ -391,5 +393,11 @@ public final class LegacyParityStructureFeature extends Feature<NoneFeatureConfi
     }
 
     private static BlockState block(String id) { return ModBlocks.get(id).get().defaultBlockState(); }
-    private static void set(WorldGenLevel level, BlockPos pos, BlockState state) { level.setBlock(pos, state, 2); }
+    private static void set(WorldGenLevel level, BlockPos pos, BlockState state) {
+        // Legacy templates are approximate, so never destroy existing solid terrain or
+        // another generated structure. Interior clearing is still explicit and safe.
+        BlockState existing = level.getBlockState(pos);
+        if (!state.isAir() && !existing.isAir() && !existing.canBeReplaced()) return;
+        level.setBlock(pos, state, 2);
+    }
 }

@@ -91,20 +91,22 @@ public final class DeveloperVisualDebug {
         int panelX = Math.max(4, screenWidth - panelWidth - 4);
         int panelY = Math.max(4, screenHeight - panelHeight - 4);
         graphics.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, PANEL);
-        graphics.drawString(font,
-                "DEV GUI [F8]  regions=" + buttons.size() + "  overlaps=" + overlapPairs + " (" + overlapPixels + "px)",
+        int textWidth = Math.max(1, panelWidth - 10);
+        graphics.drawString(font, fit(font,
+                "DEV GUI [F8]  regions=" + buttons.size() + "  overlaps=" + overlapPairs + " (" + overlapPixels + "px)", textWidth),
                 panelX + 5, panelY + 5, overlapPairs > 0 ? OVERLAP : TEXT, false);
-        graphics.drawString(font, "mouse=" + mouseX + "," + mouseY,
+        graphics.drawString(font, fit(font, "mouse=" + mouseX + "," + mouseY, textWidth),
                 panelX + 5, panelY + 17, MUTED, false);
 
         if (hovered != null) {
             String id = regionName(hovered, hoveredValue);
-            graphics.drawString(font, id, panelX + 5, panelY + 31, HOVERED, false);
-            graphics.drawString(font,
+            graphics.drawString(font, fit(font, id, textWidth), panelX + 5, panelY + 31, HOVERED, false);
+            graphics.drawString(font, fit(font,
                     "x=" + hovered.getX() + " y=" + hovered.getY()
                             + " w=" + hovered.getWidth() + " h=" + hovered.getHeight()
                             + " center=" + (hovered.getX() + hovered.getWidth() / 2)
                             + "," + (hovered.getY() + hovered.getHeight() / 2),
+                    textWidth),
                     panelX + 5, panelY + 43, TEXT, false);
         }
     }
@@ -132,6 +134,12 @@ public final class DeveloperVisualDebug {
         if (value instanceof Enum<?> enumValue) return enumValue.getDeclaringClass().getSimpleName() + "." + enumValue.name();
         if (value != null) return value.getClass().getSimpleName() + " // " + button.getMessage().getString();
         return button.getMessage().getString();
+    }
+
+    private static String fit(Font font, String value, int maxWidth) {
+        if (value == null || maxWidth <= 0 || font.width(value) <= maxWidth) return value;
+        String ellipsis = "…";
+        return font.plainSubstrByWidth(value, Math.max(0, maxWidth - font.width(ellipsis))) + ellipsis;
     }
 
     private static boolean contains(Button button, int x, int y) {

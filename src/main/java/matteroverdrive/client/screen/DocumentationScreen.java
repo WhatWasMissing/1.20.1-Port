@@ -46,7 +46,7 @@ public class DocumentationScreen extends Screen {
     }
 
     private void loadDocument() {
-        ResourceLocation resource = new ResourceLocation(MatterOverdrive.MOD_ID, document.resourcePath);
+        ResourceLocation resource = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, document.resourcePath);
         Minecraft.getInstance().getResourceManager().getResource(resource).ifPresentOrElse(found -> {
             try (BufferedReader reader = found.openAsReader()) {
                 sourceLines.addAll(reader.lines().toList());
@@ -67,16 +67,19 @@ public class DocumentationScreen extends Screen {
     private void rebuildGuideWidgets() {
         clearWidgets();
         if (indexOpen) {
+            int panelWidth = Math.min(600, Math.max(24, width - 24));
+            int panelLeft = (width - panelWidth) / 2;
+            int columnGap = 8;
+            int buttonWidth = Math.max(1, (panelWidth - 24 - columnGap) / 2);
             int column = 0;
             int row = 0;
             for (Map.Entry<String, Integer> entry : sectionPages.entrySet()) {
-                int x = width / 2 - 270 + column * 275;
+                int x = panelLeft + 8 + column * (buttonWidth + columnGap);
                 int y = 42 + row * 22;
                 int target = entry.getValue();
-                String label = entry.getKey();
-                if (label.length() > 32) label = label.substring(0, 29) + "...";
+                String label = fit(entry.getKey(), Math.max(1, buttonWidth - 8));
                 addRenderableWidget(Button.builder(Component.literal(label), button -> jumpTo(target))
-                        .bounds(x, y, 265, 20).build());
+                        .bounds(x, y, buttonWidth, 20).build());
                 if (++column == 2) { column = 0; row++; }
             }
             addRenderableWidget(Button.builder(Component.literal("Back to guide"), button -> {
@@ -85,19 +88,26 @@ public class DocumentationScreen extends Screen {
             }).bounds(width / 2 - 55, height - 27, 110, 20).build());
             return;
         }
+        int navGap = 4;
+        int navWidth = Math.max(1, width - 24);
+        int previousWidth = Math.min(90, Math.max(60, (navWidth - navGap * 2) / 3));
+        int indexWidth = Math.min(70, Math.max(48, (navWidth - navGap * 2) / 3));
+        int nextWidth = Math.min(90, Math.max(60, navWidth - previousWidth - indexWidth - navGap * 2));
+        int navTotal = previousWidth + indexWidth + nextWidth + navGap * 2;
+        int navLeft = Math.max(12, (width - navTotal) / 2);
         addRenderableWidget(Button.builder(Component.literal("< Previous"), button -> {
             pageIndex = Math.max(0, pageIndex - 1);
             rememberPage();
-        }).bounds(width / 2 - 170, height - 27, 90, 20).build());
+        }).bounds(navLeft, height - 27, previousWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Index"), button -> {
             rememberPage();
             indexOpen = true;
             rebuildGuideWidgets();
-        }).bounds(width / 2 - 65, height - 27, 70, 20).build());
+        }).bounds(navLeft + previousWidth + navGap, height - 27, indexWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Next >"), button -> {
             pageIndex = Math.min(Math.max(0, pages.size() - 1), pageIndex + 1);
             rememberPage();
-        }).bounds(width / 2 + 20, height - 27, 90, 20).build());
+        }).bounds(navLeft + previousWidth + indexWidth + navGap * 2, height - 27, nextWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Done"), button -> onClose())
                 .bounds(width / 2 - 40, height - 51, 80, 20).build());
     }
@@ -130,14 +140,14 @@ public class DocumentationScreen extends Screen {
             if (raw.isBlank()) {
                 line = Component.empty();
                 height = 6;
-            } else if (raw.startsWith("#")) {
-                line = Component.literal(raw.replaceFirst("^#+\\s*", ""))
-                        .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
-                height = raw.startsWith("# ") ? 15 : 13;
             } else if (raw.startsWith("## ")) {
                 line = Component.literal(raw.replaceFirst("^##\\s*", ""))
                         .withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD);
                 height = 13;
+            } else if (raw.startsWith("#")) {
+                line = Component.literal(raw.replaceFirst("^#+\\s*", ""))
+                        .withStyle(ChatFormatting.AQUA, ChatFormatting.BOLD);
+                height = raw.startsWith("# ") ? 15 : 13;
             } else if (raw.startsWith("- [ ] ")) {
                 line = Component.literal("□ " + raw.substring(6)).withStyle(ChatFormatting.YELLOW);
             } else if (raw.startsWith("- ")) {
@@ -167,7 +177,7 @@ public class DocumentationScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         if (indexOpen) {
-            int panelWidth = Math.min(600, width - 24);
+            int panelWidth = Math.min(600, Math.max(24, width - 24));
             int left = (width - panelWidth) / 2;
             int right = left + panelWidth;
             int top = 10;
@@ -181,7 +191,7 @@ public class DocumentationScreen extends Screen {
             super.render(graphics, mouseX, mouseY, partialTick);
             return;
         }
-        int panelWidth = Math.min(600, width - 24);
+        int panelWidth = Math.min(600, Math.max(24, width - 24));
         int left = (width - panelWidth) / 2;
         int right = left + panelWidth;
         int top = 10;
@@ -191,10 +201,11 @@ public class DocumentationScreen extends Screen {
         graphics.fill(left, bottom - 1, right, bottom, BORDER_COLOR);
         graphics.fill(left, top, left + 1, bottom, BORDER_COLOR);
         graphics.fill(right - 1, top, right, bottom, BORDER_COLOR);
-        graphics.drawCenteredString(font, title, width / 2, top + 9, BORDER_COLOR);
-        graphics.drawCenteredString(font, Component.literal("Matter Overdrive Alpha 0.2 • Made by MVQ1303"),
+        int titleWidth = Math.max(1, panelWidth - 24);
+        graphics.drawCenteredString(font, Component.literal(fit(title.getString(), titleWidth)), width / 2, top + 9, BORDER_COLOR);
+        graphics.drawCenteredString(font, Component.literal(fit("Matter Overdrive Alpha 0.2 • Made by MVQ1303", titleWidth)),
                 width / 2, top + 21, MUTED_COLOR);
-        graphics.drawCenteredString(font, Component.literal(String.format("Page %d / %d", pageIndex + 1, pages.size())),
+        graphics.drawCenteredString(font, Component.literal(fit(String.format("Page %d / %d", pageIndex + 1, pages.size()), titleWidth)),
                 width / 2, bottom + 7, MUTED_COLOR);
 
         int textLeft = left + 15;
@@ -272,6 +283,12 @@ public class DocumentationScreen extends Screen {
         } catch (Exception ignored) {
             LAST_PAGES.clear();
         }
+    }
+
+    private String fit(String value, int maxWidth) {
+        if (value == null || maxWidth <= 0 || font.width(value) <= maxWidth) return value;
+        String ellipsis = "…";
+        return font.plainSubstrByWidth(value, Math.max(0, maxWidth - font.width(ellipsis))) + ellipsis;
     }
 
     @Override

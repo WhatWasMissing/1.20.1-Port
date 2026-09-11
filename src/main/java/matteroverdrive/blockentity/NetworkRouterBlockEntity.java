@@ -181,6 +181,9 @@ public class NetworkRouterBlockEntity extends BlockEntity implements MenuProvide
     public void setChannel(int value) { channel = value & 15; routeSinks.clear(); routeCursor = 0; setChanged(); }
     public int cycleChannel() { setChannel(channel + 1); return channel; }
     public int getPriority() { return priority; }
+    public ItemNetworkUtil.MoveStatus getLastStatus() { return lastStatus; }
+    public int getStalledTicks() { return stalledTicks; }
+    public boolean isGraphTruncated() { return graphTruncated; }
     public void setPriority(int value) { priority = Math.max(-16, Math.min(16, value)); setChanged(); }
     public int cyclePriority() { setPriority(priority >= 16 ? -16 : priority + 1); return priority; }
     public ItemStackHandler getFilter() { return filter; }

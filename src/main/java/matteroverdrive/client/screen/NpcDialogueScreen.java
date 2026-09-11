@@ -46,11 +46,16 @@ public final class NpcDialogueScreen extends Screen {
     private void rebuildButtons() {
         clearWidgets();
         int pages = pageCount();
+        int buttonWidth = Math.min(92, Math.max(40, (width - 60) / 2));
+        int gap = Math.max(4, Math.min(8, width - buttonWidth * 2 - 40));
+        int right = Math.max(20, width - 20);
+        int continueX = right - buttonWidth;
+        int backX = continueX - gap - buttonWidth;
         if (page > 0) {
             addRenderableWidget(Button.builder(Component.literal("Back"), b -> {
                 page--;
                 rebuildButtons();
-            }).bounds(width - 218, height - 39, 92, 20).build());
+            }).bounds(Math.max(20, backX), height - 39, buttonWidth, 20).build());
         }
         String label = page + 1 < pages ? "Continue" : "Close";
         addRenderableWidget(Button.builder(Component.literal(label), b -> {
@@ -60,7 +65,7 @@ public final class NpcDialogueScreen extends Screen {
             } else {
                 onClose();
             }
-        }).bounds(width - 118, height - 39, 92, 20).build());
+        }).bounds(continueX, height - 39, buttonWidth, 20).build());
     }
 
     private int pageCount() {
@@ -75,8 +80,8 @@ public final class NpcDialogueScreen extends Screen {
         int boxW = width - 40;
         graphics.fill(boxX, boxY, boxX + boxW, boxY + BOX_HEIGHT, 0xE810141B);
         graphics.fill(boxX, boxY, boxX + boxW, boxY + 2, 0xFF58C7D8);
-        graphics.drawString(font, speaker, boxX + 14, boxY + 12, 0xFF58C7D8, false);
-        if (!heading.isBlank()) graphics.drawString(font, heading, boxX + 14, boxY + 27, 0xFFE7EDF2, false);
+        graphics.drawString(font, fit(speaker, boxW - 28), boxX + 14, boxY + 12, 0xFF58C7D8, false);
+        if (!heading.isBlank()) graphics.drawString(font, fit(heading, boxW - 28), boxX + 14, boxY + 27, 0xFFE7EDF2, false);
 
         int pages = pageCount();
         if (pages > 1) {
@@ -95,4 +100,10 @@ public final class NpcDialogueScreen extends Screen {
     }
 
     @Override public boolean isPauseScreen() { return false; }
+
+    private String fit(String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) return text;
+        int available = Math.max(0, maxWidth - font.width("…"));
+        return font.plainSubstrByWidth(text, available) + "…";
+    }
 }

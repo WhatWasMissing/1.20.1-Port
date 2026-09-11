@@ -79,6 +79,8 @@ Use it on a configured machine face to cycle **INPUT / OUTPUT / BOTH / DISABLED*
 
 The probe changes server-backed state. It is not a cosmetic overlay.
 
+In Diagnostic mode, using the probe on a Router also reports its current route status, consecutive stalled ticks and whether the bounded graph scan was capped. The Router screen shows the same information, including the number of linked pylon nodes. Treat **GRAPH LIMIT** or **GRAPH CAPPED** as a topology problem rather than an FE shortage: split the network with channels or switches and inspect the resulting node count before adding more machines.
+
 ## Network Switch
 
 The **Network Switch** can enable or isolate a local section and now also carries a channel. A disabled Switch blocks traversal regardless of channel. An enabled Switch on the wrong channel also isolates that path for the active traversal.
@@ -128,5 +130,15 @@ Matter Overdrive's task graph remains separate from AE2. Do not splice an ME cab
 **Replicator has resources but no queued job:** inspect Pattern Storage, Pattern Monitor, Router/Switch channel and Switch state.
 
 **Controller reports zero nodes:** place it directly against a live Network Pipe/Router/Switch path and verify channel/isolation state.
+
+## Matter Network Terminal
+
+The **Matter Network Terminal** is a remote access point for a bounded Matter Pipe/Hybrid Conduit network. Use it with a Matter Container to upload up to 1,000 Matter per request; if the container cannot upload, the same request pulls up to 1,000 Matter from the first eligible endpoint. The terminal reports current network capacity, endpoint count, and alarm count, and its comparator output follows aggregate Matter fill.
+
+The terminal also exposes the operator's research roadmap: current clearance, discovered field-site count, investigation-chain progress, and the next investigation target. This makes a powered network terminal a useful expedition and automation checkpoint without bypassing the per-player research ledger.
+
+Within its bounded scan range it also reports nearby Android encounter factions: `synthetic_security`, `research_containment`, `black_site`, or `rogue_android`. This is telemetry only; it does not change squad ownership or grant control over hostile encounters.
+
+The terminal respects the existing side-policy and loaded-chunk rules. If a transfer does not occur, check that a pipe route reaches a Matter Storage Matrix or machine with available capacity, and that the endpoint's Matter face permits input/output.
 
 For the larger experimental infrastructure built on top of this network, continue to [Advanced Infrastructure](advanced_infrastructure.md).

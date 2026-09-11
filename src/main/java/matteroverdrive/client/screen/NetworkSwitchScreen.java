@@ -88,7 +88,7 @@ public class NetworkSwitchScreen extends AbstractContainerScreen<NetworkSwitchMe
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "NETWORK LINKS", 18, 33, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "NETWORK LINKS", 116), 18, 33, MachineScreenStyle.CYAN, false);
         graphics.drawString(font, "SW", 68, 55, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, "N", 72, 36, sideColor(Direction.NORTH), false);
         graphics.drawString(font, "S", 72, 76, sideColor(Direction.SOUTH), false);
@@ -97,13 +97,13 @@ public class NetworkSwitchScreen extends AbstractContainerScreen<NetworkSwitchMe
         graphics.drawString(font, "U", 46, 39, sideColor(Direction.UP), false);
         graphics.drawString(font, "D", 98, 72, sideColor(Direction.DOWN), false);
 
-        graphics.drawString(font, "STATUS", 152, 33, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, menu.isEnabled() ? "ONLINE" : "OFFLINE", 152, 47,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "STATUS", 62), 152, 33, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.isEnabled() ? "ONLINE" : "OFFLINE", 62), 152, 47,
                 menu.isEnabled() ? MachineScreenStyle.GREEN : MachineScreenStyle.RED, false);
-        graphics.drawString(font, "Links: " + menu.getConnectionCount() + " / 6", 152, 57,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Links: " + menu.getConnectionCount() + " / 6", 62), 152, 57,
                 MachineScreenStyle.TEXT, false);
 
-        graphics.drawString(font, "Shift-right-click the block for a quick toggle.", 18, 88,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Shift-right-click the block for a quick toggle.", 126), 18, 88,
                 MachineScreenStyle.MUTED, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);

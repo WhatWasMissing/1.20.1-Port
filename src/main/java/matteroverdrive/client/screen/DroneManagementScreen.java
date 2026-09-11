@@ -34,22 +34,31 @@ public class DroneManagementScreen extends Screen {
     protected void init() {
         boolean compact = width < 560;
         int gap = 4;
-        int columns = compact ? 3 : 5;
-        int buttonWidth = Math.max(70, Math.min(96, (width - 36 - gap * (columns - 1)) / columns));
+        int columns = width < 290 ? 2 : compact ? 3 : 5;
+        int availableWidth = Math.max(columns * 40 + gap * (columns - 1), width - 36);
+        int buttonWidth = Math.max(40, Math.min(96, (availableWidth - gap * (columns - 1)) / columns));
         int totalWidth = columns * buttonWidth + (columns - 1) * gap;
-        int left = Math.max(18, (width - totalWidth) / 2);
+        int left = Math.max(8, (width - totalWidth) / 2);
         int controlsY = 54;
 
-        String[] labels = {"FOLLOW ALL", "HOLD ALL", "DEFEND ALL", "PASSIVE ALL", "AGGRESSIVE"};
-        byte[] modes = {DroneEntity.MODE_FOLLOW, DroneEntity.MODE_HOLD, DroneEntity.MODE_DEFENSIVE,
-                DroneEntity.MODE_PASSIVE, DroneEntity.MODE_AGGRESSIVE};
+        String[] labels = {"FOLLOW ALL", "HOLD ALL", "PATROL ALL", "LOGISTICS ALL", "DEFEND ALL", "PASSIVE ALL", "AGGRESSIVE"};
+        byte[] modes = {DroneEntity.MODE_FOLLOW, DroneEntity.MODE_HOLD, DroneEntity.MODE_PATROL,
+                DroneEntity.MODE_LOGISTICS, DroneEntity.MODE_DEFENSIVE, DroneEntity.MODE_PASSIVE, DroneEntity.MODE_AGGRESSIVE};
         for (int i = 0; i < labels.length; i++) {
             int row = i / columns;
             int col = i % columns;
             addModeButton(labels[i], left + col * (buttonWidth + gap), controlsY + row * 24, buttonWidth, modes[i]);
         }
 
-        int controlRows = (labels.length + columns - 1) / columns;
+        int recallIndex = labels.length;
+        int recallRow = recallIndex / columns;
+        int recallCol = recallIndex % columns;
+        String recallLabel = buttonWidth < 86 ? "RECALL" : "RECALL ALL";
+        addRenderableWidget(Button.builder(Component.literal(recallLabel), button ->
+                        ModNetwork.CHANNEL.sendToServer(DroneCommandPacket.recallAll()))
+                .bounds(left + recallCol * (buttonWidth + gap), controlsY + recallRow * 24, buttonWidth, 20).build());
+
+        int controlRows = (labels.length + 1 + columns - 1) / columns;
         listTop = controlsY + controlRows * 24 + 14;
         visibleRows = Math.max(0, Math.min(8, Math.min(drones.size(), (height - listTop - 42) / 30)));
         for (int i = 0; i < visibleRows; i++) {
@@ -61,11 +70,12 @@ public class DroneManagementScreen extends Screen {
                     .bounds(width - modeWidth - 18, rowY + 4, modeWidth, 20).build());
         }
 
+        int footerWidth = Math.max(48, Math.min(80, (width - 28) / 2));
         addRenderableWidget(Button.builder(Component.literal("REFRESH"), button ->
                         ModNetwork.CHANNEL.sendToServer(DroneCommandPacket.requestStatus()))
-                .bounds(18, height - 30, 80, 20).build());
+                .bounds(8, height - 30, footerWidth, 20).build());
         addRenderableWidget(Button.builder(Component.literal("CLOSE"), button -> onClose())
-                .bounds(width - 98, height - 30, 80, 20).build());
+                .bounds(width - footerWidth - 8, height - 30, footerWidth, 20).build());
     }
 
     private void addModeButton(String label, int x, int y, int buttonWidth, byte mode) {
@@ -80,7 +90,7 @@ public class DroneManagementScreen extends Screen {
         g.fill(0, 0, width, height, BACKDROP);
         g.drawString(font, "ANDROID // DRONE COMMAND", 18, 14, TEXT, false);
         g.drawString(font, fit("Loaded linked drones within 192 blocks · M opens this console", width - 36), 18, 27, MUTED, false);
-        g.drawString(font, fit("HOLD stops escort movement and keeps a drone at its current position.", width - 36), 18, 39, GOLD, false);
+        g.drawString(font, fit("PATROL guards a 16-block envelope; RECALL returns loaded linked drones safely.", width - 36), 18, 39, GOLD, false);
 
         if (drones.isEmpty()) {
             int boxX = 18;
@@ -98,13 +108,18 @@ public class DroneManagementScreen extends Screen {
             g.fill(18, rowY, 21, rowY + 27, modeColor(info.mode()));
             int textWidth = Math.max(60, width - 150);
             String label = info.name().isBlank() ? "Drone" : info.name();
-            g.drawString(font, fit(label + "  //  " + modeName(info.mode()), textWidth), 30, rowY + 5, TEXT, false);
-            g.drawString(font, fit("HP " + info.health() + "/" + info.maxHealth() + "   DIST " + info.distance() + "m", textWidth),
+            g.drawString(font, fit(label + "  //  " + roleName(info.role()) + "  //  " + modeName(info.mode()), textWidth), 30, rowY + 5, TEXT, false);
+            String position = info.mode() == DroneEntity.MODE_PATROL && info.patrolAnchor() != null
+                    ? "   ANCHOR " + info.patrolAnchor().getX() + " " + info.patrolAnchor().getY() + " " + info.patrolAnchor().getZ()
+                    : info.mode() == DroneEntity.MODE_LOGISTICS && info.logisticsTarget() != null
+                    ? "   ROUTE " + info.logisticsTarget().getX() + " " + info.logisticsTarget().getY() + " " + info.logisticsTarget().getZ()
+                    : "   DIST " + info.distance() + "m";
+            g.drawString(font, fit("HP " + info.health() + "/" + info.maxHealth() + "   FE " + info.energy() + "/" + info.maxEnergy() + position, textWidth),
                     30, rowY + 16, info.health() * 3 < info.maxHealth() ? GOLD : MUTED, false);
         }
 
         if (drones.size() > visibleRows && listTop + visibleRows * 30 + 10 < height - 32) {
-            g.drawString(font, "+" + (drones.size() - visibleRows) + " MORE ACTIVE DRONES", 18,
+            g.drawString(font, fit("+" + (drones.size() - visibleRows) + " MORE ACTIVE DRONES", width - 36), 18,
                     listTop + visibleRows * 30 + 4, MUTED, false);
         }
         super.render(g, mouseX, mouseY, partialTick);
@@ -122,6 +137,8 @@ public class DroneManagementScreen extends Screen {
             case DroneEntity.MODE_HOLD -> DroneEntity.MODE_DEFENSIVE;
             case DroneEntity.MODE_DEFENSIVE -> DroneEntity.MODE_PASSIVE;
             case DroneEntity.MODE_PASSIVE -> DroneEntity.MODE_AGGRESSIVE;
+            case DroneEntity.MODE_AGGRESSIVE -> DroneEntity.MODE_PATROL;
+            case DroneEntity.MODE_PATROL -> DroneEntity.MODE_LOGISTICS;
             default -> DroneEntity.MODE_FOLLOW;
         };
     }
@@ -132,13 +149,27 @@ public class DroneManagementScreen extends Screen {
             case DroneEntity.MODE_PASSIVE -> "PASSIVE";
             case DroneEntity.MODE_AGGRESSIVE -> "AGGRESSIVE";
             case DroneEntity.MODE_HOLD -> "HOLD";
+            case DroneEntity.MODE_PATROL -> "PATROL";
+            case DroneEntity.MODE_LOGISTICS -> "LOGISTICS";
             default -> "FOLLOW";
+        };
+    }
+
+    private static String roleName(byte role) {
+        return switch (role) {
+            case DroneEntity.ROLE_REPAIR -> "REPAIR";
+            case DroneEntity.ROLE_LOGISTICS -> "LOGISTICS";
+            case DroneEntity.ROLE_SURVEY -> "SURVEY";
+            case DroneEntity.ROLE_REACTOR_MAINTENANCE -> "REACTOR";
+            default -> "COMBAT";
         };
     }
 
     private static int modeColor(byte mode) {
         return switch (mode) {
             case DroneEntity.MODE_HOLD -> GOLD;
+            case DroneEntity.MODE_PATROL -> 0xFFB58AF0;
+            case DroneEntity.MODE_LOGISTICS -> 0xFFFFB86B;
             case DroneEntity.MODE_AGGRESSIVE -> 0xFFE07171;
             case DroneEntity.MODE_DEFENSIVE -> ACCENT;
             case DroneEntity.MODE_PASSIVE -> 0xFF9AA4AB;

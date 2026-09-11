@@ -4,7 +4,9 @@
   "features": [
     "matteroverdrive:abandoned_matter_lab",
     "matteroverdrive:android_relay_outpost",
-    "matteroverdrive:anomaly_research_site"
+    "matteroverdrive:anomaly_research_site",
+    "matteroverdrive:matter_observatory",
+    "matteroverdrive:field_logistics_depot"
   ],
   "step": "surface_structures"
 }

@@ -31,7 +31,7 @@ public class PatternStorageScreen extends AbstractContainerScreen<PatternStorage
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 183 + i * 45, topPos + 29, 43, 15).build();
+            }).bounds(leftPos + 178 + (i & 1) * 72, topPos + 27 + (i >> 1) * 17, 68, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -67,12 +67,12 @@ public class PatternStorageScreen extends AbstractContainerScreen<PatternStorage
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 130),
                 18, 20, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Patterns " + menu.getPatternCount() + "/12 | Idle "
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Patterns " + menu.getPatternCount() + "/12 | Idle "
                         + menu.getIdleEnergyUsePerTick() + " FE/t",
-                20, 104, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Capacity " + menu.getEnergyCapacity() + " FE",
+                130), 20, 104, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Capacity " + menu.getEnergyCapacity() + " FE", 130),
                 20, 114, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
@@ -86,11 +86,11 @@ public class PatternStorageScreen extends AbstractContainerScreen<PatternStorage
 
     private void renderHome(GuiGraphics graphics) {
         graphics.drawString(font, "PATTERN STORAGE", 202, 52, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "Stored patterns " + menu.getPatternCount() + " / 12", 188, 70,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Stored patterns " + menu.getPatternCount() + " / 12", 145), 188, 70,
                 menu.getPatternCount() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Idle draw " + menu.getIdleEnergyUsePerTick() + " FE/t", 188, 84,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Idle draw " + menu.getIdleEnergyUsePerTick() + " FE/t", 145), 188, 84,
                 MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Buffer " + menu.getEnergy() + " / " + menu.getEnergyCapacity(), 188, 98,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Buffer " + menu.getEnergy() + " / " + menu.getEnergyCapacity(), 145), 188, 98,
                 MachineScreenStyle.TEXT, false);
     }
 
@@ -98,7 +98,7 @@ public class PatternStorageScreen extends AbstractContainerScreen<PatternStorage
         graphics.drawString(font, "PATTERN DRIVES", 203, 52, MachineScreenStyle.PURPLE, false);
         graphics.drawString(font, "6 physical drive slots shown left", 188, 70,
                 MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Indexed patterns " + menu.getPatternCount() + " / 12", 188, 84,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Indexed patterns " + menu.getPatternCount() + " / 12", 145), 188, 84,
                 MachineScreenStyle.CYAN, false);
         graphics.drawString(font, "Drive contents feed Pattern Monitor", 188, 98,
                 MachineScreenStyle.MUTED, false);

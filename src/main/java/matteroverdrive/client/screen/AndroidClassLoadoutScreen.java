@@ -46,9 +46,10 @@ public class AndroidClassLoadoutScreen extends Screen {
         lastTechCooldown = AndroidClientState.techAbilityCooldownTicks();
     }
 
-    private int panelLeft() { return Math.max(350, width - 286); }
-    private int mainRight() { return Math.max(330, panelLeft() - 12); }
-    private int mainWidth() { return Math.max(300, mainRight() - 18); }
+    private boolean compactLayout() { return width < 760; }
+    private int panelLeft() { return compactLayout() ? width : Math.max(350, width - 286); }
+    private int mainRight() { return compactLayout() ? width - 12 : panelLeft() - 12; }
+    private int mainWidth() { return Math.max(180, mainRight() - 18); }
 
     private void rebuild() {
         clearWidgets();
@@ -63,7 +64,7 @@ public class AndroidClassLoadoutScreen extends Screen {
                 ModNetwork.CHANNEL.sendToServer(new AndroidLoadoutSelectPacket(2, 0)))
                 .bounds(18, height - 28, 120, 20).build());
         addRenderableWidget(Button.builder(Component.literal("CLOSE"), b -> onClose())
-                .bounds(width - 90, height - 28, 72, 20).build());
+                .bounds(Math.max(18, width - 90), height - 28, Math.min(72, Math.max(50, width - 36)), 20).build());
     }
 
     private Button tab(String label, int x, int y, int target, int buttonWidth) {
@@ -224,9 +225,9 @@ public class AndroidClassLoadoutScreen extends Screen {
         g.fill(0, 0, width, height, BACKDROP);
         drawAtmosphere(g);
         AndroidClasses.AndroidClass androidClass = AndroidClasses.fromSpecialization(AndroidClientState.specialization());
-        g.drawString(font, "ANDROID // CLASS MATRIX", 18, 14, TEXT, false);
-        g.drawString(font, "3 classes × 3 subclasses · unique H / N / G kits · Aspects · Fragments · Passive", 18, 27, MUTED, false);
-        g.drawString(font, "LV " + AndroidClientState.level() + "   FE " + AndroidClientState.energy(), Math.max(18, width - 170), 16, ACCENT, false);
+        g.drawString(font, fit("ANDROID // CLASS MATRIX", width - 36), 18, 14, TEXT, false);
+        g.drawString(font, fit("3 classes × 3 subclasses · unique H / N / G kits · Aspects · Fragments · Passive", width - 36), 18, 27, MUTED, false);
+        g.drawString(font, fit("LV " + AndroidClientState.level() + "   FE " + AndroidClientState.energy(), 150), Math.max(18, width - 168), 16, ACCENT, false);
 
         if (view == 0) {
             AndroidLoadout.Specialization spec = AndroidClientState.specialization();
@@ -234,24 +235,24 @@ public class AndroidClassLoadoutScreen extends Screen {
             int ultimateCooldown = AndroidClientState.ultimateCooldownTicks();
             int classCooldown = AndroidClientState.classAbilityCooldownTicks();
             int techCooldown = AndroidClientState.techAbilityCooldownTicks();
-            g.drawString(font, "CLASS // " + androidClass.displayName.toUpperCase(), 18, 97, GOLD, false);
-            g.drawString(font, spec.displayName.toUpperCase() + " SUBCLASS", 18, 129, MUTED, false);
+            g.drawString(font, fit("CLASS // " + androidClass.displayName.toUpperCase(), mainWidth() - 18), 18, 97, GOLD, false);
+            g.drawString(font, fit(spec.displayName.toUpperCase() + " SUBCLASS", mainWidth() - 18), 18, 129, MUTED, false);
             String hStatus = abilityStatus("H", classCooldown, AndroidClassAbilities.classEnergyCost(spec));
             String nStatus = abilityStatus("N", techCooldown, AndroidClassAbilities.techEnergyCost(spec));
-            g.drawString(font, hStatus + "   ·   " + nStatus, 20, 168,
+            g.drawString(font, fit(hStatus + "   ·   " + nStatus, mainWidth() - 22), 20, 168,
                     classCooldown <= 0 && techCooldown <= 0 ? ACCENT : MUTED, false);
             String ultimateStatus = AndroidClientState.level() < AndroidUltimates.REQUIRED_LEVEL ? "ULTIMATE LOCKED · LEVEL " + AndroidUltimates.REQUIRED_LEVEL
                     : ultimateCooldown > 0 ? String.format("ULTIMATE RECHARGING %.1fs", ultimateCooldown / 20.0D)
                     : AndroidClientState.energy() < ultimate.energyCost ? "ULTIMATE NEEDS " + ultimate.energyCost + " FE" : "ULTIMATE READY · G";
-            g.drawString(font, ultimateStatus, 20, 214, ultimateCooldown <= 0 ? ACCENT : MUTED, false);
-            g.drawString(font, "ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, 18, 228, GOLD, false);
-            g.drawString(font, "FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), 18, 274, ACCENT, false);
+            g.drawString(font, fit(ultimateStatus, mainWidth() - 22), 20, 214, ultimateCooldown <= 0 ? ACCENT : MUTED, false);
+            g.drawString(font, fit("ASPECTS " + aspectCount() + "/" + AndroidLoadout.MAX_ASPECTS, mainWidth() - 18), 18, 228, GOLD, false);
+            g.drawString(font, fit("FRAGMENTS " + fragmentCount() + "/" + fragmentCapacity(), mainWidth() - 18), 18, 274, ACCENT, false);
         } else if (view == 1) {
             g.drawString(font, "DRONE COMMAND MATRIX", 18, 78, GREEN, false);
-            g.drawString(font, Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS + " nodes installed · level-gated progression", 18, 92, MUTED, false);
+            g.drawString(font, fit(Integer.bitCount(AndroidClientState.dronePerkMask()) + "/" + AndroidLoadout.MAX_DRONE_PERKS + " nodes installed · level-gated progression", mainWidth() - 18), 18, 92, MUTED, false);
         } else {
             g.drawString(font, "PASSIVE PROTOCOL", 18, 78, GOLD, false);
-            g.drawString(font, "One high-impact always-on modifier · Current: " + AndroidClientState.artifact().displayName, 18, 92, MUTED, false);
+            g.drawString(font, fit("One high-impact always-on modifier · Current: " + AndroidClientState.artifact().displayName, mainWidth() - 18), 18, 92, MUTED, false);
         }
         super.render(g, mouseX, mouseY, partialTick);
         renderInspectionPanel(g);
@@ -268,57 +269,58 @@ public class AndroidClassLoadoutScreen extends Screen {
     }
 
     private void renderInspectionPanel(GuiGraphics g) {
-        if (width < 640) return;
+        if (compactLayout()) return;
         Object inspected = null;
         for (Map.Entry<Button, Object> entry : inspectables.entrySet()) if (entry.getKey().isHoveredOrFocused()) { inspected = entry.getValue(); break; }
         int x = panelLeft() + 18, y = 82;
-        g.drawString(font, "SYSTEM INSPECTION", x, y, MUTED, false);
+        int panelWidth = Math.max(180, width - 21 - x);
+        g.drawString(font, fit("SYSTEM INSPECTION", panelWidth), x, y, MUTED, false);
         if (inspected == null) {
             AndroidLoadout.Specialization spec = AndroidClientState.specialization();
             AndroidClasses.AndroidClass cls = AndroidClasses.fromSpecialization(spec);
-            g.drawString(font, cls.displayName.toUpperCase(), x, y + 22, GOLD, false);
-            g.drawString(font, spec.displayName.toUpperCase(), x, y + 36, ACCENT, false);
-            drawWrapped(g, spec.description, x, y + 54, 230, TEXT);
-            g.drawString(font, "H  " + AndroidClassAbilities.classAbilityName(spec), x, y + 102, ACCENT, false);
-            g.drawString(font, "N  " + AndroidClassAbilities.techAbilityName(spec), x, y + 118, ACCENT, false);
-            g.drawString(font, "G  " + spec.ultimate.displayName, x, y + 134, GOLD, false);
-            g.drawString(font, "PASSIVE  " + AndroidClientState.artifact().displayName, x, y + 158, MUTED, false);
+            g.drawString(font, fit(cls.displayName.toUpperCase(), panelWidth), x, y + 22, GOLD, false);
+            g.drawString(font, fit(spec.displayName.toUpperCase(), panelWidth), x, y + 36, ACCENT, false);
+            drawWrapped(g, spec.description, x, y + 54, panelWidth, TEXT);
+            g.drawString(font, fit("H  " + AndroidClassAbilities.classAbilityName(spec), panelWidth), x, y + 102, ACCENT, false);
+            g.drawString(font, fit("N  " + AndroidClassAbilities.techAbilityName(spec), panelWidth), x, y + 118, ACCENT, false);
+            g.drawString(font, fit("G  " + spec.ultimate.displayName, panelWidth), x, y + 134, GOLD, false);
+            g.drawString(font, fit("PASSIVE  " + AndroidClientState.artifact().displayName, panelWidth), x, y + 158, MUTED, false);
             return;
         }
         if (inspected instanceof AndroidClasses.AndroidClass cls) {
-            g.drawString(font, cls.displayName.toUpperCase(), x, y + 22, GOLD, false);
-            g.drawString(font, cls.subtitle.toUpperCase(), x, y + 36, MUTED, false);
-            drawWrapped(g, cls.description, x, y + 54, 230, TEXT);
+            g.drawString(font, fit(cls.displayName.toUpperCase(), panelWidth), x, y + 22, GOLD, false);
+            g.drawString(font, fit(cls.subtitle.toUpperCase(), panelWidth), x, y + 36, MUTED, false);
+            drawWrapped(g, cls.description, x, y + 54, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.Specialization spec) {
-            g.drawString(font, spec.displayName.toUpperCase(), x, y + 22, GOLD, false);
-            drawWrapped(g, spec.description, x, y + 40, 230, TEXT);
-            g.drawString(font, "H  " + AndroidClassAbilities.classAbilityName(spec), x, y + 91, ACCENT, false);
-            g.drawString(font, "N  " + AndroidClassAbilities.techAbilityName(spec), x, y + 107, ACCENT, false);
-            g.drawString(font, "G  " + spec.ultimate.displayName, x, y + 123, GOLD, false);
+            g.drawString(font, fit(spec.displayName.toUpperCase(), panelWidth), x, y + 22, GOLD, false);
+            drawWrapped(g, spec.description, x, y + 40, panelWidth, TEXT);
+            g.drawString(font, fit("H  " + AndroidClassAbilities.classAbilityName(spec), panelWidth), x, y + 91, ACCENT, false);
+            g.drawString(font, fit("N  " + AndroidClassAbilities.techAbilityName(spec), panelWidth), x, y + 107, ACCENT, false);
+            g.drawString(font, fit("G  " + spec.ultimate.displayName, panelWidth), x, y + 123, GOLD, false);
         } else if (inspected instanceof AbilityInfo ability) {
             g.drawString(font, ability.type, x, y + 22, MUTED, false);
-            g.drawString(font, ability.name.toUpperCase(), x, y + 38, ACCENT, false);
-            g.drawString(font, "KEY " + ability.key + " · " + ability.energyCost + " FE · " + String.format("%.0fs", ability.cooldownTicks / 20.0D), x, y + 54, GOLD, false);
-            drawWrapped(g, ability.description, x, y + 74, 230, TEXT);
+            g.drawString(font, fit(ability.name.toUpperCase(), panelWidth), x, y + 38, ACCENT, false);
+            g.drawString(font, fit("KEY " + ability.key + " · " + ability.energyCost + " FE · " + String.format("%.0fs", ability.cooldownTicks / 20.0D), panelWidth), x, y + 54, GOLD, false);
+            drawWrapped(g, ability.description, x, y + 74, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.Ultimate ultimate) {
-            g.drawString(font, ultimate.displayName.toUpperCase(), x, y + 22, GOLD, false);
-            drawWrapped(g, ultimate.description, x, y + 40, 230, TEXT);
-            g.drawString(font, "KEY G · " + ultimate.energyCost + " FE · " + String.format("%.0fs", ultimate.cooldownTicks / 20.0D), x, y + 100, ACCENT, false);
+            g.drawString(font, fit(ultimate.displayName.toUpperCase(), panelWidth), x, y + 22, GOLD, false);
+            drawWrapped(g, ultimate.description, x, y + 40, panelWidth, TEXT);
+            g.drawString(font, fit("KEY G · " + ultimate.energyCost + " FE · " + String.format("%.0fs", ultimate.cooldownTicks / 20.0D), panelWidth), x, y + 100, ACCENT, false);
         } else if (inspected instanceof AndroidLoadout.Aspect aspect) {
-            g.drawString(font, aspect.displayName.toUpperCase(), x, y + 22, GOLD, false);
+            g.drawString(font, fit(aspect.displayName.toUpperCase(), panelWidth), x, y + 22, GOLD, false);
             g.drawString(font, aspect.fragmentSlots + " FRAGMENT SLOTS", x, y + 36, ACCENT, false);
-            drawWrapped(g, aspect.description, x, y + 54, 230, TEXT);
+            drawWrapped(g, aspect.description, x, y + 54, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.Fragment fragment) {
-            g.drawString(font, shortName(fragment.displayName).toUpperCase(), x, y + 22, ACCENT, false);
-            drawWrapped(g, fragment.description, x, y + 40, 230, TEXT);
+            g.drawString(font, fit(shortName(fragment.displayName).toUpperCase(), panelWidth), x, y + 22, ACCENT, false);
+            drawWrapped(g, fragment.description, x, y + 40, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.DronePerk perk) {
-            g.drawString(font, perk.displayName.toUpperCase(), x, y + 22, GREEN, false);
+            g.drawString(font, fit(perk.displayName.toUpperCase(), panelWidth), x, y + 22, GREEN, false);
             g.drawString(font, "LEVEL " + perk.level, x, y + 36, MUTED, false);
-            drawWrapped(g, perk.description, x, y + 54, 230, TEXT);
+            drawWrapped(g, perk.description, x, y + 54, panelWidth, TEXT);
         } else if (inspected instanceof AndroidLoadout.Artifact passive) {
-            g.drawString(font, passive.displayName.toUpperCase(), x, y + 22, GOLD, false);
+            g.drawString(font, fit(passive.displayName.toUpperCase(), panelWidth), x, y + 22, GOLD, false);
             g.drawString(font, "SELECTABLE PASSIVE", x, y + 36, MUTED, false);
-            drawWrapped(g, passive.description, x, y + 54, 230, TEXT);
+            drawWrapped(g, passive.description, x, y + 54, panelWidth, TEXT);
         }
     }
 
@@ -326,6 +328,12 @@ public class AndroidClassLoadoutScreen extends Screen {
         for (FormattedCharSequence line : font.split(Component.literal(text), maxWidth)) {
             g.drawString(font, line, x, y, color, false); y += 12;
         }
+    }
+
+    private String fit(String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) return text;
+        int available = Math.max(0, maxWidth - font.width("…"));
+        return font.plainSubstrByWidth(text, available) + "…";
     }
 
     private record AbilityInfo(String type, String name, String description, String key, int energyCost, int cooldownTicks) {}

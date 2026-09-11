@@ -3,6 +3,7 @@ package matteroverdrive.blockentity;
 import matteroverdrive.block.MatterAnalyzerBlock;
 import matteroverdrive.capability.MachineEnergyStorage;
 import matteroverdrive.item.MatterDustItem;
+import matteroverdrive.item.FacilityResearchItem;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.item.MachineUpgradeInventory;
 import matteroverdrive.item.PatternDriveItem;
@@ -24,6 +25,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -33,6 +36,7 @@ import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import javax.annotation.Nullable;
+import java.util.UUID;
 
 public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvider {
     public static final int INPUT_SLOT = 0;
@@ -45,6 +49,8 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     public static final int ENERGY_DRAIN_PER_ITEM = 64000;
     public static final int ENERGY_STORAGE = 512000;
     public static final int ENERGY_ITEM_TRANSFER_PER_TICK = 16000;
+    public static final int RESEARCH_ANALYZE_SPEED = 400;
+    public static final int RESEARCH_ENERGY_PER_TICK = 256;
 
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override public boolean isItemValid(int slot, ItemStack stack) {
@@ -68,6 +74,9 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     private LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> items);
     private LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(() -> energyStorage);
     private int analyzeTime;
+    private int researchTime;
+    private ItemStack queuedResearch = ItemStack.EMPTY;
+    @Nullable private UUID researchOperator;
     private boolean running;
     private MachineRedstoneMode redstoneMode = MachineRedstoneMode.NONE;
 
@@ -84,11 +93,14 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
                 case 7 -> getInputMatter();
                 case 8 -> getEnergyDrainPerTick();
                 case 9 -> redstoneMode.id();
+                case 10 -> researchTime;
+                case 11 -> RESEARCH_ANALYZE_SPEED;
+                case 12 -> queuedResearch.isEmpty() ? 0 : 1;
                 default -> 0;
             };
         }
         @Override public void set(int i, int v) { if (i == 0) analyzeTime = Math.max(0, v); }
-        @Override public int getCount() { return 10; }
+        @Override public int getCount() { return 13; }
     };
 
     public MatterAnalyzerBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.MATTER_ANALYZER.get(), pos, state); }
@@ -130,6 +142,10 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
     }
 
     private void manageAnalyze() {
+        if (!queuedResearch.isEmpty()) {
+            manageResearch();
+            return;
+        }
         if (!canAnalyze()) { running = false; analyzeTime = 0; return; }
         int drain = getEnergyDrainPerTick();
         if (energyStorage.getEnergyStored() < drain) { running = false; return; }
@@ -137,6 +153,47 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         energyStorage.consumeEnergy(drain, level.getGameTime());
         analyzeTime++;
         if (analyzeTime >= getSpeed()) { analyzeTime = 0; analyzeItem(); }
+    }
+
+    private void manageResearch() {
+        if (!(level instanceof ServerLevel serverLevel) || researchOperator == null) {
+            running = false;
+            return;
+        }
+        ServerPlayer operator = serverLevel.getServer().getPlayerList().getPlayer(researchOperator);
+        if (operator == null) { running = false; return; }
+        if (energyStorage.getEnergyStored() < RESEARCH_ENERGY_PER_TICK) { running = false; return; }
+        running = true;
+        energyStorage.consumeEnergy(RESEARCH_ENERGY_PER_TICK, level.getGameTime());
+        researchTime++;
+        if (researchTime < RESEARCH_ANALYZE_SPEED) return;
+        if (!FacilityResearchItem.archiveAtAnalyzer(operator, queuedResearch)) {
+            operator.displayClientMessage(Component.literal("Research analysis stopped: this dossier was already archived."), false);
+        }
+        queuedResearch = ItemStack.EMPTY;
+        researchOperator = null;
+        researchTime = 0;
+        setChanged();
+    }
+
+    /** Queues one discovered dossier. The owner is persisted so credit cannot be stolen by another viewer. */
+    public boolean queueResearch(ServerPlayer player, ItemStack stack) {
+        if (level == null || level.isClientSide || queuedResearch.isEmpty() == false) {
+            if (!queuedResearch.isEmpty()) player.displayClientMessage(Component.literal("Matter Analyzer already has a research dossier queued."), true);
+            return false;
+        }
+        if (FacilityResearchItem.isArchived(player, stack)) {
+            player.displayClientMessage(Component.literal("This research dossier is already archived in your field record."), true);
+            return false;
+        }
+        queuedResearch = stack.copy();
+        queuedResearch.setCount(1);
+        researchOperator = player.getUUID();
+        researchTime = 0;
+        if (!player.getAbilities().instabuild) stack.shrink(1);
+        player.displayClientMessage(Component.literal("Research dossier queued. Supply 102,400 FE to complete secure analysis."), false);
+        setChanged();
+        return true;
     }
 
     private boolean canAnalyze() {
@@ -193,6 +250,9 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         int total = Math.max(1, (int) Math.round(ENERGY_DRAIN_PER_ITEM * upgrades.getMultiplier(MachineUpgradeItem.Upgrade::powerUsage)));
         return Math.max(1, total / getSpeed());
     }
+    public int getResearchProgress() { return researchTime; }
+    public int getResearchMaxProgress() { return RESEARCH_ANALYZE_SPEED; }
+    public boolean hasQueuedResearch() { return !queuedResearch.isEmpty(); }
     public MachineRedstoneMode cycleRedstoneMode() { redstoneMode = redstoneMode.next(); setChanged(); return redstoneMode; }
     public ItemStackHandler getItemHandler() { return items; }
     public MachineEnergyStorage getEnergyStorage() { return energyStorage; }
@@ -224,6 +284,9 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         tag.putInt("Energy", energyStorage.getEnergyStored());
         tag.putBoolean("InfiniteEnergy", energyStorage.isInfiniteEnergy());
         tag.putInt("AnalyzeTime", analyzeTime);
+        if (!queuedResearch.isEmpty()) tag.put("QueuedResearch", queuedResearch.save(new CompoundTag()));
+        if (researchOperator != null) tag.putUUID("ResearchOperator", researchOperator);
+        tag.putInt("ResearchTime", researchTime);
         tag.putBoolean("Running", running);
         tag.putInt("RedstoneMode", redstoneMode.id());
     }
@@ -235,6 +298,9 @@ public class MatterAnalyzerBlockEntity extends BlockEntity implements MenuProvid
         energyStorage.setEnergyStored(tag.getInt("Energy"));
         energyStorage.setInfiniteEnergy(tag.getBoolean("InfiniteEnergy"));
         analyzeTime = Math.max(0, tag.getInt("AnalyzeTime"));
+        queuedResearch = tag.contains("QueuedResearch") ? ItemStack.of(tag.getCompound("QueuedResearch")) : ItemStack.EMPTY;
+        researchOperator = tag.hasUUID("ResearchOperator") ? tag.getUUID("ResearchOperator") : null;
+        researchTime = Math.max(0, Math.min(RESEARCH_ANALYZE_SPEED, tag.getInt("ResearchTime")));
         running = tag.getBoolean("Running");
         redstoneMode = tag.contains("RedstoneMode") ? MachineRedstoneMode.byId(tag.getInt("RedstoneMode")) : MachineRedstoneMode.NONE;
     }

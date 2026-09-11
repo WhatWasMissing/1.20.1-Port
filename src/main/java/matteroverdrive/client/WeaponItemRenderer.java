@@ -40,7 +40,9 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         }
         if (weapon.getItem() instanceof EnergyWeaponItem) {
             renderWeaponAndOptic(weapon, displayContext, poseStack, buffer, packedLight, packedOverlay);
+            return;
         }
+        renderVanillaFallback(weapon, displayContext, poseStack, buffer, packedLight, packedOverlay);
     }
 
     /** Renders any firearm owned by Renderer 2.0 after its animation pose is applied. */
@@ -57,7 +59,12 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (weapon.getItem() instanceof EnergyWeaponItem) {
             renderWeaponAndOptic(weapon, ItemDisplayContext.FIXED,
                     poseStack, buffer, packedLight, packedOverlay);
+            return;
         }
+        // Keep unsupported firearm subtypes visible while their specialized renderer is added.
+        // A silent no-op here produces an apparently missing first-person model.
+        renderVanillaFallback(weapon, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND,
+                poseStack, buffer, packedLight, packedOverlay);
     }
 
     private static NativeDestinyWeaponRenderer nativeDestinyRenderer() {
@@ -98,6 +105,17 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
                     packedLight, packedOverlay, moduleModel);
             poseStack.popPose();
         }
+    }
+
+    private static void renderVanillaFallback(ItemStack weapon, ItemDisplayContext displayContext,
+                                              PoseStack poseStack, MultiBufferSource buffer,
+                                              int packedLight, int packedOverlay) {
+        Minecraft minecraft = Minecraft.getInstance();
+        BakedModel model = minecraft.getItemRenderer().getModel(weapon, minecraft.level, null, 0);
+        boolean leftHand = displayContext == ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+                || displayContext == ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
+        minecraft.getItemRenderer().render(weapon, displayContext, leftHand, poseStack, buffer,
+                packedLight, packedOverlay, model);
     }
 
     private static void applyOpticMount(PoseStack poseStack, ItemStack weapon,

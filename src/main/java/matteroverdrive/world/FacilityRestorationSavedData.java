@@ -20,6 +20,8 @@ import java.util.Map;
 
 /** Persistent restoration progress for generated native technology facilities. */
 public final class FacilityRestorationSavedData extends SavedData {
+    private static final int MAX_FACILITIES = 4096;
+    private static final int MAX_KEY_LENGTH = 256;
     private static final String DATA_NAME = "matteroverdrive_facility_restoration";
     public static final int STAGE_POWER = 0;
     public static final int STAGE_REPAIR = 1;
@@ -42,7 +44,7 @@ public final class FacilityRestorationSavedData extends SavedData {
             this.id = id;
             this.displayName = displayName;
             this.structureKey = ResourceKey.create(Registries.STRUCTURE,
-                    new ResourceLocation(MatterOverdrive.MOD_ID, id));
+                    ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, id));
         }
 
         public String id() { return id; }
@@ -60,10 +62,12 @@ public final class FacilityRestorationSavedData extends SavedData {
     public static FacilityRestorationSavedData load(CompoundTag root) {
         FacilityRestorationSavedData data = new FacilityRestorationSavedData();
         ListTag list = root.getList("Facilities", Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
+        for (int i = 0; i < list.size() && i < MAX_FACILITIES; i++) {
             CompoundTag entry = list.getCompound(i);
             String key = entry.getString("Key");
-            if (!key.isBlank()) data.stages.put(key, Mth.clamp(entry.getInt("Stage"), STAGE_POWER, STAGE_COMPLETE));
+            if (!key.isBlank() && key.length() <= MAX_KEY_LENGTH) {
+                data.stages.put(key, Mth.clamp(entry.getInt("Stage"), STAGE_POWER, STAGE_COMPLETE));
+            }
         }
         return data;
     }

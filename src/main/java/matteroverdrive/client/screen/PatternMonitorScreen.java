@@ -27,6 +27,7 @@ public class PatternMonitorScreen extends AbstractContainerScreen<PatternMonitor
             final int target = i;
             Button tab = Button.builder(Component.literal(PAGES[i]), b -> page = target)
                     .bounds(leftPos + 190 + i * 62, topPos + 29, 58, 15).build();
+            tab.active = page != i;
             addRenderableWidget(tab);
         }
     }
@@ -54,18 +55,18 @@ public class PatternMonitorScreen extends AbstractContainerScreen<PatternMonitor
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Patterns " + menu.getPatternCount() + " | Queue "
-                        + menu.getQueueSize() + "/8", 8, 18, MachineScreenStyle.PURPLE, false);
-        graphics.drawString(font, "Click a pattern to request x1", 8, 75, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Patterns " + menu.getPatternCount() + " | Queue "
+                        + menu.getQueueSize() + "/8", 145), 8, 18, MachineScreenStyle.PURPLE, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Click a pattern to request x1", 145), 8, 75, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY, MachineScreenStyle.MUTED, false);
 
         if (page == 1) {
             graphics.drawString(font, "REPLICATION QUEUE", 198, 52, MachineScreenStyle.PURPLE, false);
-            graphics.drawString(font, "Queued requests " + menu.getQueueSize() + " / 8", 188, 66,
+            graphics.drawString(font, MachineScreenStyle.fit(font, "Queued requests " + menu.getQueueSize() + " / 8", 145), 188, 66,
                     menu.getQueueSize() > 0 ? MachineScreenStyle.CYAN : MachineScreenStyle.MUTED, false);
         } else {
             graphics.drawString(font, "NETWORK PATTERNS", 198, 52, MachineScreenStyle.PURPLE, false);
-            graphics.drawString(font, "Available " + menu.getPatternCount() + " / 12", 188, 66,
+            graphics.drawString(font, MachineScreenStyle.fit(font, "Available " + menu.getPatternCount() + " / 12", 145), 188, 66,
                     menu.getPatternCount() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
         }
     }

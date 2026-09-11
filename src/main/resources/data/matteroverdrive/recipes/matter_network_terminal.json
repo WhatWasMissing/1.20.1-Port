@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["CRC","DND","CRC"],"key":{"C":{"item":"matteroverdrive:isolinear_circuit_mk2"},"R":{"item":"matteroverdrive:quantum_linker"},"D":{"item":"matteroverdrive:tritanium_plate"},"N":{"item":"matteroverdrive:network_diagnostic_probe"}},"result":{"item":"matteroverdrive:matter_network_terminal","count":1}}

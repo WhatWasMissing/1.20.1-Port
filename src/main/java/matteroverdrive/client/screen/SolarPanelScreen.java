@@ -34,7 +34,7 @@ public class SolarPanelScreen extends AbstractContainerScreen<SolarPanelMenu> {
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 183 + i * 45, topPos + 29, 43, 15).build();
+            }).bounds(leftPos + 178 + (i & 1) * 72, topPos + 27 + (i >> 1) * 17, 68, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -76,16 +76,16 @@ public class SolarPanelScreen extends AbstractContainerScreen<SolarPanelMenu> {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 130),
                 18, 29, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Generation " + menu.getCurrentGeneration() + "/"
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Generation " + menu.getCurrentGeneration() + "/"
                         + SolarPanelBlockEntity.PEAK_GENERATION + " FE/t | sent " + menu.getLastOutput(),
-                20, 76, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Sky %s | light %d | sun %.3f",
+                130), 20, 76, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Sky %s | light %d | sun %.3f",
                         menu.dimensionHasSky() && menu.canSeeSky() ? "yes" : "no",
-                        menu.getEffectiveSkyLight(), menu.getDaylightFactor()),
+                        menu.getEffectiveSkyLight(), menu.getDaylightFactor()), 130),
                 20, 86, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Output " + menu.getMaxOutputPerSide() + " FE/t/side",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Output " + menu.getMaxOutputPerSide() + " FE/t/side", 130),
                 20, 96, MachineScreenStyle.DEBUG, false);
 
         switch (page) {
@@ -100,9 +100,9 @@ public class SolarPanelScreen extends AbstractContainerScreen<SolarPanelMenu> {
         graphics.drawString(font, "SOLAR STATUS", 213, 51, MachineScreenStyle.AMBER, false);
         graphics.drawString(font, producing ? "GENERATING" : "IDLE", 188, 64,
                 producing ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Buffer " + menu.getEnergy() + "/" + menu.getEnergyCapacity(),
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Buffer " + menu.getEnergy() + "/" + menu.getEnergyCapacity(), 145),
                 188, 76, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Sent last tick " + menu.getLastOutput() + " FE", 188, 88,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Sent last tick " + menu.getLastOutput() + " FE", 145), 188, 88,
                 MachineScreenStyle.CYAN, false);
     }
 
@@ -110,16 +110,16 @@ public class SolarPanelScreen extends AbstractContainerScreen<SolarPanelMenu> {
         int peak = Math.max(1, SolarPanelBlockEntity.PEAK_GENERATION);
         int percent = Math.min(100, Math.max(0, menu.getCurrentGeneration() * 100 / peak));
         graphics.drawString(font, "GENERATION", 215, 51, MachineScreenStyle.AMBER, false);
-        graphics.drawString(font, "Current " + menu.getCurrentGeneration() + " FE/t (" + percent + "%)",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Current " + menu.getCurrentGeneration() + " FE/t (" + percent + "%)", 145),
                 188, 64, MachineScreenStyle.GREEN, false);
-        graphics.drawString(font, "Peak " + peak + " FE/t", 188, 76,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Peak " + peak + " FE/t", 145), 188, 76,
                 MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Sky access " + (menu.dimensionHasSky() && menu.canSeeSky() ? "YES" : "NO"),
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Sky access " + (menu.dimensionHasSky() && menu.canSeeSky() ? "YES" : "NO"), 145),
                 188, 88, (menu.dimensionHasSky() && menu.canSeeSky()) ? MachineScreenStyle.CYAN : MachineScreenStyle.DANGER, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Light %d | daylight %.3f",
-                        menu.getEffectiveSkyLight(), menu.getDaylightFactor()),
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Light %d | daylight %.3f",
+                        menu.getEffectiveSkyLight(), menu.getDaylightFactor()), 145),
                 188, 100, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Per-side output cap " + menu.getMaxOutputPerSide() + " FE/t",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Per-side output cap " + menu.getMaxOutputPerSide() + " FE/t", 145),
                 188, 112, MachineScreenStyle.MUTED, false);
     }
 

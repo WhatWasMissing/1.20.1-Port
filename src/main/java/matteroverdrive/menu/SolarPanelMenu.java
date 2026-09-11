@@ -4,6 +4,7 @@ import matteroverdrive.blockentity.SolarPanelBlockEntity;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
+import matteroverdrive.security.ServerDebugAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -154,6 +155,7 @@ public class SolarPanelMenu extends AbstractContainerMenu {
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id != 1) return false;
+        if (!ServerDebugAccess.require(player)) return false;
         boolean enabled = machine.getEnergyStorage().toggleInfiniteEnergy();
         player.displayClientMessage(net.minecraft.network.chat.Component.literal(
                 "[DEBUG] Infinite energy: " + (enabled ? "ON" : "OFF")), true);

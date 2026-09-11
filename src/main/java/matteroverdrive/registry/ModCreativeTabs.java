@@ -19,6 +19,7 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         ModItems.BLOCK_ITEMS.values().forEach(item -> output.accept(item.get()));
                         ModItems.STANDALONE_ITEMS.values().forEach(item -> output.accept(item.get()));
+                        output.accept(ModItems.DRONE_DEPLOYMENT_CORE.get());
                         output.accept(ModExoticItems.VEX_MYTHOCLAST.get());
                         ModDestinyItems.WEAPONS.values().forEach(item -> output.accept(item.get()));
                     })

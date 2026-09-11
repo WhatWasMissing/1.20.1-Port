@@ -88,8 +88,8 @@ public final class DeveloperVisualDebugEvents {
         int width = Math.min(350, Math.max(230, minecraft.getWindow().getGuiScaledWidth() - 12));
         int height = inspection.transform() == null ? 43 : 68;
         graphics.fill(x, y, x + width, y + height, MODEL_PANEL);
-        graphics.drawString(minecraft.font, "DEV MODEL [F9]  " + inspection.itemId(), x + 6, y + 6, MODEL_ACCENT, false);
-        graphics.drawString(minecraft.font, "context: " + inspection.context(), x + 6, y + 18, MODEL_TEXT, false);
+        graphics.drawString(minecraft.font, fit(minecraft, "DEV MODEL [F9]  " + inspection.itemId(), width - 12), x + 6, y + 6, MODEL_ACCENT, false);
+        graphics.drawString(minecraft.font, fit(minecraft, "context: " + inspection.context(), width - 12), x + 6, y + 18, MODEL_TEXT, false);
 
         if (inspection.transform() == null) {
             graphics.drawString(minecraft.font, shorten(inspection.source(), 50), x + 6, y + 30, MODEL_MUTED, false);
@@ -108,5 +108,10 @@ public final class DeveloperVisualDebugEvents {
 
     private static String shorten(String value, int max) {
         return value.length() <= max ? value : value.substring(0, Math.max(0, max - 1)) + "…";
+    }
+
+    private static String fit(Minecraft minecraft, String value, int maxWidth) {
+        if (minecraft.font.width(value) <= maxWidth) return value;
+        return minecraft.font.plainSubstrByWidth(value, Math.max(0, maxWidth - minecraft.font.width("…"))) + "…";
     }
 }

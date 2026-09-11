@@ -1099,5 +1099,13 @@
         "stream": false
       }
     ]
+  },
+  "destiny_vex_mythoclast_fire": {
+    "category": "player",
+    "sounds": [{"name": "matteroverdrive:destiny_chaosdogma", "stream": false}]
+  },
+  "destiny_vex_mythoclast_linear_fire": {
+    "category": "player",
+    "sounds": [{"name": "matteroverdrive:destiny_sleepersimulant_fire", "stream": false}]
   }
 }

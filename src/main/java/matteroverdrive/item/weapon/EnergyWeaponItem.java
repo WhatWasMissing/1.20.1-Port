@@ -1,5 +1,7 @@
 package matteroverdrive.item.weapon;
 
+import matteroverdrive.android.AndroidData;
+import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.item.CreativeBatteryItem;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModSounds;
@@ -189,7 +191,9 @@ public class EnergyWeaponItem extends Item {
         if (!level.isClientSide) {
             float heat = getHeat(stack);
             if (heat > 0.0F) {
-                setHeat(stack, Math.max(0.0F, heat - 1.0F));
+                float cooling = entity instanceof Player player && AndroidData.isAndroid(player)
+                        && AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.THERMAL_LATTICE) ? 2.0F : 1.0F;
+                setHeat(stack, Math.max(0.0F, heat - cooling));
             }
             if (isOverheated(stack) && getHeat(stack) < 2.0F) {
                 stack.getOrCreateTag().putBoolean(OVERHEATED_TAG, false);
@@ -327,6 +331,8 @@ public class EnergyWeaponItem extends Item {
             case ION_SNIPER -> 80.0F;
             case PLASMA_SHOTGUN -> 35.0F + (10 - Math.min(10, pellets)) * 2.0F;
         };
+        if (AndroidData.isAndroid(shooter)
+                && AndroidLoadout.hasArtifact(shooter, AndroidLoadout.Artifact.THERMAL_LATTICE)) added *= 0.65F;
         setHeat(weapon, getHeat(weapon) + added);
         if (getHeat(weapon) >= getMaxHeat(weapon)) {
             weapon.getOrCreateTag().putBoolean(OVERHEATED_TAG, true);

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ICI",
+    "PBP",
+    "ITI"
+  ],
+  "key": {
+    "I": { "item": "matteroverdrive:isolinear_circuit_mk2" },
+    "C": { "item": "matteroverdrive:plasma_core" },
+    "P": { "item": "matteroverdrive:tritanium_plate" },
+    "B": { "item": "matteroverdrive:battery" },
+    "T": { "item": "matteroverdrive:tritanium_ingot" }
+  },
+  "result": {
+    "item": "matteroverdrive:drone_deployment_core"
+  }
+}

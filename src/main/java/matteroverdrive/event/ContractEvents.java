@@ -5,8 +5,10 @@ import matteroverdrive.blockentity.GravitationalAnomalyBlockEntity;
 import matteroverdrive.blockentity.TransporterBlockEntity;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.item.MatterScannerItem;
+import matteroverdrive.registry.ModItems;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
+import matteroverdrive.world.TechnologySiteDiscoverySavedData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,12 +25,14 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Locale;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ContractEvents {
     private static final Map<UUID, PlayerSnapshot> LAST_PLAYER_STATE = new HashMap<>();
     private static final Map<UUID, String> LAST_SCANNER_SIGNATURE = new HashMap<>();
+    private static final Map<UUID, Long> LAST_DISCOVERY_CHUNK = new HashMap<>();
 
     private ContractEvents() {}
 
@@ -82,6 +86,7 @@ public final class ContractEvents {
 
         if (hasIncompleteType(player, "anomaly") && insideAnomalyHorizon(player)) recordAnomalyHorizon(player);
         if (hasIncompleteType(player, "scan")) pollScanner(player);
+        if (player.tickCount % 20 == 0) discoverTechnologySite(player);
         if (player.tickCount % 20 == 0) ModNetwork.syncQuestTracker(player);
     }
 
@@ -95,6 +100,7 @@ public final class ContractEvents {
         UUID id = event.getEntity().getUUID();
         LAST_PLAYER_STATE.remove(id);
         LAST_SCANNER_SIGNATURE.remove(id);
+        LAST_DISCOVERY_CHUNK.remove(id);
     }
 
     public static void recordScan(ServerPlayer player, ResourceLocation block) {
@@ -148,6 +154,90 @@ public final class ContractEvents {
         return false;
     }
 
+    /** Converts generated compact sites from scenery into persistent, readable field objectives. */
+    private static void discoverTechnologySite(ServerPlayer player) {
+        long chunkKey = ((long) player.chunkPosition().x << 32) ^ (player.chunkPosition().z & 0xffffffffL);
+        Long previousChunk = LAST_DISCOVERY_CHUNK.put(player.getUUID(), chunkKey);
+        if (previousChunk != null && chunkKey == previousChunk) return;
+        java.util.Map<String, BlockPos> anchors = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Integer> matches = new java.util.HashMap<>();
+        java.util.List<BlockPos> analyzers = new java.util.ArrayList<>(), controllers = new java.util.ArrayList<>(), containments = new java.util.ArrayList<>();
+        java.util.List<BlockPos> chargers = new java.util.ArrayList<>(), switches = new java.util.ArrayList<>(), excavators = new java.util.ArrayList<>(), matrices = new java.util.ArrayList<>(), relays = new java.util.ArrayList<>(), capacitors = new java.util.ArrayList<>();
+        for (BlockPos pos : BlockPos.betweenClosed(player.blockPosition().offset(-12, -6, -12), player.blockPosition().offset(12, 6, 12))) {
+            ResourceLocation id = ForgeRegistries.BLOCKS.getKey(player.level().getBlockState(pos).getBlock());
+            if (id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) continue;
+            String path = id.getPath();
+            if (path.equals("matter_analyzer")) analyzers.add(pos.immutable());
+            if (path.equals("facility_network_controller")) controllers.add(pos.immutable());
+            if (path.equals("anomaly_containment_unit")) containments.add(pos.immutable());
+            if (path.equals("charging_station")) chargers.add(pos.immutable());
+            if (path.equals("network_switch")) switches.add(pos.immutable());
+            if (path.equals("matter_excavator")) excavators.add(pos.immutable());
+            if (path.equals("matter_storage_matrix")) matrices.add(pos.immutable());
+            if (path.equals("android_induction_relay")) relays.add(pos.immutable());
+            if (path.equals("grid_capacitor")) capacitors.add(pos.immutable());
+        }
+        for (BlockPos analyzer : analyzers) for (BlockPos controller : controllers)
+            if (analyzer.distSqr(controller) <= 36.0D) {
+                matches.merge("matter_observatory", 1, Integer::sum);
+                anchors.putIfAbsent("matter_observatory", analyzer);
+                break;
+            }
+        for (BlockPos containment : containments) for (BlockPos controller : controllers)
+            if (containment.distSqr(controller) <= 36.0D) {
+                matches.merge("anomaly_research_site", 1, Integer::sum);
+                anchors.putIfAbsent("anomaly_research_site", containment);
+                break;
+            }
+        pairDiscovery(matches, anchors, "field_logistics_depot", chargers, switches);
+        pairDiscovery(matches, anchors, "abandoned_matter_lab", excavators, matrices);
+        pairDiscovery(matches, anchors, "android_relay_outpost", relays, capacitors);
+        String site = matches.entrySet().stream().filter(entry -> entry.getValue() >= 2)
+                .map(java.util.Map.Entry::getKey).findFirst().orElse(null);
+        BlockPos anchor = site == null ? null : anchors.get(site);
+        if (site == null || anchor == null || !(player.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        TechnologySiteDiscoverySavedData discoveries = TechnologySiteDiscoverySavedData.get(level);
+        if (!discoveries.discover(level, player.getUUID(), site, anchor.asLong())) return;
+        int chainStage = discoveries.advanceChain(player.getUUID(), site);
+        player.giveExperiencePoints(25);
+        ItemStack pad = new ItemStack(ModItems.get("data_pad").get());
+        if (!player.getInventory().add(pad)) player.drop(pad, false);
+        ItemStack dossier = new ItemStack(ModItems.get("facility_research").get());
+        dossier.getOrCreateTag().putString("FacilityArchive", researchArchive(site));
+        if (!player.getInventory().add(dossier)) player.drop(dossier, false);
+        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("FIELD DISCOVERY: " + site.replace('_', ' ').toUpperCase(Locale.ROOT) + " logged. Data Pad updated; research dossier recovered.").withStyle(net.minecraft.ChatFormatting.AQUA));
+        if (chainStage > 0) {
+            if (chainStage == 3) {
+                ItemStack reward = new ItemStack(ModItems.get("upgrade_parallel_processing").get());
+                if (!player.getInventory().add(reward)) player.drop(reward, false);
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("EXPLORATION CHAIN COMPLETE: anomaly investigation cleared. Parallel Processing Upgrade recovered.").withStyle(net.minecraft.ChatFormatting.GOLD));
+            } else {
+                String next = TechnologySiteDiscoverySavedData.nextChainSite(player.getUUID(), chainStage);
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal("INVESTIGATION " + chainStage + "/3: follow the evidence to " + next.replace('_', ' ') + ".").withStyle(net.minecraft.ChatFormatting.YELLOW));
+            }
+        }
+    }
+
+    private static void pairDiscovery(java.util.Map<String, Integer> matches, java.util.Map<String, BlockPos> anchors,
+                                      String site, java.util.List<BlockPos> first, java.util.List<BlockPos> second) {
+        for (BlockPos a : first) for (BlockPos b : second) if (a.distSqr(b) <= 36.0D) {
+            matches.merge(site, 1, Integer::sum);
+            anchors.putIfAbsent(site, a);
+            return;
+        }
+    }
+
+    private static String researchArchive(String site) {
+        return switch (site) {
+            case "abandoned_matter_lab" -> "ABANDONED_MATTER_LAB";
+            case "android_relay_outpost" -> "ANDROID_RELAY_OUTPOST";
+            case "anomaly_research_site" -> "ANOMALY_RESEARCH_SITE";
+            case "matter_observatory" -> "MATTER_OBSERVATORY";
+            case "field_logistics_depot" -> "FIELD_LOGISTICS_DEPOT";
+            default -> "BLACK_SITE";
+        };
+    }
+
     private static boolean hasIncompleteType(ServerPlayer player, String type) {
         for (ItemStack stack : player.getInventory().items) {
             if (stack.getItem() instanceof ContractItem && !ContractItem.complete(stack) && type.equals(ContractItem.type(stack))) return true;
@@ -175,7 +265,7 @@ public final class ContractEvents {
 
     private static void notifyCompletion(ServerPlayer player, String title) {
         player.displayClientMessage(net.minecraft.network.chat.Component.literal("Contract complete: " + title), true);
-        SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(MatterOverdrive.MOD_ID, "gui.quest_complete"));
+        SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "gui.quest_complete"));
         if (sound != null) player.playNotifySound(sound, SoundSource.PLAYERS, 0.9F, 1.0F);
     }
 

@@ -17,12 +17,20 @@ FILES = {
     "chassis": ROOT / "src/main/java/matteroverdrive/android/AndroidChassisData.java",
     "events": ROOT / "src/main/java/matteroverdrive/event/AndroidEvents.java",
     "loadout_events": ROOT / "src/main/java/matteroverdrive/event/AndroidLoadoutEvents.java",
+    "loadout_definition": ROOT / "src/main/java/matteroverdrive/android/AndroidLoadout.java",
     "client_state": ROOT / "src/main/java/matteroverdrive/client/AndroidClientState.java",
     "hud": ROOT / "src/main/java/matteroverdrive/client/AndroidHudOverlay.java",
     "tree": ROOT / "src/main/java/matteroverdrive/client/screen/AndroidSkillTreeScreen.java",
     "packet": ROOT / "src/main/java/matteroverdrive/network/AndroidStatePacket.java",
     "network": ROOT / "src/main/java/matteroverdrive/network/ModNetwork.java",
     "station": ROOT / "src/main/java/matteroverdrive/blockentity/AndroidStationBlockEntity.java",
+    "artifact": ROOT / "src/main/java/matteroverdrive/item/RecoveredArtifactItem.java",
+    "energy_weapon": ROOT / "src/main/java/matteroverdrive/item/weapon/EnergyWeaponItem.java",
+    "reactor_remote": ROOT / "src/main/java/matteroverdrive/item/ReactorRemoteItem.java",
+    "reactor_controller": ROOT / "src/main/java/matteroverdrive/blockentity/FusionReactorControllerBlockEntity.java",
+    "matter_analyzer": ROOT / "src/main/java/matteroverdrive/blockentity/MatterAnalyzerBlockEntity.java",
+    "facility_research": ROOT / "src/main/java/matteroverdrive/item/FacilityResearchItem.java",
+    "data_pad": ROOT / "src/main/java/matteroverdrive/item/DataPadItem.java",
 }
 
 errors: list[str] = []
@@ -52,12 +60,20 @@ def main() -> int:
     chassis = read("chassis")
     events = read("events")
     loadout = read("loadout_events")
+    loadout_definition = read("loadout_definition")
     client = read("client_state")
     hud = read("hud")
     tree = read("tree")
     packet = read("packet")
     network = read("network")
     station = read("station")
+    artifact = read("artifact")
+    energy_weapon = read("energy_weapon")
+    reactor_remote = read("reactor_remote")
+    reactor_controller = read("reactor_controller")
+    matter_analyzer = read("matter_analyzer")
+    facility_research = read("facility_research")
+    data_pad = read("data_pad")
 
     require(data, "getEnergyCapacity(Player player)", "authoritative effective capacity API")
     require(chassis, "CAPACITOR_CORE", "Capacitor Core")
@@ -96,6 +112,38 @@ def main() -> int:
 
     # Clone persistence is a high-risk regression area for this subsystem.
     require(events, "AndroidData.copyTo(event.getOriginal(), event.getEntity())", "Android core clone persistence")
+
+    # Structure artifacts must remain a real server-authoritative reward rather
+    # than an inert item with a client-only loadout mutation.
+    require(artifact, "RecoveredProtocol", "artifact protocol persistence tag")
+    require(artifact, "AndroidLoadout.selectArtifact(server, decoded)", "artifact passive integration")
+    require(artifact, "ModNetwork.syncAndroidState(server)", "artifact state synchronization")
+    require(artifact, "!AndroidData.isAndroid(server)", "artifact Android eligibility gate")
+    require(energy_weapon, "Artifact.THERMAL_LATTICE", "Thermal Lattice weapon integration")
+    require(energy_weapon, "added *= 0.65F", "Thermal Lattice shot heat reduction")
+    require(energy_weapon, "heat - cooling", "Thermal Lattice passive cooling")
+    require(loadout_definition, "REACTOR_SYMBIOTE", "Reactor Symbiote protocol definition")
+    require(loadout, "ReactorRemoteItem.findLinkedRunningController(player)", "Reactor Symbiote server-side remote lookup")
+    require(loadout, "controller.drawAndroidUplinkEnergy(requested)", "Reactor Symbiote reactor-funded energy draw")
+    require(reactor_remote, "findLinkedRunningController(ServerPlayer player)", "bounded Reactor Remote Android lookup")
+    require(reactor_remote, "if (!level.hasChunkAt(target)) return null;", "Reactor Remote no forced chunk load")
+    require(reactor_controller, "drawAndroidUplinkEnergy(int limit)", "reactor-authoritative Android FE withdrawal")
+    require(reactor_controller, "generatedLastTick <= 0", "Reactor Symbiote running-reactor gate")
+    # Field dossiers must take the real analysis path, with a server-owned
+    # operator identity that survives machine save/reload rather than a direct-use reward.
+    require(facility_research, "Matter Analyzer", "field dossier analyzer instruction")
+    require(facility_research, "analyzer.queueResearch(server, stack)", "dossier analyzer queue")
+    require(facility_research, "archiveAtAnalyzer(ServerPlayer server", "server-side dossier reward")
+    require(matter_analyzer, "RESEARCH_ANALYZE_SPEED = 400", "research analysis duration")
+    require(matter_analyzer, "RESEARCH_ENERGY_PER_TICK = 256", "research analysis energy cost")
+    require(matter_analyzer, "researchOperator", "per-player research operator persistence")
+    require(matter_analyzer, "FacilityResearchItem.archiveAtAnalyzer(operator, queuedResearch)", "analyzer research completion")
+    encounter_events = (ROOT / "src/main/java/matteroverdrive/event/RogueAndroidDropEvents.java").read_text(encoding="utf-8")
+    require(encounter_events, "LivingDeathEvent", "encounter research death hook")
+    require(encounter_events, "MatterOverdriveEncounterResearch", "per-player encounter persistence")
+    require(encounter_events, "ResearchProgression.unlockEvidence", "encounter progression reward")
+    require(data_pad, "MatterOverdriveEncounterResearch", "Data Pad encounter evidence")
+    require(data_pad, "Encounter evidence:", "Data Pad encounter evidence summary")
 
     if errors:
         print(f"ANDROID CONSISTENCY FAILED: {len(errors)} issue(s)")

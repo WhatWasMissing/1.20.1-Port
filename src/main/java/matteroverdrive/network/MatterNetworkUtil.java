@@ -48,6 +48,11 @@ public final class MatterNetworkUtil {
         if(maxAmount<=0||!destination.canReceive())return 0; List<MatterEndpoint> sources=findMatterSources(level,origin); if(sources.isEmpty())return 0;
         int start=(int)Math.floorMod(routeIndex,(long)sources.size()); for(int offset=0;offset<sources.size();offset++){int moved=transferFromEndpoint(level,sources.get((start+offset)%sources.size()),destination,maxAmount);if(moved>0)return moved;} return 0;
     }
+    /** Pushes matter from a player-held/container storage into the first eligible network endpoint. */
+    public static int pushMatter(Level level, BlockPos origin, IMatterStorage source, int maxAmount, long routeIndex){
+        if(maxAmount<=0||source==null||!source.canExtract())return 0; List<MatterEndpoint>endpoints=findMatterEndpoints(level,origin);if(endpoints.isEmpty())return 0;
+        int start=(int)Math.floorMod(routeIndex,(long)endpoints.size()); for(int offset=0;offset<endpoints.size();offset++){int moved=transferToEndpoint(level,endpoints.get((start+offset)%endpoints.size()),source,maxAmount);if(moved>0)return moved;} return 0;
+    }
     public static int transferMatter(Level level,BlockPos origin,int maxAmount,long routeIndex){
         if(maxAmount<=0)return 0; List<MatterEndpoint>endpoints=findMatterEndpoints(level,origin);if(endpoints.isEmpty())return 0;
         int start=(int)Math.floorMod(routeIndex,(long)endpoints.size());for(int offset=0;offset<endpoints.size();offset++){int accepted=transferToEndpoint(level,endpoints.get((start+offset)%endpoints.size()),maxAmount);if(accepted>0)return accepted;}return 0;
@@ -95,6 +100,11 @@ public final class MatterNetworkUtil {
         if(!MachineSideConfigurationData.allowsInput(level,endpoint.pos(),endpoint.side(),MachineSideConfigurationData.Resource.MATTER))return 0;
         BlockEntity be=level.getBlockEntity(endpoint.pos());if(be==null)return 0;
         return be.getCapability(ModCapabilities.MATTER,endpoint.side()).map(storage->{if(!storage.canReceive())return 0;int accepted=storage.receiveMatter(maxAmount,true);return accepted<=0?0:storage.receiveMatter(Math.min(maxAmount,accepted),false);}).orElse(0);
+    }
+    private static int transferToEndpoint(Level level,MatterEndpoint endpoint,IMatterStorage source,int maxAmount){
+        if(!MachineSideConfigurationData.allowsInput(level,endpoint.pos(),endpoint.side(),MachineSideConfigurationData.Resource.MATTER))return 0;
+        BlockEntity be=level.getBlockEntity(endpoint.pos());if(be==null)return 0;
+        return be.getCapability(ModCapabilities.MATTER,endpoint.side()).map(destination->{if(!destination.canReceive())return 0;int available=source.extractMatter(maxAmount,true);if(available<=0)return 0;int accepted=destination.receiveMatter(available,true);if(accepted<=0)return 0;int extracted=source.extractMatter(accepted,false);if(extracted<=0)return 0;int received=destination.receiveMatter(extracted,false);if(received<extracted)source.receiveMatter(extracted-received,false);return received;}).orElse(0);
     }
 
     private static boolean isNetworkTransport(BlockState state,BlockEntity be){if(state.is(ModBlocks.get("network_pipe").get())||state.is(ModBlocks.get("network_router").get()))return true;return state.is(ModBlocks.get("network_switch").get())&&be instanceof NetworkSwitchBlockEntity networkSwitch&&networkSwitch.isEnabled();}

@@ -33,7 +33,7 @@ public class MatterRecyclerScreen extends AbstractContainerScreen<MatterRecycler
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 183 + i * 45, topPos + 29, 43, 15).build();
+            }).bounds(leftPos + 178 + (i & 1) * 72, topPos + 27 + (i >> 1) * 17, 68, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -80,9 +80,9 @@ public class MatterRecyclerScreen extends AbstractContainerScreen<MatterRecycler
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 125),
                 18, 29, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.getMatter() > 0 ? menu.getMatter() + " kM" : "Waiting for recyclable input",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getMatter() > 0 ? menu.getMatter() + " kM" : "Waiting for recyclable input", 100),
                 48, 56, menu.getMatter() > 0 ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
 
         switch (page) {
@@ -97,9 +97,9 @@ public class MatterRecyclerScreen extends AbstractContainerScreen<MatterRecycler
         graphics.drawString(font, "RECYCLER STATUS", 204, 51, MachineScreenStyle.GREEN, false);
         graphics.drawString(font, active ? "RECYCLING" : "IDLE", 188, 64,
                 active ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Matter yield " + menu.getMatter() + " kM", 188, 76,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Matter yield " + menu.getMatter() + " kM", 128), 188, 76,
                 MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Demand " + menu.getEnergyPerTick() + " FE/t", 188, 87,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Demand " + menu.getEnergyPerTick() + " FE/t", 128), 188, 87,
                 MachineScreenStyle.CYAN, false);
     }
 
@@ -108,12 +108,12 @@ public class MatterRecyclerScreen extends AbstractContainerScreen<MatterRecycler
         int progress = Math.min(max, Math.max(0, menu.getProgress()));
         int percent = progress * 100 / max;
         graphics.drawString(font, "RECYCLING TASK", 202, 51, MachineScreenStyle.GREEN, false);
-        graphics.drawString(font, "Progress " + percent + "%", 188, 64, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Cycle " + progress + " / " + max + " t", 188, 75,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Progress " + percent + "%", 128), 188, 64, MachineScreenStyle.TEXT, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Cycle " + progress + " / " + max + " t", 128), 188, 75,
                 MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Duration %.2f s", max / 20.0D),
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Duration %.2f s", max / 20.0D), 128),
                 188, 86, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Yield " + menu.getMatter() + " kM | " + menu.getEnergyPerTick() + " FE/t",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Yield " + menu.getMatter() + " kM | " + menu.getEnergyPerTick() + " FE/t", 128),
                 188, 97, MachineScreenStyle.CYAN, false);
     }
 

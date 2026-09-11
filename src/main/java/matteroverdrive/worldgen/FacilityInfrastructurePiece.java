@@ -474,7 +474,7 @@ public final class FacilityInfrastructurePiece extends StructurePiece {
     }
 
     private static BlockState mod(String id, Block fallback) {
-        Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation("matteroverdrive", id));
+        Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath("matteroverdrive", id));
         return block == null || block == Blocks.AIR ? fallback.defaultBlockState() : block.defaultBlockState();
     }
 

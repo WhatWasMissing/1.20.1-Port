@@ -14,10 +14,10 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "11";
+    private static final String PROTOCOL = "13";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
-            .named(new ResourceLocation(MatterOverdrive.MOD_ID, "network"))
+            .named(ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "network"))
             .networkProtocolVersion(() -> PROTOCOL).clientAcceptedVersions(PROTOCOL::equals)
             .serverAcceptedVersions(PROTOCOL::equals).simpleChannel();
 

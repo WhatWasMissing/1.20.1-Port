@@ -145,6 +145,15 @@ Run `python scripts/validate_structure_expansion.py`, then build locally. The de
 - Share a dossier with a second player: their first discovery should pay independently. Test a full inventory: reward drops at the player.
 - Scientist contracts and research stage must not jump ahead. Dossiers stay readable and reusable.
 
+### Optional investigation chain
+
+- In a fresh test world, discover an Android Relay Outpost, then a Matter Observatory, then an Anomaly Research Site with the same player.
+- Confirm the chat progression reports `INVESTIGATION 1/3`, `2/3`, and `COMPLETE` in that order, and that each stage survives save/reload.
+- Open the Data Pad after each discovery. It must show the current investigation step and name the next lead; after the third discovery it must show that the anomaly evidence is archived.
+- Discover the three sites out of order: ordinary discovery XP, Data Pad and dossier rewards must still work, but the chain stage and completion reward must not advance.
+- Complete the ordered chain once and verify exactly one `upgrade_parallel_processing` is awarded. Repeat discovery at the same coordinates or with duplicate dossiers; no second chain reward is allowed.
+- Test two players independently: each player has their own chain progress and may earn the completion reward once.
+
 ### Finite encounters
 
 - Use Survival, outside Peaceful; Creative is deliberately not an activation trigger.

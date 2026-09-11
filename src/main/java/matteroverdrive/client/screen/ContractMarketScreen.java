@@ -46,20 +46,21 @@ public class ContractMarketScreen extends AbstractContainerScreen<ContractMarket
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "CONTRACT BOARD", 18, 33, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "CONTRACT BOARD", 110), 18, 33, MachineScreenStyle.CYAN, false);
 
         int occupied = menu.getOccupiedSlots();
         int free = Math.max(0, ContractMarketBlockEntity.OFFER_SLOTS - occupied);
-        graphics.drawString(font, "MARKET STATUS", 146, 33, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Offers  " + occupied + " / " + ContractMarketBlockEntity.OFFER_SLOTS,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "MARKET STATUS", 94), 146, 33, MachineScreenStyle.CYAN, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Offers  " + occupied + " / " + ContractMarketBlockEntity.OFFER_SLOTS, 94),
                 150, 48, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Free    " + free,
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Free    " + free, 94),
                 150, 59, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Next    " + formatTicks(menu.getRefreshTicks()),
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Next    " + formatTicks(menu.getRefreshTicks()), 94),
                 150, 70, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Take-only inventory", 150, 95, MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Take-only inventory", 94), 150, 95, MachineScreenStyle.MUTED, false);
 
-        graphics.drawString(font, "Complete contracts in your inventory, then use the Market to redeem.",
+        graphics.drawString(font, MachineScreenStyle.fit(font,
+                "Complete contracts in your inventory, then use the Market to redeem.", 116),
                 18, 109, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);

@@ -156,7 +156,7 @@ tasks.register('verifyM1Resources') {
         def json = new groovy.json.JsonSlurper()
         def inventory = json.parse(inventoryFile)
 
-        def expected = [blocks: 75, blockItems: 72, standaloneItems: 98, sounds: 57]
+        def expected = [blocks: 74, blockItems: 71, standaloneItems: 98, sounds: 57]
         def actual = [
                 blocks: inventory.blockIds.size(),
                 blockItems: inventory.blockItemIds.size(),

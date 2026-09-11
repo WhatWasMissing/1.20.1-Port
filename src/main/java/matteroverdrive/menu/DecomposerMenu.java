@@ -6,6 +6,7 @@ import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.item.MachineUpgradeItem;
 import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModMenus;
+import matteroverdrive.security.ServerDebugAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -32,5 +33,5 @@ public class DecomposerMenu extends AbstractContainerMenu {
     @Override public boolean stillValid(Player player){return stillValid(ContainerLevelAccess.create(decomposer.getLevel(),decomposer.getBlockPos()),player,ModBlocks.get("decomposer").get());}
     public int getProgress(){return data.get(0);}public int getMaxProgress(){return data.get(1);}public int getEnergy(){return combineWords(data.get(2),data.get(3));}public int getEnergyCapacity(){return combineWords(data.get(4),data.get(5));}public int getMatter(){return data.get(6)&0xFFFF;}public int getMatterCapacity(){return data.get(7)&0xFFFF;}public int getInputMatterValue(){return data.get(8)&0xFFFF;}public int getEnergyPerTick(){return data.get(9)&0xFFFF;}public double getFailureChancePercent(){return combineWords(data.get(10),data.get(11))/10000.0D;}public int getRedstoneMode(){return data.get(12);}public String getRedstoneModeLabel(){return MachineRedstoneMode.label(getRedstoneMode());}
     private static int combineWords(int low,int high){return(low&0xFFFF)|((high&0xFFFF)<<16);}
-    @Override public boolean clickMenuButton(Player player,int id){if(id==1){boolean enabled=decomposer.getEnergyStorage().toggleInfiniteEnergy();player.displayClientMessage(net.minecraft.network.chat.Component.literal("[DEBUG] Infinite energy: "+(enabled?"ON":"OFF")),true);return true;}if(id==2){int mode=decomposer.cycleRedstoneMode();player.displayClientMessage(net.minecraft.network.chat.Component.literal("Redstone mode: "+MachineRedstoneMode.label(mode)),true);return true;}return false;}
+    @Override public boolean clickMenuButton(Player player,int id){if(id==1){if(!ServerDebugAccess.require(player))return false;boolean enabled=decomposer.getEnergyStorage().toggleInfiniteEnergy();player.displayClientMessage(net.minecraft.network.chat.Component.literal("[DEBUG] Infinite energy: "+(enabled?"ON":"OFF")),true);return true;}if(id==2){int mode=decomposer.cycleRedstoneMode();player.displayClientMessage(net.minecraft.network.chat.Component.literal("Redstone mode: "+MachineRedstoneMode.label(mode)),true);return true;}return false;}
 }

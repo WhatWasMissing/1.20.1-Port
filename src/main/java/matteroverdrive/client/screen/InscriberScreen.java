@@ -33,7 +33,7 @@ public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
             Button tab = Button.builder(Component.literal(PAGES[i]), button -> {
                 page = target;
                 rebuildButtons();
-            }).bounds(leftPos + 180 + i * 46, topPos + 29, 44, 15).build();
+            }).bounds(leftPos + 178 + (i & 1) * 72, topPos + 27 + (i >> 1) * 17, 68, 15).build();
             tab.active = page != i;
             addRenderableWidget(tab);
         }
@@ -84,15 +84,15 @@ public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getEnergy() + " / " + menu.getEnergyCapacity() + " FE", 130),
                 18, 29, MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, recipeName(menu.getRecipeTier()) + " | "
+        graphics.drawString(font, MachineScreenStyle.fit(font, recipeName(menu.getRecipeTier()) + " | "
                         + (menu.isRunning() ? "running" : "idle"),
-                20, 102, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, String.format(Locale.ROOT, "Cycle %d t / %.2f s | %d FE/t",
+                135), 20, 102, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, String.format(Locale.ROOT, "Cycle %d t / %.2f s | %d FE/t",
                         menu.getCycleTime(), menu.getCycleTime() / 20.0D, menu.getEnergyPerTick()),
-                20, 112, MachineScreenStyle.DEBUG, false);
-        graphics.drawString(font, "Total " + menu.getTotalEnergy() + " FE",
+                135), 20, 112, MachineScreenStyle.DEBUG, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Total " + menu.getTotalEnergy() + " FE", 135),
                 20, 122, MachineScreenStyle.DEBUG, false);
 
         switch (page) {
@@ -106,11 +106,11 @@ public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
         graphics.drawString(font, "INSCRIBER STATUS", 204, 52, MachineScreenStyle.GREEN, false);
         graphics.drawString(font, menu.isRunning() ? "PROCESSING" : "IDLE", 190, 72,
                 menu.isRunning() ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Recipe: " + recipeName(menu.getRecipeTier()),
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Recipe: " + recipeName(menu.getRecipeTier()), 145),
                 190, 88, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Demand: " + menu.getEnergyPerTick() + " FE/t",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Demand: " + menu.getEnergyPerTick() + " FE/t", 145),
                 190, 104, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Cycle cost: " + menu.getTotalEnergy() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Cycle cost: " + menu.getTotalEnergy() + " FE", 145),
                 190, 120, MachineScreenStyle.MUTED, false);
         graphics.drawString(font, "Tasks shows live operation.",
                 190, 136, MachineScreenStyle.MUTED, false);
@@ -120,16 +120,16 @@ public class InscriberScreen extends AbstractContainerScreen<InscriberMenu> {
         int progress = menu.getCycleTime() <= 0 ? 0
                 : Math.min(100, menu.getProgress() * 100 / menu.getCycleTime());
         graphics.drawString(font, "INSCRIPTION TASK", 204, 52, MachineScreenStyle.GREEN, false);
-        graphics.drawString(font, menu.getRecipeTier() > 0
+        graphics.drawString(font, MachineScreenStyle.fit(font, menu.getRecipeTier() > 0
                         ? recipeName(menu.getRecipeTier()) : "No valid recipe",
-                190, 72, menu.getRecipeTier() > 0 ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Progress: " + progress + "%", 190, 88,
+                145), 190, 72, menu.getRecipeTier() > 0 ? MachineScreenStyle.TEXT : MachineScreenStyle.MUTED, false);
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Progress: " + progress + "%", 145), 190, 88,
                 menu.isRunning() ? MachineScreenStyle.GREEN : MachineScreenStyle.MUTED, false);
-        graphics.drawString(font, "Elapsed: " + menu.getProgress() + " / " + menu.getCycleTime() + " t",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Elapsed: " + menu.getProgress() + " / " + menu.getCycleTime() + " t", 145),
                 190, 104, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Power: " + menu.getEnergyPerTick() + " FE/t",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Power: " + menu.getEnergyPerTick() + " FE/t", 145),
                 190, 120, MachineScreenStyle.CYAN, false);
-        graphics.drawString(font, "Total: " + menu.getTotalEnergy() + " FE",
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Total: " + menu.getTotalEnergy() + " FE", 145),
                 190, 136, MachineScreenStyle.MUTED, false);
     }
 

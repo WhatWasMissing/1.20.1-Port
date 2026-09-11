@@ -84,7 +84,7 @@ public final class ModDestinySounds {
 
     private static void register(String id) {
         SOUNDS.put(id, SOUND_EVENTS.register(id,
-                () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(MatterOverdrive.MOD_ID, id))));
+                () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, id))));
     }
 
     public static SoundEvent get(String id) {

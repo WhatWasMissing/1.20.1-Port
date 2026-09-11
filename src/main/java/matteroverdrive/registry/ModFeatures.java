@@ -25,6 +25,8 @@ public final class ModFeatures {
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ABANDONED_MATTER_LAB = FEATURES.register("abandoned_matter_lab", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.MATTER_LAB));
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ANDROID_RELAY_OUTPOST = FEATURES.register("android_relay_outpost", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.ANDROID_RELAY));
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ANOMALY_RESEARCH_SITE = FEATURES.register("anomaly_research_site", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.ANOMALY_RESEARCH));
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> MATTER_OBSERVATORY = FEATURES.register("matter_observatory", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.MATTER_OBSERVATORY));
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> FIELD_LOGISTICS_DEPOT = FEATURES.register("field_logistics_depot", () -> new TechnologySiteFeature(NoneFeatureConfiguration.CODEC, TechnologySiteFeature.Kind.FIELD_LOGISTICS_DEPOT));
 
     private ModFeatures() {}
 }

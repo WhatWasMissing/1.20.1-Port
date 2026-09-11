@@ -42,10 +42,10 @@ public class TritaniumCrateScreen extends AbstractContainerScreen<TritaniumCrate
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, 8, 9, MachineScreenStyle.TEXT, false);
-        graphics.drawString(font, "Used " + menu.getUsedSlots() + " / "
+        graphics.drawString(font, MachineScreenStyle.fit(font, "Used " + menu.getUsedSlots() + " / "
                         + TritaniumCrateBlockEntity.SLOT_COUNT
                         + " | Items " + menu.getTotalItemCount(),
-                20, 132, MachineScreenStyle.DEBUG, false);
+                135), 20, 132, MachineScreenStyle.DEBUG, false);
         graphics.drawString(font, playerInventoryTitle, 8, inventoryLabelY,
                 MachineScreenStyle.MUTED, false);
     }

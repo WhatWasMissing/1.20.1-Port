@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class LegacyEntityClientEvents {
     public static final ModelLayerLocation DRONE_LAYER = new ModelLayerLocation(
-            new ResourceLocation(MatterOverdrive.MOD_ID, "drone"), "main");
+            ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "drone"), "main");
 
     private LegacyEntityClientEvents() {}
 

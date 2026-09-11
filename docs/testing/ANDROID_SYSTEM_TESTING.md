@@ -36,6 +36,8 @@ Branch: `testing/main`
 - [ ] Arms: direct melee attacks gain 3 damage for exactly 80 Android FE. Confirm arrows, other projectiles and Sonic Shockwave do not receive the melee bonus or its extra FE cost.
 - [ ] Legs: increased movement speed while Android FE is available.
 - [ ] Leave less FE than a passive or active action requires. Confirm the failed action does not consume the remaining partial FE.
+- [ ] Link a Reactor Remote to a valid Fusion Reactor Controller, keep the controller chunk loaded and running, carry that Remote with an Android using a Recovered Reactor Symbiote protocol, then confirm the Android reserve rises by up to 1,200 FE per second while the reactor buffer falls. Scram the reactor or unload its chunk and confirm the uplink stops without forcing the chunk back in.
+- [ ] Recover a facility dossier, use it directly and confirm it instructs you to use a Matter Analyzer rather than awarding research. Use it on a powered Matter Analyzer, confirm the Research Recovery task consumes 256 FE/t for 400 ticks, then verify only the recorded operator receives the XP, equipment and one-time clearance. Restart/relog during analysis and confirm the owner and progress persist; confirm an offline owner pauses the task.
 - [ ] Drain Android FE to zero and confirm abilities stop rather than becoming free.
 
 ## Active Android abilities

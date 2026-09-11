@@ -25,23 +25,27 @@ public final class AndroidHudOverlay {
         if (!AndroidClientState.isActive() || minecraft.options.hideGui) return;
 
         GuiGraphics graphics = event.getGuiGraphics();
+        int guiWidth = event.getWindow().getGuiScaledWidth();
+        int guiHeight = event.getWindow().getGuiScaledHeight();
+        int panelWidth = Math.min(PANEL_WIDTH, Math.max(120, guiWidth - 16));
+        int panelHeight = PANEL_HEIGHT;
         int x = 8;
-        int y = event.getWindow().getGuiScaledHeight() - PANEL_HEIGHT - 18;
+        int y = Math.max(8, guiHeight - panelHeight - 18);
         int energy = AndroidClientState.energy();
         int capacity = Math.max(1, AndroidClientState.energyCapacity());
         int lowEnergyThreshold = Math.max(1, capacity * 15 / 100);
 
-        graphics.fill(x, y, x + PANEL_WIDTH, y + PANEL_HEIGHT, 0xC0101820);
-        graphics.fill(x, y, x + PANEL_WIDTH, y + 2, 0xFF53E6FF);
-        graphics.fill(x + 1, y + 2, x + 3, y + PANEL_HEIGHT - 1, 0x8047BBD0);
+        graphics.fill(x, y, x + panelWidth, y + panelHeight, 0xC0101820);
+        graphics.fill(x, y, x + panelWidth, y + 2, 0xFF53E6FF);
+        graphics.fill(x + 1, y + 2, x + 3, y + panelHeight - 1, 0x8047BBD0);
 
         AndroidLoadout.Specialization spec = AndroidClientState.specialization();
-        graphics.drawString(minecraft.font, "ANDROID CORE // " + spec.displayName.toUpperCase(),
+        graphics.drawString(minecraft.font, fit(minecraft, "ANDROID CORE // " + spec.displayName.toUpperCase(), panelWidth - 14),
                 x + 7, y + 6, 0xFFE8F8FF, false);
 
         int barX = x + 7;
         int barY = y + 18;
-        int barWidth = PANEL_WIDTH - 14;
+        int barWidth = panelWidth - 14;
         graphics.fill(barX, barY, barX + barWidth, barY + 6, 0xFF26333D);
         int filled = Math.max(0, Math.min(barWidth, Math.round(barWidth * energy / (float) capacity)));
         graphics.fill(barX, barY, barX + filled, barY + 6,
@@ -59,30 +63,30 @@ public final class AndroidHudOverlay {
                 ? "LEVEL 10 // MAX XP"
                 : String.format("LEVEL %d // XP %d/%d", level, intoLevel, levelSpan);
         if (unspent > 0) progression += " // " + unspent + " POINT" + (unspent == 1 ? "" : "S");
-        graphics.drawString(minecraft.font, progression, barX, y + 36, 0xFFFFD27A, false);
+        graphics.drawString(minecraft.font, fit(minecraft, progression, panelWidth - 14), barX, y + 36, 0xFFFFD27A, false);
 
         String passive = AndroidClientState.artifact().displayName;
-        graphics.drawString(minecraft.font,
+        graphics.drawString(minecraft.font, fit(minecraft,
                 "LOADOUT // A" + AndroidClientState.aspectCount() + " F" + AndroidClientState.fragmentCount()
-                        + " // " + passive,
+                        + " // " + passive, panelWidth - 14),
                 barX, y + 47, 0xFFB5C8D2, false);
 
         String coreState = coreState();
         int coreColor = coreStateColor();
-        graphics.drawString(minecraft.font,
-                "CORE // " + AndroidClientState.abilityName() + " // " + coreState,
+        graphics.drawString(minecraft.font, fit(minecraft,
+                "CORE // " + AndroidClientState.abilityName() + " // " + coreState, panelWidth - 14),
                 barX, y + 59, coreColor, false);
 
         int slotY = y + 75;
-        drawAbilitySlot(graphics, minecraft, barX, slotY, PANEL_WIDTH - 14,
+        drawAbilitySlot(graphics, minecraft, barX, slotY, panelWidth - 14,
                 "H", AndroidClassAbilities.classAbilityName(spec),
                 AndroidClientState.classAbilityCooldownTicks(), AndroidClassAbilities.classCooldownTicks(spec),
                 AndroidClassAbilities.classEnergyCost(spec), AndroidClassAbilities.REQUIRED_LEVEL, energy);
-        drawAbilitySlot(graphics, minecraft, barX, slotY + 23, PANEL_WIDTH - 14,
+        drawAbilitySlot(graphics, minecraft, barX, slotY + 23, panelWidth - 14,
                 "N", AndroidClassAbilities.techAbilityName(spec),
                 AndroidClientState.techAbilityCooldownTicks(), AndroidClassAbilities.techCooldownTicks(spec),
                 AndroidClassAbilities.techEnergyCost(spec), AndroidClassAbilities.REQUIRED_LEVEL, energy);
-        drawAbilitySlot(graphics, minecraft, barX, slotY + 46, PANEL_WIDTH - 14,
+        drawAbilitySlot(graphics, minecraft, barX, slotY + 46, panelWidth - 14,
                 "G", spec.ultimate.displayName,
                 AndroidClientState.ultimateCooldownTicks(), spec.ultimate.cooldownTicks,
                 spec.ultimate.energyCost, AndroidUltimates.REQUIRED_LEVEL, energy);
@@ -131,7 +135,7 @@ public final class AndroidHudOverlay {
         else status = "READY";
 
         graphics.drawString(minecraft.font, key, x + 6, y + 5, border, false);
-        graphics.drawString(minecraft.font, name, x + 20, y + 5, 0xFFE8F8FF, false);
+        graphics.drawString(minecraft.font, fit(minecraft, name, Math.max(20, width - 90)), x + 20, y + 5, 0xFFE8F8FF, false);
         String right = status + " // " + compact(cost) + " FE";
         int rightX = Math.max(x + 84, x + width - minecraft.font.width(right) - 5);
         graphics.drawString(minecraft.font, right, rightX, y + 5, border, false);
@@ -139,5 +143,11 @@ public final class AndroidHudOverlay {
 
     private static String compact(int value) {
         return value >= 1_000 ? String.format("%.1fk", value / 1_000.0D) : Integer.toString(value);
+    }
+
+    private static String fit(Minecraft minecraft, String text, int maxWidth) {
+        if (minecraft.font.width(text) <= maxWidth) return text;
+        int usable = Math.max(0, maxWidth - minecraft.font.width("…"));
+        return minecraft.font.plainSubstrByWidth(text, usable) + "…";
     }
 }

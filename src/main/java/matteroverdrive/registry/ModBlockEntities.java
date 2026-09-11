@@ -9,6 +9,7 @@ import matteroverdrive.blockentity.NetworkSwitchBlockEntity;
 import matteroverdrive.blockentity.PylonBlockEntity;
 import matteroverdrive.blockentity.ContractMarketBlockEntity;
 import matteroverdrive.blockentity.ChargingStationBlockEntity;
+import matteroverdrive.blockentity.DroneFabricatorBlockEntity;
 import matteroverdrive.blockentity.DecomposerBlockEntity;
 import matteroverdrive.blockentity.EnergyPipeBlockEntity;
 import matteroverdrive.blockentity.MatterAnalyzerBlockEntity;
@@ -42,6 +43,7 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<AndroidSpawnerBlockEntity>> ANDROID_SPAWNER = BLOCK_ENTITIES.register("android_spawner", () -> BlockEntityType.Builder.of(AndroidSpawnerBlockEntity::new, ModBlocks.get("android_spawner").get()).build(null));
     public static final RegistryObject<BlockEntityType<EnergyPipeBlockEntity>> ENERGY_PIPE = BLOCK_ENTITIES.register("heavy_matter_pipe", () -> BlockEntityType.Builder.of(EnergyPipeBlockEntity::new, ModBlocks.get("heavy_matter_pipe").get()).build(null));
     public static final RegistryObject<BlockEntityType<ChargingStationBlockEntity>> CHARGING_STATION = BLOCK_ENTITIES.register("charging_station", () -> BlockEntityType.Builder.of(ChargingStationBlockEntity::new, ModBlocks.get("charging_station").get()).build(null));
+    public static final RegistryObject<BlockEntityType<DroneFabricatorBlockEntity>> DRONE_FABRICATOR = BLOCK_ENTITIES.register("drone_fabricator", () -> BlockEntityType.Builder.of(DroneFabricatorBlockEntity::new, ModBlocks.get("drone_fabricator").get()).build(null));
     public static final RegistryObject<BlockEntityType<FusionReactorControllerBlockEntity>> FUSION_REACTOR_CONTROLLER = BLOCK_ENTITIES.register("fusion_reactor_controller", () -> BlockEntityType.Builder.of(FusionReactorControllerBlockEntity::new, ModBlocks.get("fusion_reactor_controller").get()).build(null));
     public static final RegistryObject<BlockEntityType<FusionReactorIOBlockEntity>> FUSION_REACTOR_IO = BLOCK_ENTITIES.register("fusion_reactor_io", () -> BlockEntityType.Builder.of(FusionReactorIOBlockEntity::new, ModBlocks.get("fusion_reactor_io").get()).build(null));
     public static final RegistryObject<BlockEntityType<GravitationalAnomalyBlockEntity>> GRAVITATIONAL_ANOMALY = BLOCK_ENTITIES.register("gravitational_anomaly", () -> BlockEntityType.Builder.<GravitationalAnomalyBlockEntity>of(BalancedGravitationalAnomalyBlockEntity::new, ModBlocks.get("gravitational_anomaly").get()).build(null));

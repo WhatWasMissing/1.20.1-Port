@@ -9,6 +9,7 @@ import matteroverdrive.menu.NetworkSwitchMenu;
 import matteroverdrive.menu.PylonMenu;
 import matteroverdrive.menu.ContractMarketMenu;
 import matteroverdrive.menu.ChargingStationMenu;
+import matteroverdrive.menu.DroneFabricatorMenu;
 import matteroverdrive.menu.EnergyPipeMenu;
 import matteroverdrive.menu.InscriberMenu;
 import matteroverdrive.menu.TransporterMenu;
@@ -39,6 +40,7 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<AndroidSpawnerMenu>> ANDROID_SPAWNER = MENUS.register("android_spawner", () -> IForgeMenuType.create(AndroidSpawnerMenu::new));
     public static final RegistryObject<MenuType<AndroidStationMenu>> ANDROID_STATION = MENUS.register("android_station", () -> IForgeMenuType.create(AndroidStationMenu::new));
     public static final RegistryObject<MenuType<ChargingStationMenu>> CHARGING_STATION = MENUS.register("charging_station", () -> IForgeMenuType.create(ChargingStationMenu::new));
+    public static final RegistryObject<MenuType<DroneFabricatorMenu>> DRONE_FABRICATOR = MENUS.register("drone_fabricator", () -> IForgeMenuType.create(DroneFabricatorMenu::new));
     public static final RegistryObject<MenuType<EnergyPipeMenu>> ENERGY_PIPE = MENUS.register("heavy_matter_pipe", () -> IForgeMenuType.create(EnergyPipeMenu::new));
     public static final RegistryObject<MenuType<FusionReactorMenu>> FUSION_REACTOR_CONTROLLER = MENUS.register("fusion_reactor_controller", () -> IForgeMenuType.create(FusionReactorMenu::new));
     public static final RegistryObject<MenuType<GravitationalStabilizerMenu>> GRAVITATIONAL_STABILIZER = MENUS.register("gravitational_stabilizer", () -> IForgeMenuType.create(GravitationalStabilizerMenu::new));

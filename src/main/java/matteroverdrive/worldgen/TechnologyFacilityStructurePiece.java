@@ -34,6 +34,22 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
         RELAY_MAST, SECURITY_CHECKPOINT, OBSERVATION_BRIDGE, EXCAVATION_SHAFT, SALVAGE_YARD
     }
 
+    /** Stable room contract shared by structure serialization, audits, and future locator tooling. */
+    public record RoomMetadata(String role, boolean required, String connectorAxis) {}
+
+    public static RoomMetadata metadata(Room room) {
+        if (room == null) return new RoomMetadata("unknown", false, "none");
+        String name = room.name();
+        if (name.startsWith("CORRIDOR_")) return new RoomMetadata("connector", true, name.endsWith("X") ? "x" : "z");
+        if (name.startsWith("SERVICE_GANTRY_")) return new RoomMetadata("service_connector", false, name.endsWith("X") ? "x" : "z");
+        if (name.endsWith("_ENTRANCE")) return new RoomMetadata("entrance", true, "entry");
+        if (room == Room.SECURITY_CHECKPOINT || room == Room.BLACK_SECURITY) return new RoomMetadata("security", true, "none");
+        if (room == Room.SALVAGE_YARD) return new RoomMetadata("salvage", false, "none");
+        if (room == Room.ROOF_PLANT || room == Room.RELAY_MAST || room == Room.OBSERVATION_BRIDGE)
+            return new RoomMetadata("exterior", false, "vertical");
+        return new RoomMetadata("room", true, "none");
+    }
+
     private final TechnologyFacilityStructure.Kind facility;
     private final Room room;
     private final BlockPos origin;
@@ -56,6 +72,10 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         tag.putString("MOFacility", facility.name());
         tag.putString("MORoom", room.name());
+        RoomMetadata metadata = metadata(room);
+        tag.putString("MORole", metadata.role());
+        tag.putBoolean("MORequired", metadata.required());
+        tag.putString("MOConnectorAxis", metadata.connectorAxis());
         tag.putInt("MOX", origin.getX());
         tag.putInt("MOY", origin.getY());
         tag.putInt("MOZ", origin.getZ());
@@ -192,7 +212,7 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
                             RandomSource random, BoundingBox chunkBox, ChunkPos chunkPos, BlockPos pivot) {
         switch (room) {
             case MANUFACTURING_CORE -> modernRoom(level, chunkBox, 7, 7, 5, paletteWall(), paletteFloor(), true, true,
-                    p(0,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(-3,1,2,"inscriber",Blocks.BLAST_FURNACE), p(3,1,2,"replicator",Blocks.SMITHING_TABLE));
+                    p(0,1,0,"facility_network_controller",Blocks.IRON_BLOCK), p(0,1,-2,"matter_network_terminal",Blocks.IRON_BLOCK), p(-3,1,2,"inscriber",Blocks.BLAST_FURNACE), p(3,1,2,"replicator",Blocks.SMITHING_TABLE));
             case FABRICATION_WING -> modernRoom(level, chunkBox, 7, 6, 4, whiteWall(), paletteFloor(), false, true,
                     p(-3,1,0,"inscriber",Blocks.BLAST_FURNACE), p(3,1,0,"replicator",Blocks.SMITHING_TABLE), p(0,1,3,"holographic_status_panel",Blocks.SEA_LANTERN));
             case ASSEMBLY_WING -> modernRoom(level, chunkBox, 7, 6, 4, paletteWall(), paletteFloor(), false, true,
@@ -563,7 +583,7 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
     private static BoundingBox box(BlockPos p,int hx,int hz,int h){ return new BoundingBox(p.getX()-hx,p.getY(),p.getZ()-hz,p.getX()+hx,p.getY()+h,p.getZ()+hz); }
 
     private static BlockState mod(String id,Block fallback){
-        Block block=ForgeRegistries.BLOCKS.getValue(new ResourceLocation("matteroverdrive",id));
+        Block block=ForgeRegistries.BLOCKS.getValue(ResourceLocation.fromNamespaceAndPath("matteroverdrive",id));
         return block==null||block==Blocks.AIR?fallback.defaultBlockState():block.defaultBlockState();
     }
 
@@ -575,7 +595,7 @@ public final class TechnologyFacilityStructurePiece extends StructurePiece {
         if (state.getBlock() instanceof matteroverdrive.block.TritaniumCrateBlock
                 && level.getBlockEntity(pos) instanceof matteroverdrive.blockentity.TritaniumCrateBlockEntity crate) {
             String profile = room == Room.SALVAGE_YARD ? "salvage" : facility.name().toLowerCase(java.util.Locale.ROOT);
-            crate.seedStructureLoot(new ResourceLocation("matteroverdrive", "chests/facilities/" + profile),
+            crate.seedStructureLoot(ResourceLocation.fromNamespaceAndPath("matteroverdrive", "chests/facilities/" + profile),
                     level.getSeed() ^ pos.asLong() ^ ((long) room.ordinal() * 73428767L));
         }
         if (state.getBlock() instanceof matteroverdrive.block.AndroidSpawnerBlock

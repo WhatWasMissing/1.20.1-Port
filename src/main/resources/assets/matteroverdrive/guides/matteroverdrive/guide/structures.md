@@ -22,6 +22,18 @@ Matter Overdrive adds abandoned facilities, crashed spacecraft, Android sites an
 | **Cargo Ship** | Overworld surface | Very rare | Large salvage site associated with contracts/logistics. |
 | **Underwater Base** | Ocean floor | Rare | Large submerged research/salvage site. Bring water-breathing equipment. |
 | **Gravitational Anomaly** | Overworld | Uncommon, dangerous | Natural route into anomaly research. Approach carefully. |
+| **Matter Observatory** | Stable Overworld terrain | Rare | Analyze the central sensor, inspect telemetry and recover anomaly research data. |
+| **Field Logistics Depot** | Stable Overworld terrain | Rare | Recharge equipment, extend a Matter Network route and recover field supplies. |
+
+## Matter Observatory
+
+The observatory is a compact field station rather than a decorative ruin. Its raised sensor mast marks the site from a distance, while the ring fence leaves a deliberate service approach. The Matter Analyzer is the scientific objective and the Facility Network Controller exposes the site's telemetry; bring power and a Data Pad if you want to continue the research trail. The site is only placed on a stable, mostly level nine-by-nine footprint, so it should not generate floating over ravines or with its entrance buried in a slope.
+
+## Field Logistics Depot
+
+Depots are expedition infrastructure: a marked service approach leads to a Charging Station, Network Switch, pipe junction and two separated Tritanium caches. They are intentionally small enough to read as a maintained field stop rather than a full laboratory, and use the same stable-footprint rule as the Observatory. Their main value is extending powered logistics while travelling between larger facilities.
+
+All five compact technology sites have a deterministic salvage cache. The cache is assigned during generation and resolves lazily when opened, so chunk-safe placement does not depend on a loaded loot context. Entering a site with its paired machinery intact records a persistent field discovery, grants XP, a Data Pad and a site-specific research dossier. Use that dossier to archive the finding for a one-time upgrade and additional XP, then check the Data Pad's discovered-site count.
 
 The rarity descriptions above are intentionally approximate. They are more useful during survival play than promising an exact distance, because Minecraft placement attempts, biome eligibility and terrain checks all affect what a player actually encounters.
 
@@ -102,3 +114,7 @@ Search shipping, processing, control, armoury and vault rooms for Tritanium cach
 Facility security stations run on finite emergency reserves and wake when a Survival player approaches. They deploy small guard groups over time. Clear the station before salvaging nearby equipment; an abandoned facility can still defend itself. Black Sites carry the strongest reserves and favour ranged defenders.
 
 Some rooms have collapsed corners, damaged support machines and reduced security reserves. Surface facilities may also have broken service yards with lower-value salvage. New rewards and encounters appear only in newly generated facilities.
+
+### Optional investigation chain
+
+Some compact sites form an ordered investigation: **Android Relay Outpost -> Matter Observatory -> Anomaly Research Site**. Discovering the next site advances the per-player chain and the final site awards a Parallel Processing Upgrade. Your Data Pad reports the current step and the next lead, so the chain remains navigable after logging out or taking a break. The chain is optional, persistent and does not replace normal recipes or scientist assignments; discovering sites out of order still grants their ordinary dossier and discovery rewards.

@@ -81,7 +81,7 @@ public final class ModSounds {
     static {
         SOUND_IDS.forEach(id -> SOUNDS_BY_ID.put(id,
                 SOUND_EVENTS.register(id, () -> SoundEvent.createVariableRangeEvent(
-                        new ResourceLocation(MatterOverdrive.MOD_ID, id)))));
+                        ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, id)))));
     }
 
     private ModSounds() {
