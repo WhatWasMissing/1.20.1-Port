@@ -45,7 +45,10 @@ public final class FrontierSiteStructure extends Structure {
                 x, z, Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
         int minimum = context.heightAccessor().getMinBuildHeight() + 18;
         int y = switch (kind) {
-            case DEEP_MATTER_VAULT -> Math.max(minimum, surfaceY - 22);
+            // VAULT_ENTRY is authored +14 above the facility origin. Keeping the
+            // complex fourteen blocks below grade places that explicit entrance at
+            // the terrain surface instead of leaving it buried eight blocks down.
+            case DEEP_MATTER_VAULT -> Math.max(minimum, surfaceY - 14);
             case ANOMALY_QUARANTINE_SITE -> Math.max(minimum, surfaceY - 8);
             case AUTONOMOUS_DRONE_FOUNDRY, ORBITAL_RECOVERY_ARRAY -> surfaceY;
         };
