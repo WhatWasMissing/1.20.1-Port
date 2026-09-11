@@ -1,0 +1,9 @@
+{
+  "parent": "matteroverdrive:campaign/fusion_age",
+  "display": {"icon":{"item":"matteroverdrive:spacetime_equalizer"},"title":{"text":"Anomaly Engineer"},"description":{"text":"Master containment technology for gravitational anomalies."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "equalizer":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:spacetime_equalizer"]}]}},
+    "containment":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:anomaly_containment_unit"]}]}}
+  },
+  "requirements": [["equalizer"],["containment"]]
+}
