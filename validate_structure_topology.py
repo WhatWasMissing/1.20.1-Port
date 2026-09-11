@@ -91,14 +91,26 @@ def main() -> int:
     legacy_start = src("LegacyNativeStructure.java")
     if "new LegacyVanillaStructurePiece(kind, origin)" not in legacy_start:
         errors.append("LegacyNativeStructure is not wired to LegacyVanillaStructurePiece.")
+    if "new LegacyTraversalRepairPiece(origin)" not in legacy_start:
+        errors.append("Mad Scientist final traversal repair piece is not assembled after the lab shell.")
+
+    repair_path = WORLDGEN / "LegacyTraversalRepairPiece.java"
+    if not repair_path.exists():
+        errors.append("LegacyTraversalRepairPiece.java is missing.")
+    else:
+        repair = read(repair_path)
+        for token in ("for (int i = 0; i <= 7; i++)", "clip.isInside", "POLISHED_DEEPSLATE_STAIRS"):
+            if token not in repair:
+                errors.append(f"Legacy traversal repair is missing required token: {token}")
 
     registry = read(REGISTRY)
-    if "LEGACY_VANILLA_PIECE" not in registry or "LegacyVanillaStructurePiece::new" not in registry:
-        errors.append("Legacy vanilla piece serializer is not registered.")
+    for token in ("LEGACY_VANILLA_PIECE", "LegacyVanillaStructurePiece::new", "LEGACY_TRAVERSAL_REPAIR_PIECE", "LegacyTraversalRepairPiece::new"):
+        if token not in registry:
+            errors.append(f"Structure registry is missing compatibility/topology token: {token}")
     if "LEGACY_NATIVE_PIECE" not in registry:
         errors.append("Old legacy serializer was removed; existing-world compatibility would be broken.")
 
-    active_piece_files = ("LegacyVanillaStructurePiece.java", "TechnologyFacilityStructurePiece.java", "FrontierSitePiece.java")
+    active_piece_files = ("LegacyVanillaStructurePiece.java", "LegacyTraversalRepairPiece.java", "TechnologyFacilityStructurePiece.java", "FrontierSitePiece.java")
     for filename in active_piece_files:
         s = src(filename)
         if "clip.isInside" not in s:
