@@ -1,0 +1,9 @@
+{
+  "parent": "matteroverdrive:campaign/frontier_expedition",
+  "display": {"icon":{"item":"matteroverdrive:artifact"},"title":{"text":"The Black Site"},"description":{"text":"Reach the deepest restricted Matter Overdrive research installation."},"frame":"challenge","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "black_site":{"trigger":"minecraft:location","conditions":{"player":[{"condition":"minecraft:entity_properties","entity":"this","predicate":{"location":{"structure":"matteroverdrive:black_site"}}}]}}
+  },
+  "requirements": [["black_site"]],
+  "rewards": {"experience": 300}
+}
