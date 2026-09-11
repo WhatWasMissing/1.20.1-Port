@@ -1,0 +1,28 @@
+{
+  "parent": "matteroverdrive:campaign/world_archivist",
+  "display": {
+    "icon": { "item": "matteroverdrive:artifact" },
+    "title": { "text": "Reconstruct the Incident" },
+    "description": { "text": "Recover all 16 records and reconstruct the chain that led to the Overdrive Incident." },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "closed_loop": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["matteroverdrive:artifact"],
+            "nbt": "{LoreArc:\"OVERDRIVE_INCIDENT_COMPLETE\"}"
+          }
+        ]
+      }
+    }
+  },
+  "rewards": {
+    "experience": 500
+  }
+}
