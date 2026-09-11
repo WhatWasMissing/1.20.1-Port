@@ -3,6 +3,8 @@ package matteroverdrive.registry;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.worldgen.FacilityInfrastructurePiece;
 import matteroverdrive.worldgen.FacilityTerrainPiece;
+import matteroverdrive.worldgen.FrontierSitePiece;
+import matteroverdrive.worldgen.FrontierSiteStructure;
 import matteroverdrive.worldgen.LegacyNativeStructure;
 import matteroverdrive.worldgen.LegacyNativeStructurePiece;
 import matteroverdrive.worldgen.LegacyParityStructureFeature;
@@ -32,10 +34,16 @@ public final class ModStructures {
     public static final RegistryObject<StructureType<TechnologyFacilityStructure>> FUSION_RESEARCH_COMPLEX = facilityType("fusion_research_complex", TechnologyFacilityStructure.Kind.FUSION_RESEARCH_COMPLEX);
     public static final RegistryObject<StructureType<TechnologyFacilityStructure>> BLACK_SITE = facilityType("black_site", TechnologyFacilityStructure.Kind.BLACK_SITE);
 
+    public static final RegistryObject<StructureType<FrontierSiteStructure>> DEEP_MATTER_VAULT = frontierType("deep_matter_vault", FrontierSiteStructure.Kind.DEEP_MATTER_VAULT);
+    public static final RegistryObject<StructureType<FrontierSiteStructure>> AUTONOMOUS_DRONE_FOUNDRY = frontierType("autonomous_drone_foundry", FrontierSiteStructure.Kind.AUTONOMOUS_DRONE_FOUNDRY);
+    public static final RegistryObject<StructureType<FrontierSiteStructure>> ANOMALY_QUARANTINE_SITE = frontierType("anomaly_quarantine_site", FrontierSiteStructure.Kind.ANOMALY_QUARANTINE_SITE);
+    public static final RegistryObject<StructureType<FrontierSiteStructure>> ORBITAL_RECOVERY_ARRAY = frontierType("orbital_recovery_array", FrontierSiteStructure.Kind.ORBITAL_RECOVERY_ARRAY);
+
     public static final RegistryObject<StructurePieceType> LEGACY_NATIVE_PIECE = STRUCTURE_PIECES.register("legacy_native", () -> LegacyNativeStructurePiece::new);
     public static final RegistryObject<StructurePieceType> TECHNOLOGY_FACILITY_PIECE = STRUCTURE_PIECES.register("technology_facility", () -> TechnologyFacilityStructurePiece::new);
     public static final RegistryObject<StructurePieceType> FACILITY_INFRASTRUCTURE_PIECE = STRUCTURE_PIECES.register("facility_infrastructure", () -> FacilityInfrastructurePiece::new);
     public static final RegistryObject<StructurePieceType> FACILITY_TERRAIN_PIECE = STRUCTURE_PIECES.register("facility_terrain", () -> FacilityTerrainPiece::new);
+    public static final RegistryObject<StructurePieceType> FRONTIER_SITE_PIECE = STRUCTURE_PIECES.register("frontier_site", () -> FrontierSitePiece::new);
 
     private static RegistryObject<StructureType<LegacyNativeStructure>> type(String id, LegacyParityStructureFeature.Kind kind) {
         return STRUCTURE_TYPES.register(id, () -> () -> LegacyNativeStructure.codec(kind));
@@ -43,6 +51,10 @@ public final class ModStructures {
 
     private static RegistryObject<StructureType<TechnologyFacilityStructure>> facilityType(String id, TechnologyFacilityStructure.Kind kind) {
         return STRUCTURE_TYPES.register(id, () -> () -> TechnologyFacilityStructure.codec(kind));
+    }
+
+    private static RegistryObject<StructureType<FrontierSiteStructure>> frontierType(String id, FrontierSiteStructure.Kind kind) {
+        return STRUCTURE_TYPES.register(id, () -> () -> FrontierSiteStructure.codec(kind));
     }
 
     private ModStructures() {}
