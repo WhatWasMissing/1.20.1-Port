@@ -1,0 +1,6 @@
+{
+  "parent": "matteroverdrive:campaign/automation",
+  "display": {"icon":{"item":"matteroverdrive:android_pill_red"},"title":{"text":"The Red Pill"},"description":{"text":"Begin the Android path and leave ordinary human limits behind."},"frame":"goal","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {"convert":{"trigger":"minecraft:consume_item","conditions":{"item":{"items":["matteroverdrive:android_pill_red"]}}}},
+  "requirements": [["convert"]]
+}
