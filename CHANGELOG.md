@@ -2,6 +2,33 @@
 
 All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 
+## Unreleased — Lead developer gameplay expansion
+
+### Added
+
+- Added repeatable **Field Operations** that turn existing technology-site exploration into an ongoing mid/end-game loop instead of one-time scenery rewards.
+- Added three operation doctrines: **Recovery**, **Systems**, and **Anomaly**.
+- Added stage-gated operations for abandoned matter labs, Android relay outposts, logistics depots, matter observatories, anomaly research sites, and controlled event-horizon exposure.
+- Field-operation state is server-authoritative, player-persistent, and event-driven; no global mission tick manager was added.
+- Recovery operations reward recovered Android artifact protocols; Systems operations reward machine upgrades; Anomaly operations reward containment-oriented materials/upgrades.
+- Added `/matteroverdrive research field status` and `/matteroverdrive research field assign <recovery|systems|anomaly>`.
+- Expanded the Data Pad journal with active operation, doctrine, progress, description, and lifetime completion count.
+- Added a dedicated Field Operations runtime/abuse/performance checklist to `TECH_OVERHAUL_TEST_PLAN.md`.
+
+### Changed
+
+- Compact technology-site recognition now feeds both one-time discovery rewards and repeatable Field Operations while preserving the one-time dossier/XP guard.
+- Event-horizon detection now also services the Anomaly doctrine when `Horizon Exposure` is active, while continuing to advance normal anomaly contracts in parallel.
+
+### Design direction
+
+- New systems should connect the existing exploration → research → machines/drones → automation → reactor/anomaly progression spine rather than exist as isolated crafting blocks.
+- Structure/world gameplay remains on native chunk-safe structure generation; the retired Star Map is not restored.
+
+### Testing status
+
+Source changes are committed on `feature/lead-dev-expansion-2026-09-11`. Runtime verification is still required for persistence, multiplayer isolation, compact-site recognition, reward delivery and anomaly-operation completion.
+
 ## 0.6 — Matter economy, survival/world integration and release consolidation
 
 ### Added
@@ -26,7 +53,7 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 
 ### Testing status
 
-A clean local Java 17 / Forge 1.20.1 build of the current 0.6 `main` head is still required before distribution. GitHub Actions attempts on the release line have previously failed before runner steps began, so those failures are not compile results. The 0.6 runtime checklist covers matter economy, reactor/anomaly, Android, weapons, networking/transporter, structures, Star Map, GUI and persistence regressions.
+A clean local Java 17 / Forge 1.20.1 build of the current 0.6 `main` head is still required before distribution. GitHub Actions attempts on the release line have previously failed before runner steps began, so those failures are not compile results. The 0.6 runtime checklist covers matter economy, reactor/anomaly, Android, weapons, networking/transporter, structures, GUI and persistence regressions.
 
 ## 0.5 — Research campaign and progression overhaul
 
@@ -117,46 +144,3 @@ The dialogue and early quest-overhaul foundation previously passed repository CI
 - Sneak-held normal/HC Battery charging for converted Androids at up to 1,024 FE/t.
 - Legacy-style 50% movement penalty and HUD warning while the Android core has no FE.
 - Collision-safe fallback positions for the simplified Rogue Android Spawner.
-
-### Fixed
-
-- Failed Android actions no longer drain an unaffordable partial FE remainder.
-- The Arms damage bonus now applies only to direct melee attacks.
-- Sonic Shockwave no longer inherits the Arms melee bonus or extra per-target FE drain.
-- Rogue Android spawning no longer consumes 20,000 FE when the world rejects the entity.
-
-### Testing status
-
-Compilation, in-game System Guide rendering/navigation and focused client/dedicated-server Android verification are required before this pass is marked runtime-verified.
-
-## 0.8.0.0-alpha.4.1 — M2 functional systems test build
-
-### Added
-
-- Functional Matter Decomposer, Matter Recycler, Matter Analyzer, Matter Replicator, Pattern Storage, Pattern Monitor, and their network/matter transport links.
-- Machine upgrades with persistent debug readouts for the effective values used by each upgraded machine.
-- Solar Panel power generation and Tritanium Crates with 54-slot portable inventories across all colour variants.
-- Molecular Inscriber production chain, including Mk2–Mk4 Isolinear Circuit recipes and battery-slot support.
-- Transporter with bound Transport Flash Drives, entity movement, range/cost/cooldown handling, and debug status.
-- Fusion Reactor bundle:
-  - Controller, four-coil compact structure, Reactor IO, and Gravitational Anomaly validation.
-  - Legacy baseline capacity/output/matter-drain values.
-  - Persistent debug UI for structure validity, anomaly distance, efficiency, generation, FE, and matter.
-  - Speed, Range, Power Storage, and Matter Storage upgrade support.
-- Heavy Energy Cable, using the existing Heavy Matter Pipe block resource:
-  - 8,192 FE buffer.
-  - Relays up to 1,024 FE/t to each receiving side.
-  - Debug UI showing stored energy and latest output.
-  - Supports chains: `Reactor IO → Heavy Energy Cable(s) → powered machine`.
-
-### Fixed
-
-- Fusion Reactor screen compilation.
-- Fusion Controller shift-click inventory crash.
-- Fusion Range upgrades can no longer create a server-freezing anomaly search.
-- Fusion Speed upgrades now increase output rather than reducing it.
-- Reactor IO output now uses the tested simulation/extract/refund transfer flow.
-
-### Testing status
-
-The M2 machines, inscriber recipes, transporter, Fusion Reactor, and Heavy Energy Cable have been tested in the development client. Run `VERIFY_M2_BUILD.bat` before distributing a build beyond testing.
