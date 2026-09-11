@@ -7,6 +7,7 @@ import matteroverdrive.android.AndroidLoadout;
 import matteroverdrive.android.AndroidUltimates;
 import matteroverdrive.dialogue.DialogueCatalog;
 import matteroverdrive.dialogue.DialogueSessionManager;
+import matteroverdrive.dialogue.DialogueStateSavedData;
 import matteroverdrive.world.StructureLoreSavedData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -48,12 +49,14 @@ public final class ModNetwork {
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h) {
-        int loreMask = StructureLoreSavedData.get(p.serverLevel().getServer().overworld()).mask(p.getUUID());
+        int loreMask = StructureLoreSavedData.get(p.serverLevel()).mask(p.getUUID());
         openDataPad(p, h, loreMask);
     }
 
     public static void openDataPad(ServerPlayer p, List<String> h, int loreMask) {
-        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h, loreMask));
+        DialogueStateSavedData contacts = DialogueStateSavedData.get(p.serverLevel());
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h, loreMask,
+                contacts.fieldTrust(p.getUUID()), contacts.syntheticTrust(p.getUUID()), contacts.archiveInsight(p.getUUID())));
     }
 
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
