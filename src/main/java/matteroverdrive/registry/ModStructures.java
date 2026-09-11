@@ -3,6 +3,7 @@ package matteroverdrive.registry;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.worldgen.FacilityInfrastructurePiece;
 import matteroverdrive.worldgen.FacilityTerrainPiece;
+import matteroverdrive.worldgen.FrontierExplorationStructurePiece;
 import matteroverdrive.worldgen.FrontierSitePiece;
 import matteroverdrive.worldgen.FrontierSiteStructure;
 import matteroverdrive.worldgen.LegacyNativeStructure;
@@ -10,6 +11,7 @@ import matteroverdrive.worldgen.LegacyNativeStructurePiece;
 import matteroverdrive.worldgen.LegacyTraversalRepairPiece;
 import matteroverdrive.worldgen.LegacyVanillaStructurePiece;
 import matteroverdrive.worldgen.LegacyParityStructureFeature;
+import matteroverdrive.worldgen.ModernExplorationStructurePiece;
 import matteroverdrive.worldgen.TechnologyFacilityStructure;
 import matteroverdrive.worldgen.TechnologyFacilityStructurePiece;
 import net.minecraft.core.registries.Registries;
@@ -41,7 +43,7 @@ public final class ModStructures {
     public static final RegistryObject<StructureType<FrontierSiteStructure>> ANOMALY_QUARANTINE_SITE = frontierType("anomaly_quarantine_site", FrontierSiteStructure.Kind.ANOMALY_QUARANTINE_SITE);
     public static final RegistryObject<StructureType<FrontierSiteStructure>> ORBITAL_RECOVERY_ARRAY = frontierType("orbital_recovery_array", FrontierSiteStructure.Kind.ORBITAL_RECOVERY_ARRAY);
 
-    // Kept for old-world compatibility. New worlds use LEGACY_VANILLA_PIECE.
+    // Old serializers stay registered so existing worlds containing those pieces can still deserialize.
     public static final RegistryObject<StructurePieceType> LEGACY_NATIVE_PIECE = STRUCTURE_PIECES.register("legacy_native", () -> LegacyNativeStructurePiece::new);
     public static final RegistryObject<StructurePieceType> LEGACY_VANILLA_PIECE = STRUCTURE_PIECES.register("legacy_vanilla", () -> LegacyVanillaStructurePiece::new);
     public static final RegistryObject<StructurePieceType> LEGACY_TRAVERSAL_REPAIR_PIECE = STRUCTURE_PIECES.register("legacy_traversal_repair", () -> LegacyTraversalRepairPiece::new);
@@ -49,6 +51,10 @@ public final class ModStructures {
     public static final RegistryObject<StructurePieceType> FACILITY_INFRASTRUCTURE_PIECE = STRUCTURE_PIECES.register("facility_infrastructure", () -> FacilityInfrastructurePiece::new);
     public static final RegistryObject<StructurePieceType> FACILITY_TERRAIN_PIECE = STRUCTURE_PIECES.register("facility_terrain", () -> FacilityTerrainPiece::new);
     public static final RegistryObject<StructurePieceType> FRONTIER_SITE_PIECE = STRUCTURE_PIECES.register("frontier_site", () -> FrontierSitePiece::new);
+
+    // New-world exploration-native pieces.
+    public static final RegistryObject<StructurePieceType> MODERN_EXPLORATION_PIECE = STRUCTURE_PIECES.register("modern_exploration", () -> ModernExplorationStructurePiece::new);
+    public static final RegistryObject<StructurePieceType> FRONTIER_EXPLORATION_PIECE = STRUCTURE_PIECES.register("frontier_exploration", () -> FrontierExplorationStructurePiece::new);
 
     private static RegistryObject<StructureType<LegacyNativeStructure>> type(String id, LegacyParityStructureFeature.Kind kind) {
         return STRUCTURE_TYPES.register(id, () -> () -> LegacyNativeStructure.codec(kind));
