@@ -1,0 +1,84 @@
+package matteroverdrive.event;
+
+import matteroverdrive.MatterOverdrive;
+import matteroverdrive.network.ModNetwork;
+import matteroverdrive.world.TechnologyLoreCatalog;
+import matteroverdrive.world.TechnologyLoreSavedData;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+
+/**
+ * Authenticates major Matter Overdrive technology into the PDA on first real acquisition/use.
+ * Crafting, pickup and placement are immediate; a conservative periodic inventory audit catches
+ * container transfers, machine outputs, commands and creative acquisition without new packets.
+ */
+@Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+public final class TechnologyLoreEvents {
+    private static final int INVENTORY_SCAN_INTERVAL = 40;
+
+    private TechnologyLoreEvents() {}
+
+    @SubscribeEvent
+    public static void onCrafted(PlayerEvent.ItemCraftedEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) discoverStack(player, event.getCrafting());
+    }
+
+    @SubscribeEvent
+    public static void onPickup(EntityItemPickupEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) discoverStack(player, event.getItem().getItem());
+    }
+
+    @SubscribeEvent
+    public static void onPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(event.getPlacedBlock().getBlock());
+        if (id != null && MatterOverdrive.MOD_ID.equals(id.getNamespace())) discover(player, id.getPath());
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
+        if (player.tickCount % INVENTORY_SCAN_INTERVAL != 0) return;
+
+        // Only emit one new discovery per audit. This avoids a returning player with a mature
+        // inventory dumping dozens of voice messages into the serialized PDA queue at once.
+        for (ItemStack stack : player.getInventory().items) if (discoverStack(player, stack)) return;
+        for (ItemStack stack : player.getInventory().offhand) if (discoverStack(player, stack)) return;
+        for (ItemStack stack : player.getInventory().armor) if (discoverStack(player, stack)) return;
+    }
+
+    private static boolean discoverStack(ServerPlayer player, ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return false;
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) return false;
+        return discover(player, id.getPath());
+    }
+
+    private static boolean discover(ServerPlayer player, String itemId) {
+        TechnologyLoreCatalog.TechRecord record = TechnologyLoreCatalog.byItemId(itemId);
+        if (record == null) return false;
+        TechnologyLoreSavedData data = TechnologyLoreSavedData.get(player.serverLevel());
+        if (!data.discover(player.getUUID(), itemId)) return false;
+
+        int recovered = data.count(player.getUUID());
+        player.sendSystemMessage(Component.literal("PDA // TECHNOLOGY INDEXED: " + record.title())
+                .withStyle(ChatFormatting.AQUA));
+        player.sendSystemMessage(Component.literal(record.function()).withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.literal("ARCHIVE CONTEXT: " + record.lore())
+                .withStyle(ChatFormatting.DARK_AQUA));
+        player.sendSystemMessage(Component.literal("Technology Codex " + recovered + "/" + TechnologyLoreCatalog.count())
+                .withStyle(ChatFormatting.GREEN));
+        ModNetwork.sendPdaVoice(player, record.voiceId());
+        return true;
+    }
+}
