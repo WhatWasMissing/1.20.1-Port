@@ -16,6 +16,11 @@ import java.util.Optional;
  * progression. Facilities are assembled from independent StructurePieces so
  * Minecraft clips generation to the active chunk instead of synchronously
  * stamping blocks into neighbouring chunks.
+ *
+ * The 2026-09 vanilla-standard repair intentionally makes the redesigned primary
+ * facility geometry authoritative. Pre-redesign infrastructure/terrain overlays
+ * are no longer assembled here because their old offsets could block doors or add
+ * contradictory ladders/corridors to the new layouts.
  */
 public final class TechnologyFacilityStructure extends Structure {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -47,25 +52,22 @@ public final class TechnologyFacilityStructure extends Structure {
         int surfaceY = context.chunkGenerator().getBaseHeight(
                 x, z, Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
 
+        // Entry pieces are authored above the facility origin for underground sites.
+        // Choose origins so the explicit entry point meets terrain naturally.
         int y = switch (kind) {
-            case ANDROID_COMMAND_BUNKER -> Math.max(context.heightAccessor().getMinBuildHeight() + 16, surfaceY - 10);
-            case BLACK_SITE -> Math.max(context.heightAccessor().getMinBuildHeight() + 20, surfaceY - 16);
-            case FUSION_RESEARCH_COMPLEX -> Math.max(context.heightAccessor().getMinBuildHeight() + 12, surfaceY - 3);
+            case ANDROID_COMMAND_BUNKER -> Math.max(context.heightAccessor().getMinBuildHeight() + 16, surfaceY - 8);
+            case BLACK_SITE -> Math.max(context.heightAccessor().getMinBuildHeight() + 20, surfaceY - 12);
+            case FUSION_RESEARCH_COMPLEX -> surfaceY;
             default -> surfaceY;
         };
 
-        // Stable per-start-chunk variation. Do not consume mutable worldgen random here:
-        // every StructurePiece must reconstruct the same layout after save/reload.
         int layout = Math.floorMod(context.chunkPos().x * 73428767 ^ context.chunkPos().z * 912931, 3);
         BlockPos origin = new BlockPos(x, y, z);
         LOGGER.debug("M2 FACILITY TRACE: scheduled kind={} chunk={} origin={} surfaceY={} layout={}",
                 kind, context.chunkPos(), origin, surfaceY, layout);
 
-        return Optional.of(new GenerationStub(origin, builder -> {
-            TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout);
-            FacilityInfrastructurePiece.assemble(builder, kind, origin, layout);
-            FacilityTerrainPiece.assemble(builder, kind, origin, layout);
-        }));
+        return Optional.of(new GenerationStub(origin, builder ->
+                TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout)));
     }
 
     @Override
