@@ -14,7 +14,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 import java.util.List;
 
 public final class ModNetwork {
-    private static final String PROTOCOL = "13";
+    private static final String PROTOCOL = "14";
     private static int nextId;
     public static final SimpleChannel CHANNEL = NetworkRegistry.ChannelBuilder
             .named(ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "network"))
@@ -39,7 +39,14 @@ public final class ModNetwork {
         CHANNEL.registerMessage(nextId++, DroneStatusPacket.class, DroneStatusPacket::encode, DroneStatusPacket::decode, DroneStatusPacket::handle);
     }
 
-    public static void openDataPad(ServerPlayer p, List<String> h) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h)); }
+    public static void openDataPad(ServerPlayer p, List<String> h) {
+        openDataPad(p, h, 0);
+    }
+
+    public static void openDataPad(ServerPlayer p, List<String> h, int loreMask) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DataPadOpenPacket(h, loreMask));
+    }
+
     public static void openDocumentation(ServerPlayer p, int d) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new DocumentationOpenPacket(d)); }
     public static void openDialogue(ServerPlayer p, String speaker, String title, List<String> lines) { CHANNEL.send(PacketDistributor.PLAYER.with(() -> p), new NpcDialoguePacket(speaker, title, lines)); }
     public static void fireOmniTool() { CHANNEL.sendToServer(new OmniToolFirePacket()); }
