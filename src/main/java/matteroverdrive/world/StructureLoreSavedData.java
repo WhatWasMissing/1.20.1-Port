@@ -16,8 +16,13 @@ public final class StructureLoreSavedData extends SavedData {
 
     private final Map<UUID, Integer> discovered = new HashMap<>();
 
+    /**
+     * Lore belongs to the server/world rather than the current dimension. Always use
+     * the Overworld data store so Nether/End travel cannot make the PDA appear empty.
+     */
     public static StructureLoreSavedData get(ServerLevel level) {
-        return level.getDataStorage().computeIfAbsent(StructureLoreSavedData::load, StructureLoreSavedData::new, ID);
+        ServerLevel owner = level.getServer().overworld();
+        return owner.getDataStorage().computeIfAbsent(StructureLoreSavedData::load, StructureLoreSavedData::new, ID);
     }
 
     /** Returns true only the first time this player discovers this structure class. */
