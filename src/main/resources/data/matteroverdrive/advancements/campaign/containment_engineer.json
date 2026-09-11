@@ -1,0 +1,13 @@
+{
+  "parent": "matteroverdrive:campaign/fusion_age",
+  "display": {"icon":{"item":"matteroverdrive:gravitational_stabilizer"},"title":{"text":"Containment Engineer"},"description":{"text":"Pair fusion hardware with real containment, stabilization and space-time safety systems."},"frame":"challenge","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "controller":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:fusion_reactor_controller"]}]}},
+    "coil":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:fusion_reactor_coil"]}]}},
+    "io":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:fusion_reactor_io"]}]}},
+    "stabilizer":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:gravitational_stabilizer"]}]}},
+    "equalizer":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:spacetime_equalizer"]}]}}
+  },
+  "requirements": [["controller"],["coil"],["io"],["stabilizer"],["equalizer"]],
+  "rewards":{"experience":350}
+}
