@@ -42,6 +42,10 @@ public final class LegacyEntityClientEvents {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.ROGUE_ANDROID.get(), LegacyEntityRenderers.RogueAndroidRenderer::new);
         event.registerEntityRenderer(ModEntities.RANGED_ROGUE_ANDROID.get(), LegacyEntityRenderers.RangedRogueAndroidRenderer::new);
+        event.registerEntityRenderer(ModEntities.DEFECTOR_ANDROID.get(), LegacyEntityRenderers.DefectorAndroidRenderer::new);
+        event.registerEntityRenderer(ModEntities.ORPHEUS_SECURITY.get(), LegacyEntityRenderers.OrpheusSecurityRenderer::new);
+        event.registerEntityRenderer(ModEntities.RESONANT_ANDROID.get(), LegacyEntityRenderers.ResonantAndroidRenderer::new);
+        event.registerEntityRenderer(ModEntities.FACILITY_RESEARCHER.get(), LegacyEntityRenderers.FacilityResearcherRenderer::new);
         event.registerEntityRenderer(ModEntities.DRONE.get(), LegacyEntityRenderers.DroneRenderer::new);
         event.registerEntityRenderer(ModEntities.MUTANT_SCIENTIST.get(), LegacyEntityRenderers.MutantScientistRenderer::new);
         event.registerEntityRenderer(ModEntities.MAD_SCIENTIST.get(), LegacyEntityRenderers.MadScientistRenderer::new);
