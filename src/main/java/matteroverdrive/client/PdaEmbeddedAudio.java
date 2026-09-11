@@ -18,9 +18,10 @@ import java.util.Locale;
  * PDA audio backend.
  *
  * Playback order for short authored callouts:
- * 1. processed neural-VA WAV from bundled assets or config/matteroverdrive/pda_voice,
- * 2. local operating-system speech synthesis,
- * 3. Minecraft Narrator (handled by ClientPdaNotificationManager).
+ * 1. processed neural-VA WAV from config/matteroverdrive/pda_voice (local override),
+ * 2. processed neural-VA WAV from bundled assets,
+ * 3. local operating-system speech synthesis,
+ * 4. Minecraft Narrator (handled by ClientPdaNotificationManager).
  *
  * Nothing is uploaded at runtime. Short UI cues are synthesized directly in Java.
  */
@@ -103,6 +104,15 @@ public final class PdaEmbeddedAudio {
     private static AudioInputStream recordedStream(String id) {
         String safeId = id == null ? "" : id.replaceAll("[^a-z0-9_\\-]", "");
         if (safeId.isBlank()) return null;
+
+        // Local/modpack audio is a real override: it must win over anything bundled in the JAR.
+        Path override = Path.of("config", "matteroverdrive", "pda_voice", safeId + ".wav");
+        if (Files.isRegularFile(override)) {
+            try {
+                return AudioSystem.getAudioInputStream(override.toFile());
+            } catch (Throwable ignored) { }
+        }
+
         String resource = "/assets/matteroverdrive/pda_voice/" + safeId + ".wav";
         try {
             InputStream raw = PdaEmbeddedAudio.class.getResourceAsStream(resource);
@@ -112,14 +122,7 @@ public final class PdaEmbeddedAudio {
                 return AudioSystem.getAudioInputStream(new BufferedInputStream(raw));
             }
         } catch (Throwable ignored) { }
-
-        Path override = Path.of("config", "matteroverdrive", "pda_voice", safeId + ".wav");
-        if (!Files.isRegularFile(override)) return null;
-        try {
-            return AudioSystem.getAudioInputStream(override.toFile());
-        } catch (Throwable ignored) {
-            return null;
-        }
+        return null;
     }
 
     public static boolean playUi(String id) {
