@@ -14,25 +14,26 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-import java.util.List;
 import java.util.Locale;
 
-/**
- * Post-collapse expedition NPC used to make recovered facilities feel inhabited.
- * These are contemporary explorers, not resurrected members of the historic cast.
- */
+/** Post-collapse expedition NPC used to make recovered facilities feel inhabited. */
 public class FacilityResearcherEntity extends Villager {
     public enum Role {
-        FIELD_RESEARCHER("Field Researcher"),
-        SALVAGER("Salvage Specialist"),
-        RECOVERY_SPECIALIST("Recovery Specialist"),
-        ICARUS_ENGINEER("Reactor Recovery Engineer"),
-        JANUS_MEDIC("Anomaly Field Medic"),
-        ARCHIVIST("Incident Archivist");
+        FIELD_RESEARCHER("Field Researcher", "researcher.field"),
+        SALVAGER("Salvage Specialist", "researcher.salvager"),
+        RECOVERY_SPECIALIST("Recovery Specialist", "researcher.recovery"),
+        ICARUS_ENGINEER("Reactor Recovery Engineer", "researcher.icarus"),
+        JANUS_MEDIC("Anomaly Field Medic", "researcher.janus"),
+        ARCHIVIST("Incident Archivist", "researcher.archivist");
 
         private final String title;
-        Role(String title) { this.title = title; }
+        private final String dialogueId;
+        Role(String title, String dialogueId) {
+            this.title = title;
+            this.dialogueId = dialogueId;
+        }
         public String title() { return title; }
+        public String dialogueId() { return dialogueId; }
 
         static Role from(String value) {
             try { return Role.valueOf(value.toUpperCase(Locale.ROOT)); }
@@ -57,11 +58,7 @@ public class FacilityResearcherEntity extends Villager {
 
     public Role getRole() { return role; }
 
-    /**
-     * Field-team NPCs are dialogue/progression witnesses rather than combat bait.
-     * Players can still interact with and damage them normally, but hostile mob AI
-     * will not erase them before their dialogue can be discovered.
-     */
+    /** Field-team NPCs are witnesses rather than disposable combat bait. */
     @Override
     public boolean canBeSeenAsEnemy() {
         return false;
@@ -70,43 +67,9 @@ public class FacilityResearcherEntity extends Villager {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!level().isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ModNetwork.openDialogue(serverPlayer, role.title(), dialogueTitle(), dialogueLines());
+            ModNetwork.openBranchingDialogue(serverPlayer, role.dialogueId(), role.title());
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
-    }
-
-    private String dialogueTitle() {
-        return switch (role) {
-            case FIELD_RESEARCHER -> "Recovered Site Survey";
-            case SALVAGER -> "Salvage Notes";
-            case RECOVERY_SPECIALIST -> "Recovery Brief";
-            case ICARUS_ENGINEER -> "ICARUS Safety Brief";
-            case JANUS_MEDIC -> "Resonance Exposure Advisory";
-            case ARCHIVIST -> "Incident Archive";
-        };
-    }
-
-    private List<String> dialogueLines() {
-        return switch (role) {
-            case FIELD_RESEARCHER -> List.of(
-                    "These ruins are evidence first and salvage second.",
-                    "If your PDA authenticates a local record, compare its cross-references before moving on.");
-            case SALVAGER -> List.of(
-                    "I only take what the site can lose without erasing the story.",
-                    "Guarded caches are usually intact for a reason. Clear the room before you start reading labels.");
-            case RECOVERY_SPECIALIST -> List.of(
-                    "We follow old distress routes and whatever ECHO-9 left behind.",
-                    "Some signals still arrive with timestamps that do not agree with the clock.");
-            case ICARUS_ENGINEER -> List.of(
-                    "The reactor hardware failed after the shutdown chain was overridden, not before.",
-                    "Do not mistake damaged containment for permission to recreate the experiment here.");
-            case JANUS_MEDIC -> List.of(
-                    "Resonance exposure is not conventional radiation sickness.",
-                    "If nearby synthetics begin finishing each other's sentences, leave the containment zone together.");
-            case ARCHIVIST -> List.of(
-                    "The archive is intentionally non-linear. Discovery order is not incident order.",
-                    "Corroborated reconstructions matter more than any single testimony, even ORPHEUS records.");
-        };
     }
 
     @Override
