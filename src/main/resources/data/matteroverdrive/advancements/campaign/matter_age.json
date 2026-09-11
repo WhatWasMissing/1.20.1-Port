@@ -1,0 +1,10 @@
+{
+  "parent": "matteroverdrive:campaign/first_contact",
+  "display": {"icon":{"item":"matteroverdrive:pattern_drive"},"title":{"text":"The Matter Age"},"description":{"text":"Build the core Matter processing chain: analyze, decompose and preserve patterns."},"frame":"task","show_toast":true,"announce_to_chat":true,"hidden":false},
+  "criteria": {
+    "analyzer":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:matter_analyzer"]}]}},
+    "decomposer":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:decomposer"]}]}},
+    "pattern_drive":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":["matteroverdrive:pattern_drive"]}]}}
+  },
+  "requirements": [["analyzer"],["decomposer"],["pattern_drive"]]
+}
