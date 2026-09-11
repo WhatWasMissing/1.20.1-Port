@@ -8,6 +8,8 @@ import matteroverdrive.quest.LegacyStoryContracts;
 import matteroverdrive.quest.ResearchCampaignQuestFlow;
 import matteroverdrive.quest.ResearchProgression;
 import matteroverdrive.quest.ScientistStoryQuestFlow;
+import matteroverdrive.world.AmbientLoreCatalog;
+import matteroverdrive.world.AmbientLoreSavedData;
 import matteroverdrive.world.TechnologySiteDiscoverySavedData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -60,6 +62,18 @@ public class DataPadItem extends Item {
         TechnologySiteDiscoverySavedData sites = TechnologySiteDiscoverySavedData.get(player.serverLevel());
         lines.add("Field sites discovered: " + sites.count(player.getUUID()));
         for (String site : sites.siteNames(player.getUUID())) lines.add("  - " + site.replace('_', ' '));
+
+        AmbientLoreSavedData ambient = AmbientLoreSavedData.get(player.serverLevel());
+        List<AmbientLoreCatalog.Entry> ambientEntries = ambient.entries(player.getUUID());
+        lines.add("Optional field logs: " + ambientEntries.size() + "/" + AmbientLoreCatalog.count());
+        if (!ambientEntries.isEmpty()) {
+            lines.add("Recently authenticated:");
+            int shown = 0;
+            for (int i = ambientEntries.size() - 1; i >= 0 && shown < 5; i--, shown++) {
+                lines.add("  - " + ambientEntries.get(i).title());
+            }
+        }
+
         CompoundTag encounterResearch = player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)
                 .getCompound("MatterOverdriveEncounterResearch");
         lines.add("Encounter evidence: " + encounterResearch.getAllKeys().size() + " faction(s) logged");
@@ -162,7 +176,7 @@ public class DataPadItem extends Item {
             tooltip.add(Component.literal("Standalone field console, research journal and block scan history").withStyle(ChatFormatting.AQUA));
         }
         tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Field operations and encounter evidence are shown in the journal.").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.add(Component.literal("Field operations, recovered logs and encounter evidence are shown in the journal.").withStyle(ChatFormatting.DARK_AQUA));
         if (!history.isEmpty()) tooltip.add(Component.literal("Latest: " + history.get(0)).withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("Use on a block to record it; use in air to open the field console.").withStyle(ChatFormatting.DARK_GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
