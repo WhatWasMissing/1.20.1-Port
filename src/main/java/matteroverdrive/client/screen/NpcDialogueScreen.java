@@ -1,5 +1,6 @@
 package matteroverdrive.client.screen;
 
+import matteroverdrive.client.PdaNarrationController;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -9,12 +10,16 @@ import net.minecraft.util.FormattedCharSequence;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Compact bottom dialogue box for scientist and story conversations. */
+/**
+ * Responsive bottom communication panel shared by legacy scientists and the
+ * present-day field-team/synthetic NPC roster.
+ */
 public final class NpcDialogueScreen extends Screen {
-    private static final int BOX_HEIGHT = 132;
     private static final int LINE_HEIGHT = 11;
-    private static final int TEXT_TOP = 47;
-    private static final int TEXT_BOTTOM_PADDING = 31;
+    private static final int CYAN = 0xFF58C7D8;
+    private static final int ORANGE = 0xFFFFB34E;
+    private static final int TEXT = 0xFFDCE9ED;
+    private static final int MUTED = 0xFF899DA6;
 
     private final String speaker;
     private final String heading;
@@ -22,10 +27,11 @@ public final class NpcDialogueScreen extends Screen {
     private final List<FormattedCharSequence> wrapped = new ArrayList<>();
     private int page;
     private int linesPerPage;
+    private int boxHeight;
 
     public NpcDialogueScreen(String speaker, String heading, List<String> lines) {
-        super(Component.literal(heading == null ? "Dialogue" : heading));
-        this.speaker = speaker == null || speaker.isBlank() ? "Scientist" : speaker;
+        super(Component.literal(heading == null || heading.isBlank() ? "Dialogue" : heading));
+        this.speaker = speaker == null || speaker.isBlank() ? "Unknown Contact" : speaker;
         this.heading = heading == null ? "" : heading;
         this.sourceLines = List.copyOf(lines == null ? List.of() : lines);
     }
@@ -33,76 +39,120 @@ public final class NpcDialogueScreen extends Screen {
     @Override
     protected void init() {
         wrapped.clear();
-        int textWidth = Math.max(180, Math.min(520, width - 72));
+        boxHeight = Math.min(220, Math.max(142, height / 2));
+        int textWidth = Math.max(160, Math.min(600, width - 76));
         for (String line : sourceLines) {
             if (!wrapped.isEmpty()) wrapped.add(FormattedCharSequence.EMPTY);
-            wrapped.addAll(font.split(Component.literal(line), textWidth));
+            wrapped.addAll(font.split(Component.literal(line == null ? "" : line), textWidth));
         }
-        linesPerPage = Math.max(1, (BOX_HEIGHT - TEXT_TOP - TEXT_BOTTOM_PADDING) / LINE_HEIGHT + 1);
-        page = Math.min(page, pageCount() - 1);
+        if (wrapped.isEmpty()) wrapped.add(FormattedCharSequence.forward("...", net.minecraft.network.chat.Style.EMPTY));
+        linesPerPage = Math.max(1, (boxHeight - 92) / LINE_HEIGHT);
+        page = Math.max(0, Math.min(page, pageCount() - 1));
         rebuildButtons();
     }
 
     private void rebuildButtons() {
         clearWidgets();
+        int boxY = Math.max(22, height - boxHeight - 20);
+        int buttonY = boxY + boxHeight - 28;
+        int left = 20;
+        int right = width - 20;
+
+        addRenderableWidget(Button.builder(Component.literal(PdaNarrationController.isSpeaking() ? "STOP VOICE" : "READ ALOUD"), b -> {
+            if (PdaNarrationController.isSpeaking()) PdaNarrationController.stop();
+            else PdaNarrationController.read(speaker + ". " + heading + ". " + currentPageText());
+            rebuildButtons();
+        }).bounds(left + 12, buttonY, 92, 20).build());
+
         int pages = pageCount();
-        int buttonWidth = Math.min(92, Math.max(40, (width - 60) / 2));
-        int gap = Math.max(4, Math.min(8, width - buttonWidth * 2 - 40));
-        int right = Math.max(20, width - 20);
-        int continueX = right - buttonWidth;
-        int backX = continueX - gap - buttonWidth;
         if (page > 0) {
-            addRenderableWidget(Button.builder(Component.literal("Back"), b -> {
+            addRenderableWidget(Button.builder(Component.literal("< BACK"), b -> {
+                PdaNarrationController.stop();
                 page--;
                 rebuildButtons();
-            }).bounds(Math.max(20, backX), height - 39, buttonWidth, 20).build());
+            }).bounds(right - 190, buttonY, 82, 20).build());
         }
-        String label = page + 1 < pages ? "Continue" : "Close";
+        String label = page + 1 < pages ? "CONTINUE >" : "CLOSE";
         addRenderableWidget(Button.builder(Component.literal(label), b -> {
+            PdaNarrationController.stop();
             if (page + 1 < pages) {
                 page++;
                 rebuildButtons();
             } else {
                 onClose();
             }
-        }).bounds(continueX, height - 39, buttonWidth, 20).build());
+        }).bounds(right - 100, buttonY, 88, 20).build());
     }
 
     private int pageCount() {
         return Math.max(1, (wrapped.size() + Math.max(1, linesPerPage) - 1) / Math.max(1, linesPerPage));
     }
 
+    private String currentPageText() {
+        if (sourceLines.isEmpty()) return "No dialogue data received.";
+        // Reading the source lines gives the narrator natural sentence boundaries;
+        // page segmentation remains visual rather than an accessibility requirement.
+        if (pageCount() <= 1) return String.join(" ", sourceLines);
+        int visualStart = page * linesPerPage;
+        int visualEnd = Math.min(wrapped.size(), visualStart + linesPerPage);
+        StringBuilder result = new StringBuilder();
+        for (int i = visualStart; i < visualEnd; i++) {
+            String value = wrapped.get(i).getString();
+            if (!value.isBlank()) result.append(value).append(' ');
+        }
+        return result.toString().trim();
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics);
         int boxX = 20;
-        int boxY = Math.max(36, height - 168);
-        int boxW = width - 40;
-        graphics.fill(boxX, boxY, boxX + boxW, boxY + BOX_HEIGHT, 0xE810141B);
-        graphics.fill(boxX, boxY, boxX + boxW, boxY + 2, 0xFF58C7D8);
-        graphics.drawString(font, fit(speaker, boxW - 28), boxX + 14, boxY + 12, 0xFF58C7D8, false);
-        if (!heading.isBlank()) graphics.drawString(font, fit(heading, boxW - 28), boxX + 14, boxY + 27, 0xFFE7EDF2, false);
+        int boxY = Math.max(22, height - boxHeight - 20);
+        int boxW = Math.max(220, width - 40);
+        graphics.fill(boxX, boxY, boxX + boxW, boxY + boxHeight, 0xF20A141B);
+        graphics.fill(boxX, boxY, boxX + boxW, boxY + 2, CYAN);
+        graphics.fill(boxX, boxY + 40, boxX + boxW, boxY + 41, 0xFF183A44);
+
+        String channel = syntheticSpeaker() ? "SYNTHETIC CONTACT" : "FIELD COMMUNICATION";
+        graphics.drawString(font, Component.literal(channel), boxX + 14, boxY + 10, syntheticSpeaker() ? ORANGE : CYAN, false);
+        graphics.drawString(font, fit(speaker, boxW - 150), boxX + 14, boxY + 24, TEXT, false);
+        if (!heading.isBlank()) {
+            String headingText = fit(heading, Math.max(80, boxW / 2));
+            graphics.drawString(font, headingText, boxX + boxW - 14 - font.width(headingText), boxY + 24, MUTED, false);
+        }
 
         int pages = pageCount();
         if (pages > 1) {
-            String marker = (page + 1) + " / " + pages;
-            graphics.drawString(font, marker, boxX + boxW - 14 - font.width(marker), boxY + 12, 0xFF89949D, false);
+            String marker = String.format("%02d / %02d", page + 1, pages);
+            graphics.drawString(font, marker, boxX + boxW - 14 - font.width(marker), boxY + 10, MUTED, false);
         }
 
-        int y = boxY + TEXT_TOP;
+        int y = boxY + 51;
         int start = page * linesPerPage;
         int end = Math.min(wrapped.size(), start + linesPerPage);
-        for (int i = start; i < end; i++) {
-            graphics.drawString(font, wrapped.get(i), boxX + 14, y, 0xFFD3D8DD, false);
+        for (int i = start; i < end && y < boxY + boxHeight - 38; i++) {
+            graphics.drawString(font, wrapped.get(i), boxX + 14, y, TEXT, false);
             y += LINE_HEIGHT;
         }
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
+    private boolean syntheticSpeaker() {
+        String value = speaker.toLowerCase(java.util.Locale.ROOT);
+        return value.contains("morrow") || value.contains("chorus") || value.contains("hephaestus")
+                || value.contains("android") || value.contains("synthetic");
+    }
+
+    @Override
+    public void onClose() {
+        PdaNarrationController.stop();
+        super.onClose();
+    }
+
     @Override public boolean isPauseScreen() { return false; }
 
     private String fit(String text, int maxWidth) {
-        if (font.width(text) <= maxWidth) return text;
+        if (text == null || font.width(text) <= maxWidth) return text == null ? "" : text;
         int available = Math.max(0, maxWidth - font.width("…"));
         return font.plainSubstrByWidth(text, available) + "…";
     }
