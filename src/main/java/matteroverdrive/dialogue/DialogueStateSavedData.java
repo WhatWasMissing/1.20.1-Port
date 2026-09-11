@@ -76,11 +76,28 @@ public final class DialogueStateSavedData extends SavedData {
         return state == null ? 0 : state.archiveInsight;
     }
 
+    /**
+     * Records every selected topic as the latest choice, but applies its progression
+     * deltas only the first time the durable topic flag is earned. Re-reading lore is
+     * always allowed; repeatedly clicking a branch can never farm trust/insight.
+     */
     public void recordChoice(UUID player, String dialogueId, String choiceId, String flag,
                              int fieldDelta, int syntheticDelta, int insightDelta) {
         PlayerState state = state(player);
         state.lastChoice.put(dialogueId, choiceId == null ? "" : choiceId);
-        if (flag != null && !flag.isBlank() && state.flags.size() < MAX_FLAGS) state.flags.add(flag);
+
+        if (flag != null && !flag.isBlank()) {
+            if (state.flags.contains(flag)) {
+                setDirty();
+                return;
+            }
+            if (state.flags.size() >= MAX_FLAGS) {
+                setDirty();
+                return;
+            }
+            state.flags.add(flag);
+        }
+
         state.fieldTrust = clamp(state.fieldTrust + fieldDelta, -20, 20);
         state.syntheticTrust = clamp(state.syntheticTrust + syntheticDelta, -20, 20);
         state.archiveInsight = clamp(state.archiveInsight + insightDelta, 0, 100);
