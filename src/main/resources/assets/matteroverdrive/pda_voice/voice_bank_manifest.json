@@ -1,10 +1,12 @@
 {
-  "version": 4,
+  "version": 5,
   "primary_format": "wav",
-  "primary_path": "assets/matteroverdrive/pda_voice/<line_id>.wav",
-  "override_path": "config/matteroverdrive/pda_voice/<line_id>.wav",
-  "fallback_order": ["processed_neural_va", "local_os_tts", "minecraft_narrator", "caption"],
-  "processing_reference": "ICARUS approved synthetic VA preset 2026-09-11",
+  "primary_path": "assets/matteroverdrive/pda_voice/<line_id>.<profile>.wav",
+  "legacy_primary_path": "assets/matteroverdrive/pda_voice/<line_id>.wav",
+  "override_path": "config/matteroverdrive/pda_voice/<line_id>.<profile>.wav",
+  "legacy_override_path": "config/matteroverdrive/pda_voice/<line_id>.wav",
+  "fallback_order": ["profile_processed_neural_va", "processed_neural_va", "local_os_tts", "minecraft_narrator", "caption"],
+  "processing_reference": "ICARUS approved synthetic VA preset 2026-09-11 with contextual profile extensions 2026-09-12",
   "lines": [
     {"id":"field_link","text":"Field link established. Matter Overdrive infrastructure has been detected in this world. Recover records, learn the machines, and decide how much of the incident should be rebuilt."},
     {"id":"record_recovered","text":"New archive entry authenticated. Cross-reference added to the Overdrive Incident reconstruction."},
@@ -71,6 +73,23 @@
     {"id":"lore_orpheus_redaction","text":"Classification key authenticated. ORPHEUS standardized replacement language for M-zero, self-directed synthetics, and causal feedback events."},
     {"id":"lore_orpheus_memo","text":"Director memo authenticated. Rook interpreted warnings from the future as proof of reachability rather than evidence that the experiment should stop."},
     {"id":"lore_lagrange_tag","text":"Recovery tag authenticated. LAGRANGE recovered material combining ICARUS fabrication marks, synthetic substrate, and Matter crystal with impossible wear."},
-    {"id":"lore_lagrange_shift","text":"Crew message authenticated. LAGRANGE personnel independently predicted that ECHO-nine could receive their warning before they transmitted it."}
+    {"id":"lore_lagrange_shift","text":"Crew message authenticated. LAGRANGE personnel independently predicted that ECHO-nine could receive their warning before they transmitted it."},
+
+    {"id":"lore_dustwell_markings","text":"Excavation markings authenticated. DUSTWELL workers improvised a hazard language around M-zero before formal containment existed."},
+    {"id":"lore_mnemosyne_shelf","text":"Vault label authenticated. MNEMOSYNE staff abandoned synchronized inventory tools and returned to physical counts when database history became unreliable."},
+    {"id":"lore_kestrel_valve","text":"Maintenance tag authenticated. KESTREL operators trusted a local mechanical isolation valve over remote control telemetry after repeated resonance faults."},
+    {"id":"lore_atlas_evac","text":"Evacuation card authenticated. Atlas Freight policy explicitly counted synthetic personnel as crew before ORPHEUS classifications hardened."},
+    {"id":"lore_helix_tool","text":"Workstation note authenticated. A nominally blank HELIX chassis repeatedly returned a missing tool to the station of a remembered technician."},
+    {"id":"lore_nereid_chalk","text":"Emergency route markings authenticated. NEREID planned separate but coordinated evacuation routes for human and synthetic occupants."},
+    {"id":"lore_echo9_clocks","text":"Operator labels authenticated. ECHO-nine personnel physically separated local, origin, and arrival time to prevent software from erasing contradictory evidence."},
+    {"id":"lore_halcyon_exit","text":"Emergency marking authenticated. Halcyon survivors explicitly marked hull damage as not an exit and preserved a return route through unstable gravity."},
+    {"id":"lore_voss_mug","text":"Personal note authenticated. Voss used an ordinary household dispute to remind himself that synthetic personhood includes attachments with no experimental value."},
+    {"id":"lore_janus_door","text":"Care instruction authenticated. JANUS staff learned to verify contradictory memories before treating them as confusion or deception."},
+    {"id":"lore_morrow_wall","text":"Community roster authenticated. MORROW recorded humans and synthetics sharing ordinary household duties without separating them into command categories."},
+    {"id":"lore_bastion_tape","text":"Security marking authenticated. Bastion personnel created a physical route around Directive-zero classification when automated orders contradicted the person in front of them."},
+    {"id":"lore_hephaestus_grid","text":"Safety marking authenticated. HEPHAESTUS rewrote factory traffic rules around evacuation priority before human supervisors issued equivalent instructions."},
+    {"id":"lore_icarus_paint","text":"Engineering marking authenticated. ICARUS technicians physically labelled local SCRAM authority after remote systems demonstrated false control states."},
+    {"id":"lore_orpheus_bins","text":"Records-process labels authenticated. ORPHEUS separated anomalous mechanisms it wanted to preserve from testimony it intended to erase or rewrite."},
+    {"id":"lore_lagrange_tape","text":"Recovery procedure authenticated. LAGRANGE crews photographed evidence before moving it in case serial identity changed during observation."}
   ]
 }
