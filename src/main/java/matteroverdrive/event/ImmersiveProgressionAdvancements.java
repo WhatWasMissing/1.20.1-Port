@@ -4,6 +4,7 @@ import matteroverdrive.MatterOverdrive;
 import matteroverdrive.dialogue.ContactQuestServices;
 import matteroverdrive.dialogue.FactionReputation;
 import matteroverdrive.quest.FieldOperations;
+import matteroverdrive.world.AmbientLoreSavedData;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,6 +31,9 @@ public final class ImmersiveProgressionAdvancements {
         if (trusted >= 3) grant(player, "coalition_builder");
         if (allChains) grant(player, "network_of_trust");
         if (FieldOperations.completions(player) >= 10) grant(player, "field_veteran");
+        if (AmbientLoreSavedData.get(player.serverLevel()).count(player.getUUID()) >= 32) {
+            grant(player, "field_historian");
+        }
     }
 
     private static void grant(ServerPlayer player, String path) {
