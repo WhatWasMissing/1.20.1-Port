@@ -90,27 +90,27 @@ public final class AnomalyFieldEvents {
                         .withStyle(ChatFormatting.LIGHT_PURPLE));
                 player.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 20 * 6, 0, false, false, true));
                 if (!equalized) player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 4, 0, false, false, true));
-                ModNetwork.sendPdaVoice(player, "anomaly_gravity_shear");
+                ModNetwork.sendPdaVoice(player, "anomaly_warning");
             }
             case 1 -> {
                 player.sendSystemMessage(Component.literal("PDA // TEMPORAL DRAG: local action timing has lost phase coherence.")
                         .withStyle(ChatFormatting.DARK_AQUA));
                 player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 4 * scale, equalized ? 0 : 1, false, false, true));
                 player.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20 * 5 * scale, 0, false, false, true));
-                ModNetwork.sendPdaVoice(player, "anomaly_temporal_drag");
+                ModNetwork.sendPdaVoice(player, "signal_echo");
             }
             case 2 -> {
                 player.sendSystemMessage(Component.literal("PDA // RESONANCE ECHO: sensory state does not match a single local timestamp.")
                         .withStyle(ChatFormatting.AQUA));
                 if (!equalized) player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 5, 0, false, false, true));
                 player.addEffect(new MobEffectInstance(MobEffects.GLOWING, 20 * 4, 0, false, false, true));
-                ModNetwork.sendPdaVoice(player, "anomaly_resonance_echo");
+                ModNetwork.sendPdaVoice(player, "matter_resonance");
             }
             default -> {
                 player.sendSystemMessage(Component.literal("PDA // MATTER STATIC: replicated-state noise is coupling to nearby inventory patterns.")
                         .withStyle(ChatFormatting.YELLOW));
                 player.addEffect(new MobEffectInstance(MobEffects.LUCK, 20 * 8, equalized ? 0 : 1, false, false, true));
-                ModNetwork.sendPdaVoice(player, "anomaly_matter_static");
+                ModNetwork.sendPdaVoice(player, "matter_resonance");
             }
         }
         if (equalized) {
