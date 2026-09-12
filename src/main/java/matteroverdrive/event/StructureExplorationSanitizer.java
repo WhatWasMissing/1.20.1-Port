@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -68,9 +69,10 @@ public final class StructureExplorationSanitizer {
     @SubscribeEvent
     public static void chunkLoaded(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (!(event.getChunk() instanceof LevelChunk chunk)) return;
 
         List<BlockPos> candidates = new ArrayList<>();
-        for (Map.Entry<BlockPos, BlockEntity> entry : event.getChunk().getBlockEntities().entrySet()) {
+        for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
             ResourceLocation id = ForgeRegistries.BLOCKS.getKey(entry.getValue().getBlockState().getBlock());
             if (id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) continue;
             if (FUNCTIONAL_BLOCKS.contains(id.getPath())) candidates.add(entry.getKey().immutable());
@@ -95,8 +97,6 @@ public final class StructureExplorationSanitizer {
         long hash = pos.asLong() ^ level.getSeed() ^ ((long) site.id().hashCode() << 32);
         int variant = Math.floorMod(hash, 7);
 
-        // Roughly one machine position in four becomes a real reward cache. The rest
-        // become inert wreckage so rooms still tell the story of what they used to do.
         if (variant <= 1) {
             Block crate = block("tritanium_crate", Blocks.BARREL);
             level.setBlock(pos, crate.defaultBlockState(), 3);
@@ -123,11 +123,6 @@ public final class StructureExplorationSanitizer {
         }
     }
 
-    /**
-     * Place a finite facility-security marker beside a cache only when there is a
-     * genuine side alcove: solid floor plus two blocks of clear headroom. We never
-     * overwrite a doorway/corridor just to force combat.
-     */
     private static void ensureGuard(ServerLevel level, BlockPos cachePos, Site site, long hash) {
         int start = Math.floorMod((int) hash, GUARD_OFFSETS.length);
         for (int i = 0; i < GUARD_OFFSETS.length; i++) {
