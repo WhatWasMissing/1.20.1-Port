@@ -1,0 +1,15 @@
+{
+  "parent": "matteroverdrive:campaign/anomaly_engineer",
+  "display": {
+    "icon": {"item": "matteroverdrive:spacetime_equalizer"},
+    "title": {"text": "The Field Is Not Empty"},
+    "description": {"text": "Personally observe all four recorded gravitational-anomaly field signatures."},
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {"observed_all": {"trigger": "minecraft:impossible"}},
+  "requirements": [["observed_all"]],
+  "rewards": {"experience": 250}
+}
