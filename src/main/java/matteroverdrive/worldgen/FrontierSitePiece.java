@@ -189,7 +189,7 @@ public final class FrontierSitePiece extends StructurePiece {
     private void refinery(WorldGenLevel level,BoundingBox clip){module(level,clip,10,8,7,greenWall(),greenFloor(),true,p(-5,1,3,"matter_storage_matrix",Blocks.IRON_BLOCK),p(0,1,3,"decomposer",Blocks.BLAST_FURNACE),p(5,1,3,"matter_excavator",Blocks.BLAST_FURNACE));for(int z=-4;z<=5;z++)set(level,clip,origin.offset(0,1,z),mod("decorative.tritanium_plate_stripe",Blocks.YELLOW_CONCRETE));}
 
     private void vaultCore(WorldGenLevel level,BoundingBox clip){
-        module(level,clip,11,10,8,darkWall(),darkFloor(),true,p(0,1,-5,"facility_network_controller",Blocks.IRON_BLOCK));
+        module(level,clip,11,10,8,blackWall(),darkFloor(),true,p(0,1,-5,"facility_network_controller",Blocks.IRON_BLOCK));
         BlockState glass=mod("industrial_glass",Blocks.TINTED_GLASS),beam=mod("decorative.beams",Blocks.POLISHED_DEEPSLATE);
         // Central secure cage, with four doors so it cannot trap progression.
         for(int x=-5;x<=5;x++)for(int z=-5;z<=5;z++)if(Math.abs(x)==5||Math.abs(z)==5)for(int y=1;y<=5;y++)set(level,clip,origin.offset(x,y,z),y==1||y==5?beam:glass);
