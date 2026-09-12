@@ -1,6 +1,7 @@
 package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.worldgen.EnvironmentalDressingPiece;
 import matteroverdrive.worldgen.FacilityInfrastructurePiece;
 import matteroverdrive.worldgen.FacilityTerrainPiece;
 import matteroverdrive.worldgen.FrontierExplorationStructurePiece;
@@ -59,6 +60,7 @@ public final class ModStructures {
     public static final RegistryObject<StructurePieceType> MODERN_TRAVERSAL_REPAIR_PIECE = STRUCTURE_PIECES.register("modern_traversal_repair", () -> ModernTraversalRepairPiece::new);
     public static final RegistryObject<StructurePieceType> FRONTIER_EXPLORATION_PIECE = STRUCTURE_PIECES.register("frontier_exploration", () -> FrontierExplorationStructurePiece::new);
     public static final RegistryObject<StructurePieceType> RARE_ARCHIVE_MEZZANINE_PIECE = STRUCTURE_PIECES.register("rare_archive_mezzanine", () -> RareArchiveMezzaninePiece::new);
+    public static final RegistryObject<StructurePieceType> ENVIRONMENTAL_DRESSING_PIECE = STRUCTURE_PIECES.register("environmental_dressing", () -> EnvironmentalDressingPiece::new);
 
     private static RegistryObject<StructureType<LegacyNativeStructure>> type(String id, LegacyParityStructureFeature.Kind kind) {
         return STRUCTURE_TYPES.register(id, () -> () -> LegacyNativeStructure.codec(kind));
