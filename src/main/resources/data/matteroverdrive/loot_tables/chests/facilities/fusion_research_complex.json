@@ -23,7 +23,8 @@
       "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.55 }],
       "entries": [
         {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"icarus_interlock_note\"}"}]},
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"icarus_last_coffee\"}"}]}
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"icarus_last_coffee\"}"}]},
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"icarus_scram_paint\"}"}]}
       ]
     },
     {
