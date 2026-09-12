@@ -2,7 +2,7 @@
 
 Date: 2026-09-12
 Branch: `npc-structure-hud-pass`
-Base: `testing/tech-overhaul` @ `1ee988c163cd5754d0f2b0b48c9ef08fb9b0f975`
+Base: `testing/tech-overhaul` @ `a3d4ee62eda322ac97e35522360b6dc96276fa8d`
 
 ## Scope
 
