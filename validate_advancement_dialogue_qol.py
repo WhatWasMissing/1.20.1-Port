@@ -95,6 +95,10 @@ new_advancements = {
     "full_spectrum_engineer.json": "matteroverdrive:campaign/anomaly_engineer",
     "field_archivist.json": "matteroverdrive:campaign/frontier_expedition",
     "every_scrap_matters.json": "matteroverdrive:campaign/field_archivist",
+    "anomaly_field_observer.json": "matteroverdrive:campaign/anomaly_engineer",
+    "coalition_builder.json": "matteroverdrive:campaign/incident_analyst",
+    "network_of_trust.json": "matteroverdrive:campaign/coalition_builder",
+    "field_veteran.json": "matteroverdrive:campaign/automation",
 }
 for name, parent in new_advancements.items():
     path = adv_dir / name
@@ -115,25 +119,28 @@ for name, parent in new_advancements.items():
         ERRORS.append(f"{name}: missing display title/description")
 
 for name in ["field_liaison.json", "synthetic_liaison.json", "incident_analyst.json",
-             "field_archivist.json", "every_scrap_matters.json"]:
+             "field_archivist.json", "every_scrap_matters.json", "anomaly_field_observer.json",
+             "coalition_builder.json", "network_of_trust.json", "field_veteran.json"]:
     path = adv_dir / name
     if path.is_file():
         data = json.loads(path.read_text(encoding="utf-8"))
-        trigger = data.get("criteria", {}).get("earned", {}).get("trigger")
-        if trigger != "minecraft:impossible":
+        criteria = data.get("criteria", {})
+        triggers = [value.get("trigger") for value in criteria.values() if isinstance(value, dict)]
+        if not triggers or any(trigger != "minecraft:impossible" for trigger in triggers):
             ERRORS.append(f"{name}: server-earned advancement must use minecraft:impossible")
 
 voice_ids = re.findall(r'LINES\.put\("([^"]+)"', voice)
-if len(voice_ids) < 64:
-    ERRORS.append(f"PdaVoiceLineCatalog expected at least 64 authored lines, found {len(voice_ids)}")
+if len(voice_ids) < 80:
+    ERRORS.append(f"PdaVoiceLineCatalog expected at least 80 authored lines, found {len(voice_ids)}")
 if len(set(voice_ids)) != len(voice_ids):
     ERRORS.append("PdaVoiceLineCatalog contains duplicate IDs")
 for required in ["field_link", "closed_loop", "site_dustwell", "site_lagrange",
-                 "lore_dustwell_shift", "lore_lagrange_shift"]:
+                 "lore_dustwell_shift", "lore_lagrange_shift", "lore_dustwell_markings",
+                 "lore_lagrange_tape"]:
     if required not in voice_ids:
         ERRORS.append(f"PdaVoiceLineCatalog missing required line {required}")
 for token in ["System.Speech", "powershell.exe", "espeak", "spd-say", "PdaVoiceLineCatalog.line",
-              "pda_voice/", "config", "recordedStream"]:
+              "pda_voice/", "config", "recordedStream", "PdaVoiceProfile", ".profile"]:
     require(audio, token, "PdaEmbeddedAudio")
 try:
     manifest = json.loads(manifest_text)
@@ -144,8 +151,8 @@ except Exception as exc:
     ERRORS.append(f"voice bank manifest invalid JSON: {exc}")
 
 ambient_ids = re.findall(r'e\("([^"]+)",\s*"([^"]+)"', ambient_catalog)
-if len(ambient_ids) != 32:
-    ERRORS.append(f"AmbientLoreCatalog expected 32 records, found {len(ambient_ids)}")
+if len(ambient_ids) != 48:
+    ERRORS.append(f"AmbientLoreCatalog expected 48 records, found {len(ambient_ids)}")
 ambient_id_only = [pair[0] for pair in ambient_ids]
 if len(set(ambient_id_only)) != len(ambient_id_only):
     ERRORS.append("AmbientLoreCatalog contains duplicate IDs")
