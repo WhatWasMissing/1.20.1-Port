@@ -1,5 +1,6 @@
 package matteroverdrive.entity;
 
+import matteroverdrive.dialogue.ContactQuestServices;
 import matteroverdrive.network.ModNetwork;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -75,7 +76,8 @@ public class DefectorAndroidEntity extends RogueAndroidEntity {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!level().isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ModNetwork.openBranchingDialogue(serverPlayer, role.dialogueId(), role.title());
+            if (player.isShiftKeyDown()) ContactQuestServices.useSynthetic(serverPlayer, role);
+            else ModNetwork.openBranchingDialogue(serverPlayer, role.dialogueId(), role.title());
         }
         return InteractionResult.sidedSuccess(level().isClientSide);
     }
