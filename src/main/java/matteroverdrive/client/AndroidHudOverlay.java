@@ -16,6 +16,8 @@ import net.minecraftforge.fml.common.Mod;
 public final class AndroidHudOverlay {
     private static final int PANEL_WIDTH = 252;
     private static final int PANEL_HEIGHT = 148;
+    private static final int EDGE_PADDING = 8;
+    private static final int TOP_SAFE_MARGIN = 24;
 
     private AndroidHudOverlay() {}
 
@@ -25,8 +27,18 @@ public final class AndroidHudOverlay {
         if (!AndroidClientState.isActive() || minecraft.options.hideGui) return;
 
         GuiGraphics graphics = event.getGuiGraphics();
-        int x = 8;
-        int y = event.getWindow().getGuiScaledHeight() - PANEL_HEIGHT - 18;
+        int guiWidth = event.getWindow().getGuiScaledWidth();
+        int guiHeight = event.getWindow().getGuiScaledHeight();
+
+        // Keep the lower-left quadrant clear for vanilla chat and PDA/status feedback.
+        // Right-centering also makes the panel resilient to GUI-scale changes without
+        // colliding with the hotbar or action-bar text along the bottom edge.
+        int x = Math.max(EDGE_PADDING, guiWidth - PANEL_WIDTH - EDGE_PADDING);
+        int y = Math.max(TOP_SAFE_MARGIN, (guiHeight - PANEL_HEIGHT) / 2);
+        if (y + PANEL_HEIGHT > guiHeight - EDGE_PADDING) {
+            y = Math.max(TOP_SAFE_MARGIN, guiHeight - PANEL_HEIGHT - EDGE_PADDING);
+        }
+
         int energy = AndroidClientState.energy();
         int capacity = Math.max(1, AndroidClientState.energyCapacity());
         int lowEnergyThreshold = Math.max(1, capacity * 15 / 100);
