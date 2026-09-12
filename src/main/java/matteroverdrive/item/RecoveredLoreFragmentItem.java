@@ -67,6 +67,7 @@ public final class RecoveredLoreFragmentItem extends Item {
                         .withStyle(ChatFormatting.GREEN));
                 ModNetwork.sendPdaVoice(serverPlayer, entry.voiceLine());
                 if (recovered >= 16) grant(serverPlayer, "field_archivist");
+                if (recovered >= 32) grant(serverPlayer, "field_historian");
                 if (recovered >= AmbientLoreCatalog.count()) grant(serverPlayer, "every_scrap_matters");
             } else {
                 serverPlayer.sendSystemMessage(Component.literal("Duplicate archive copy. Existing PDA record retained.")
