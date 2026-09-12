@@ -1,0 +1,15 @@
+{
+  "parent": "matteroverdrive:campaign/incident_analyst",
+  "display": {
+    "icon": {"item": "matteroverdrive:data_pad"},
+    "title": {"text": "Coalition Builder"},
+    "description": {"text": "Reach Trusted standing with at least three independent recovery or synthetic networks."},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {"trusted_three": {"trigger": "minecraft:impossible"}},
+  "requirements": [["trusted_three"]],
+  "rewards": {"experience": 200}
+}
