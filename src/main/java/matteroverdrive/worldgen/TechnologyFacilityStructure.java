@@ -65,6 +65,9 @@ public final class TechnologyFacilityStructure extends Structure {
             TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout);
             FacilityInfrastructurePiece.assemble(builder, kind, origin, layout);
             FacilityTerrainPiece.assemble(builder, kind, origin, layout);
+            // Population/dressing is an independent chunk-clipped pass added last so it cannot
+            // compromise room traversal or reintroduce large synchronous structure stamping.
+            FacilityPopulationPiece.assemble(builder, kind, origin, layout);
         }));
     }
 
