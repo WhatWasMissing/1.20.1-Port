@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.worldgen.FacilityInfrastructurePiece;
+import matteroverdrive.worldgen.FacilityPopulationPiece;
 import matteroverdrive.worldgen.FacilityTerrainPiece;
 import matteroverdrive.worldgen.LegacyNativeStructure;
 import matteroverdrive.worldgen.LegacyNativeStructurePiece;
@@ -36,6 +37,7 @@ public final class ModStructures {
     public static final RegistryObject<StructurePieceType> TECHNOLOGY_FACILITY_PIECE = STRUCTURE_PIECES.register("technology_facility", () -> TechnologyFacilityStructurePiece::new);
     public static final RegistryObject<StructurePieceType> FACILITY_INFRASTRUCTURE_PIECE = STRUCTURE_PIECES.register("facility_infrastructure", () -> FacilityInfrastructurePiece::new);
     public static final RegistryObject<StructurePieceType> FACILITY_TERRAIN_PIECE = STRUCTURE_PIECES.register("facility_terrain", () -> FacilityTerrainPiece::new);
+    public static final RegistryObject<StructurePieceType> FACILITY_POPULATION_PIECE = STRUCTURE_PIECES.register("facility_population", () -> FacilityPopulationPiece::new);
 
     private static RegistryObject<StructureType<LegacyNativeStructure>> type(String id, LegacyParityStructureFeature.Kind kind) {
         return STRUCTURE_TYPES.register(id, () -> () -> LegacyNativeStructure.codec(kind));
