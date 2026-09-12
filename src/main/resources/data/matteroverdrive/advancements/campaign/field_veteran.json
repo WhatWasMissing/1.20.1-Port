@@ -1,0 +1,15 @@
+{
+  "parent": "matteroverdrive:campaign/automation",
+  "display": {
+    "icon": {"item": "minecraft:compass"},
+    "title": {"text": "Field Veteran"},
+    "description": {"text": "Complete ten repeatable Matter Overdrive Field Operations."},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {"ten_operations": {"trigger": "minecraft:impossible"}},
+  "requirements": [["ten_operations"]],
+  "rewards": {"experience": 200}
+}
