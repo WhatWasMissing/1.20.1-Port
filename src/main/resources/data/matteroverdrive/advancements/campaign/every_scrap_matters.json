@@ -1,9 +1,9 @@
 {
-  "parent": "matteroverdrive:campaign/field_archivist",
+  "parent": "matteroverdrive:campaign/field_historian",
   "display": {
     "icon": {"item": "matteroverdrive:data_pad"},
     "title": {"text": "Every Scrap Matters"},
-    "description": {"text": "Authenticate all 32 optional facility records."},
+    "description": {"text": "Authenticate all 48 optional facility records."},
     "frame": "challenge",
     "show_toast": true,
     "announce_to_chat": true,
