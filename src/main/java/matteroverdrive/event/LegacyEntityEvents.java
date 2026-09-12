@@ -2,6 +2,7 @@ package matteroverdrive.event;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.entity.DroneEntity;
+import matteroverdrive.entity.FacilityNpcEntity;
 import matteroverdrive.entity.MutantScientistEntity;
 import matteroverdrive.entity.RogueAndroidEntity;
 import matteroverdrive.registry.ModEntities;
@@ -27,9 +28,9 @@ public final class LegacyEntityEvents {
         event.put(ModEntities.DRONE.get(), DroneEntity.createAttributes().build());
         event.put(ModEntities.MUTANT_SCIENTIST.get(), MutantScientistEntity.createAttributes().build());
         event.put(ModEntities.MAD_SCIENTIST.get(), Villager.createAttributes().build());
-        event.put(ModEntities.FACILITY_RESEARCHER.get(), Villager.createAttributes().build());
-        event.put(ModEntities.FACILITY_ENGINEER.get(), Villager.createAttributes().build());
-        event.put(ModEntities.FACILITY_SECURITY.get(), Villager.createAttributes().build());
+        event.put(ModEntities.FACILITY_RESEARCHER.get(), FacilityNpcEntity.createAttributes().build());
+        event.put(ModEntities.FACILITY_ENGINEER.get(), FacilityNpcEntity.createAttributes().build());
+        event.put(ModEntities.FACILITY_SECURITY.get(), FacilityNpcEntity.createAttributes().build());
         event.put(ModEntities.FAILED_COW.get(), Cow.createAttributes().build());
         event.put(ModEntities.FAILED_PIG.get(), Pig.createAttributes().build());
         event.put(ModEntities.FAILED_SHEEP.get(), Sheep.createAttributes().build());
