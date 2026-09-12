@@ -27,6 +27,9 @@ public final class LegacyEntityClientEvents {
         event.registerEntityRenderer(ModEntities.DRONE.get(), LegacyEntityRenderers.DroneRenderer::new);
         event.registerEntityRenderer(ModEntities.MUTANT_SCIENTIST.get(), LegacyEntityRenderers.MutantScientistRenderer::new);
         event.registerEntityRenderer(ModEntities.MAD_SCIENTIST.get(), LegacyEntityRenderers.MadScientistRenderer::new);
+        event.registerEntityRenderer(ModEntities.FACILITY_RESEARCHER.get(), LegacyEntityRenderers.FacilityNpcRenderer::new);
+        event.registerEntityRenderer(ModEntities.FACILITY_ENGINEER.get(), LegacyEntityRenderers.FacilityNpcRenderer::new);
+        event.registerEntityRenderer(ModEntities.FACILITY_SECURITY.get(), LegacyEntityRenderers.FacilityNpcRenderer::new);
         event.registerEntityRenderer(ModEntities.FAILED_COW.get(), LegacyEntityRenderers.FailedCowRenderer::new);
         event.registerEntityRenderer(ModEntities.FAILED_PIG.get(), LegacyEntityRenderers.FailedPigRenderer::new);
         event.registerEntityRenderer(ModEntities.FAILED_SHEEP.get(), LegacyEntityRenderers.FailedSheepRenderer::new);
