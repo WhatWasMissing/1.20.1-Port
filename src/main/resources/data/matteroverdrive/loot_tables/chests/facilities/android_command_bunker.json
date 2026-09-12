@@ -23,7 +23,8 @@
       "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.55 }],
       "entries": [
         {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"bastion_kade_draft\"}"}]},
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"bastion_armory_notice\"}"}]}
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"bastion_armory_notice\"}"}]},
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"bastion_tape_arrow\"}"}]}
       ]
     },
     {
