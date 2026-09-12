@@ -1,0 +1,15 @@
+{
+  "parent": "matteroverdrive:campaign/coalition_builder",
+  "display": {
+    "icon": {"item": "matteroverdrive:data_pad"},
+    "title": {"text": "Network of Trust"},
+    "description": {"text": "Complete all five contemporary contact chains without collapsing them into one command structure."},
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {"all_contact_chains": {"trigger": "minecraft:impossible"}},
+  "requirements": [["all_contact_chains"]],
+  "rewards": {"experience": 400}
+}
