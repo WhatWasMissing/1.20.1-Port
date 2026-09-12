@@ -50,6 +50,9 @@ public final class TechnologyFacilityStructure extends Structure {
                 builder.addPiece(new RareArchiveMezzaninePiece(origin,
                         kind.name().toLowerCase(java.util.Locale.ROOT)));
             }
+            // Dressing is authored last and may only occupy already-open side cells.
+            builder.addPiece(new EnvironmentalDressingPiece(
+                    kind.name().toLowerCase(java.util.Locale.ROOT), origin));
         }));
     }
 
