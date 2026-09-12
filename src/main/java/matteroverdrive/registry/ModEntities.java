@@ -2,6 +2,7 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.entity.DroneEntity;
+import matteroverdrive.entity.FacilityNpcEntity;
 import matteroverdrive.entity.FailedChickenEntity;
 import matteroverdrive.entity.FailedCowEntity;
 import matteroverdrive.entity.FailedPigEntity;
@@ -23,6 +24,9 @@ public final class ModEntities {
     public static final RegistryObject<EntityType<DroneEntity>> DRONE = ENTITY_TYPES.register("drone", () -> EntityType.Builder.of(DroneEntity::new, MobCategory.MONSTER).sized(0.5F,0.5F).clientTrackingRange(10).build(MatterOverdrive.MOD_ID+":drone"));
     public static final RegistryObject<EntityType<MutantScientistEntity>> MUTANT_SCIENTIST = ENTITY_TYPES.register("mutant_scientist", () -> EntityType.Builder.of(MutantScientistEntity::new, MobCategory.MONSTER).sized(1.0F,2.3F).clientTrackingRange(10).build(MatterOverdrive.MOD_ID+":mutant_scientist"));
     public static final RegistryObject<EntityType<MadScientistEntity>> MAD_SCIENTIST = ENTITY_TYPES.register("mad_scientist", () -> EntityType.Builder.of(MadScientistEntity::new, MobCategory.CREATURE).sized(0.6F,1.95F).clientTrackingRange(10).build(MatterOverdrive.MOD_ID+":mad_scientist"));
+    public static final RegistryObject<EntityType<FacilityNpcEntity>> FACILITY_RESEARCHER = ENTITY_TYPES.register("facility_researcher", () -> EntityType.Builder.of(FacilityNpcEntity::new, MobCategory.CREATURE).sized(0.6F,1.8F).clientTrackingRange(10).build(MatterOverdrive.MOD_ID+":facility_researcher"));
+    public static final RegistryObject<EntityType<FacilityNpcEntity>> FACILITY_ENGINEER = ENTITY_TYPES.register("facility_engineer", () -> EntityType.Builder.of(FacilityNpcEntity::new, MobCategory.CREATURE).sized(0.6F,1.8F).clientTrackingRange(10).build(MatterOverdrive.MOD_ID+":facility_engineer"));
+    public static final RegistryObject<EntityType<FacilityNpcEntity>> FACILITY_SECURITY = ENTITY_TYPES.register("facility_security", () -> EntityType.Builder.of(FacilityNpcEntity::new, MobCategory.CREATURE).sized(0.6F,1.8F).clientTrackingRange(10).build(MatterOverdrive.MOD_ID+":facility_security"));
     public static final RegistryObject<EntityType<FailedCowEntity>> FAILED_COW = ENTITY_TYPES.register("failed_cow", () -> EntityType.Builder.of(FailedCowEntity::new, MobCategory.CREATURE).sized(0.9F,1.4F).clientTrackingRange(8).build(MatterOverdrive.MOD_ID+":failed_cow"));
     public static final RegistryObject<EntityType<FailedPigEntity>> FAILED_PIG = ENTITY_TYPES.register("failed_pig", () -> EntityType.Builder.of(FailedPigEntity::new, MobCategory.CREATURE).sized(0.9F,0.9F).clientTrackingRange(8).build(MatterOverdrive.MOD_ID+":failed_pig"));
     public static final RegistryObject<EntityType<FailedSheepEntity>> FAILED_SHEEP = ENTITY_TYPES.register("failed_sheep", () -> EntityType.Builder.of(FailedSheepEntity::new, MobCategory.CREATURE).sized(0.9F,1.3F).clientTrackingRange(8).build(MatterOverdrive.MOD_ID+":failed_sheep"));
