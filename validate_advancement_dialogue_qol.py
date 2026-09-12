@@ -140,7 +140,7 @@ for required in ["field_link", "closed_loop", "site_dustwell", "site_lagrange",
     if required not in voice_ids:
         ERRORS.append(f"PdaVoiceLineCatalog missing required line {required}")
 for token in ["System.Speech", "powershell.exe", "espeak", "spd-say", "PdaVoiceLineCatalog.line",
-              "pda_voice/", "config", "recordedStream", "PdaVoiceProfile", ".profile"]:
+              "pda_voice/", "config", "recordedStream", "PdaVoiceProfile", 'safeId + "." + profile']:
     require(audio, token, "PdaEmbeddedAudio")
 try:
     manifest = json.loads(manifest_text)
