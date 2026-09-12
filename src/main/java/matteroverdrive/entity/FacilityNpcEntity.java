@@ -8,9 +8,16 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -18,11 +25,12 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import javax.annotation.Nullable;
 
 /**
- * Human facility staff used to make technology sites feel occupied and purposeful.
- * They deliberately reuse vanilla Villager navigation/brain behaviour while their
- * client renderer uses the standard wide-arm Steve player model.
+ * Neutral human facility staff used to make technology sites feel occupied and purposeful.
+ * They use lightweight ambient pathfinding rather than Villager AI, so Rogue Androids do not
+ * immediately erase the population simply because Zombie AI treats vanilla villagers as prey.
+ * The client renders every role on the standard wide-arm Steve model.
  */
-public class FacilityNpcEntity extends Villager {
+public class FacilityNpcEntity extends PathfinderMob {
     public enum Role {
         RESEARCHER("Field Researcher", ChatFormatting.AQUA),
         ENGINEER("Systems Engineer", ChatFormatting.GOLD),
@@ -37,9 +45,24 @@ public class FacilityNpcEntity extends Villager {
         }
     }
 
-    public FacilityNpcEntity(EntityType<? extends Villager> type, Level level) {
+    public FacilityNpcEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
         refreshIdentity();
+    }
+
+    public static AttributeSupplier.Builder createAttributes() {
+        return Mob.createMobAttributes()
+                .add(Attributes.MAX_HEALTH, 20.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.24D)
+                .add(Attributes.FOLLOW_RANGE, 18.0D);
+    }
+
+    @Override
+    protected void registerGoals() {
+        goalSelector.addGoal(0, new FloatGoal(this));
+        goalSelector.addGoal(5, new RandomStrollGoal(this, 0.75D, 80));
+        goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        goalSelector.addGoal(7, new RandomLookAroundGoal(this));
     }
 
     public Role role() {
@@ -65,7 +88,6 @@ public class FacilityNpcEntity extends Villager {
         return data;
     }
 
-    /** Facility staff are flavour/world NPCs, not vanilla traders. */
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
