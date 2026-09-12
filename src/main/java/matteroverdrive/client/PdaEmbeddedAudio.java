@@ -1,6 +1,7 @@
 package matteroverdrive.client;
 
 import matteroverdrive.pda.PdaVoiceLineCatalog;
+import matteroverdrive.pda.PdaVoiceProfile;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -18,10 +19,12 @@ import java.util.Locale;
  * PDA audio backend.
  *
  * Playback order for short authored callouts:
- * 1. processed neural-VA WAV from config/matteroverdrive/pda_voice (local override),
- * 2. processed neural-VA WAV from bundled assets,
- * 3. local operating-system speech synthesis,
- * 4. Minecraft Narrator (handled by ClientPdaNotificationManager).
+ * 1. contextual processed WAV from config/matteroverdrive/pda_voice (local override),
+ * 2. ordinary processed WAV from config/matteroverdrive/pda_voice,
+ * 3. contextual processed WAV from bundled assets,
+ * 4. ordinary processed WAV from bundled assets,
+ * 5. local operating-system speech synthesis,
+ * 6. Minecraft Narrator (handled by ClientPdaNotificationManager).
  *
  * Nothing is uploaded at runtime. Short UI cues are synthesized directly in Java.
  */
@@ -104,25 +107,40 @@ public final class PdaEmbeddedAudio {
     private static AudioInputStream recordedStream(String id) {
         String safeId = id == null ? "" : id.replaceAll("[^a-z0-9_\\-]", "");
         if (safeId.isBlank()) return null;
+        String profile = PdaVoiceProfile.forLine(safeId).id();
 
-        // Local/modpack audio is a real override: it must win over anything bundled in the JAR.
-        Path override = Path.of("config", "matteroverdrive", "pda_voice", safeId + ".wav");
-        if (Files.isRegularFile(override)) {
-            try {
-                return AudioSystem.getAudioInputStream(override.toFile());
-            } catch (Throwable ignored) { }
+        // A profile-specific file can coexist with the ordinary bank. This is useful for
+        // anomaly/corrupted/ORPHEUS variants without changing any network packet or line ID.
+        AudioInputStream stream = fileStream(Path.of("config", "matteroverdrive", "pda_voice",
+                safeId + "." + profile + ".wav"));
+        if (stream != null) return stream;
+        stream = fileStream(Path.of("config", "matteroverdrive", "pda_voice", safeId + ".wav"));
+        if (stream != null) return stream;
+
+        stream = resourceStream("/assets/matteroverdrive/pda_voice/" + safeId + "." + profile + ".wav");
+        if (stream != null) return stream;
+        return resourceStream("/assets/matteroverdrive/pda_voice/" + safeId + ".wav");
+    }
+
+    private static AudioInputStream fileStream(Path path) {
+        if (!Files.isRegularFile(path)) return null;
+        try {
+            return AudioSystem.getAudioInputStream(path.toFile());
+        } catch (Throwable ignored) {
+            return null;
         }
+    }
 
-        String resource = "/assets/matteroverdrive/pda_voice/" + safeId + ".wav";
+    private static AudioInputStream resourceStream(String resource) {
         try {
             InputStream raw = PdaEmbeddedAudio.class.getResourceAsStream(resource);
-            if (raw != null) {
-                // Java Sound probes with mark/reset; jar resource streams do not always
-                // provide it, so wrap classpath audio before handing it to AudioSystem.
-                return AudioSystem.getAudioInputStream(new BufferedInputStream(raw));
-            }
-        } catch (Throwable ignored) { }
-        return null;
+            if (raw == null) return null;
+            // Java Sound probes with mark/reset; jar resource streams do not always
+            // provide it, so wrap classpath audio before handing it to AudioSystem.
+            return AudioSystem.getAudioInputStream(new BufferedInputStream(raw));
+        } catch (Throwable ignored) {
+            return null;
+        }
     }
 
     public static boolean playUi(String id) {
