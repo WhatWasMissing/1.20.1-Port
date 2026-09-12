@@ -1,0 +1,14 @@
+{
+  "parent": "matteroverdrive:campaign/field_archivist",
+  "display": {
+    "icon": {"item": "matteroverdrive:recovered_lore_fragment"},
+    "title": {"text": "Field Historian"},
+    "description": {"text": "Authenticate 32 optional facility records and reconstruct the human and synthetic story between the major Incident files."},
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {"earned": {"trigger": "minecraft:impossible"}},
+  "rewards": {"experience": 250}
+}
