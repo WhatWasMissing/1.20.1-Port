@@ -65,7 +65,7 @@ public class FacilityResearcherEntity extends Villager {
     }
 
     @Override
-    protected InteractionResult mobInteract(Player player, InteractionHand hand) {
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!level().isClientSide && player instanceof ServerPlayer serverPlayer) {
             ModNetwork.openBranchingDialogue(serverPlayer, role.dialogueId(), role.title());
         }
