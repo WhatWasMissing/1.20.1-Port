@@ -23,7 +23,8 @@
       "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.60 }],
       "entries": [
         {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"orpheus_redaction_key\"}"}]},
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"orpheus_director_memo\"}"}]}
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"orpheus_director_memo\"}"}]},
+        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"orpheus_bin_labels\"}"}]}
       ]
     },
     {
