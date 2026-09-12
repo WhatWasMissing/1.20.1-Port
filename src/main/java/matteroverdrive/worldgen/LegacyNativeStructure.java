@@ -55,6 +55,10 @@ public final class LegacyNativeStructure extends Structure {
                 if (kind == LegacyParityStructureFeature.Kind.MAD_SCIENTIST_HOUSE) {
                     builder.addPiece(new LegacyTraversalRepairPiece(origin));
                 }
+                // Decorative evidence is a final overlay and may only occupy open,
+                // supported side cells. The validated legacy route remains untouched.
+                builder.addPiece(new EnvironmentalDressingPiece(
+                        kind.name().toLowerCase(java.util.Locale.ROOT), origin));
             }));
         } catch (RuntimeException | Error error) {
             LOGGER.error("M2 STRUCTURE ERROR: generation-point lookup failed kind={} chunk={}",
