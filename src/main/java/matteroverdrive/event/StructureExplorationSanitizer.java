@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraftforge.event.level.ChunkEvent;
@@ -68,9 +69,10 @@ public final class StructureExplorationSanitizer {
     @SubscribeEvent
     public static void chunkLoaded(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (!(event.getChunk() instanceof LevelChunk chunk)) return;
 
         List<BlockPos> candidates = new ArrayList<>();
-        for (Map.Entry<BlockPos, BlockEntity> entry : event.getChunk().getBlockEntities().entrySet()) {
+        for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
             ResourceLocation id = ForgeRegistries.BLOCKS.getKey(entry.getValue().getBlockState().getBlock());
             if (id == null || !MatterOverdrive.MOD_ID.equals(id.getNamespace())) continue;
             if (FUNCTIONAL_BLOCKS.contains(id.getPath())) candidates.add(entry.getKey().immutable());
