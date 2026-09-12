@@ -39,6 +39,8 @@ public final class FrontierSiteStructure extends Structure {
                 builder.addPiece(new RareArchiveMezzaninePiece(origin,
                         kind.name().toLowerCase(java.util.Locale.ROOT)));
             }
+            builder.addPiece(new EnvironmentalDressingPiece(
+                    kind.name().toLowerCase(java.util.Locale.ROOT), origin));
         }));
     }
 
