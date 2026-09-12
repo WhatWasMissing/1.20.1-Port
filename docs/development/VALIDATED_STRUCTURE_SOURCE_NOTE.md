@@ -1,0 +1,1 @@
+The immersive-world pass preserves the validated `main` implementation of `FrontierSitePiece` verbatim. Environmental changes are implemented in the separate `EnvironmentalDressingPiece` overlay rather than by reformatting or replacing the proven Frontier room geometry.
