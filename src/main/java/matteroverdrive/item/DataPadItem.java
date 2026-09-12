@@ -1,5 +1,8 @@
 package matteroverdrive.item;
 
+import matteroverdrive.dialogue.ContactQuestServices;
+import matteroverdrive.dialogue.FactionReputation;
+import matteroverdrive.event.AnomalyFieldEvents;
 import matteroverdrive.event.ContractEvents;
 import matteroverdrive.event.TechnologyLoreEvents;
 import matteroverdrive.matter.MatterValueRegistry;
@@ -11,6 +14,8 @@ import matteroverdrive.quest.ResearchProgression;
 import matteroverdrive.quest.ScientistStoryQuestFlow;
 import matteroverdrive.world.AmbientLoreCatalog;
 import matteroverdrive.world.AmbientLoreSavedData;
+import matteroverdrive.world.StructureLoreCatalog;
+import matteroverdrive.world.StructureLoreSavedData;
 import matteroverdrive.world.TechnologyLoreCatalog;
 import matteroverdrive.world.TechnologyLoreSavedData;
 import matteroverdrive.world.TechnologySiteDiscoverySavedData;
@@ -40,7 +45,7 @@ import java.util.List;
 
 /** Standalone field console: block scanner plus persistent research-campaign journal. */
 public class DataPadItem extends Item {
-    public static final int HISTORY_CAPACITY = 16;
+    public static final int HISTORY_CAPACITY = 32;
     private static final String HISTORY_TAG = "DataPadScanHistory";
 
     public DataPadItem(Properties properties) { super(properties.stacksTo(1)); }
@@ -49,7 +54,8 @@ public class DataPadItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack dataPad = player.getItemInHand(hand);
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            ModNetwork.openDataPad(serverPlayer, journalLines(serverPlayer, dataPad));
+            if (player.isShiftKeyDown()) sendFieldSummary(serverPlayer);
+            else ModNetwork.openDataPad(serverPlayer, journalLines(serverPlayer, dataPad));
         }
         return InteractionResultHolder.sidedSuccess(dataPad, level.isClientSide);
     }
@@ -111,7 +117,14 @@ public class DataPadItem extends Item {
         lines.add("--- Field Operations ---");
         lines.add(FieldOperations.status(player));
         lines.add("Completed operations: " + FieldOperations.completions(player));
-        lines.add("Assign/change doctrine with /matteroverdrive research field assign <recovery|systems|anomaly>.");
+        lines.add("Anomaly field study: " + AnomalyFieldEvents.status(player));
+        lines.add("Contact network:");
+        for (FactionReputation.Faction faction : FactionReputation.Faction.values()) {
+            lines.add("  - " + FactionReputation.status(player, faction));
+            lines.add("    " + ContactQuestServices.questStatus(player, faction));
+        }
+        lines.add("Normal-use opens the PDA. Crouch-use shows a compact field summary in chat.");
+        lines.add("Crouch-use a contemporary NPC to access reputation-gated services and contact work.");
         lines.add("--- Progression ---");
         lines.addAll(ResearchProgression.roadmap(player));
         List<String> history = getHistory(dataPad);
@@ -120,6 +133,25 @@ public class DataPadItem extends Item {
             lines.addAll(history);
         }
         return lines;
+    }
+
+    private static void sendFieldSummary(ServerPlayer player) {
+        var id = player.getUUID();
+        int primary = StructureLoreSavedData.get(player.serverLevel()).count(id);
+        int optional = AmbientLoreSavedData.get(player.serverLevel()).count(id);
+        int technology = TechnologyLoreSavedData.get(player.serverLevel()).count(id);
+        player.sendSystemMessage(Component.literal("PDA // FIELD SUMMARY").withStyle(ChatFormatting.AQUA));
+        player.sendSystemMessage(Component.literal("Research: " + ResearchProgression.status(player)).withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.literal("Operation: " + FieldOperations.status(player)).withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.literal("Archive: " + primary + "/" + StructureLoreCatalog.RECORD_COUNT
+                + " primary • " + optional + "/" + AmbientLoreCatalog.count() + " field logs • "
+                + technology + "/" + TechnologyLoreCatalog.count() + " technologies").withStyle(ChatFormatting.DARK_AQUA));
+        player.sendSystemMessage(Component.literal(AnomalyFieldEvents.status(player)).withStyle(ChatFormatting.LIGHT_PURPLE));
+        for (FactionReputation.Faction faction : FactionReputation.Faction.values()) {
+            player.sendSystemMessage(Component.literal(FactionReputation.status(player, faction)
+                    + " • chain " + ContactQuestServices.stage(player, faction) + "/3")
+                    .withStyle(ChatFormatting.GRAY));
+        }
     }
 
     @Override
@@ -203,9 +235,9 @@ public class DataPadItem extends Item {
             tooltip.add(Component.literal("Standalone field console, research journal and block scan history").withStyle(ChatFormatting.AQUA));
         }
         tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY).withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("Incident archives, technology discoveries, field operations and encounter evidence are shown in the journal.").withStyle(ChatFormatting.DARK_AQUA));
+        tooltip.add(Component.literal("Incident archives, technology discoveries, contact standings, anomaly research and field operations are shown in the journal.").withStyle(ChatFormatting.DARK_AQUA));
         if (!history.isEmpty()) tooltip.add(Component.literal("Latest: " + history.get(0)).withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Use on a block to record it; use in air to open the field console.").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Use on a block to record it; use in air to open the PDA; crouch-use for field summary.").withStyle(ChatFormatting.DARK_GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 }
