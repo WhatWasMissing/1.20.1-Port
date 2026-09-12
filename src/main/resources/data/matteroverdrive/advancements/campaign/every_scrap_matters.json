@@ -1,5 +1,5 @@
 {
-  "parent": "matteroverdrive:campaign/field_historian",
+  "parent": "matteroverdrive:campaign/field_archivist",
   "display": {
     "icon": {"item": "matteroverdrive:data_pad"},
     "title": {"text": "Every Scrap Matters"},
