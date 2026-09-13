@@ -3,20 +3,23 @@ package matteroverdrive.item;
 import matteroverdrive.event.ContractEvents;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.network.ModNetwork;
+import matteroverdrive.pda.PdaAnnouncements;
+import matteroverdrive.pda.PdaMessage;
 import matteroverdrive.progression.PlayerDiscoveryLog;
 import matteroverdrive.quest.LegacyStoryContracts;
 import matteroverdrive.quest.ResearchCampaignQuestFlow;
 import matteroverdrive.quest.ResearchProgression;
 import matteroverdrive.quest.ScientistStoryQuestFlow;
+import matteroverdrive.registry.ModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -87,10 +90,13 @@ public class DataPadItem extends Item {
                     "ANALYSIS // " + displayName + " scanned. Matter value measured at " + matter + " kM.");
             if (isLegacyQuestScanner(dataPad) && isLegacyScanTarget(blockId)) {
                 if (state.getDestroySpeed(context.getLevel(), context.getClickedPos()) >= 0.0F) context.getLevel().destroyBlock(context.getClickedPos(), false, serverPlayer);
-                serverPlayer.sendSystemMessage(Component.literal("Research sample recorded: " + displayName).withStyle(ChatFormatting.LIGHT_PURPLE));
+                PdaAnnouncements.send(serverPlayer, PdaMessage.RESEARCH_SAMPLE_RECORDED, ChatFormatting.LIGHT_PURPLE, displayName);
             } else {
-                serverPlayer.sendSystemMessage(Component.literal("PDA recorded: " + entry).withStyle(matter > 0 ? ChatFormatting.AQUA : ChatFormatting.GRAY));
+                PdaAnnouncements.send(serverPlayer, PdaMessage.SCAN_RECORDED,
+                        matter > 0 ? ChatFormatting.AQUA : ChatFormatting.GRAY, entry);
             }
+            context.getLevel().playSound(null, context.getClickedPos(), ModSounds.get("scanner_success").get(),
+                    SoundSource.PLAYERS, 0.65F, 1.0F);
             serverPlayer.getInventory().setChanged();
             serverPlayer.inventoryMenu.broadcastChanges();
         }
@@ -128,10 +134,10 @@ public class DataPadItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        if (isLegacyQuestScanner(stack)) tooltip.add(Component.literal("Scientist research scanner").withStyle(ChatFormatting.LIGHT_PURPLE));
-        else tooltip.add(Component.literal("Personal research log and matter scanner").withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("Use on blocks to analyse them; use in air to open the PDA.").withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<net.minecraft.network.chat.Component> tooltip, TooltipFlag flag) {
+        if (isLegacyQuestScanner(stack)) tooltip.add(PdaMessage.TOOLTIP_RESEARCH_SCANNER.component().withStyle(ChatFormatting.LIGHT_PURPLE));
+        else tooltip.add(PdaMessage.TOOLTIP_PERSONAL_SCANNER.component().withStyle(ChatFormatting.AQUA));
+        tooltip.add(PdaMessage.TOOLTIP_USE.component().withStyle(ChatFormatting.GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 }

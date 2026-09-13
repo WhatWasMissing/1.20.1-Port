@@ -1,8 +1,9 @@
 package matteroverdrive.client.screen;
 
-import matteroverdrive.client.GuideMeCompatEvents;
+import matteroverdrive.client.ClientGuideHooks;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.network.ModNetwork;
+import matteroverdrive.pda.PdaMessage;
 import matteroverdrive.quest.ContractStageSupport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Compact PDA surface. Detailed documentation lives in GuideME; this screen is for live player data. */
+/** Compact PDA surface. The manual remains available with or without GuideME. */
 public class DataPadScreen extends Screen {
     private static final int PANEL_COLOR = 0xE6101820;
     private static final int BORDER_COLOR = 0xFF33CCFF;
@@ -29,24 +30,23 @@ public class DataPadScreen extends Screen {
     private int page;
     private int armedAbandonSlot = -1;
     private long abandonArmedUntil;
-    private Button logButton, contractsButton, manualButton;
+    private Button logButton, contractsButton;
 
     public DataPadScreen(List<String> history) {
-        super(Component.literal("Matter Overdrive PDA"));
+        super(PdaMessage.SCREEN_TITLE.component());
         this.history = new ArrayList<>(history);
         java.util.Arrays.fill(managedSlots, -1);
     }
 
     @Override protected void init() {
         int centre = width / 2;
-        logButton = addRenderableWidget(Button.builder(Component.literal("FIELD LOG"), b -> setPage(0)).bounds(centre - 104, height - 31, 98, 20).build());
-        contractsButton = addRenderableWidget(Button.builder(Component.literal("CONTRACTS"), b -> setPage(1)).bounds(centre + 6, height - 31, 98, 20).build());
-        manualButton = addRenderableWidget(Button.builder(Component.literal("MANUAL"), b -> GuideMeCompatEvents.openGuide()).bounds(Math.max(14, centre - 188), 18, 72, 18).build());
-        manualButton.visible = net.minecraftforge.fml.ModList.get().isLoaded("guideme");
+        logButton = addRenderableWidget(Button.builder(PdaMessage.FIELD_LOG_BUTTON.component(), b -> setPage(0)).bounds(centre - 104, height - 31, 98, 20).build());
+        contractsButton = addRenderableWidget(Button.builder(PdaMessage.CONTRACTS_BUTTON.component(), b -> setPage(1)).bounds(centre + 6, height - 31, 98, 20).build());
+        addRenderableWidget(Button.builder(PdaMessage.MANUAL_BUTTON.component(), b -> ClientGuideHooks.openSystemGuide()).bounds(Math.max(14, centre - 188), 18, 72, 18).build());
         int right = Math.min(width - 12, centre + 190);
         for (int row = 0; row < MAX_MANAGED_CONTRACTS; row++) {
             final int index = row;
-            abandonButtons.add(addRenderableWidget(Button.builder(Component.literal("ABANDON"), b -> abandon(index)).bounds(right - 72, 70 + row * 40, 58, 16).build()));
+            abandonButtons.add(addRenderableWidget(Button.builder(PdaMessage.ABANDON_BUTTON.component(), b -> abandon(index)).bounds(right - 72, 70 + row * 40, 58, 16).build()));
         }
         setPage(0);
     }
@@ -85,7 +85,9 @@ public class DataPadScreen extends Screen {
         for (int i = 0; i < abandonButtons.size(); i++) {
             Button button = abandonButtons.get(i); boolean visible = i < refs.size();
             button.visible = visible; button.active = visible; managedSlots[i] = visible ? refs.get(i).slot() : -1;
-            button.setMessage(Component.literal(visible && managedSlots[i] == armedAbandonSlot ? "ABANDON?" : "ABANDON"));
+            button.setMessage(visible && managedSlots[i] == armedAbandonSlot
+                    ? PdaMessage.ABANDON_CONFIRM_BUTTON.component()
+                    : PdaMessage.ABANDON_BUTTON.component());
         }
     }
 
@@ -96,18 +98,18 @@ public class DataPadScreen extends Screen {
         graphics.fill(left, top, right, top + 2, BORDER_COLOR);
         graphics.fill(left, bottom - 2, right, bottom, BORDER_COLOR);
         graphics.drawCenteredString(font, title, width / 2, top + 10, BORDER_COLOR);
-        graphics.drawCenteredString(font, Component.literal(page == 0 ? "FIELD LOG // YOUR EXPERIMENTS" : "ACTIVE CONTRACTS"), width / 2, top + 27, TEXT_COLOR);
+        graphics.drawCenteredString(font, page == 0 ? PdaMessage.FIELD_LOG_HEADER.component() : PdaMessage.CONTRACTS_HEADER.component(), width / 2, top + 27, TEXT_COLOR);
         if (page == 0) renderLog(graphics, left + 14, top + 49, right - left - 28, bottom - 18);
         else renderContracts(graphics, left + 14, top + 49, right - left - 28, bottom - 18);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     private void renderLog(GuiGraphics g, int x, int y, int maxWidth, int bottom) {
-        if (history.isEmpty()) { g.drawString(font, Component.literal("No entries yet. Build something and experiment."), x, y, MUTED_COLOR, false); return; }
+        if (history.isEmpty()) { g.drawString(font, PdaMessage.EMPTY_LOG.component(), x, y, MUTED_COLOR, false); return; }
         for (String entry : history) {
             int color = entry.startsWith("---") ? BORDER_COLOR : TEXT_COLOR;
             for (FormattedCharSequence line : font.split(Component.literal(entry), maxWidth)) {
-                if (y > bottom - 10) { g.drawString(font, Component.literal("… older entries retained"), x, bottom - 10, MUTED_COLOR, false); return; }
+                if (y > bottom - 10) { g.drawString(font, PdaMessage.OLDER_ENTRIES.component(), x, bottom - 10, MUTED_COLOR, false); return; }
                 g.drawString(font, line, x, y, color, false); y += 10;
             }
             y += 4;
@@ -116,7 +118,7 @@ public class DataPadScreen extends Screen {
 
     private void renderContracts(GuiGraphics g, int x, int y, int maxWidth, int bottom) {
         List<ContractRef> contracts = contractRefs();
-        if (contracts.isEmpty()) { g.drawString(font, Component.literal("No active contracts."), x, y, MUTED_COLOR, false); return; }
+        if (contracts.isEmpty()) { g.drawString(font, PdaMessage.NO_ACTIVE_CONTRACTS.component(), x, y, MUTED_COLOR, false); return; }
         for (int i = 0; i < Math.min(MAX_MANAGED_CONTRACTS, contracts.size()); i++) {
             ItemStack c = contracts.get(i).stack(); String stage = ContractStageSupport.stageLabel(c);
             g.drawString(font, Component.literal((i + 1) + ". " + trim(ContractItem.title(c), 34)), x, y, ContractItem.complete(c) ? 0xFF57C47A : TEXT_COLOR, false);
