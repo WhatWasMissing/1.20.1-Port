@@ -229,12 +229,12 @@ tasks.register('verifyM1Resources') {
 
         def language = json.parse(file("src/main/resources/assets/${mod_id}/lang/en_us.json"))
         active.blocks.each { id ->
-            if (!language.containsKey("block.${mod_id}.${id}")) {
+            if (!language.containsKey("block.${mod_id}.${id}".toString())) {
                 throw new GradleException("Missing active block localization: ${id}")
             }
         }
         (standaloneItemIds + exoticItemIds + destinyItemIds + directItemIds).each { id ->
-            if (!language.containsKey("item.${mod_id}.${id}") && !language.containsKey("item.${mod_id}.${id}.name")) {
+            if (!language.containsKey("item.${mod_id}.${id}".toString()) && !language.containsKey("item.${mod_id}.${id}.name".toString())) {
                 throw new GradleException("Missing active item localization: ${id}")
             }
         }
