@@ -10,6 +10,7 @@ import matteroverdrive.item.weapon.WeaponModuleItem;
 import matteroverdrive.item.weapon.WeaponSystem;
 import matteroverdrive.network.WeaponTriggerPacket;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
@@ -17,6 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -243,7 +245,7 @@ public final class WeaponClientEffects {
         if (authoredBase) {
             // Imported model JSONs retain their authored base placement; Renderer 2.0 adds
             // only the camera-space ADS delta on top.
-            pose.translate(-0.055D * aimed, 0.035D * aimed, -0.22D * aimed);
+            pose.translate(-0.105D * aimed, 0.035D * aimed, -0.22D * aimed);
             pose.mulPose(Axis.XP.rotationDegrees(-1.5F * aimed));
         } else {
             // Legacy MO hip -> aim delta: X .13 -> 0, Y 185 -> 180, X 3 -> 0.
@@ -259,6 +261,19 @@ public final class WeaponClientEffects {
         pose.mulPose(Axis.XP.rotationDegrees(-profile.recoilPitch() * kick));
 
         if (!authoredBase) pose.scale(1.0F, 1.0F, 0.8F);
+    }
+
+    @SubscribeEvent
+    public static void onThirdPersonWeaponPose(RenderPlayerEvent.Pre event) {
+        var player = event.getEntity();
+        if (!player.isUsingItem()
+                || player.getUsedItemHand() != InteractionHand.MAIN_HAND
+                || !(player.getMainHandItem().getItem() instanceof EnergyWeaponItem)) return;
+
+        // Vanilla assigns the generic ITEM pose to custom UseAnim.NONE weapons. Clear it
+        // while the weapon renderer owns the firearm presentation, otherwise third-person
+        // aiming looks like the player is permanently eating/using the item.
+        event.getRenderer().getModel().rightArmPose = HumanoidModel.ArmPose.EMPTY;
     }
 
     @SubscribeEvent

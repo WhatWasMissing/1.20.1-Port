@@ -238,7 +238,7 @@ public final class LegacyParityStructureFeature extends Feature<NoneFeatureConfi
         for (int z = -6; z <= 6; z += 3) set(level, base.offset(0, 5, z), z % 6 == 0 ? holo : vent);
 
         // Recovered legacy machine palette/roles from MOAndroidHouseBuilding.
-        // The retired Star Map is not part of active worldgen. This station slot
+        // The retired strategic map is not part of active worldgen. This station slot
         // now represents the house's local facility/network control role.
         set(level, base.offset(-6, 1, -6), block("facility_network_controller"));
         set(level, base.offset(-3, 1, -6), block("replicator"));

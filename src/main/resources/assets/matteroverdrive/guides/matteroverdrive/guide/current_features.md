@@ -4,9 +4,9 @@ navigation:
   position: 2
   icon: matteroverdrive:data_pad
 ---
-# Current Features - 0.6
+# Current Features - 0.7
 
-This page is the compact in-game status reference for the current **Matter Overdrive 0.6** development line, maintained by MVQ1303. The individual GuideME system pages are the how-to guide. The `testing/tech-overhaul` branch contains additional experimental infrastructure and must be runtime-tested before merge to `main`.
+This page is the compact in-game status reference for the current **Matter Overdrive 0.7** release line, maintained by MVQ1303. The individual GuideME system pages are the how-to guide. Manual verification remains tracked in `docs/testing/TO_TEST.md`.
 
 Implemented does not mean runtime-verified. Use the repository testing documents for the current regression plan.
 
@@ -16,17 +16,18 @@ Implemented on the core line: Decomposer, Recycler, Matter Analyzer, Pattern Dri
 
 Major machines expose server-backed operator pages and inventories rather than decorative controls. Machine redstone/configuration parity is restored where a real backend equivalent exists.
 
-### Matter economy in 0.6
+### Matter economy in 0.7
 
 Matter values resolve through dynamic Matter Dust values, explicit values, tag bases, recursive recipe derivation and deterministic fallbacks. Analyzer and Decomposer use the level-aware value path, Pattern Drives preserve the analyzed value, and Replicator consumes that stored value.
 
 Matter tooltips expose the effective value and diagnostic commands are available under `/matteroverdrive matter` for value inspection, auditing and cache clearing.
 
-## Tech overhaul testing branch
+## 0.7 tech overhaul
 
-`testing/tech-overhaul` currently adds the following experimental systems:
+The merged 0.7 line adds the following connected systems:
 
 - **Grid Capacitor** - 16,000,000 FE high-throughput grid buffer.
+- **Energy Bank** - independent 32,000,000 FE / 1,000,000 Matter reactor buffer with FE and Matter network output.
 - **Android Induction Relay** - same-dimension wireless Android charging with 32/64/96-block range modes.
 - **Quantum Power Relay** - 16-channel same-dimension wireless FE links between loaded relays within 256 blocks.
 - **Matter Storage Matrix** - modular bulk Matter storage with four removable cell slots.
@@ -40,7 +41,7 @@ Matter tooltips expose the effective value and diagnostic commands are available
 - **Per-side FE/Matter/Item policies** - INPUT / OUTPUT / BOTH / DISABLED where supported by the backend.
 - **Parallel Processing Upgrade** - additional concurrent processing lanes in Decomposer and Replicator.
 
-These features are deliberately isolated from `main` until the test plan in `docs/testing/TECH_OVERHAUL_TEST_PLAN.md` passes.
+These features use the existing Matter Overdrive registries, FE/Matter capability paths and network policy system. Runtime verification remains deferred to the release test plan.
 
 See [Advanced Infrastructure](advanced_infrastructure.md), [Matter Network](network.md), [Power and Machines](power.md) and [Matter Technology](matter.md) for operating instructions.
 
@@ -54,7 +55,7 @@ The **Anomaly Containment Unit** can capture an anomaly, preserve its mass and r
 
 Implemented core systems: Network Pipe, Network Switch, Network Router and matching-channel Pylon routing. Router filtering, Network Flash Drive destination filtering, upgrade slots, multi-stack budgets and FE/item execution accounting are present. The craftable Matter Network Terminal provides bounded remote Matter Container push/pull access with aggregate status and comparator output. The Matter Network remains intentionally separate from an AE2 ME network.
 
-The tech-overhaul branch extends this with channels, router priority, per-side resource policies, facility telemetry and the Network Diagnostic Probe.
+The 0.7 line extends this with channels, router priority, per-side resource policies, facility telemetry and the Network Diagnostic Probe.
 
 ## Androids and entities
 
@@ -64,13 +65,19 @@ Linked Drones support FOLLOW, HOLD, DEFENSIVE, PASSIVE, AGGRESSIVE and persisten
 
 The Drone Fabricator is the fleet's survival assembly line. Feed it 1 Plasma Core, 2 Isolinear Circuit Mk2s, and 4 Tritanium Plates; connect FE and select Combat, Repair, Logistics, Survey, or Reactor before the 240-tick assembly cycle completes. It consumes 12,800 FE per core, retains inputs during a power outage, exposes its item inventory for local automation, and pulls only missing recipe ingredients from adjacent item-handler inventories at a bounded 16-item/tick rate. Two upgrade slots accept Speed or Power modules: Speed shortens the cycle while Power increases its FE/t demand. The selected role is written directly into the output Drone Core.
 
+Village Field Scientists, Systems Engineers and Mad Scientists now form the player-facing research cast. Their conversations, issued assignments and first-contact lore are recorded by the existing PDA field log, while objectives remain normal transferable contracts.
+
+Facility caches now have rare, themed **Legendary Relics** that install the existing Android passive protocols: Overclocked Relay, Swarm Beacon, Aegis Prism, Hunter Lens, Nanite Crown, Capacitor Heart and Phase Anchor. Their themed drops connect facility exploration to meaningful Android build choices without adding another progression currency.
+
+Vanilla exploration is also part of the progression route: practical Matter Overdrive supplies are injected into selected vanilla structure chests, while the seven Legendary Relics have rare themed drops in strongholds, temples, bastions, mansions, buried treasure, End Cities and Ancient Cities. Rogue Androids, ranged Rogue Androids, Drones, Assimilators, Phase Stalkers and rare Mutant Scientists can naturally appear in the Overworld; the three progression NPCs remain village-associated.
+
 ## Weapons
 
-Implemented: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload and module effects. Recovered Thermal Lattice artifacts let Android users trade rare exploration loot for lower energy-weapon heat and faster cooling. Recovered Reactor Symbiote protocols make a linked, actively generating Fusion Reactor a portable Android charging source through the Reactor Remote. Weapon Station exposes its real module slots and live statistics. Exact remaining module mesh placement and full legacy first-person animation choreography still need visual parity work.
+Implemented: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload and module effects. The Vex Mythoclast remains a separate Matter Overdrive exotic. The 49-profile native Destiny set includes the retained profiles plus 35 additional GunPack conversions with imported geometry, textures, source audio, available animations and per-weapon display transforms. All Destiny weapons use the existing Energy Weapon and Weapon Station battery/barrel/sights/colour/utility module contracts. First-person rendering applies source transforms with bounded ADS/recoil presentation, while third-person generic held-use posing is suppressed. Recovered Thermal Lattice artifacts let Android users trade rare exploration loot for lower energy-weapon heat and faster cooling. Recovered Reactor Symbiote protocols make a linked, actively generating Fusion Reactor a portable Android charging source through the Reactor Remote. Exact remaining module mesh placement and full first-person hand choreography still need visual parity work.
 
 ## World content
 
-Implemented structure families: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits, with persisted salvage and inhabitants. Natural Gravitational Anomalies generate in fresh Overworld chunks. Compact Matter Labs, Android Relay Outposts, Anomaly Research Sites, Matter Observatories and Field Logistics Depots add stable-footprint exploration infrastructure, deterministic salvage caches, persistent Data Pad field discoveries and site-specific research dossiers. A dossier must now be secured at a powered Matter Analyzer: the 400-tick, 102,400 FE analysis job persists its operator and progress, pauses safely when its owner is offline, then awards that player’s XP, equipment and research clearance. Recovered Artifacts decode into one-use Android passive protocols directly in the field, so exploration rewards can immediately alter a build. Exact old PNG-template geometry is not yet complete for every structure.
+Implemented structure families: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits, with persisted salvage and inhabitants. Six modern technology facilities and four Frontier Expedition sites use native exploration pieces, stable variants, readable routes and persistent discovery/restoration hooks. Natural Gravitational Anomalies generate in fresh Overworld chunks. Compact Matter Labs, Android Relay Outposts, Anomaly Research Sites, Matter Observatories and Field Logistics Depots add stable-footprint exploration infrastructure, deterministic salvage caches, persistent Data Pad field discoveries and site-specific research dossiers. A dossier must now be secured at a powered Matter Analyzer: the 400-tick, 102,400 FE analysis job persists its operator and progress, pauses safely when its owner is offline, then awards that player’s XP, equipment and research clearance. Recovered Artifacts decode into one-use Android passive protocols directly in the field, so exploration rewards can immediately alter a build. Exact old PNG-template geometry is not yet complete for every structure.
 
 ## Dimensional Pylon
 
@@ -86,7 +93,7 @@ When GuideME is installed, this manual is the primary player-facing how-to guide
 
 ## Remaining high-value work
 
-- Runtime-test and harden the systems on `testing/tech-overhaul`.
+- Runtime-test and harden the merged 0.7 systems using `docs/testing/TO_TEST.md`.
 - Exact legacy structure templates and deeper structure-specific scripted events.
 - Remaining Drone flying/renderer/equipment polish.
 - Remaining machine-specific GUI/detail parity where backed by real state.

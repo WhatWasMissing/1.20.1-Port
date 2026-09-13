@@ -1,35 +1,123 @@
 {
-  "type": "minecraft:chest",
   "pools": [
     {
-      "rolls": { "min": 3, "max": 5, "type": "minecraft:uniform" },
       "entries": [
-        { "type": "minecraft:item", "name": "matteroverdrive:dilithium_crystal", "weight": 4 },
-        { "type": "minecraft:item", "name": "matteroverdrive:isolinear_circuit_mk2", "weight": 4 },
-        { "type": "minecraft:item", "name": "matteroverdrive:network_flash_drive", "weight": 1 },
-        { "type": "minecraft:item", "name": "matteroverdrive:upgrade_power_storage", "weight": 1 }
-      ]
+        {
+          "name": "matteroverdrive:dilithium_crystal",
+          "type": "minecraft:item",
+          "weight": 4
+        },
+        {
+          "name": "matteroverdrive:isolinear_circuit_mk2",
+          "type": "minecraft:item",
+          "weight": 4
+        },
+        {
+          "name": "matteroverdrive:network_flash_drive",
+          "type": "minecraft:item",
+          "weight": 1
+        },
+        {
+          "name": "matteroverdrive:upgrade_power_storage",
+          "type": "minecraft:item",
+          "weight": 1
+        }
+      ],
+      "rolls": {
+        "max": 5,
+        "min": 3,
+        "type": "minecraft:uniform"
+      }
     },
     {
-      "rolls": 1,
-      "entries": [{
-        "type": "minecraft:item",
-        "name": "matteroverdrive:facility_research",
-        "functions": [{ "function": "minecraft:set_nbt", "tag": "{FacilityArchive:\"QUANTUM_RELAY_STATION\"}" }]
-      }]
-    },
-    {
-      "rolls": 1,
-      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.55 }],
       "entries": [
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"echo9_operator_note\"}"}]},
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"echo9_queue_fragment\"}"}]},
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"echo9_clock_stickers\"}"}]}
-      ]
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{FacilityArchive:\"QUANTUM_RELAY_STATION\"}"
+            }
+          ],
+          "name": "matteroverdrive:facility_research",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
     },
     {
-      "rolls": { "min": 1, "max": 2, "type": "minecraft:uniform" },
-      "entries": [{ "type": "minecraft:item", "name": "matteroverdrive:emergency_ration" }]
+      "conditions": [
+        {
+          "chance": 0.55,
+          "condition": "minecraft:random_chance"
+        }
+      ],
+      "entries": [
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{MatterOverdriveLoreId:\"echo9_operator_note\"}"
+            }
+          ],
+          "name": "matteroverdrive:recovered_lore_fragment",
+          "type": "minecraft:item"
+        },
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{MatterOverdriveLoreId:\"echo9_queue_fragment\"}"
+            }
+          ],
+          "name": "matteroverdrive:recovered_lore_fragment",
+          "type": "minecraft:item"
+        },
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{MatterOverdriveLoreId:\"echo9_clock_stickers\"}"
+            }
+          ],
+          "name": "matteroverdrive:recovered_lore_fragment",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "name": "matteroverdrive:emergency_ration",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": {
+        "max": 2,
+        "min": 1,
+        "type": "minecraft:uniform"
+      }
+    },
+    {
+      "entries": [
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{RelicId:\"CAPACITOR_HEART\",CustomModelData:1006}"
+            }
+          ],
+          "name": "matteroverdrive:artifact",
+          "type": "minecraft:item",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 24
+        }
+      ],
+      "rolls": 1
     }
-  ]
+  ],
+  "type": "minecraft:chest"
 }

@@ -36,6 +36,7 @@ The Facility Network Controller is the central telemetry foundation. The testing
 - aggregate facility alarms and comparator output;
 - Holographic Status Panel views;
 - Grid Capacitor high-throughput FE buffering;
+- Energy Bank dual FE/Matter buffering from Reactor IO;
 - Quantum Power Relay loaded-peer wireless FE links;
 - Matter Storage Matrix and removable 64k/256k/1M/4M cells;
 - Matter Excavator bulk block-to-Matter processing;
@@ -50,7 +51,7 @@ The Anomaly Containment Unit captures a Gravitational Anomaly, removes it from t
 ## Testing priorities
 
 1. Run `BUILD_LOCAL.bat` on `testing/tech-overhaul`; resolve the static packaging gate and Java/resource compile issues before runtime testing.
-2. Follow `docs/testing/TECH_OVERHAUL_TEST_PLAN.md` for Grid Capacitor, Induction Relay, Quantum Relay, Matter Matrix/Cells, Excavator, channels/priority, per-side configuration, parallel processing and facility telemetry.
+2. Follow `docs/testing/TECH_OVERHAUL_TEST_PLAN.md` and the Energy Bank checks in `docs/testing/TO_TEST.md` for Grid Capacitor, Induction Relay, Quantum Relay, Energy Bank, Matter Matrix/Cells, Excavator, channels/priority, per-side configuration, parallel processing and facility telemetry.
 3. Re-test Reactor IO -> chained Heavy Energy Cable -> machine, Matter Pipe routing and Pattern Monitor -> Replicator queues after the routing changes.
 4. Verify Android Station/chassis equipment and chassis-adjusted charging remain persistent across relog/respawn.
 5. Verify no Star Map item/system is reintroduced while implementing or testing any of the above.

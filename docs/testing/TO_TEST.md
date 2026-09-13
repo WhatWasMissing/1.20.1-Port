@@ -1,6 +1,6 @@
-# Matter Overdrive 1.20.1 - `main` runtime checklist
+# Matter Overdrive 1.20.1 - `main` 0.7 runtime checklist
 
-Release line: `0.6`
+Release line: `0.7`
 Target: Minecraft 1.20.1 / Forge 47.4.10 / Java 17
 
 This is the current merged development test list. Static validators and a successful build reduce risk but do not replace Forge/Minecraft runtime verification.
@@ -64,6 +64,13 @@ Use a fresh world or unexplored chunks.
 - [ ] Facility-specific Android names/stats/reserves match the intended family.
 - [ ] Restoring a facility stands down unused generated reserve without deleting already deployed defenders.
 - [ ] Player-built Android Spawners retain normal FE/squad behavior.
+- [ ] Frontier Expedition sites (Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array) generate from the registered frontier structure set and retain readable routes, salvage and discovery state.
+- [ ] Frontier site caches resolve their nested salvage/ambient-lore loot tables without replacing the surrounding facility loot.
+- [ ] In fresh vanilla structures, verify selected chest types receive Matter Overdrive supplies without replacing their vanilla loot.
+- [ ] Verify the seven rare vanilla Legendary Relic sources: Stronghold Library=Overclocked Relay, Jungle Temple=Swarm Beacon, Bastion Treasure=Aegis Prism, Woodland Mansion=Hunter Lens, Buried Treasure=Nanite Crown, End City=Capacitor Heart and Ancient City=Phase Anchor.
+- [ ] Main facility caches have a rare themed Legendary Relic pool: Manufacturing=Overclocked Relay, Bunker=Swarm Beacon/Aegis Prism, Black Site=Hunter Lens, Refinery=Nanite Crown, Relay=Capacitor Heart and Fusion=Phase Anchor.
+- [ ] Relic items show a glint, distinct model/texture and dynamic protocol name; right-clicking as an Android installs the matching existing passive and consumes the relic.
+- [ ] A non-Android cannot consume a relic, an already-installed protocol is not consumed twice, and the selected protocol persists after relog/save reload.
 
 ## Matter economy and machines
 
@@ -78,6 +85,9 @@ Use a fresh world or unexplored chunks.
 
 - [ ] Fusion ring validation identifies missing/wrong blocks correctly.
 - [ ] Reactor IO exports FE through chained Heavy Energy Cable infrastructure.
+- [ ] Energy Bank accepts FE and Matter from Reactor IO, retains both while consumers are full/offline, and outputs each resource later without converting or losing it.
+- [ ] Energy Bank FE output reaches direct machines and chained Heavy Energy Cable/Hybrid Conduit networks, while Matter output reaches Matter Pipe/Hybrid Conduit consumers without feeding back into the reactor.
+- [ ] Energy Bank FE/Matter contents and comparator/status values persist across save/reload and survive breaking/replacing unrelated adjacent cables.
 - [ ] Shared ring FE and configured stabilizer-from-reactor behavior still work.
 - [ ] RUN/SCRAM/redstone/overlay state persists.
 - [ ] Living entities consumed by an event horizon add anomaly mass once.
@@ -114,6 +124,9 @@ Use a fresh world or unexplored chunks.
 - [ ] Drone Matrix level and selected behavior persist.
 - [ ] Owned drones/android squads never attack owner/allies and cannot be silently stolen by another player.
 - [ ] Patrol/guard/hold/escort state and patrol drives persist after save/reload and level-up.
+- [ ] Drone support overlap remains distinct: Command Authority provides the 48-block envelope and Speed II, Guardian Directive provides the 40-block envelope and Resistance II, and Reinforced Drones upgrades resistance to Resistance III.
+- [ ] Ordnance affects ranged drone arrows, Ordnance Link applies Slowness II to ranged hits, and Hunter Network/Target Link/Hunter Lens each contribute their documented glowing-target bonuses.
+- [ ] In a fresh Overworld at night, confirm natural hostile spawns can produce Rogue Androids, ranged Rogue Androids, Drones, Assimilators and Phase Stalkers; verify the Mutant Scientist remains exceptionally rare.
 
 ## Weapons
 
@@ -133,6 +146,8 @@ Use a fresh world or unexplored chunks.
 - [ ] Sprint, jump, stop, swap slots and rapidly re-equip several times; the weapon never becomes invisible or stuck at an old transform.
 - [ ] Weapon Station slots/modules persist and its stats update immediately after module changes.
 - [ ] Third-person, GUI, dropped-item and fixed/item-frame weapon rendering remain visible and correctly oriented.
+- [ ] Ace of Spades, Hawkmoon, Khvostov, MIDA, Monte Carlo, Sleeper Simulant, SUROS Regime, The Last Word and Thorn use the supplied Destiny source fire mixes and exact available draw/reload samples.
+- [ ] Verify the 35 additional native GunPack conversions appear in the creative tab and can be crafted, render with their imported models/textures, play their available source fire/third-person audio, and accept Weapon Station battery/barrel/sights/colour/utility modules.
 
 ## Legacy/world-content regression
 
@@ -146,6 +161,6 @@ Use a fresh world or unexplored chunks.
 
 - [ ] Save/reload preserves machine inventories, FE, matter, upgrades, Android state, patrol data, quests/contracts and facility restoration state.
 - [ ] GuideME index opens every active system page and local links resolve.
-- [ ] Current Features and in-game testing documentation identify the 0.6 line accurately.
+- [ ] Current Features and in-game testing documentation identify the 0.7 line accurately.
 - [ ] No active registered content shows missing-model purple/black textures.
 - [ ] No current guide, registry or worldgen path restores the retired Star Map.

@@ -8,4 +8,10 @@ pluginManagement {
     }
 }
 
+gradle.beforeProject { project ->
+    if (project.path == ':') {
+        project.apply from: new File(settingsDir, 'gradle/sound-verification.gradle')
+    }
+}
+
 rootProject.name = 'MatterOverdrive-1.20.1-port'

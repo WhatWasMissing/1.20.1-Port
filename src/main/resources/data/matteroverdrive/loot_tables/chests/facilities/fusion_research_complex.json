@@ -1,35 +1,123 @@
 {
-  "type": "minecraft:chest",
   "pools": [
     {
-      "rolls": { "min": 3, "max": 5, "type": "minecraft:uniform" },
       "entries": [
-        { "type": "minecraft:item", "name": "matteroverdrive:dilithium_crystal", "weight": 4 },
-        { "type": "minecraft:item", "name": "matteroverdrive:tritanium_plate", "weight": 4 },
-        { "type": "minecraft:item", "name": "matteroverdrive:isolinear_circuit_mk3", "weight": 1 },
-        { "type": "minecraft:item", "name": "matteroverdrive:upgrade_failsafe", "weight": 1 }
-      ]
+        {
+          "name": "matteroverdrive:dilithium_crystal",
+          "type": "minecraft:item",
+          "weight": 4
+        },
+        {
+          "name": "matteroverdrive:tritanium_plate",
+          "type": "minecraft:item",
+          "weight": 4
+        },
+        {
+          "name": "matteroverdrive:isolinear_circuit_mk3",
+          "type": "minecraft:item",
+          "weight": 1
+        },
+        {
+          "name": "matteroverdrive:upgrade_failsafe",
+          "type": "minecraft:item",
+          "weight": 1
+        }
+      ],
+      "rolls": {
+        "max": 5,
+        "min": 3,
+        "type": "minecraft:uniform"
+      }
     },
     {
-      "rolls": 1,
-      "entries": [{
-        "type": "minecraft:item",
-        "name": "matteroverdrive:facility_research",
-        "functions": [{ "function": "minecraft:set_nbt", "tag": "{FacilityArchive:\"FUSION_RESEARCH_COMPLEX\"}" }]
-      }]
-    },
-    {
-      "rolls": 1,
-      "conditions": [{ "condition": "minecraft:random_chance", "chance": 0.55 }],
       "entries": [
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"icarus_interlock_note\"}"}]},
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"icarus_last_coffee\"}"}]},
-        {"type":"minecraft:item","name":"matteroverdrive:recovered_lore_fragment","functions":[{"function":"minecraft:set_nbt","tag":"{MatterOverdriveLoreId:\"icarus_scram_paint\"}"}]}
-      ]
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{FacilityArchive:\"FUSION_RESEARCH_COMPLEX\"}"
+            }
+          ],
+          "name": "matteroverdrive:facility_research",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
     },
     {
-      "rolls": { "min": 1, "max": 2, "type": "minecraft:uniform" },
-      "entries": [{ "type": "minecraft:item", "name": "matteroverdrive:emergency_ration" }]
+      "conditions": [
+        {
+          "chance": 0.55,
+          "condition": "minecraft:random_chance"
+        }
+      ],
+      "entries": [
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{MatterOverdriveLoreId:\"icarus_interlock_note\"}"
+            }
+          ],
+          "name": "matteroverdrive:recovered_lore_fragment",
+          "type": "minecraft:item"
+        },
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{MatterOverdriveLoreId:\"icarus_last_coffee\"}"
+            }
+          ],
+          "name": "matteroverdrive:recovered_lore_fragment",
+          "type": "minecraft:item"
+        },
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{MatterOverdriveLoreId:\"icarus_scram_paint\"}"
+            }
+          ],
+          "name": "matteroverdrive:recovered_lore_fragment",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "name": "matteroverdrive:emergency_ration",
+          "type": "minecraft:item"
+        }
+      ],
+      "rolls": {
+        "max": 2,
+        "min": 1,
+        "type": "minecraft:uniform"
+      }
+    },
+    {
+      "entries": [
+        {
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{RelicId:\"PHASE_ANCHOR\",CustomModelData:1007}"
+            }
+          ],
+          "name": "matteroverdrive:artifact",
+          "type": "minecraft:item",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 24
+        }
+      ],
+      "rolls": 1
     }
-  ]
+  ],
+  "type": "minecraft:chest"
 }

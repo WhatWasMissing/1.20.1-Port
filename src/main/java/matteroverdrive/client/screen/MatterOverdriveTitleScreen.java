@@ -114,7 +114,7 @@ public final class MatterOverdriveTitleScreen extends Screen {
                             "Speak to present-day researchers, salvagers, medics, archivists and synthetic survivors.",
                             "Expect different threats at HELIX, Bastion, ICARUS, JANUS, ORPHEUS and Frontier sites.",
                             "Field Operations and contracts provide repeatable work after the main evidence trail."),
-                    "The Star Map remains retired. Discovery belongs to the world, not a disconnected galaxy menu.");
+                    "The retired strategic map is not part of progression. Discovery belongs to the world, not a disconnected galaxy menu.");
             default -> new Page("PROJECT STATUS: ACTIVE",
                     "A modern Forge 1.20.1 continuation of Matter Overdrive, preserving the original mod's matter technology, Android identity and industrial science-fiction tone while expanding it into a broader playable campaign.",
                     List.of(

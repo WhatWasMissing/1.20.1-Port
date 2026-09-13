@@ -24,6 +24,9 @@ FACILITIES = [
     "synthetic_manufacturing_plant", "matter_refinery", "quantum_relay_station",
     "android_command_bunker", "fusion_research_complex", "black_site",
 ]
+FRONTIER_SITES = [
+    "deep_matter_vault", "autonomous_drone_foundry", "anomaly_quarantine_site", "orbital_recovery_array",
+]
 REQUIRED_PIECES = [
     "CORRIDOR_X", "CORRIDOR_Z", "SERVICE_GANTRY_X", "SERVICE_GANTRY_Z",
     "ROOF_PLANT", "RELAY_MAST", "SECURITY_CHECKPOINT", "OBSERVATION_BRIDGE",
@@ -43,7 +46,9 @@ INDUSTRIAL_BLOCKS = [
     "industrial_catwalk", "industrial_railing", "cable_tray",
     "warning_light", "damaged_panel", "security_door",
 ]
-SAFE_ITEM_ONLY_VISUAL_FALLBACKS = {"anomaly_containment_unit"}
+SAFE_ITEM_ONLY_VISUAL_FALLBACKS = {
+    "anomaly_containment_unit", "decorative.floor_tiles_dark", "decorative.tritanium_plate_green",
+}
 errors: list[str] = []
 
 
@@ -66,11 +71,35 @@ for p in (PIECE, INFRA, STRUCTURE, MOD_BLOCKS, MOD_STRUCTURES, RESTORATION,
 
 for name in FACILITIES:
     require(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
-    require(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure_set/{name}.json")
 
-for folder in ("structure", "structure_set"):
-    for name in FACILITIES:
-        parse_json(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/{folder}/{name}.json")
+for name in FACILITIES:
+    parse_json(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
+for name in FRONTIER_SITES:
+    require(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
+    parse_json(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
+
+# The six core facilities use direct native generation. The Frontier Expedition set is
+# intentionally retained as the placement contract for the four newer frontier sites.
+structure_set_dir = ROOT / "src/main/resources/data/matteroverdrive/worldgen/structure_set"
+if structure_set_dir.is_dir():
+    shipped_sets = sorted(structure_set_dir.glob("*.json"))
+    unexpected_sets = [path for path in shipped_sets if path.name != "frontier_expeditions.json"]
+    if unexpected_sets:
+        errors.append(
+            "retired Matter Overdrive structure_set resources are active: "
+            + ", ".join(str(path.relative_to(ROOT)) for path in unexpected_sets)
+        )
+    frontier_set = structure_set_dir / "frontier_expeditions.json"
+    if frontier_set.exists():
+        frontier = parse_json(frontier_set)
+        names = {
+            entry.get("structure", "").split(":", 1)[-1]
+            for entry in frontier.get("structures", [])
+            if isinstance(entry, dict)
+        } if isinstance(frontier, dict) else set()
+        for name in FRONTIER_SITES:
+            if name not in names:
+                errors.append(f"frontier expedition structure_set is missing {name}")
 
 if PIECE.is_file():
     text = PIECE.read_text(encoding="utf-8")
@@ -122,16 +151,26 @@ if isinstance(state_json, dict) and "multipart" not in state_json:
 
 if STRUCTURE.is_file():
     text = STRUCTURE.read_text(encoding="utf-8")
-    if "layout = Math.floorMod" not in text: errors.append("stable per-chunk layout variant selection missing")
-    if "TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout)" not in text:
-        errors.append("layout variant is not forwarded into primary piece assembly")
-    if "FacilityInfrastructurePiece.assemble(builder, kind, origin, layout)" not in text:
-        errors.append("infrastructure overlay is not assembled by native structure generation")
+    if not re.search(r"\blayout\s*=\s*Math\.floorMod", text):
+        errors.append("stable per-chunk layout variant selection missing")
+    legacy_layout = (
+        "TechnologyFacilityStructurePiece.assemble(builder, kind, origin, layout)" in text
+        and "FacilityInfrastructurePiece.assemble(builder, kind, origin, layout)" in text
+    )
+    modern_layout = (
+        "new ModernExplorationStructurePiece(kind,origin,layout)" in text
+        and "new ModernTraversalRepairPiece(kind,origin)" in text
+    )
+    if not (legacy_layout or modern_layout):
+        errors.append("layout variant is not forwarded into the active primary piece assembly")
 
 if (ROOT / "src/main/java/matteroverdrive/event/ContractEvents.java").is_file():
     discovery_events = (ROOT / "src/main/java/matteroverdrive/event/ContractEvents.java").read_text(encoding="utf-8")
-    for marker in ("if (!discoveries.discover(level, player.getUUID(), site, anchor.asLong())) return;",
-                   "discoveries.advanceChain(player.getUUID(), site)",
+    legacy_discovery_guard = "if (!discoveries.discover(level, player.getUUID(), site, anchor.asLong())) return;" in discovery_events
+    current_discovery_guard = "boolean firstDiscovery = discoveries.discover(level, player.getUUID(), site, anchor.asLong());" in discovery_events and "if (!firstDiscovery) return;" in discovery_events
+    if not (legacy_discovery_guard or current_discovery_guard):
+        errors.append("first-time discovery guard is missing from the facility discovery flow")
+    for marker in ("discoveries.advanceChain(player.getUUID(), site)",
                    "player.giveExperiencePoints(25)",
                    'putString("FacilityArchive", researchArchive(site))'):
         if marker not in discovery_events:
@@ -191,9 +230,22 @@ if items.is_file() and archive.is_file():
             archives = []
             for pool in table["pools"]:
                 for entry in pool["entries"]:
-                    namespace, name = entry["name"].split(":", 1)
+                    if entry.get("type") == "minecraft:empty":
+                        continue
+                    item_name = entry.get("name")
+                    if not isinstance(item_name, str) or ":" not in item_name:
+                        errors.append(f"loot entry without an item name in {family}")
+                        continue
+                    namespace, name = item_name.split(":", 1)
+                    # Nested loot-table entries use a namespaced path under
+                    # chests/... and are validated as tables, not item ids.
+                    if entry.get("type") == "minecraft:loot_table":
+                        nested = ROOT / "src/main/resources/data" / namespace / "loot_tables" / f"{name}.json"
+                        if not nested.exists():
+                            errors.append(f"unknown nested loot table {item_name} in {family}")
+                        continue
                     if namespace == "matteroverdrive" and name not in registered:
-                        errors.append(f"unknown loot item {entry['name']} in {family}")
+                        errors.append(f"unknown loot item {item_name} in {family}")
                     if name == "facility_research": archives.append(entry)
             if family != "salvage":
                 if family.upper() + "(" not in archive_source: errors.append(f"unhandled research family: {family}")
@@ -225,7 +277,7 @@ print(f"  native facilities: {len(FACILITIES)}")
 print(f"  primary reusable piece types checked: {len(REQUIRED_PIECES)}")
 print(f"  infrastructure piece kinds checked: {len(INFRA_KINDS)}")
 print(f"  reusable industrial blocks checked: {len(INDUSTRIAL_BLOCKS)}")
-print("  structure + structure_set JSON: parseable")
+print("  native structure JSON: parseable; no active structure_set JSON")
 print("  facility loot: 7 tables, registered items, six matching research archives")
 print("  restoration/security hooks and stacked-door redstone state: present")
 print("  topology regression guards and visual layout lab: present")

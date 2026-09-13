@@ -188,6 +188,16 @@ SOURCE_MARKERS = {
     ],
 }
 
+MODERN_SOURCE_MARKERS = {
+    "src/main/java/matteroverdrive/worldgen/TechnologyFacilityStructure.java": [
+        "findGenerationPoint", "Math.floorMod", "ModernExplorationStructurePiece",
+        "ModernTraversalRepairPiece", "EnvironmentalDressingPiece",
+    ],
+    "src/main/java/matteroverdrive/worldgen/ModernExplorationStructurePiece.java": [
+        "postProcess", "room(", "corridorZ", "corridorX", "cache(",
+    ],
+}
+
 
 def vertical_levels(piece: Piece) -> set[int]:
     name = piece.name
@@ -287,6 +297,19 @@ def assert_layout(family: str, layout: int, pieces: list[Piece]) -> tuple[list[s
 
 
 def validate_source_markers(root: Path) -> list[str]:
+    modern_failures: list[str] = []
+    for rel, markers in MODERN_SOURCE_MARKERS.items():
+        path = root / rel
+        if not path.exists():
+            modern_failures.append(f"source drift check missing file: {rel}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                modern_failures.append(f"source drift: {rel} missing marker {marker}")
+    if not modern_failures:
+        return []
+
     failures: list[str] = []
     for rel, markers in SOURCE_MARKERS.items():
         path = root / rel

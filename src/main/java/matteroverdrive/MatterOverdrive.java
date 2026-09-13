@@ -14,6 +14,7 @@ import matteroverdrive.registry.ModFeatures;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.registry.ModMenus;
 import matteroverdrive.registry.ModStructures;
+import matteroverdrive.registry.OverhaulContent;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.registry.ModSounds;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,7 +29,7 @@ import org.slf4j.Logger;
 @Mod(MatterOverdrive.MOD_ID)
 public final class MatterOverdrive {
     public static final String MOD_ID = "matteroverdrive";
-    public static final String DISPLAY_VERSION = "0.6";
+    public static final String DISPLAY_VERSION = "0.7";
     public static final String AUTHOR = "MVQ1303";
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -36,6 +37,9 @@ public final class MatterOverdrive {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        OverhaulContent.BLOCKS.register(modBus);
+        OverhaulContent.ITEMS.register(modBus);
+        OverhaulContent.ENTITY_TYPES.register(modBus);
         ModExoticItems.ITEMS.register(modBus);
         ModDestinyItems.ITEMS.register(modBus);
         ModCreativeTabs.CREATIVE_TABS.register(modBus);
@@ -44,6 +48,7 @@ public final class MatterOverdrive {
         ModEntities.ENTITY_TYPES.register(modBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modBus);
         ModExtraBlockEntities.BLOCK_ENTITIES.register(modBus);
+        OverhaulContent.BLOCK_ENTITIES.register(modBus);
         ModMenus.MENUS.register(modBus);
         ModFeatures.FEATURES.register(modBus);
         ModStructures.STRUCTURE_TYPES.register(modBus);

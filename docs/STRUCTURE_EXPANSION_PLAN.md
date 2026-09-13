@@ -204,7 +204,7 @@ Run the lightweight source gate before a local Minecraft build:
 python scripts/validate_structure_expansion.py
 ```
 
-It verifies the six native structure/structure-set JSON pairs, modern reusable piece types, stable layout-variant wiring, chunk-local clipping guard, referenced Matter Overdrive block ids and retired-system exclusion.
+It verifies the six native structure JSON definitions, asserts that no retired Matter Overdrive `structure_set` resources are shipped, checks modern reusable piece types, stable layout-variant wiring, chunk-local clipping guard, referenced Matter Overdrive block ids and retired-system exclusion.
 
 The full tech-overhaul static gate remains:
 

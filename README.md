@@ -8,7 +8,7 @@ A Forge 1.20.1 port of Matter Overdrive Legacy Edition, maintained by MVQ1303.
 - Forge: 47.4.10
 - Java: 17
 - Mod ID: `matteroverdrive`
-- Current version: `0.6`
+- Current version: `0.7`
 - Development baseline: `main`
 
 Release builds are published from `main` after the normal build and release workflows complete successfully.
@@ -32,7 +32,7 @@ The prerecorded PDA bank is optional at runtime. Missing recordings fall back to
 
 ## Current feature set
 
-Matter Overdrive 0.6 consolidates the 0.5 campaign/world-content line with the current matter-economy work and the existing machine, Android, reactor, weapon and exploration systems.
+Matter Overdrive 0.7 consolidates the 0.6 campaign/world-content line with the merged tech overhaul, dual-resource Energy Bank, expanded hostile/village population, deterministic loot relics, Frontier Expedition sites, PDA/GuideME audit coverage and the complete native Destiny GunPack weapon set.
 
 For the current post-Star-Map source inventory, including the newer PDA/lore/dialogue/structure/voice systems, see **[Current Feature Inventory — 2026-09-11](docs/reference/CURRENT_FEATURES_2026-09-11.md)**.
 
@@ -90,6 +90,19 @@ For the current post-Star-Map source inventory, including the newer PDA/lore/dia
 - Weapon Station persistence and typed module slots.
 - Native weapon integration alongside Point Blank compatibility support.
 - Android combat hooks for subclass abilities, passives and drone support.
+- 49 native Destiny energy-weapon profiles, including 35 additional GunPack conversions with imported geometry, textures, source audio, available animations and display transforms.
+- Destiny weapons use the existing battery, barrel, sights, colour, utility and Weapon Station module paths.
+- First-person source transforms, bounded ADS/recoil presentation and third-person generic-use pose suppression.
+
+### 0.7 tech overhaul and exploration
+
+- Energy Bank dual FE/Matter storage fed by reactor IO and exposed to compatible FE/Matter networks.
+- Quantum Flux Reactor, Environmental Regulator, Wall Terminal, reactor/decorative blocks and hybrid FE+Matter conduit routing.
+- Frontier Expedition sites: Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array.
+- Natural hostile spawning for Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers.
+- Village-associated Field Scientists, Systems Engineers and Mad Scientists with PDA contacts and existing contract flow.
+- Matter Overdrive supplies injected into selected vanilla structure loot while preserving vanilla pools, plus seven deterministic Legendary Relic sources and themed facility relic pools.
+- GuideME block-reference image/recipe coverage, PDA integration checks and expanded source/resource consistency validators.
 
 ### Campaign, quests and world content
 

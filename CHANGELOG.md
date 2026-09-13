@@ -2,7 +2,7 @@
 
 All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 
-## Unreleased — Lead developer gameplay expansion
+## 0.7 — Complete feature release
 
 ### Added
 
@@ -14,6 +14,18 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 - Added `/matteroverdrive research field status` and `/matteroverdrive research field assign <recovery|systems|anomaly>`.
 - Expanded the Data Pad journal with active operation, doctrine, progress, description, and lifetime completion count.
 - Added a dedicated Field Operations runtime/abuse/performance checklist to `TECH_OVERHAUL_TEST_PLAN.md`.
+- Added the complete merged tech-overhaul feature set: Energy Bank dual FE/Matter storage, Quantum Flux Reactor, Environmental Regulator, Wall Terminal, decorative reactor blocks and hybrid FE+Matter conduit routing.
+- Added persistent Energy Bank reactor-IO input, independent FE/Matter output, status/comparator telemetry and network-compatible buffering without resource conversion or feedback loops.
+- Added four Frontier Expedition structures: Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array.
+- Added natural hostile-spawn definitions for Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers, plus village Field Scientist and Systems Engineer population alongside Mad Scientists.
+- Added vanilla structure loot injection that preserves existing vanilla pools and supplies Matter Overdrive materials, with seven deterministic Legendary Relic sources.
+- Added themed Legendary Relic pools to the six main technology-facility caches, using the existing recovered artifact item and Android passive-protocol selection.
+- Added 35 additional native Destiny GunPack weapon conversions, bringing the registered native Destiny set to 49 energy weapons.
+- Imported per-weapon Destiny geometry, textures, source audio, available animations and display transforms; added native animation-name aliases and static-idle fallbacks for models without source clips.
+- Connected every Destiny weapon to the existing Energy Weapon, Weapon System, battery/barrel/sights/colour/utility module and Weapon Station contracts.
+- Added source-transform first-person rendering, bounded aim/recoil presentation and third-person generic-use pose suppression for energy weapons.
+- Added GuideME block-reference descriptions, item image links and live recipe links for all active player-facing blocks, including Drone Fabricator and Matter Network Terminal.
+- Added cross-checked static/resource validation for registries, JSON/model/texture references, loot, spawn, PDA, relic, weapon, Android, network and structure contracts.
 
 ### Changed
 
@@ -27,7 +39,7 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 
 ### Testing status
 
-Source changes are committed on `feature/lead-dev-expansion-2026-09-11`. Runtime verification is still required for persistence, multiplayer isolation, compact-site recognition, reward delivery and anomaly-operation completion.
+The release is source/resource validated. Runtime verification is still required for persistence, multiplayer isolation, Energy Bank throughput, compact-site recognition, facility generation, reward delivery, model transforms, audio playback, spawn rates and anomaly-operation completion. See `docs/testing/TO_TEST.md`.
 
 ## 0.6 — Matter economy, survival/world integration and release consolidation
 

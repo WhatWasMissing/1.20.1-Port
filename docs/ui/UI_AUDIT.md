@@ -17,6 +17,11 @@ Static inventory found 32 client screen classes, 24 menu classes, and 41 client 
 | `AndroidSpawnerScreen` | android spawning | fixed-size layout and action feedback | MEDIUM | dynamic control/status text fitted; runtime screenshot still required |
 | `DroneManagementScreen` | drone controls | interaction/state feedback review required | HIGH | responsive controls, bounded rows, server command routing, and empty-state feedback statically verified; runtime interaction review still required |
 
+### Onboarding / title
+
+| `FirstLoginBriefingScreen` | first-login PDA briefing | standalone-screen layout and text fitting | MEDIUM | merged 0.7 onboarding surface; runtime screenshot still required |
+| `MatterOverdriveTitleScreen` | Matter Overdrive title/about surface | standalone-screen layout and page navigation | MEDIUM | merged 0.7 title surface; runtime screenshot still required |
+
 ### Machines / infrastructure
 
 The machine-screen pixel-boundary pass is complete for the listed screens: `ChargingStationScreen`, `DroneFabricatorScreen`, `DecomposerScreen`, `EnergyPipeScreen`, `InscriberScreen`, `MatterAnalyzerScreen`, `MatterRecyclerScreen`, `MicrowaveScreen`, `NetworkRouterScreen`, `NetworkSwitchScreen`, `PatternMonitorScreen`, `PatternStorageScreen`, `PylonScreen`, `ReplicatorScreen`, `SolarPanelScreen`, `SpacetimeAcceleratorScreen`, `TransporterScreen`, `TritaniumCrateScreen`, and `ContractMarketScreen`. Runtime screenshots remain the evidence gap for visual confirmation.

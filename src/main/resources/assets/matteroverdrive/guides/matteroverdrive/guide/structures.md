@@ -9,6 +9,12 @@ navigation:
 
 Matter Overdrive adds abandoned facilities, crashed spacecraft, Android sites and gravitational anomalies to normal survival exploration. These structures are **optional discoveries**: they can introduce the scientist campaign, provide loot, encounters and lore, but they do not lock the technology tree. Experienced players may craft and use Matter Overdrive technology without finding every structure or completing the quests.
 
+## Vanilla exploration progression
+
+Matter Overdrive progression is not dependent on finding a Matter Overdrive structure. Vanilla exploration now contributes to the same lore path: early dungeons, mineshafts, shipwrecks, temples, outposts, Nether bridges and strongholds can contain practical Matter Overdrive supplies, while especially dangerous or remote vanilla structures can rarely contain a themed Legendary Relic. Relics remain one-use Android passive-protocol choices and are intentionally much rarer than ordinary supplies.
+
+Themed relic sources include **Overclocked Relay** in stronghold libraries, **Swarm Beacon** in jungle temples, **Aegis Prism** in bastion treasure rooms, **Hunter Lens** in woodland mansions, **Nanite Crown** in buried treasure, **Capacitor Heart** in End Cities and **Phase Anchor** in Ancient Cities.
+
 > World-generation changes only affect **new or unexplored chunks**. If you update an existing world, travel beyond previously generated terrain when looking for these sites.
 
 ## What to look for

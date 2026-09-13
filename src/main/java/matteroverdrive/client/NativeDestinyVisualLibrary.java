@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.weapon.NativeDestinyWeaponItem;
+import matteroverdrive.item.weapon.NativeDestinyWeaponProfile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -17,20 +18,18 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Lightweight native loader for the Bedrock/Blockbench gun geometry and animation data
@@ -39,11 +38,6 @@ import java.util.zip.GZIPInputStream;
  */
 public final class NativeDestinyVisualLibrary {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final ResourceLocation COMPLETE_DATA =
-            ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "native_destiny/weapons.json.gz.b64");
-    private static final List<ResourceLocation> DATA_PARTS = List.of(
-            ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "native_destiny/weapons_00.b64"),
-            ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "native_destiny/weapons_01.b64"));
     private static final Map<String, WeaponVisual> VISUALS = new HashMap<>();
     private static boolean loaded;
 
@@ -58,52 +52,38 @@ public final class NativeDestinyVisualLibrary {
         if (loaded) return;
         loaded = true;
         Minecraft minecraft = Minecraft.getInstance();
-        String encoded = readBundle(minecraft, COMPLETE_DATA);
-        if (encoded == null) {
-            StringBuilder staged = new StringBuilder();
-            for (ResourceLocation part : DATA_PARTS) {
-                String contents = readBundle(minecraft, part);
-                if (contents == null) {
-                    LOGGER.error("Native Destiny visual bundle part {} is missing", part);
-                    return;
-                }
-                staged.append(contents);
+        for (NativeDestinyWeaponProfile profile : NativeDestinyWeaponProfile.values()) {
+            String id = profile.id();
+            ResourceLocation geometryLocation = new ResourceLocation(
+                    MatterOverdrive.MOD_ID, "native_destiny/geometry/" + id + ".geo.json");
+            ResourceLocation animationLocation = new ResourceLocation(
+                    MatterOverdrive.MOD_ID, "native_destiny/animations/" + id + ".animation.json");
+            ResourceLocation transformLocation = new ResourceLocation(
+                    MatterOverdrive.MOD_ID, "native_destiny/transforms/" + id + ".json");
+            if (minecraft.getResourceManager().getResource(geometryLocation).isEmpty()
+                    || minecraft.getResourceManager().getResource(animationLocation).isEmpty()
+                    || minecraft.getResourceManager().getResource(transformLocation).isEmpty()) {
+                LOGGER.warn("Missing native Destiny geometry, animation, or transform resource for {}", id);
+                continue;
             }
-            encoded = staged.toString();
-        }
-        try {
-            byte[] compressed = Base64.getDecoder().decode(encoded);
-            try (var reader = new InputStreamReader(
-                    new GZIPInputStream(new ByteArrayInputStream(compressed)), StandardCharsets.UTF_8)) {
-                JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-                JsonObject weapons = root.getAsJsonObject("weapons");
-                for (Map.Entry<String, JsonElement> entry : weapons.entrySet()) {
-                    try {
-                        VISUALS.put(entry.getKey(), WeaponVisual.parse(entry.getKey(), entry.getValue().getAsJsonObject()));
-                    } catch (RuntimeException ex) {
-                        LOGGER.error("Failed to build native Destiny visual {}", entry.getKey(), ex);
-                    }
-                }
-                if (VISUALS.size() != 14) {
-                    LOGGER.warn("Expected 14 native Destiny weapon visuals but loaded {}", VISUALS.size());
-                } else {
-                    LOGGER.info("Loaded all 14 native Destiny weapon visuals");
-                }
+            try (var geometryReader = new InputStreamReader(
+                    minecraft.getResourceManager().getResource(geometryLocation).orElseThrow().open(),
+                    StandardCharsets.UTF_8);
+                 var animationReader = new InputStreamReader(
+                    minecraft.getResourceManager().getResource(animationLocation).orElseThrow().open(),
+                    StandardCharsets.UTF_8);
+                 var transformReader = new InputStreamReader(
+                    minecraft.getResourceManager().getResource(transformLocation).orElseThrow().open(),
+                    StandardCharsets.UTF_8)) {
+                JsonObject geometryRoot = JsonParser.parseReader(geometryReader).getAsJsonObject();
+                JsonObject animationRoot = JsonParser.parseReader(animationReader).getAsJsonObject();
+                JsonObject transformRoot = JsonParser.parseReader(transformReader).getAsJsonObject();
+                VISUALS.put(id, WeaponVisual.parse(id, geometryRoot, animationRoot, transformRoot));
+            } catch (Exception ex) {
+                LOGGER.error("Failed to build native Destiny visual {}", id, ex);
             }
-        } catch (Exception ex) {
-            LOGGER.error("Failed to load compressed native Destiny weapon visual data", ex);
         }
-    }
-
-    private static String readBundle(Minecraft minecraft, ResourceLocation location) {
-        var resource = minecraft.getResourceManager().getResource(location);
-        if (resource.isEmpty()) return null;
-        try (var input = resource.get().open()) {
-            return new String(input.readAllBytes(), StandardCharsets.UTF_8).replaceAll("\\s+", "");
-        } catch (Exception ex) {
-            LOGGER.warn("Failed to read native Destiny visual bundle {}", location, ex);
-            return null;
-        }
+        LOGGER.info("Loaded {} native Destiny weapon visuals", VISUALS.size());
     }
 
     public static final class WeaponVisual {
@@ -113,21 +93,24 @@ public final class NativeDestinyVisualLibrary {
         private final Map<String, BasePose> basePoses;
         private final Map<String, AnimationClip> animations;
         private final ResourceLocation texture;
+        private final DisplayTransform displayTransform;
 
         private WeaponVisual(String id, ModelPart root, Map<String, ModelPart> parts,
                              Map<String, BasePose> basePoses,
-                             Map<String, AnimationClip> animations,
-                             ResourceLocation texture) {
+                             Map<String, AnimationClip> animations, ResourceLocation texture,
+                             DisplayTransform displayTransform) {
             this.id = id;
             this.root = root;
             this.parts = parts;
             this.basePoses = basePoses;
             this.animations = animations;
             this.texture = texture;
+            this.displayTransform = displayTransform;
         }
 
         public ModelPart root() { return root; }
         public ResourceLocation texture() { return texture; }
+        public DisplayTransform displayTransform() { return displayTransform; }
 
         public void apply(ItemStack stack, float partialTick) {
             reset();
@@ -137,7 +120,7 @@ public final class NativeDestinyVisualLibrary {
             float nowTicks = minecraft.level.getGameTime() + partialTick;
             String activeName = NativeDestinyWeaponItem.activeAnimation(stack);
             long startTick = NativeDestinyWeaponItem.animationStart(stack);
-            AnimationClip active = animations.get(activeName);
+            AnimationClip active = findAnimation(activeName);
             if (active != null && startTick > 0L) {
                 float seconds = Math.max(0.0F, (nowTicks - startTick) / 20.0F);
                 if (seconds <= active.length + 0.05F) {
@@ -146,11 +129,40 @@ public final class NativeDestinyVisualLibrary {
                 }
             }
 
-            AnimationClip idle = animations.get("animation.model.idle");
+            AnimationClip idle = findAnimation("animation.model.idle");
             if (idle != null && idle.length > 0.0F) {
                 float seconds = (nowTicks / 20.0F) % idle.length;
                 applyClip(idle, seconds);
             }
+        }
+
+        /**
+         * Accept both the already-normalised Matter Overdrive animation names and the
+         * native GunPack names. The source pack calls the firing clip {@code shoot},
+         * the idle clip {@code static_idle}, and uses separate tactical/empty reload
+         * clips, so resolving aliases here keeps the weapon item independent of the
+         * source pack's naming conventions.
+         */
+        private AnimationClip findAnimation(String requested) {
+            AnimationClip direct = animations.get(requested);
+            if (direct != null) return direct;
+            return switch (requested) {
+                case "animation.model.idle" -> firstAnimation("static_idle", "idle");
+                case "animation.model.draw" -> firstAnimation("draw");
+                case "animation.model.reload" -> firstAnimation(
+                        "reload_tactical", "reload", "reload_loop", "reload_intro", "reload_empty");
+                case "animation.model.fire", "animation.model.fire2" -> firstAnimation(
+                        "shoot", "fire", "static_semi");
+                default -> null;
+            };
+        }
+
+        private AnimationClip firstAnimation(String... names) {
+            for (String name : names) {
+                AnimationClip clip = animations.get(name);
+                if (clip != null) return clip;
+            }
+            return null;
         }
 
         private void reset() {
@@ -199,8 +211,13 @@ public final class NativeDestinyVisualLibrary {
             }
         }
 
-        private static WeaponVisual parse(String id, JsonObject object) {
-            JsonObject geometry = object.getAsJsonObject("geometry");
+        private static WeaponVisual parse(String id, JsonObject geometryRoot, JsonObject animationRoot,
+                                          JsonObject transformRoot) {
+            JsonArray geometries = geometryRoot.getAsJsonArray("minecraft:geometry");
+            if (geometries == null || geometries.size() == 0) {
+                throw new IllegalArgumentException("geometry has no minecraft:geometry entries");
+            }
+            JsonObject geometry = geometries.get(0).getAsJsonObject();
             JsonObject description = geometry.getAsJsonObject("description");
             int textureWidth = description.get("texture_width").getAsInt();
             int textureHeight = description.get("texture_height").getAsInt();
@@ -235,12 +252,15 @@ public final class NativeDestinyVisualLibrary {
             }
 
             Map<String, AnimationClip> animations = new HashMap<>();
-            JsonObject sourceAnimations = object.getAsJsonObject("animations");
-            for (Map.Entry<String, JsonElement> animation : sourceAnimations.entrySet()) {
-                animations.put(animation.getKey(), AnimationClip.parse(animation.getValue().getAsJsonObject()));
+            JsonObject sourceAnimations = animationRoot.getAsJsonObject("animations");
+            if (sourceAnimations != null) {
+                for (Map.Entry<String, JsonElement> animation : sourceAnimations.entrySet()) {
+                    animations.put(animation.getKey(), AnimationClip.parse(animation.getValue().getAsJsonObject()));
+                }
             }
             return new WeaponVisual(id, root, parts, basePoses, animations,
-                    ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID, "textures/native_destiny/" + id + ".png"));
+                    new ResourceLocation(MatterOverdrive.MOD_ID, "textures/native_destiny/" + id + ".png"),
+                    DisplayTransform.parse(transformRoot));
         }
 
         private static PartDefinition buildPart(PartDefinition parentDef, BoneSpec spec, Vec3 parentPivot) {
@@ -279,6 +299,74 @@ public final class NativeDestinyVisualLibrary {
             bases.put(spec.name, new BasePose(part.x, part.y, part.z, part.xRot, part.yRot, part.zRot));
             for (BoneSpec child : spec.children) {
                 collectParts(part, child, parts, bases);
+            }
+        }
+    }
+
+    /** Display transforms copied from each source model's separate-transforms base model. */
+    public static final class DisplayTransform {
+        private final Entry firstPersonRight;
+        private final Entry firstPersonLeft;
+        private final Entry thirdPersonRight;
+        private final Entry thirdPersonLeft;
+        private final Entry ground;
+        private final Entry gui;
+        private final Entry fixed;
+
+        private DisplayTransform(Entry firstPersonRight, Entry firstPersonLeft,
+                                 Entry thirdPersonRight, Entry thirdPersonLeft,
+                                 Entry ground, Entry gui, Entry fixed) {
+            this.firstPersonRight = firstPersonRight;
+            this.firstPersonLeft = firstPersonLeft;
+            this.thirdPersonRight = thirdPersonRight;
+            this.thirdPersonLeft = thirdPersonLeft;
+            this.ground = ground;
+            this.gui = gui;
+            this.fixed = fixed;
+        }
+
+        public Entry forContext(ItemDisplayContext context) {
+            return switch (context) {
+                case FIRST_PERSON_RIGHT_HAND -> firstPersonRight;
+                case FIRST_PERSON_LEFT_HAND -> firstPersonLeft;
+                case THIRD_PERSON_RIGHT_HAND -> thirdPersonRight;
+                case THIRD_PERSON_LEFT_HAND -> thirdPersonLeft;
+                case GROUND -> ground;
+                case GUI -> gui;
+                case FIXED -> fixed;
+                default -> Entry.IDENTITY;
+            };
+        }
+
+        private static DisplayTransform parse(JsonObject root) {
+            JsonObject base = root.getAsJsonObject("base");
+            JsonObject display = base == null ? null : base.getAsJsonObject("display");
+            return new DisplayTransform(
+                    Entry.parse(display, "firstperson_righthand", Entry.IDENTITY),
+                    Entry.parse(display, "firstperson_lefthand", Entry.IDENTITY),
+                    Entry.parse(display, "thirdperson_righthand", Entry.IDENTITY),
+                    Entry.parse(display, "thirdperson_lefthand", Entry.IDENTITY),
+                    Entry.parse(display, "ground", Entry.IDENTITY),
+                    Entry.parse(display, "gui", Entry.IDENTITY),
+                    Entry.parse(display, "fixed", Entry.IDENTITY));
+        }
+
+        public record Entry(float x, float y, float z, float xRot, float yRot, float zRot, float scale) {
+            private static final Entry IDENTITY = new Entry(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 1.0F);
+
+            private static Entry parse(JsonObject display, String name, Entry fallback) {
+                if (display == null || !display.has(name)) return fallback;
+                JsonObject object = display.getAsJsonObject(name);
+                Vec3 translation = vector(object, "translation", Vec3.ZERO);
+                Vec3 rotation = vector(object, "rotation", Vec3.ZERO);
+                Vec3 scale = vector(object, "scale", new Vec3(1.0F, 1.0F, 1.0F));
+                return new Entry(translation.x, translation.y, translation.z,
+                        rotation.x, rotation.y, rotation.z, scale.x);
+            }
+
+            private static Vec3 vector(JsonObject object, String name, Vec3 fallback) {
+                return object.has(name) && object.get(name).isJsonArray()
+                        ? Vec3.parse(object.getAsJsonArray(name)) : fallback;
             }
         }
     }
@@ -335,15 +423,44 @@ public final class NativeDestinyVisualLibrary {
         }
 
         static CubeSpec parse(JsonObject object) {
-            JsonArray uv = object.getAsJsonArray("uv");
+            JsonElement uvElement = object.get("uv");
+            float[] uv = parseUv(uvElement);
             return new CubeSpec(
                     Vec3.parse(object.getAsJsonArray("origin")),
                     Vec3.parse(object.getAsJsonArray("size")),
                     object.has("pivot") ? Vec3.parse(object.getAsJsonArray("pivot")) : null,
                     object.has("rotation") ? Vec3.parse(object.getAsJsonArray("rotation")) : Vec3.ZERO,
                     object.has("inflate") ? object.get("inflate").getAsFloat() : 0.0F,
-                    uv.get(0).getAsFloat(), uv.get(1).getAsFloat(),
+                    uv[0], uv[1],
                     object.has("mirror") && object.get("mirror").getAsBoolean());
+        }
+
+        /**
+         * Bedrock geometry may use either Blockbench's compact [u, v] form or a
+         * per-face UV object. Vanilla's CubeListBuilder accepts one anchor for its
+         * standard box atlas layout, so use the source north face as that anchor when
+         * importing the richer form. This preserves the source texture placement for
+         * the visible face while keeping the loader compatible with both source packs.
+         */
+        private static float[] parseUv(JsonElement element) {
+            if (element == null || element.isJsonNull()) return new float[] {0.0F, 0.0F};
+            if (element.isJsonArray()) {
+                JsonArray array = element.getAsJsonArray();
+                return new float[] {array.get(0).getAsFloat(), array.get(1).getAsFloat()};
+            }
+            if (element.isJsonObject()) {
+                JsonObject faces = element.getAsJsonObject();
+                for (String face : List.of("north", "south", "east", "west", "up", "down")) {
+                    JsonElement candidate = faces.get(face);
+                    if (candidate == null || !candidate.isJsonObject()) continue;
+                    JsonElement faceUv = candidate.getAsJsonObject().get("uv");
+                    if (faceUv != null && faceUv.isJsonArray()) {
+                        JsonArray array = faceUv.getAsJsonArray();
+                        return new float[] {array.get(0).getAsFloat(), array.get(1).getAsFloat()};
+                    }
+                }
+            }
+            return new float[] {0.0F, 0.0F};
         }
     }
 
@@ -360,7 +477,7 @@ public final class NativeDestinyVisualLibrary {
 
         static AnimationClip parse(JsonObject object) {
             float length = object.has("animation_length") ? object.get("animation_length").getAsFloat() : 0.1F;
-            boolean loop = object.has("loop") && object.get("loop").getAsBoolean();
+            boolean loop = object.has("loop") && isLooping(object.get("loop"));
             Map<String, BoneAnimation> bones = new HashMap<>();
             if (object.has("bones")) {
                 for (Map.Entry<String, JsonElement> bone : object.getAsJsonObject("bones").entrySet()) {
@@ -372,6 +489,12 @@ public final class NativeDestinyVisualLibrary {
                 }
             }
             return new AnimationClip(length, loop, bones);
+        }
+
+        private static boolean isLooping(JsonElement value) {
+            if (!value.isJsonPrimitive()) return false;
+            if (value.getAsJsonPrimitive().isBoolean()) return value.getAsBoolean();
+            return !"hold_on_last_frame".equals(value.getAsString());
         }
     }
 
@@ -386,18 +509,42 @@ public final class NativeDestinyVisualLibrary {
 
         static Channel parse(JsonElement element) {
             if (element == null || element.isJsonNull()) return null;
-            JsonObject object = element.getAsJsonObject();
             List<Keyframe> frames = new ArrayList<>();
+            if (element.isJsonArray()) {
+                frames.add(new Keyframe(0.0F, Vec3.parse(element.getAsJsonArray()), "linear"));
+                return new Channel(frames);
+            }
+            JsonObject object = element.getAsJsonObject();
             if (object.has("vector")) {
                 frames.add(new Keyframe(0.0F, Vec3.parse(object.getAsJsonArray("vector")), "linear"));
             } else {
                 for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
                     try {
                         float time = Float.parseFloat(entry.getKey());
-                        JsonObject frame = entry.getValue().getAsJsonObject();
-                        if (!frame.has("vector")) continue;
-                        frames.add(new Keyframe(time, Vec3.parse(frame.getAsJsonArray("vector")),
-                                frame.has("easing") ? frame.get("easing").getAsString() : "linear"));
+                        JsonElement rawFrame = entry.getValue();
+                        JsonObject frame = rawFrame.isJsonObject() ? rawFrame.getAsJsonObject() : null;
+                        JsonArray vector = rawFrame.isJsonArray()
+                                ? rawFrame.getAsJsonArray()
+                                : frame == null ? null : frame.getAsJsonArray("vector");
+                        // GunPack/Blockbench keyframes commonly store the actual
+                        // value in pre/post fields rather than a direct vector.
+                        // Prefer post (the value held at the keyframe), then fall
+                        // back to pre so those source clips do not lose their
+                        // reload, draw, or recoil poses during import.
+                        if (vector == null && frame != null) {
+                            vector = frame.has("post") ? frame.getAsJsonArray("post")
+                                    : frame.has("pre") ? frame.getAsJsonArray("pre") : null;
+                        }
+                        if (vector == null) continue;
+                        String easing = "linear";
+                        if (frame != null) {
+                            if (frame.has("easing")) easing = frame.get("easing").getAsString();
+                            else if (frame.has("lerp_mode") && "catmullrom".equals(frame.get("lerp_mode").getAsString())) {
+                                easing = "linear";
+                            }
+                        }
+                        frames.add(new Keyframe(time, Vec3.parse(vector),
+                                easing));
                     } catch (NumberFormatException ignored) {
                     }
                 }

@@ -31,17 +31,25 @@ The **Grid Capacitor** is the high-throughput buffer for larger installations. I
 
 Comparator output reports capacitor fill level.
 
+## Energy Bank
+
+The **Energy Bank** is a late-game dual-resource buffer for reactor installations. It stores **32,000,000 FE** and **1,000,000 Matter** independently, accepts both through its exposed capabilities, and supplies adjacent FE networks plus connected Matter Pipe/Hybrid Conduit networks when those networks have room. It does not convert FE into Matter or Matter into FE. Use the block for reactor output that should remain available after the reactor stops or consumers temporarily back up.
+
 ## Charging Station
 
 The **Charging Station** remains the local bridge between stationary FE generation and compatible portable Matter Overdrive energy storage.
 
 For Android bases, the tech-overhaul branch adds an **Android Induction Relay**. It stores **2,000,000 FE**, accepts up to **16,384 FE/t**, wirelessly supplies up to **8,192 FE/t**, and supports **32 / 64 / 96 block** same-dimension charging ranges. It does not create FE and does not charge across dimensions.
 
+Every successful Android charge debits the relay's stored FE. Adjacent FE sources are also checked against their configured output face before power is pulled, so a disabled or input-only source side cannot leak power into the relay.
+
 ## Quantum Power Relay
 
 A pair/group of **Quantum Power Relays** can move FE wirelessly between loaded same-dimension locations. Relays use channels **0-15**, have a **256 block** wireless range, store **1,000,000 FE**, and transfer up to **16,384 FE/t**.
 
 Only loaded peers participate. Relays do not force-load destinations. The implementation keeps a registry of loaded relays rather than scanning the entire 256-block world volume every tick.
+
+Adjacent relay transfers respect the target machine's configured input face and the source machine's configured output face. Transfers are simulated before extraction and refund any unaccepted FE, preventing silent energy loss when a side policy changes.
 
 ## Machine upgrades
 

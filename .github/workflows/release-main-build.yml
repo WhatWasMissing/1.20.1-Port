@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VERSION: '0.6'
+  VERSION: '0.7'
 
 jobs:
   release:
@@ -36,19 +36,9 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Normalize numeric test-version verifier
+      - name: Verify release version
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('build.gradle')
-          text = path.read_text()
-          old = "if (mod_version != '0.2.0-alpha') throw new GradleException(\"Unexpected M2 version: ${mod_version}\")"
-          new = "if (!(mod_version ==~ /[0-9]+\\.[0-9]+/)) throw new GradleException(\"Unexpected M2 version: ${mod_version}\")"
-          if old in text:
-              path.write_text(text.replace(old, new, 1))
-          elif new not in text:
-              raise SystemExit('Expected M2 version verifier was not found')
-          PY
+          grep -q '^mod_version=0.7$' gradle.properties
 
       - name: Build release JAR
         run: |
@@ -69,7 +59,21 @@ jobs:
           cat > release-notes.md <<EOF
           # Matter Overdrive 1.20.1 ${VERSION}
 
-          Release 0.6 consolidates the forward 0.5 campaign/world-content line with the new recursive matter economy and a dedicated matter diagnostics toolset.
+          Release 0.7 consolidates the 0.6 campaign/world-content line with the complete tech overhaul, dual-resource Energy Bank, expanded world population, deterministic relic loot, Frontier Expedition sites, PDA/GuideME audit coverage and native Destiny GunPack weapon set.
+
+          ## Complete 0.7 feature set
+
+          - Added Energy Bank dual FE/Matter storage fed by reactor IO and exposed to compatible FE/Matter networks without resource conversion, duplication or feedback loops.
+          - Added Quantum Flux Reactor, Environmental Regulator, Wall Terminal, reactor/decorative blocks, hybrid FE+Matter conduit routing and the associated machine telemetry.
+          - Added Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array Frontier Expedition sites.
+          - Added natural hostile spawning for Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers, plus village Field Scientists, Systems Engineers and Mad Scientists.
+          - Added vanilla structure loot injection that preserves vanilla pools, Matter Overdrive supplies and seven deterministic Legendary Relic sources.
+          - Added themed Legendary Relic pools to the six main technology-facility caches using the existing recovered artifact and passive-protocol progression.
+          - Added 35 native Destiny GunPack conversions, bringing the registered native Destiny set to 49 energy weapons.
+          - Imported per-weapon Destiny geometry, textures, source audio, available animations and display transforms, with native animation aliases and static-idle fallbacks.
+          - Connected Destiny weapons to existing Energy Weapon, Weapon System, battery/barrel/sights/colour/utility module and Weapon Station behavior.
+          - Added source-transform first-person rendering, bounded ADS/recoil presentation and third-person generic-use pose suppression.
+          - Added GuideME block-reference descriptions, item image links, live recipe links and cross-checked source/resource validators.
 
           ## Matter economy
 

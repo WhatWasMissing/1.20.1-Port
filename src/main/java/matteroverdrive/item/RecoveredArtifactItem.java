@@ -27,6 +27,8 @@ import java.util.List;
  */
 public final class RecoveredArtifactItem extends Item {
     private static final String PROTOCOL_TAG = "RecoveredProtocol";
+    /** Compatibility tag used by the deterministic facility/vanilla relic loot tables. */
+    private static final String LEGACY_RELIC_TAG = "RelicId";
 
     public RecoveredArtifactItem(Properties properties) {
         super(properties.stacksTo(1));
@@ -46,7 +48,15 @@ public final class RecoveredArtifactItem extends Item {
         if (!stack.hasTag()) return null;
         int ordinal = stack.getTag().getInt(PROTOCOL_TAG);
         AndroidLoadout.Artifact[] values = AndroidLoadout.Artifact.values();
-        return ordinal > 0 && ordinal < values.length ? values[ordinal] : null;
+        if (ordinal > 0 && ordinal < values.length) return values[ordinal];
+        String legacyId = stack.getTag().getString(LEGACY_RELIC_TAG);
+        if (legacyId.isBlank()) return null;
+        try {
+            AndroidLoadout.Artifact relic = AndroidLoadout.Artifact.valueOf(legacyId);
+            return relic == AndroidLoadout.Artifact.NONE ? null : relic;
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     private static AndroidLoadout.Artifact decode(Level level, ItemStack stack) {
@@ -65,6 +75,11 @@ public final class RecoveredArtifactItem extends Item {
         return decoded == null
                 ? Component.translatable("item.matteroverdrive.artifact")
                 : Component.literal("Recovered " + decoded.displayName);
+    }
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return protocol(stack) != null;
     }
 
     @Override

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,6 +11,7 @@ FILES = {
     "effects": ROOT / "src/main/java/matteroverdrive/client/WeaponClientEffects.java",
     "renderer": ROOT / "src/main/java/matteroverdrive/client/WeaponItemRenderer.java",
     "profile": ROOT / "src/main/java/matteroverdrive/client/WeaponRenderProfile.java",
+    "destiny_profile": ROOT / "src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponProfile.java",
     "weapon": ROOT / "src/main/java/matteroverdrive/item/weapon/EnergyWeaponItem.java",
     "native_renderer": ROOT / "src/main/java/matteroverdrive/client/NativeDestinyWeaponRenderer.java",
     "native_library": ROOT / "src/main/java/matteroverdrive/client/NativeDestinyVisualLibrary.java",
@@ -64,10 +66,30 @@ def check_models() -> None:
             errors.append(f"{model_id} lost recovered legacy first-person translation")
 
 
+def check_native_visual_resources(native_library: str, profile: str) -> None:
+    """Validate the merged per-weapon loader or the legacy packed-loader contract."""
+    if "native_destiny/geometry/" not in native_library:
+        need(native_library, "weapons_00.b64", "staged native geometry bundle part 00")
+        need(native_library, "weapons_01.b64", "staged native geometry bundle part 01")
+        return
+
+    need(native_library, "native_destiny/animations/", "native animation resource path")
+    need(native_library, "native_destiny/transforms/", "native display-transform resource path")
+    profile_ids = re.findall(r'(?m)^\s*[A-Z0-9_]+\("([^"]+)"', profile)
+    if len(profile_ids) < 49:
+        errors.append(f"native Destiny profile inventory is incomplete: {len(profile_ids)} profiles, expected at least 49")
+    for native_id in profile_ids:
+        for kind, suffix in (("geometry", ".geo.json"), ("animations", ".animation.json"), ("transforms", ".json")):
+            path = ROOT / f"src/main/resources/assets/matteroverdrive/native_destiny/{kind}/{native_id}{suffix}"
+            if not path.is_file():
+                errors.append(f"missing native {kind} resource: {path.relative_to(ROOT)}")
+
+
 def main() -> int:
     effects = read("effects")
     renderer = read("renderer")
     profile = read("profile")
+    destiny_profile = read("destiny_profile")
     weapon = read("weapon")
     native_renderer = read("native_renderer")
     native_library = read("native_library")
@@ -99,9 +121,11 @@ def main() -> int:
     need(renderer, "nativeDestinyRenderer().renderNative", "native Destiny first-person renderer dispatch")
     need(renderer, "nativeDestinyRenderer().renderByItem", "native Destiny item-context renderer dispatch")
     need(native_renderer, "NativeDestinyVisualLibrary.get", "native visual lookup")
-    need(native_library, "weapons_00.b64", "staged native geometry bundle part 00")
-    need(native_library, "weapons_01.b64", "staged native geometry bundle part 01")
-    need(native_item, "transferReloadEnergy", "native weapon battery/energy-pack reload path")
+    check_native_visual_resources(native_library, destiny_profile)
+    need(native_item, "extends EnergyWeaponItem", "native weapon shared energy implementation")
+    need(native_item, "tryReload(weapon, player, getCapacity(weapon))", "native capacitor reload path")
+    need(native_item, "tryReload(weapon, shooter, energyCost)", "native pre-fire energy-pack/battery path")
+    need(weapon, "transferBatteryEnergy", "shared weapon battery transfer path")
     need(destiny_items, "NativeDestinyWeaponProfile.values()", "all native Destiny profiles registered")
     need(sounds, '"destiny_aceofspades"', "native Destiny sound definitions")
     need(sounds, '"destiny_sleepersimulant_fire"', "native Sleeper fire sound definition")

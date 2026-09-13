@@ -43,10 +43,10 @@ The generated production queue then appends all current `tech_*` discovery callo
 8. Either run the normal Gradle build so those WAVs are bundled automatically, or inject them into an already-built JAR with:
 
 ```bat
-INJECT_PDA_VOICES_INTO_JAR.bat build\libs\matteroverdrive-0.6.jar
+INJECT_PDA_VOICES_INTO_JAR.bat build\libs\matteroverdrive-0.7.jar
 ```
 
-The injector creates a separate `matteroverdrive-0.6-pda-voice.jar` and leaves the original build untouched.
+The injector creates a separate `matteroverdrive-0.7-pda-voice.jar` and leaves the original build untouched.
 
 The processor preserves the dry performance and adds only a quiet synthetic character layer: opposing micro-pitch ghosts, millisecond offsets, communications EQ/compression, tiny digital reflection and the Matter Overdrive PDA identification chime.
 

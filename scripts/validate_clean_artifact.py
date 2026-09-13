@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 import zipfile
 
-jar = Path(__file__).resolve().parents[1] / "build/libs/matteroverdrive-0.6.jar"
+jar = Path(__file__).resolve().parents[1] / "build/libs/matteroverdrive-0.7.jar"
 if not jar.is_file():
     print(f"CLEAN ARTIFACT VALIDATION FAILED: missing {jar}")
     sys.exit(1)

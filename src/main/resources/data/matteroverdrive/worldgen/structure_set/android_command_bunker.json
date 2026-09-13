@@ -1,9 +1,0 @@
-{
-  "structures": [{"structure": "matteroverdrive:android_command_bunker", "weight": 1}],
-  "placement": {
-    "type": "minecraft:random_spread",
-    "salt": 24587241,
-    "spacing": 176,
-    "separation": 56
-  }
-}

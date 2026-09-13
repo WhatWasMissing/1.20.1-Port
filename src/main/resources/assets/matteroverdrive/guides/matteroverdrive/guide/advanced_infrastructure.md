@@ -29,6 +29,10 @@ This is intentionally server-authoritative. If automation behaves unexpectedly, 
 
 The Grid Capacitor is a high-throughput FE buffer intended to absorb generation/load spikes. It stores **16,000,000 FE** and can move up to **32,768 FE/t**. Place it between a high-output source and a demanding machine network. Comparator output reports its fill level.
 
+## Energy Bank
+
+The **Energy Bank** is a separate late-game buffer that stores reactor **Forge Energy** and **Matter** at the same time without combining their units. It holds **32,000,000 FE** and **1,000,000 Matter**, accepts both from Reactor IO, and emits FE to adjacent Energy Cable/Hybrid Conduit or compatible machines while its Matter output joins the existing Matter Pipe/Hybrid Conduit routing. Its output excludes the reactor loop, so stored resources remain available until another consumer can accept them.
+
 ## Android Induction Relay
 
 The Android Induction Relay wirelessly charges converted Android players in the same dimension. It stores **2,000,000 FE**, accepts up to **16,384 FE/t**, supplies up to **8,192 FE/t**, and supports **32 / 64 / 96 block** operating ranges. Sneak-use cycles the range.

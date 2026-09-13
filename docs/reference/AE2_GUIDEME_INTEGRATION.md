@@ -36,4 +36,4 @@ When GuideME 20.1.x is installed, Matter Overdrive registers `matteroverdrive:gu
 
 The Data Pad keeps scan history and contract controls. A `GuideME Manual` button opens the rich manual when GuideME is installed. The compact built-in Data Pad pages remain the fallback when GuideME is absent.
 
-Current GuideME sections cover survival progression, matter technology, power/machines, Androids, fusion reactor, weapons, Matter Network, AE2, quests/contracts, Star Map, Dimensional Pylon, and transporter/security.
+Current GuideME sections cover survival progression, matter technology, power/machines, Androids, fusion reactor, weapons, Matter Network, AE2, quests/contracts, Dimensional Pylon, and transporter/security.

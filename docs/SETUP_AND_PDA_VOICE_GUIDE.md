@@ -1,6 +1,6 @@
 # Matter Overdrive 1.20.1 — Setup and PDA Voice Bank Guide
 
-This guide covers a clean Windows setup for the current `main` branch, building Matter Overdrive 0.6 locally, testing the mod, and producing/bundling the new PDA neural voice bank without storing binary audio in GitHub.
+This guide covers a clean Windows setup for the current `main` branch, building Matter Overdrive 0.7 locally, testing the mod, and producing/bundling the PDA neural voice bank without storing binary audio in GitHub.
 
 ## 1. Pull the current main branch
 
@@ -29,7 +29,7 @@ Matter Overdrive currently targets:
 - Forge 47.4.10
 - Java 17
 - Mod ID `matteroverdrive`
-- Release line `0.6`
+- Release line `0.7`
 
 Verify Java:
 
@@ -79,7 +79,7 @@ gradlew.bat build --no-daemon
 The build runs the bundled-documentation consistency gate automatically. The normal output JAR is expected under:
 
 ```text
-build\libs\matteroverdrive-0.6.jar
+build\libs\matteroverdrive-0.7.jar
 ```
 
 ## 5. Run the mod without prerecorded voices
@@ -247,13 +247,13 @@ Gradle packages them into the normal Matter Overdrive JAR.
 If you prefer to keep binary audio out of the source tree, first build the normal JAR and then run:
 
 ```bat
-INJECT_PDA_VOICES_INTO_JAR.bat build\libs\matteroverdrive-0.6.jar
+INJECT_PDA_VOICES_INTO_JAR.bat build\libs\matteroverdrive-0.7.jar
 ```
 
 The injector reads processed WAV files from the voice-bank resource directory and creates a separate voiced copy:
 
 ```text
-build\libs\matteroverdrive-0.6-pda-voice.jar
+build\libs\matteroverdrive-0.7-pda-voice.jar
 ```
 
 The original JAR is left untouched.
@@ -267,14 +267,14 @@ A typical voiced installation is:
 ```text
 .minecraft\
   mods\
-    matteroverdrive-0.6-pda-voice.jar
+    matteroverdrive-0.7-pda-voice.jar
   config\
     matteroverdrive\
       pda_voice\
         optional local overrides...
 ```
 
-If the audio was bundled during Gradle build instead, use the normal `matteroverdrive-0.6.jar`.
+If the audio was bundled during Gradle build instead, use the normal `matteroverdrive-0.7.jar`.
 
 ## 15. Recommended first runtime smoke test
 

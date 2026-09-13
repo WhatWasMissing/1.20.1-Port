@@ -145,7 +145,7 @@ tasks.named('jar', Jar).configure {
 
 tasks.register('verifyM1Resources') {
     group = 'verification'
-    description = 'Validates the Milestone 1 registry inventory and active JSON resources.'
+    description = 'Validates active Java registries and their JSON/model/loot resources.'
 
     doLast {
         def inventoryFile = file('PORT_INVENTORY.json')
@@ -155,39 +155,88 @@ tasks.register('verifyM1Resources') {
 
         def json = new groovy.json.JsonSlurper()
         def inventory = json.parse(inventoryFile)
-
-        def expected = [blocks: 74, blockItems: 71, standaloneItems: 98, sounds: 57]
-        def actual = [
-                blocks: inventory.blockIds.size(),
-                blockItems: inventory.blockItemIds.size(),
-                standaloneItems: inventory.standaloneItemIds.size(),
-                sounds: inventory.soundEventIds.size()
-        ]
-        expected.each { key, value ->
-            if (actual[key] != value) {
-                throw new GradleException("M1 inventory mismatch for ${key}: expected ${value}, got ${actual[key]}")
+        ['blockIds', 'blockItemIds', 'standaloneItemIds', 'soundEventIds'].each { key ->
+            if (!(inventory[key] instanceof List)) {
+                throw new GradleException("PORT_INVENTORY.json is missing list field: ${key}")
             }
         }
 
-        inventory.blockIds.each { id ->
+        def javaIds = { File source, String field, String constructor ->
+            def text = source.getText('UTF-8')
+            def fieldMatcher = (text =~ /(?s)\b${field}\s*=\s*${constructor}\.of\((.*?)\);/)
+            if (!fieldMatcher.find()) {
+                throw new GradleException("Could not parse ${field} from ${source}")
+            }
+            def ids = []
+            def idMatcher = (fieldMatcher.group(1) =~ /"([^"\\]+)"/)
+            idMatcher.each { match -> ids << match[1] }
+            ids
+        }
+        def matchedIds = { File source, pattern ->
+            def ids = []
+            def matcher = (source.getText('UTF-8') =~ pattern)
+            matcher.each { match -> ids << match[1] }
+            ids
+        }
+
+        def legacyBlockIds = javaIds(file('src/main/java/matteroverdrive/registry/ModBlocks.java'), 'LEGACY_BLOCK_IDS', 'List')
+        def overhaulBlockIds = matchedIds(
+                file('src/main/java/matteroverdrive/registry/OverhaulContent.java'),
+                ~/public\s+static\s+final\s+RegistryObject<Block>\s+\w+\s*=\s*register\("([^"]+)"/
+        )
+        def activeBlockIds = (legacyBlockIds + overhaulBlockIds).unique()
+        def noBlockItemIds = javaIds(file('src/main/java/matteroverdrive/registry/ModBlocks.java'), 'NO_BLOCK_ITEM', 'Set') as Set
+        def activeBlockItemIds = activeBlockIds.findAll { !noBlockItemIds.contains(it) }
+        def standaloneItemIds = javaIds(file('src/main/java/matteroverdrive/registry/ModItems.java'), 'STANDALONE_ITEM_IDS', 'List')
+        def exoticItemIds = matchedIds(
+                file('src/main/java/matteroverdrive/registry/ModExoticItems.java'),
+                ~/ITEMS\.register\("([^"]+)"/
+        )
+        def destinyItemIds = matchedIds(
+                file('src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponProfile.java'),
+                ~/(?m)^\s*[A-Z0-9_]+\("([^"]+)"/
+        )
+        def directItemIds = matchedIds(
+                file('src/main/java/matteroverdrive/registry/ModItems.java'),
+                ~/public\s+static\s+final\s+RegistryObject<Item>\s+\w+\s*=\s*ITEMS\.register\("([^"]+)"/
+        )
+        def activeItemIds = (activeBlockItemIds + standaloneItemIds + exoticItemIds + destinyItemIds + directItemIds).unique()
+        def active = [blocks: activeBlockIds, blockItems: activeBlockItemIds,
+                      standaloneItems: standaloneItemIds, extraItems: exoticItemIds + destinyItemIds + directItemIds]
+
+        active.blocks.each { id ->
             [
                     file("src/main/resources/assets/${mod_id}/blockstates/${id}.json"),
                     file("src/main/resources/assets/${mod_id}/models/block/${id}.json")
             ].each { required ->
-                if (!required.exists()) throw new GradleException("Missing M1 block resource: ${required}")
+                if (!required.exists()) throw new GradleException("Missing active block resource: ${required}")
             }
         }
 
-        inventory.blockItemIds.each { id ->
+        active.blockItems.each { id ->
             def model = file("src/main/resources/assets/${mod_id}/models/item/${id}.json")
             def loot = file("src/main/resources/data/${mod_id}/loot_tables/blocks/${id}.json")
-            if (!model.exists()) throw new GradleException("Missing M1 block item model: ${model}")
-            if (!loot.exists()) throw new GradleException("Missing M1 block loot table: ${loot}")
+            def recipe = file("src/main/resources/data/${mod_id}/recipes/${id.replace('.', '_')}.json")
+            if (!model.exists()) throw new GradleException("Missing active block item model: ${model}")
+            if (!loot.exists()) throw new GradleException("Missing active block loot table: ${loot}")
+            if (!recipe.exists()) throw new GradleException("Missing active block recipe: ${recipe}")
         }
 
-        inventory.standaloneItemIds.each { id ->
+        activeItemIds.each { id ->
             def model = file("src/main/resources/assets/${mod_id}/models/item/${id}.json")
-            if (!model.exists()) throw new GradleException("Missing M1 item model: ${model}")
+            if (!model.exists()) throw new GradleException("Missing active item model: ${model}")
+        }
+
+        def language = json.parse(file("src/main/resources/assets/${mod_id}/lang/en_us.json"))
+        active.blocks.each { id ->
+            if (!language.containsKey("block.${mod_id}.${id}")) {
+                throw new GradleException("Missing active block localization: ${id}")
+            }
+        }
+        (standaloneItemIds + exoticItemIds + destinyItemIds + directItemIds).each { id ->
+            if (!language.containsKey("item.${mod_id}.${id}") && !language.containsKey("item.${mod_id}.${id}.name")) {
+                throw new GradleException("Missing active item localization: ${id}")
+            }
         }
 
         def jsonFiles = fileTree('src/main/resources') { include '**/*.json' }.files
@@ -249,10 +298,11 @@ tasks.register('verifyM1Resources') {
         }
 
         println "M1 RESOURCE VERIFICATION PASSED"
-        println "  blocks=${actual.blocks}"
-        println "  blockItems=${actual.blockItems}"
-        println "  standaloneItems=${actual.standaloneItems}"
-        println "  sounds=${actual.sounds}"
+        println "  activeBlocks=${active.blocks.size()}"
+        println "  activeBlockItems=${active.blockItems.size()}"
+        println "  standaloneItems=${active.standaloneItems.size()}"
+        println "  extraItems=${active.extraItems.size()}"
+        println "  historicalInventorySounds=${inventory.soundEventIds.size()}"
         println "  activeJson=${jsonFiles.size()}"
     }
 }
@@ -409,7 +459,7 @@ tasks.register('verifyM2Sources') {
         if (!drive.contains('LEGACY_CAPACITY = 2')) throw new GradleException('Legacy Pattern Drive capacity must remain 2')
         if (!decomposer.contains('MatterNetworkUtil.transferMatter') || !analyzer.contains('findNetworkStorageFor') || !replicator.contains('queueNetworkReplication')) throw new GradleException('M2 network bridge wiring is incomplete')
 
-        if (mod_version != '0.6') throw new GradleException("Unexpected M2 version: ${mod_version}")
+        if (mod_version != '0.7') throw new GradleException("Unexpected M2 version: ${mod_version}")
 
         println 'M2 SOURCE VERIFICATION PASSED'
         println '  functionalBlocks=transporter,inscriber,decomposer,matter_recycler,matter_analyzer,replicator,pattern_storage,pattern_monitor,tritanium_crate_variants'

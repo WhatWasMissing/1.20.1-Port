@@ -1,12 +1,13 @@
 package matteroverdrive.item.weapon;
 
 import matteroverdrive.registry.ModDestinySounds;
-import matteroverdrive.registry.ModItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -21,14 +22,14 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
@@ -56,10 +57,18 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
     public Component getName(ItemStack stack) { return Component.literal(profile.displayName()); }
 
     @Override
+    public boolean supportsModule(WeaponModuleItem module) {
+        // Native Destiny weapons use the same six-slot Matter Overdrive platform as
+        // the Omni Tool. Every existing module has a meaningful energy-weapon effect.
+        return true;
+    }
+
+    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack weapon = player.getItemInHand(hand);
         if (hand == InteractionHand.OFF_HAND) return InteractionResultHolder.pass(weapon);
         if (player.isShiftKeyDown()) {
+            if (getMagazine(weapon) >= profile.magazine()) return InteractionResultHolder.sidedSuccess(weapon, level.isClientSide);
             beginReload(level, player, weapon);
             return InteractionResultHolder.sidedSuccess(weapon, level.isClientSide);
         }
@@ -96,6 +105,9 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         if (selected && !wasSelected) {
             tag.putBoolean(SELECTED_TAG, true);
             triggerAnimation(level, stack, "animation.model.draw");
+            if (!level.isClientSide && entity instanceof Player player) {
+                playProfileSound(level, player, profile.drawSound(), 0.75F);
+            }
         } else if (!selected && wasSelected) {
             tag.putBoolean(SELECTED_TAG, false);
         }
@@ -112,75 +124,16 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
     private void beginReload(Level level, Player player, ItemStack weapon) {
         CompoundTag tag = weapon.getOrCreateTag();
         if (isReloading(level, weapon)) return;
-        boolean transferred = !level.isClientSide && transferReloadEnergy(level, player, weapon);
-        triggerAnimation(level, weapon, reloadAnimation(weapon));
+        tryReload(weapon, player, getCapacity(weapon));
+        triggerAnimation(level, weapon, "animation.model.reload");
         tag.putLong(RELOAD_END_TAG, level.getGameTime() + profile.reloadTicks());
-        if (!level.isClientSide && !transferred) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), matteroverdrive.registry.ModSounds.get("weapons.reload").get(), SoundSource.PLAYERS, 0.75F, 1.0F);
-        }
+        playProfileSound(level, player, profile.reloadSound(), 0.75F);
     }
 
-    /**
-     * The imported source pack does not give every weapon both reload clips. Never request
-     * a clip that the supplied animation file does not contain, otherwise that reload is
-     * visually silent even though the capacitor state still advances.
-     */
-    private String reloadAnimation(ItemStack weapon) {
-        boolean empty = getMagazine(weapon) <= 0;
-        return switch (profile) {
-            case CHAOS_DOGMA -> "animation.model.reloadempty";
-            case KHVOSTOV_7G02, MARSHAL_A1, MIDA_MULTI_TOOL, MONTE_CARLO,
-                    PROXIMA_CENTAURI_II, SUROS_REGIME, TRAX_CALLUM_1 ->
-                    empty ? "animation.model.reloadempty" : "animation.model.reload";
-            default -> "animation.model.reload";
-        };
-    }
-
-    private boolean transferReloadEnergy(Level level, Player player, ItemStack weapon) {
-        if (getEnergyStored(weapon) == Integer.MAX_VALUE) return false;
-        int required = Math.min(getCapacity(weapon), Math.max(1, profile.energyPerShot()));
-        if (getEnergyStored(weapon) >= required) return false;
-        boolean transferred = false;
-        for (int slot = 0; slot < player.getInventory().getContainerSize() && getEnergyStored(weapon) < required; slot++) {
-            ItemStack candidate = player.getInventory().getItem(slot);
-            if (candidate.is(ModItems.get("energy_pack").get())) {
-                if (!player.getAbilities().instabuild) candidate.shrink(1);
-                setEnergyStored(weapon, getEnergyStored(weapon) + EnergyPackItem.ENERGY_AMOUNT);
-                transferred = true;
-            }
-        }
-        for (int slot = 0; slot < player.getInventory().getContainerSize() && getEnergyStored(weapon) < required; slot++) {
-            transferred |= transferBatteryEnergy(weapon, player, player.getInventory().getItem(slot)) > 0;
-        }
-        if (getEnergyStored(weapon) < required) {
-            transferred |= transferBatteryEnergy(weapon, player, player.getOffhandItem()) > 0;
-        }
-        if (transferred && !level.isClientSide) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    matteroverdrive.registry.ModSounds.get("weapons.reload").get(), SoundSource.PLAYERS, 0.8F, 1.0F);
-        }
-        return transferred;
-    }
-
-    private int transferBatteryEnergy(ItemStack weapon, Player player, ItemStack candidate) {
-        if (candidate.isEmpty() || candidate == weapon || !(candidate.getItem() instanceof WeaponBatteryItem)) return 0;
-        IEnergyStorage storage = candidate.getCapability(ForgeCapabilities.ENERGY).orElse(null);
-        if (storage == null || storage.getEnergyStored() <= 0) return 0;
-        int needed = Math.max(0, getCapacity(weapon) - getEnergyStored(weapon));
-        if (needed <= 0) return 0;
-        if (player.getAbilities().instabuild) {
-            setEnergyStored(weapon, getCapacity(weapon));
-            return needed;
-        }
-        int moved = 0;
-        while (needed > 0 && storage.getEnergyStored() > 0) {
-            int extracted = storage.extractEnergy(needed, false);
-            if (extracted <= 0) break;
-            setEnergyStored(weapon, getEnergyStored(weapon) + extracted);
-            moved += extracted;
-            needed -= extracted;
-        }
-        return moved;
+    private static void playProfileSound(Level level, Player player, String soundId, float volume) {
+        if (level.isClientSide || soundId == null) return;
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                ModDestinySounds.get(soundId), SoundSource.PLAYERS, volume, 1.0F);
     }
 
     private boolean fire(Level level, Player shooter, ItemStack weapon) {
@@ -190,30 +143,139 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
             shooter.displayClientMessage(Component.literal("Capacitor empty - shift-right-click to cycle").withStyle(ChatFormatting.RED), true);
             return false;
         }
-        if (getEnergyStored(weapon) < profile.energyPerShot() && getEnergyStored(weapon) != Integer.MAX_VALUE) {
+        int energyCost = getEnergyCost(weapon);
+        if (!hasEnoughEnergy(weapon, shooter, energyCost) && !tryReload(weapon, shooter, energyCost)) {
             shooter.displayClientMessage(Component.literal("Insufficient FE - recharge the weapon or carry a charged battery").withStyle(ChatFormatting.RED), true);
             return false;
         }
-        if (getEnergyStored(weapon) != Integer.MAX_VALUE) setEnergyStored(weapon, getEnergyStored(weapon) - profile.energyPerShot());
+        drainEnergy(weapon, shooter, energyCost);
         weapon.getOrCreateTag().putInt(MAGAZINE_TAG, magazine - 1);
         weapon.getOrCreateTag().putLong(LAST_SHOT_TAG, level.getGameTime());
-        Vec3 direction = applySpread(shooter.getLookAngle(), profile.spreadDegrees(), shooter.getRandom().nextGaussian(), shooter.getRandom().nextGaussian());
+        Vec3 direction = applySpread(shooter.getLookAngle(), getSpread(weapon, shooter),
+                shooter.getRandom().nextGaussian(), shooter.getRandom().nextGaussian());
+        traceAndApply(level, shooter, weapon, direction,
+                getRange(weapon), getDamage(weapon), true);
+        float volume = profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT ? 1.35F : 0.95F;
+        float pitch = 0.97F + shooter.getRandom().nextFloat() * 0.06F;
+        playFireSound(level, shooter, volume, pitch);
+        return true;
+    }
+
+    private void traceAndApply(Level level, Player shooter, ItemStack weapon, Vec3 direction,
+                               int range, float damage, boolean allowRicochet) {
         Vec3 start = shooter.getEyePosition().add(direction.scale(0.25D));
-        Vec3 end = start.add(direction.scale(profile.range()));
+        Vec3 end = start.add(direction.scale(range));
         BlockHitResult blockHit = level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, shooter));
         double blockDistance = blockHit.getType() == HitResult.Type.MISS ? Double.MAX_VALUE : start.distanceToSqr(blockHit.getLocation());
-        AABB searchBox = shooter.getBoundingBox().expandTowards(direction.scale(profile.range())).inflate(1.0D);
+        AABB searchBox = shooter.getBoundingBox().expandTowards(direction.scale(range)).inflate(1.0D);
         EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(level, shooter, start, end, searchBox,
                 entity -> entity != shooter && entity.isAlive() && entity.isPickable() && !entity.isSpectator());
-        Vec3 impact = blockHit.getLocation();
         if (entityHit != null && start.distanceToSqr(entityHit.getLocation()) < blockDistance) {
-            impact = entityHit.getLocation();
-            if (entityHit.getEntity() instanceof LivingEntity target) target.hurt(level.damageSources().playerAttack(shooter), profile.damage());
+            Vec3 impact = entityHit.getLocation();
+            applyEntityModuleEffect(level, shooter, weapon, entityHit.getEntity(), impact, damage);
+            spawnBeam(level, start, impact, weapon);
+            return;
         }
-        spawnBeam(level, start, impact);
-        level.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), ModDestinySounds.get(profile.fireSound()), SoundSource.PLAYERS,
-                profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT ? 1.35F : 0.95F, 0.97F + shooter.getRandom().nextFloat() * 0.06F);
-        return true;
+        Vec3 impact = blockHit.getLocation();
+        spawnBeam(level, start, impact, weapon);
+        if (blockHit.getType() == HitResult.Type.BLOCK) {
+            applyBlockModuleEffect(level, shooter, weapon, blockHit, damage);
+            if (allowRicochet && WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.RICOCHET)) {
+                Vec3 reflected = reflect(direction, blockHit.getDirection()).normalize();
+                traceAndApply(level, shooter, weapon, reflected, Math.max(1, range / 2), damage * 0.75F, false);
+            }
+        }
+    }
+
+    private void applyEntityModuleEffect(Level level, Player shooter, ItemStack weapon,
+                                         Entity entity, Vec3 impact, float damage) {
+        if (!(entity instanceof LivingEntity target)) return;
+        WeaponModuleItem.Effect effect = WeaponSystem.getBarrelEffect(weapon);
+        if (effect == WeaponModuleItem.Effect.HEAL) {
+            target.heal(Math.max(1.0F, profile.damage() * 0.2F));
+            spawnImpact(level, impact, ParticleTypes.HAPPY_VILLAGER);
+            return;
+        }
+        if (effect != WeaponModuleItem.Effect.BLOCK && damage > 0.0F) {
+            target.hurt(level.damageSources().playerAttack(shooter), damage);
+        }
+        if (effect == WeaponModuleItem.Effect.FIRE) {
+            target.setSecondsOnFire(5);
+        }
+        if (effect == WeaponModuleItem.Effect.EXPLOSION || effect == WeaponModuleItem.Effect.DOOMSDAY) {
+            float multiplier = effect == WeaponModuleItem.Effect.DOOMSDAY ? 3.0F : 1.0F;
+            level.explode(shooter, impact.x, impact.y, impact.z,
+                    (1.0F + profile.damage() * 0.08F * multiplier), Level.ExplosionInteraction.NONE);
+        }
+        spawnImpact(level, impact, effect == WeaponModuleItem.Effect.FIRE
+                ? ParticleTypes.FLAME : ParticleTypes.ELECTRIC_SPARK);
+    }
+
+    private void applyBlockModuleEffect(Level level, Player shooter, ItemStack weapon,
+                                        BlockHitResult hit, float damage) {
+        WeaponModuleItem.Effect effect = WeaponSystem.getBarrelEffect(weapon);
+        if (effect == WeaponModuleItem.Effect.BLOCK) {
+            BlockState state = level.getBlockState(hit.getBlockPos());
+            float hardness = state.getDestroySpeed(level, hit.getBlockPos());
+            if (hardness >= 0.0F && hardness <= 5.0F && !state.is(Blocks.BEDROCK)) {
+                level.destroyBlock(hit.getBlockPos(), true, shooter);
+            }
+        } else if (effect == WeaponModuleItem.Effect.FIRE) {
+            var firePos = hit.getBlockPos().relative(hit.getDirection());
+            if (level.isEmptyBlock(firePos)) level.setBlockAndUpdate(firePos, Blocks.FIRE.defaultBlockState());
+        } else if (effect == WeaponModuleItem.Effect.EXPLOSION || effect == WeaponModuleItem.Effect.DOOMSDAY) {
+            float multiplier = effect == WeaponModuleItem.Effect.DOOMSDAY ? 3.0F : 1.0F;
+            Vec3 impact = hit.getLocation();
+            level.explode(shooter, impact.x, impact.y, impact.z,
+                    (1.0F + profile.damage() * 0.08F * multiplier), Level.ExplosionInteraction.NONE);
+        }
+        spawnImpact(level, hit.getLocation(), ParticleTypes.SMOKE);
+    }
+
+    private int getEnergyCost(ItemStack weapon) {
+        return Math.max(1, Math.round(profile.energyPerShot() * WeaponSystem.energyMultiplier(weapon)));
+    }
+
+    private float getDamage(ItemStack weapon) {
+        return profile.damage() * WeaponSystem.damageMultiplier(weapon);
+    }
+
+    private int getRange(ItemStack weapon) {
+        return Math.max(1, Math.round(profile.range() * WeaponSystem.rangeMultiplier(weapon)));
+    }
+
+    private float getSpread(ItemStack weapon, Player shooter) {
+        return profile.spreadDegrees() * WeaponSystem.accuracyMultiplier(weapon, shooter.isUsingItem());
+    }
+
+    private void spawnImpact(Level level, Vec3 impact, net.minecraft.core.particles.ParticleOptions particle) {
+        if (level instanceof ServerLevel server) {
+            server.sendParticles(particle, impact.x, impact.y, impact.z, 6, 0.12D, 0.12D, 0.12D, 0.02D);
+        }
+    }
+
+    private Vec3 reflect(Vec3 direction, net.minecraft.core.Direction face) {
+        return switch (face.getAxis()) {
+            case X -> new Vec3(-direction.x, direction.y, direction.z);
+            case Y -> new Vec3(direction.x, -direction.y, direction.z);
+            case Z -> new Vec3(direction.x, direction.y, -direction.z);
+        };
+    }
+
+    private void playFireSound(Level level, Player shooter, float volume, float pitch) {
+        if (profile.thirdPersonFireSound() == null || !(shooter instanceof ServerPlayer serverShooter)) {
+            level.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(),
+                    ModDestinySounds.get(profile.fireSound()), SoundSource.PLAYERS, volume, pitch);
+            return;
+        }
+
+        // The GunPack supplies separate listener mixes. Send the external mix to every
+        // nearby client except the shooter, then deliver the first-person mix directly
+        // to the firing player so both perspectives use the actual Destiny recording.
+        level.playSound(serverShooter, shooter.getX(), shooter.getY(), shooter.getZ(),
+                ModDestinySounds.get(profile.thirdPersonFireSound()), SoundSource.PLAYERS, volume, pitch);
+        serverShooter.playNotifySound(ModDestinySounds.get(profile.fireSound()),
+                SoundSource.PLAYERS, volume, pitch);
     }
 
     private boolean shotDelayPassed(Level level, ItemStack weapon) {
@@ -230,9 +292,14 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         return direction.add(right.scale(gaussianX * spread)).add(localUp.scale(gaussianY * spread)).normalize();
     }
 
-    private void spawnBeam(Level level, Vec3 start, Vec3 end) {
+    private void spawnBeam(Level level, Vec3 start, Vec3 end, ItemStack weapon) {
         if (!(level instanceof ServerLevel server)) return;
-        Vector3f rgb = profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT ? new Vector3f(1.0F, 0.12F, 0.05F) : new Vector3f(0.95F, 0.72F, 0.18F);
+        int colour = WeaponSystem.hasEffect(weapon, WeaponModuleItem.Effect.COLOR)
+                ? WeaponSystem.getColor(weapon) : 0xF2B82B;
+        Vector3f rgb = profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT
+                ? new Vector3f(1.0F, 0.12F, 0.05F)
+                : new Vector3f(((colour >> 16) & 0xFF) / 255.0F,
+                ((colour >> 8) & 0xFF) / 255.0F, (colour & 0xFF) / 255.0F);
         DustParticleOptions particle = new DustParticleOptions(rgb, profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT ? 1.4F : 0.8F);
         Vec3 delta = end.subtract(start);
         int steps = Mth.clamp((int)(delta.length() * 1.7D), 2, 96);
@@ -263,11 +330,6 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
     }
 
     private void triggerFireAnimation(Level level, ItemStack stack) {
-        if (profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT
-                || profile == NativeDestinyWeaponProfile.THE_LAST_WORD) {
-            triggerAnimation(level, stack, "animation.model.fire");
-            return;
-        }
         long sequence = level.getGameTime();
         triggerAnimation(level, stack, (sequence & 1L) == 0L ? "animation.model.fire2" : "animation.model.fire");
     }
@@ -294,8 +356,7 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         tooltip.add(Component.literal("Damage: " + String.format("%.1f", profile.damage()) + " | Range: " + profile.range()).withStyle(ChatFormatting.GRAY));
         String energy = getEnergyStored(stack) == Integer.MAX_VALUE ? "Infinite" : getEnergyStored(stack) + " / " + getCapacity(stack);
         tooltip.add(Component.literal("Energy: " + energy + " FE | " + profile.energyPerShot() + " FE/shot").withStyle(ChatFormatting.YELLOW));
-        tooltip.add(Component.literal(profile.automatic() ? "Hold left-click: automatic fire" : "Left-click: fire").withStyle(ChatFormatting.WHITE));
-        tooltip.add(Component.literal("Right-click: aim down sights").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.literal(profile.automatic() ? "Hold right-click: automatic fire" : "Right-click: fire").withStyle(ChatFormatting.WHITE));
         tooltip.add(Component.literal("Shift-right-click: capacitor reload + battery transfer").withStyle(ChatFormatting.LIGHT_PURPLE));
         tooltip.add(Component.literal("Supports Matter Overdrive weapon modules and charging").withStyle(ChatFormatting.DARK_AQUA));
     }

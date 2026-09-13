@@ -110,7 +110,7 @@ public final class FirstLoginBriefingScreen extends Screen {
                     List.of(
                             "Explore normally. Major structures are designed as traversable locations with entrances, objectives, side rewards and return routes.",
                             "Follow whatever catches your attention first: matter processing, Android progression, drones, weapons, fusion engineering or the incident archive.",
-                            "The retired Star Map is not part of progression. World discovery is grounded in structures, field research and the PDA."),
+                            "The retired strategic map is not part of progression. World discovery is grounded in structures, field research and the PDA."),
                     "PDA callouts are always captioned. If Minecraft Narrator is enabled, important advisories and database events are also spoken aloud.");
         };
     }

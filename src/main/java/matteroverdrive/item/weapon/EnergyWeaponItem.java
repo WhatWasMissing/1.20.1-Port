@@ -454,17 +454,17 @@ public class EnergyWeaponItem extends Item {
         level.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), sound, SoundSource.PLAYERS, volume, pitch);
     }
 
-    private boolean hasEnoughEnergy(ItemStack weapon, Player player, int amount) {
+    protected boolean hasEnoughEnergy(ItemStack weapon, Player player, int amount) {
         return hasCreativeBattery(weapon) || getEnergyStored(weapon) >= amount;
     }
 
-    private void drainEnergy(ItemStack weapon, Player player, int amount) {
+    protected void drainEnergy(ItemStack weapon, Player player, int amount) {
         if (!hasCreativeBattery(weapon)) {
             setEnergyStored(weapon, getEnergyStored(weapon) - amount);
         }
     }
 
-    private boolean tryReload(ItemStack weapon, Player player, int required) {
+    protected boolean tryReload(ItemStack weapon, Player player, int required) {
         if (hasCreativeBattery(weapon)) {
             return true;
         }

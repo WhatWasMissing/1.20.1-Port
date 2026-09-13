@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["GTG","CIC","TTT"],"key":{"G":{"item":"minecraft:glass_pane"},"T":{"item":"matteroverdrive:tritanium_plate"},"C":{"item":"minecraft:comparator"},"I":{"item":"matteroverdrive:isolinear_circuit_mk1"}},"result":{"item":"matteroverdrive:wall_terminal","count":2}}

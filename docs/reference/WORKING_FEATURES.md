@@ -1,101 +1,71 @@
 # Matter Overdrive 1.20.1 - Current Feature Reference
 
 Branch: `main`
-Release line: `0.6`
+Release line: `0.7`
+Build identity: `Matter Overdrive 0.7`, maintained by MVQ1303
+
 Legacy references:
 - Matter Overdrive 1.7.10 `0.4.2`.
 - Matter Overdrive 1.12.2 `0.7.1.0`.
 
-The 0.8 alpha jar is not a parity authority.
-Build identity: `Matter Overdrive 0.6`, maintained by MVQ1303
+This is the source-of-truth feature summary and is mirrored by the GuideME **Current Features** page. Implemented does not mean runtime-confirmed; use `docs/testing/TO_TEST.md` for deferred manual checks.
 
-This is the source-of-truth feature summary and is mirrored by the GuideME **Current Features** page. Implemented does not mean runtime-confirmed; use the M2 Testing Checklist for verification status.
+## 0.7 additions compared with 0.6
 
-## Matter / power / machines
-Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe are implemented. Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench are functional. Legacy-inspired Home/Tasks/Config/Upgrades presentation is exposed where real server state exists and physical slots remain visible. Decomposer, Matter Recycler and Microwave use wide HOME/TASKS/UPGRADES operator layouts with persistent access to their real IO and four upgrade slots. Solar Panel uses HOME/GEN/UPGRADES with live generation, sky/light/daylight, buffer and output telemetry while both real upgrade slots remain visible. Pattern Storage now uses HOME/DRIVES/UPGRADES while keeping its energy slot, six real Pattern Drive slots and four upgrade slots visible; Pattern Monitor uses PATTERNS/QUEUE while preserving its 12 clickable ghost-pattern request slots. Replicator, Transporter, Charging Station, Space-Time Accelerator and Inscriber retain their richer real-state operator pages.
+- Energy Bank blocks provide persistent dual FE/Matter storage for reactor output, later machine demand and compatible FE/Matter networks without silently converting or duplicating either resource.
+- The tech overhaul adds Quantum Flux Reactor, Environmental Regulator, Wall Terminal, new reactor/decorative blocks, hybrid FE+Matter conduit support, frontier facilities and additional machine telemetry.
+- Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers have natural hostile-spawn definitions; Field Scientists, Systems Engineers and Mad Scientists populate vanilla villages.
+- Vanilla structure loot keeps its original pools and receives Matter Overdrive supplies plus seven deterministic Legendary Relic sources. Six main facility loot pools also contain their themed relics.
+- The PDA, GuideME pages, relic behavior, facility discovery, source/resource validators and deferred test plan are connected to the same active registries and progression systems.
+- The native Destiny set now contains 49 energy-weapon profiles: 14 retained profiles and 35 additional GunPack conversions with imported geometry, textures, source audio, available animations and per-weapon display transforms. Every profile uses the existing Energy Weapon and Weapon Station module contracts.
+- First-person firearm presentation uses the imported display transforms and bounded ADS delta. Third-person generic held-use posing is suppressed while an energy weapon is active, so aiming does not look like continuous vanilla item use.
 
-### 0.6 matter economy
-Matter valuation now resolves through dynamic Matter Dust values, explicit item values, tag bases, recursively derived recipe values and deterministic fallbacks. Recipe resolution includes cycle/depth protection, output-count division and cheapest-positive ingredient alternatives. Analyzer and Decomposer use the level-aware value path, Pattern Drives preserve analyzed values, Replicator consumes those stored values, tooltips expose effective matter values and their source, and startup auditing/diagnostic commands are available for coverage checks. Existing Pattern Drives created before the 0.6 valuation pass may need to be re-analyzed to refresh their stored value.
+## Matter, power and machines
 
-Fusion Reactor/gravity includes horizontal structure validation, Controller/IO shared storage, anomaly-mass-scaled output, upgrades, cable output, demand telemetry, shared ring power, RUN/SCRAM, redstone/comparator behavior, Reactor Remote, persistent overlay, Gravitational Anomaly mass/pull/event horizon, Equalizer and powered Stabilizers. Gravitational Stabilizer now uses HOME/BEAM/UPGRADES pages backed by its synchronized FE draw, redstone mode, beam-block and anomaly-lock telemetry while the real RS MODE control and four upgrade slots remain available.
+Decomposer, Recycler, Matter Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Inscriber/circuit progression, Matter Scanner, Portable Decomposer, Matter Containers and Matter Pipe are implemented. Solar Panel, Heavy Energy Cable, Microwave, Space-Time Accelerator, Charging Station, Transporter, Tritanium Crates, Weapon Station and Tritanium Wrench are functional. Decomposer, Matter Recycler and Microwave expose their real IO and four upgrade slots through HOME/TASKS/UPGRADES pages. Solar Panel exposes live generation, sky/light/daylight, buffer and output telemetry while preserving its real upgrade slots. Pattern Storage preserves its energy slot, six Pattern Drive slots and four upgrades; Pattern Monitor preserves its 12 clickable ghost-pattern request slots. Replicator, Transporter, Charging Station, Space-Time Accelerator and Inscriber retain their richer real-state operator pages.
+
+Matter valuation resolves explicit values, Matter Dust values, tag bases, recursively derived recipe values and deterministic fallbacks with cycle/depth protection, output-count division and cheapest-positive alternatives. Analyzer, Decomposer, Pattern Drive and Replicator share the level-aware value path; tooltips and startup diagnostics expose the value source.
+
+Fusion Reactor/gravity includes horizontal structure validation, shared Controller/IO storage, anomaly-mass-scaled output, upgrades, cable output, demand telemetry, RUN/SCRAM, redstone/comparator behavior, Reactor Remote, persistent overlays, Gravitational Anomaly mass/pull/event-horizon behavior, Equalizer protection and powered Stabilizers. Quantum Flux Reactor heat, reactor IO and Environmental Regulator protection are integrated with PDA hazard discovery. Energy Bank stores FE and Matter independently, accepts reactor IO output, exposes controlled output to compatible networks, persists both buffers and never feeds output back into its source reactor.
 
 ## Network
-Network Pipe, Network Switch, Network Router and matching-channel Pylon routing are present. Switch state persists and changes routing/appearance. Router supports ordinary filtering, Network Flash Drive destination filtering, four Speed/Hyper-Speed slots, multi-stack item budgets and the 10 FE/item execution limit. Heavy Energy Pipe status now exposes live buffer fill and last-output telemetry without inventing configuration controls. There is no invented standalone Network Controller because the authoritative legacy implementations do not contain one matching that assumption.
 
-## Androids / entities
-Android conversion, FE/HUD, body parts, abilities, V/B/K controls and persistent perk tree are present. Android Spawner restores the six-unit 30% melee / 70% ranged population, persistent ownership, six patrol drives, PATROL/GUARD/HOLD/ESCORT, commander formations, squad colors and coordinated targeting. Rogue and Ranged Rogue Androids, Failed animals, Mad Scientist, Mutant Scientist and Drone are implemented. Linked Drones support FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE while unowned Drones remain hostile. Puny Humans and Cocktail of Ascension are implemented.
+Network Pipe, Network Switch, Network Router and matching-channel Pylon routing are present. Switch state persists and changes routing/appearance. Router supports filtering, Network Flash Drive destination filtering, four Speed/Hyper-Speed slots, multi-stack item budgets and the 10 FE/item execution limit. Heavy Energy Pipe exposes live buffer and last-output telemetry. Hybrid Conduit can route both FE and Matter through compatible sides while preserving side policy, range, conservation and reciprocal-link cleanup.
+
+## Androids, drones and entities
+
+Android conversion, FE/HUD, body parts, abilities, V/B/K controls, class/subclass selection, Aspects, Fragments, Passive Protocols, Artifacts and the persistent perk tree are present. Android Spawner restores six-unit mixed melee/ranged populations, persistent ownership, patrol drives, PATROL/GUARD/HOLD/ESCORT, commander formations, squad colors and coordinated targeting. Rogue and Ranged Rogue Androids, Failed animals, Mad Scientists, Mutant Scientists, Drones, Assimilators and Phase Stalkers are implemented. Linked Drones support FOLLOW/DEFENSIVE/PASSIVE/AGGRESSIVE while unowned Drones remain hostile. Command, Guardian, Swarm, Ordnance, Hunter and Escort overlaps are reduced to distinct documented contributions.
+
+Natural hostile spawning uses Forge biome modifiers for the six configured entities. Village population hooks add Field Scientists, Systems Engineers and Mad Scientists without replacing vanilla villagers. PDA contact records and NPC assignment flow use the existing contract and discovery systems.
 
 ## Weapons
-Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool are playable with FE payment, heat/overheat, reload and current module effects. Weapon Station retains the seven real Weapon/Battery/Color/Barrel/Sights/Utility slots on every page and exposes legacy-inspired HOME/MODULES/STATS operator pages with live energy, heat, overheat, module and effective-stat telemetry.
 
-Legacy aiming presentation is substantially closer to 1.12: Ion Sniper uses the recovered **0.40 base zoom multiplier** while aimed, and the Sniper Scope module uses the recovered **0.85 scope zoom override** through the same scope-first/base-second rule as legacy `EnergyWeapon#getZoomMultiply`. Scope accuracy/range effects remain server-authoritative through the current weapon module backend. Camera recoil reacts to actual shot timestamps and heat instead of the previous continuous held-weapon wobble; Ion Sniper uses the recovered legacy 3/4-class recoil distinction as the reference point. Exact remaining module mesh placement and full legacy hand/weapon animation choreography remain incomplete.
+Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun, Omni Tool, Vex Mythoclast and 49 native Destiny weapons use FE payment, heat/overheat where applicable, reload, recoil and current weapon module effects. Weapon Station retains its real Weapon/Battery/Color/Barrel/Sights/Utility slots on every page and packs installed modules back into the weapon without losing or exceeding final capacity.
 
-Weapon energy sourcing remains constrained to the weapon's own stored energy, its installed creative battery, explicit Energy Packs and real `WeaponBatteryItem` inventory/offhand sources; unrelated energy weapons are not treated as reload batteries.
+Ion Sniper uses the recovered 0.40 base zoom multiplier while aimed; Sniper Scope uses the recovered 0.85 override through the scope-first/base-second rule. Scope accuracy/range effects remain server-authoritative. Camera recoil reacts to actual shot timestamps and heat. Energy sourcing is limited to the weapon's stored energy, installed creative battery, explicit Energy Packs and real `WeaponBatteryItem` sources; unrelated energy weapons are never used as batteries.
 
-## Restored legacy world structures
-Six legacy structure families use the native Forge 1.20.1 Feature -> configured feature -> placed feature -> biome modifier pipeline: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. They have terrain/rarity guards, persisted structure-specific Tritanium Crate salvage and one-time persistent inhabitants using real current-port Android/Drone/Scientist/Failed-animal entities. Structure Androids are deliberately unowned by Android Spawners and structure Drones begin unowned/hostile. Exact old PNG-template geometry remains incomplete: authoritative Android House is 21x21/yOffset -2 and Sand Pit is 24x24/yOffset -9, while current translations are still approximate.
+The 35 additional GunPack conversions have native vanilla-rendered geometry, source UV textures, available source animations, source fire/third-person fire recordings and available draw/reload recordings. The loader accepts normalized and native `static_idle`/`shoot`/reload names, compact and per-face Bedrock UV forms, and explicit static-idle fallback for models without source animation clips. Stolen Will uses the source-defined shared Universal Remote fire samples. The five original profiles absent from the GunPack keep their existing recordings. All Destiny profiles accept battery, barrel, sights, colour and utility module effects through the Matter Overdrive Weapon System and Weapon Station.
 
-## Natural gravitational anomalies
-Natural Gravitational Anomaly worldgen is restored through configured/placed features and a Forge biome modifier. It uses the conservative 1.7 default frequency (~1/200 candidate chunks) and the shared legacy 2,048-10,240 starting-mass range through the normal anomaly block entity. Generated anomalies immediately use the real attraction, event-horizon consumption, mass growth and block-effect systems. The 1.12 `DimensionalRifts` class is a client-side seeded noise sampler rather than another physical worldgen structure.
+## Structures, loot and exploration
 
-## Star Map navigation / encounters
-Star Map navigation reaches Galaxy -> Quadrant -> Star -> Planet with deterministic planet properties, wheel zoom, drag and right-click back. Server-authoritative console journeys persist current/destination galactic position and timing, validate requests and preserve the legacy 10-per-AU / 8-per-LY timing concepts without inventing FE cost. Longer routes schedule Asteroid Field, Gravitational Slingshot, Rogue Android Intercept, Signal Echo or Hostile Fleet encounters.
+Six legacy structure families use the native Forge 1.20.1 Feature -> configured feature -> placed feature -> biome modifier pipeline: crashed spacecraft, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. They have terrain/rarity guards, persisted structure-specific Tritanium Crate salvage and one-time occupants using current-port entities. Structure Androids are deliberately unowned by player spawners and structure Drones begin unowned/hostile.
 
-## Star Map fleet combat
-A persistent command-fleet layer restores useful 1.7 travel-event/attack concepts: commander ownership, 100 hull / 60 shield / 20 firepower baseline, deterministic hostile fleets, validated FIRE/RECHARGE combat, shield-before-hull damage, victory count, preserved travel pause and emergency retreat. Combat state persists in Star Map NBT and menu sync. Scout/Colonizer counts do not silently change combat firepower because the legacy references do not provide justified class combat values.
+Six modern technology facilities use exploration-native structure pieces with stable per-chunk layout variants, chunk-local clipping, readable entrances, optional archives, defensive caches, facility-specific salvage, restoration/security hooks and environmental dressing. Four Frontier Expedition sites use their registered frontier structure set and native exploration pieces: Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array. Frontier and modern discovery events update the PDA, grant first-discovery rewards once and preserve the current facility restoration systems.
 
-## Star Map colony / shipyard economy
-The planetary economy is real server state rather than GUI-only counters. Planet ownership, Base, Ship Factory, Hangars, Matter Extractors, Power Generators, Residential buildings, stationed Scout/Colonizer counts and four construction slots live in server-global `StarMapGalaxyData` keyed by deterministic planet identity. Breaking/replacing a Star Map does not delete this state.
+Vanilla loot injection adds Matter Overdrive supplies without replacing vanilla loot in dungeons, mineshafts, temples, outposts, strongholds, bastions, mansions, shipwrecks, buried treasure, End Cities and Ancient Cities. Legendary Relics use the existing recovered artifact item and existing Android passive-protocol selection; deterministic facility and vanilla relic IDs do not create a second progression system.
 
-### Recovered 1.7 planet capacity model
-The 1.7 generators set **base building spaces / base fleet spaces** by planet class:
-- Normal planet: **6 / 6**.
-- Gas Giant: **2 / 8**.
-- Dwarf: **4 / 4**.
-- Homeworld override: **8 / 10**.
+Natural Gravitational Anomaly generation remains conservative and uses the shared legacy starting-mass range. Generated anomalies use the real attraction, event-horizon consumption, mass growth and block-effect systems.
 
-The 1.7 Base contributes **+2 building spaces**, Residential contributes **+4 building spaces**, and each Ship Hangar contributes **+2 fleet spaces**. The port uses those values. The deterministic port types map as follows: Terrestrial and Oceanic -> legacy Normal, Gas Giant -> Gas Giant, Dwarf -> Dwarf.
+## PDA, GuideME and presentation
 
-Effective examples before extra Residential/Hangars:
-- Normal/Oceanic colony with Base: **8 building capacity / 6 fleet capacity**.
-- Gas Giant colony with Base: **4 / 8**.
-- Dwarf colony with Base: **6 / 4**.
-- Homeworld with Base: **10 / 10**.
+The Data Pad opens the server-authoritative PDA journal, records scans and technology inspection, displays research/contract/contact/discovery state and falls back cleanly when GuideME is unavailable. GuideME registration points to the Matter Overdrive guide; current feature, power, Android, weapon, specialist, structure, infrastructure and block-reference pages use local links plus live item/recipe references. Every active player-facing block has a documented description, item image model, recipe and block resource contract.
 
-Building admission mirrors the intended 1.7 `Planet.canBuild(IBuilding...)` structure: the planet must have a Base and **completed buildings + queued building projects must remain below effective building capacity**. Ship jobs reserve future fleet berth capacity. This prevents four parallel queues from overbooking either buildings or ships.
+The title/briefing screens describe world-based discovery and the retired strategic map without exposing it as active content. No active strategic-map block, registry, worldgen path or progression system is shipped.
 
-The first new commander-bound homeworld keeps the port's compatibility **Base + Ship Factory** bridge so existing 1.20.1 progression is not stranded, but it receives the recovered homeworld capacities and the **legacy starting Scout**. Existing pre-capacity saves at the deterministic bootstrap planet migrate to the homeworld capacity profile without deleting their Factory or other state.
+## Security, GUI and static quality gates
 
-Build times/effects:
-- Scout Ship: **3,600 ticks**.
-- Colonizer Ship: **5,000 ticks**.
-- Ship Factory: **8,000 ticks** and required for ship production.
-- Ship Hangar: **4,800 ticks**, +2 fleet spaces.
-- Matter Extractor: **14,400 ticks**, +10 matter / -6 energy.
-- Power Generator: **14,400 ticks**, +8 energy / -2 matter.
-- Residential: **6,000 ticks**, +10,000 population / -4 energy / -2 matter / +4 building spaces.
+Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Operator screens keep real inventory/player slots visible and only expose controls backed by current server state. Static gates cover active registries, JSON/model/texture references, loot/spawn/PDA/relic wiring, GuideME coverage, weapon contracts, Android capacity/perks, network transport, tech-overhaul resources, model bounds and structure expansion. Gradle resource verification is configured alongside the source validators.
 
-The authoritative 1.7 `Planet` has four construction inventory slots. The port mirrors this with four independent persistent projects per planet. Construction continues while the command fleet travels elsewhere. Duplicate Factory jobs and configured safety caps are rejected. Saves from the preceding console-local single queue migrate that active job once into the target planet.
+## Known limitations and deferred verification
 
-### Planet-local ship fleets
-Scout and Colonizer ships live at planets, not at the Star Map block that built them. Completed production adds ships to the build planet, and Planet GUI counts show that planet's stationed fleet. Non-current Planet pages expose SEND S / SEND C for independent transfers. Each dispatch creates a persistent per-ship travel event with owner, source, destination, type, start and duration. Multiple transfers can coexist with the separate command-fleet journey.
-
-A Scout arriving at a friendly colony with room stations there. The authoritative 1.7 Scout `onTravel` hook is empty, so no fake scouting reward is invented. A Colonizer arriving at an unowned planet consumes itself and establishes ownership + Base; if it reaches a friendly colony with capacity it stations there, otherwise it returns to origin. Planet SavedData is authoritative; physical ship tokens remain a tangible representation but are not required to command remote stationed ships.
-
-This supports the strategic loop **homeworld -> balance building/fleet capacity -> queue industry -> travel while industry continues -> build ships -> transfer/colonize -> develop destination -> expand again**.
-
-## Security / GUI
-Empty/Claim/Access/Remove protocols and security-aware wrench dismantling are implemented. Major operator screens use the legacy Home/Tasks/Configurations/Upgrades vocabulary only where the underlying 1.20.1 machine has real state to expose. Physical machine/player slots stay visible while side pages change, and no decorative control is added for an absent backend. Weapon Station, Decomposer, Matter Recycler, Microwave, Solar Panel, Pattern Storage, Pattern Monitor and Gravitational Stabilizer now follow the operator-page pattern; Transporter, Replicator, Charging Station, Space-Time Accelerator and Inscriber retain their existing richer operator pages. Fusion Reactor continues exposing its real RUN/SCRAM/redstone/output/hazard telemetry directly, while Energy Pipe remains a compact status-only screen because it has no source-backed user configuration backend.
-
-## Major remaining parity gaps
-1. Exact legacy world-structure templates and deeper structure-specific scripted objectives/events.
-2. Star Map additional source-backed ship/building classes, richer economic consequences/events and closer legacy galaxy generation/homeworld setup.
-3. Drone flying navigation/renderer/equipment parity and richer owner-management presentation.
-4. Generic legacy machine redstone/configuration modes where backend equivalents are absent.
-5. Remaining machine-specific GUI pages that map to real backend state.
-6. Exact legacy Pylon multiblock/animated overlay and renderer glow layers.
-7. Remaining weapon module mesh positioning and full first-person hand/weapon animation choreography for the original Matter Overdrive guns; the native Destiny weapon path now has its own geometry, animation, input and renderer contract.
-8. Deeper dispatcher/broadcaster network concepts where cleanly mappable to the working Forge routing core.
-9. Richer dialogue presentation and remaining source-backed quest detail.
-
-See the in-game **M2 Testing Checklist** for runtime verification.
+Exact legacy PNG-template geometry, some deeper structure-specific objectives, drone flying/equipment parity, a few machine configuration modes, full Pylon overlays, remaining module mesh placement and full first-person hand choreography remain incomplete or require runtime confirmation. The imported model loader uses one vanilla cube UV anchor for faces whose source data provides non-uniform per-face UV origins. All manual checks, including sound playback, model orientation, Energy Bank persistence/throughput, spawn rates, facility generation and release smoke tests, are deferred to `docs/testing/TO_TEST.md`.

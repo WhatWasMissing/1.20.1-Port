@@ -1,8 +1,8 @@
 # Matter Overdrive 1.20.1 - Current Recipe Reference
 
-> Auto-generated directly from `src/main/resources/data/matteroverdrive/recipes` on the current `main` branch. Do not hand-edit this file.
+> Synchronized with `src/main/resources/data/matteroverdrive/recipes` on the current `testing/tech-overhaul` branch. Do not hand-edit this file without regenerating it.
 
-**Crafting-table recipes:** 118  
+**Crafting-table recipes:** 117
 **Smelting/blasting/cooking recipes:** 10  
 **Other/unknown recipe JSONs:** 0
 
@@ -1539,28 +1539,6 @@ EHE
 - `E` = `minecraft:ender_pearl`
 - `H` = `matteroverdrive:h_compensator`
 - `M` = `matteroverdrive:s_magnet`
-
----
-
-### `star_map`
-
-**Result:** `matteroverdrive:star_map`  
-**Type:** `minecraft:crafting_shaped`
-
-**Pattern:**
-
-```text
-GCG
-PEP
-GCG
-```
-
-**Key:**
-
-- `G` = `minecraft:glass_pane`
-- `C` = `matteroverdrive:isolinear_circuit_mk1`
-- `P` = `matteroverdrive:tritanium_plate`
-- `E` = `minecraft:ender_eye`
 
 ---
 

@@ -35,12 +35,8 @@ Status: PARTIAL means a useful implementation exists but legacy parity is not co
 20. Drones
 21. Scientists / Failed creatures / Cocktail of Ascension
 22. Security and Tritanium Wrench
-23. Star Map navigation and encounters
-24. Star Map fleet combat
-25. Star Map colony economy
-26. Star Map planet-local ships and transfers
-27. Restored structures and salvage
-28. Troubleshooting routes
+23. Restored structures and salvage
+24. Troubleshooting routes
 
 # 1. First steps and world exploration
 Status: PLAYABLE / TESTING world content.
@@ -191,88 +187,12 @@ Status: PLAYABLE.
 
 Claim/Access/Remove protocols enforce ownership/access. Tritanium Wrench dismantling is security-aware and returns supported state/contents rather than bypassing claims.
 
-# 23. Star Map navigation and encounters
-Status: TESTING strategic layer.
-
-## Simplified
-Open Star Map, navigate Galaxy -> Quadrant -> Star -> Planet, use wheel/drag/RMB navigation and TRAVEL to move the command fleet.
-
-## Detailed
-Planet identities/properties are deterministic. Whole-fleet travel is server-authoritative and persists current/destination/timing. Same-system and interstellar timing preserve the legacy 10-per-AU and 8-per-LY concepts without invented FE cost. Longer routes can trigger Asteroid Field, Gravitational Slingshot, Android Intercept, Signal Echo or Hostile Fleet.
-
-# 24. Star Map fleet combat
-Status: TESTING.
-
-Command fleet starts at Hull 100 / Shield 60 / Firepower 20. Hostile Fleet pauses arrival. FIRE obeys cooldown, return fire drains shield before hull, victory resumes preserved travel time and defeat returns to last safe planet at 35 hull / 0 shield. Scout/Colonizer counts do not alter firepower without source-backed values.
-
-# 25. Star Map colony economy
-Status: TESTING late-game strategy.
-
-## Simplified
-- Every planet has its own persistent colony state.
-- `Q n/4` shows how many of that planet's four construction slots are occupied.
-- `B used/cap` shows building usage/capacity.
-- Ship count/capacity is separate and depends on planet type plus Hangars.
-- Queue industry, leave with the command fleet and construction continues.
-
-## Detailed
-The 1.7 `Planet` object owned buildings, fleet, ownership, production and a four-slot construction inventory. The port now keeps those concepts in persistent `StarMapGalaxyData` rather than the Star Map block.
-
-Recovered 1.7 **base building / fleet capacities**:
-- legacy Normal: **6 / 6**.
-- Gas Giant: **2 / 8**.
-- Dwarf: **4 / 4**.
-- Homeworld override: **8 / 10**.
-
-Port mapping is Terrestrial/Oceanic -> legacy Normal, Gas Giant -> Gas Giant, Dwarf -> Dwarf.
-
-Recovered modifiers:
-- Base: **+2 building capacity**.
-- Residential: **+4 building capacity**.
-- Ship Hangar: **+2 fleet capacity**.
-
-Therefore, before extra Residential/Hangars:
-- Terrestrial/Oceanic colony with Base: **8 building / 6 fleet**.
-- Gas Giant colony with Base: **4 / 8**.
-- Dwarf colony with Base: **6 / 4**.
-- Homeworld with Base: **10 / 10**.
-
-This is intentional parity behavior: Gas Giants have little building room but high fleet capacity; Dwarfs have tighter fleet capacity; Normal/Oceanic planets are balanced.
-
-The port now enforces building admission using **completed buildings + queued building projects < effective building capacity**, matching the shape of 1.7 `Planet.canBuild(IBuilding...)`. A Base is required. Queued ship jobs separately reserve fleet capacity. Parallel queues cannot overbook either limit.
-
-The first commander-bound homeworld keeps the current 1.20.1 compatibility **Base + Ship Factory** so existing progression is not stranded, but new homeworlds now also receive the recovered **one starting Scout** and the legacy homeworld 8/10 base capacities. Existing pre-capacity saves at the deterministic bootstrap planet are migrated to that homeworld capacity profile without deleting their current Factory/buildings/ships.
-
-Build times/effects:
-- Scout: 3,600 ticks.
-- Colonizer: 5,000 ticks.
-- Ship Factory: 8,000 ticks.
-- Ship Hangar: 4,800 ticks, +2 fleet capacity.
-- Matter Extractor: 14,400 ticks, +10 matter / -6 energy.
-- Power Generator: 14,400 ticks, +8 energy / -2 matter.
-- Residential: 6,000 ticks, +10,000 population / -4 energy / -2 matter / +4 building capacity.
-
-Up to four valid projects can run in parallel. Construction persists independently of the Star Map console and continues while the command fleet travels. A queued Residential still occupies one building space; if a colony is already fully built-out, you cannot queue Residential to escape the cap, matching the legacy admission order.
-
-# 26. Star Map planet-local ships and transfers
-Status: TESTING newest feature set.
-
-## Simplified
-Scout and Colonizer ships belong to planets. Build them at a colony, then use SEND S / SEND C from a non-current Planet page to transfer them without moving the command fleet.
-
-## Detailed
-Completed ship production adds the ship to the planet where it was built and respects that planet's legacy-derived fleet capacity. Ship items may appear locally as tangible tokens, but persistent planet fleet data is authoritative.
-
-Independent dispatch removes one stationed ship from source and creates a persistent per-ship travel event. Multiple events can coexist. Scout arriving at friendly colony with room stations there; the 1.7 Scout travel hook is empty, so no fake reward is added. Colonizer arriving at unowned planet is consumed to establish ownership + Base; if it reaches a friendly colony with room it stations there; otherwise it returns to origin.
-
-This gives the current strategic loop: **homeworld -> choose planet-type capacity strengths -> queue industry -> build/transfer ships -> colonize -> develop destination -> expand again**, while the separate command fleet handles navigation/encounters/combat.
-
-# 27. Restored structures and salvage
+# 23. Restored structures and salvage
 Status: TESTING exploration content.
 
 Crashed Ship: salvage plus mixed Rogue Android defenders. Cargo Ship: larger salvage, multiple Android defenders and possible hostile Drone. Underwater Base: salvage plus hostile occupants. Mad Scientist House: circuitry/machine salvage, Mad Scientist and possible Failed animal. Android House: Android/battery/network salvage plus defenders. Sand Pit: lower-tier tritanium/matter salvage with Android guardian and possible Drone.
 
-# 28. Troubleshooting routes
+# 24. Troubleshooting routes
 
 ## No FE transfer
 Confirm Heavy Energy Cable, not Matter Pipe/Network Pipe. Test a one-cable path first.
@@ -285,15 +205,6 @@ Confirm Storage/Monitor/Replicator share an enabled Network Pipe graph and store
 
 ## Android controls missing
 Verify conversion/state, installed parts/perks and V/B/K key bindings. Relog once and report whether HUD/selection persisted.
-
-## Star Map building button will not start
-Check `B used/cap`, `Q n/4`, ownership/Base state and whether the requested building already exists or is already queued. Planet type now matters: Gas Giant, Dwarf and Normal/Oceanic colonies intentionally have different legacy-derived capacities.
-
-## Star Map ship will not build/arrive
-Check stationed S/C count, fleet capacity and queued Scout/Colonizer reservations. A ship in transit is removed from its source until arrival.
-
-## Star Map old save after updating
-The deterministic bootstrap homeworld keeps existing buildings/ships while receiving recovered homeworld capacity rules. Report any duplication or loss immediately.
 
 ## Missing/purple textures
 Record exact block/item and whether issue is world model, inventory model or equipped model.

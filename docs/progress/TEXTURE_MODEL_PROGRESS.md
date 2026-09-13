@@ -6,7 +6,7 @@ Build identity: `Alpha Version 3`, made by MVQ1303.
 
 ## Runtime-confirmed visual pass
 
-The latest player test confirmed the restored Android Station, Weapon Station, Star Map, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage, Replicator, Charging Station, Space-Time Accelerator and Solar Panel models are working. The only reported defects were neighbouring faces disappearing beside Pattern Monitor and Space-Time Accelerator.
+The latest player test confirmed the restored Android Station, Weapon Station, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage, Replicator, Charging Station, Space-Time Accelerator and Solar Panel models are working. The only reported defects were neighbouring faces disappearing beside Pattern Monitor and Space-Time Accelerator.
 
 The Holo Sign now renders as a thin monitor and renamed-item programming works. Its text was readable but camera-billboarded in the latest screenshots.
 

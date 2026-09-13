@@ -7,6 +7,7 @@ import matteroverdrive.entity.OrpheusSecurityEntity;
 import matteroverdrive.entity.ResonantAndroidEntity;
 import matteroverdrive.entity.RogueAndroidEntity;
 import matteroverdrive.registry.ModEntities;
+import matteroverdrive.registry.OverhaulContent;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.Cow;
@@ -49,7 +50,15 @@ public final class LegacyEntityEvents {
         event.register(ModEntities.RANGED_ROGUE_ANDROID.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random) && random.nextFloat() < 0.035F,
                 SpawnPlacementRegisterEvent.Operation.REPLACE);
-        // New narrative occupants do not naturally spawn. StructurePopulationEvents
-        // creates finite, persistent encounter packages only inside appropriate sites.
+        event.register(ModEntities.DRONE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random)
+                        && random.nextFloat() < 0.02F, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.MUTANT_SCIENTIST.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random)
+                        && random.nextFloat() < 0.004F, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(OverhaulContent.ASSIMILATOR.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(OverhaulContent.PHASE_STALKER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Monster::checkMonsterSpawnRules, SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

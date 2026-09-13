@@ -2,7 +2,7 @@
 """Inject locally processed PDA WAV files into a built Matter Overdrive JAR.
 
 Usage:
-    python tools/pda_voicebank/inject_into_jar.py path/to/matteroverdrive-0.6.jar
+    python tools/pda_voicebank/inject_into_jar.py path/to/matteroverdrive-0.7.jar
 
 The source bank defaults to src/main/resources/assets/matteroverdrive/pda_voice.
 A new sibling JAR named <stem>-pda-voice.jar is written; the original JAR is untouched.
