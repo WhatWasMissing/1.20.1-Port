@@ -23,8 +23,10 @@ Audited examples:
 - Replicator exposes its item handler, FE storage and matter storage; its Matter Overdrive network task queue remains internal and is not replaced by AE2.
 - Pattern Storage exposes its energy/battery + Pattern Drive inventory and FE storage.
 - Inscriber exposes its processing inventory and FE storage.
+- Charging Station exposes only its rechargeable-battery slot, allowing an ME Export Bus to feed batteries and an Import Bus to collect charged batteries without exposing upgrade slots.
+- Matter Storage Matrix exposes only its four removable Matter Storage Cell slots. External extraction is refused when removing a cell would reduce capacity below stored Matter.
 
-Upgrade inventories are separate from these public handlers and are not exposed through the normal machine item capability.
+Upgrade inventories are separate from these public handlers and are not exposed through the normal machine item capability. `/moae2` reports slot count, occupancy and simulated extractability for the public handler on every side, making one-slot interfaces auditable before attaching a bus.
 
 AE2 and the Matter Overdrive Router/Switch network remain separate systems. They can meet at capability-exposed inventories. No implicit AE <-> FE conversion is added.
 

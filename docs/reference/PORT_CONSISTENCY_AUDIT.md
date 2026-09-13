@@ -28,7 +28,7 @@ The audit currently covers:
 
 The retired-content guard scans active Java, data, GuideME, and bundled current documentation. Historical inventories, parity records, and retired-content tests may still mention the Star Map so they can document or enforce its retired status; those references are not active implementation.
 
-Malformed JSON, missing active resource references, invalid active IDs, missing block loot, incomplete GuideME entries, retired-content reactivation, duplicate IDs, and loss of the native facility piece architecture are hard failures. The native Destiny item registrations currently have valid item models and localization, but their optional native geometry/texture bundle is absent; that implementation-specific gap is reported as one warning for later asset work.
+Malformed JSON, missing active resource references, invalid active IDs, missing block loot, incomplete GuideME entries, retired-content reactivation, duplicate IDs, and loss of the native facility piece architecture are hard failures. The native Destiny item registrations have valid item models, localization, geometry, textures, animations, display transforms, and source audio; those implementation-specific contracts are included in the active resource audit.
 
 ## Reports
 

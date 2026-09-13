@@ -14,6 +14,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.items.IItemHandler;
 
 /**
  * AE2 integration is intentionally capability-native. AE2 15.4.10's
@@ -62,16 +63,16 @@ public final class Ae2IntegrationEvents {
         for (Direction side : Direction.values()) {
             var optional = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, side);
             if (optional.isPresent()) {
-                int slots = optional.map(handler -> handler.getSlots()).orElse(0);
-                player.sendSystemMessage(Component.literal("  " + side.getName() + ": item handler, " + slots + " slot(s)")
+                IItemHandler handler = optional.orElse(null);
+                player.sendSystemMessage(Component.literal("  " + side.getName() + ": " + describe(handler))
                         .withStyle(ChatFormatting.GREEN));
                 anyItems = true;
             }
         }
         var unsidedItems = blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, null);
         if (unsidedItems.isPresent()) {
-            int slots = unsidedItems.map(handler -> handler.getSlots()).orElse(0);
-            player.sendSystemMessage(Component.literal("  unsided: item handler, " + slots + " slot(s)")
+            IItemHandler handler = unsidedItems.orElse(null);
+            player.sendSystemMessage(Component.literal("  unsided: " + describe(handler))
                     .withStyle(ChatFormatting.GREEN));
             anyItems = true;
         }
@@ -91,5 +92,22 @@ public final class Ae2IntegrationEvents {
         player.sendSystemMessage(Component.literal("ME and Matter Networks remain separate; AE power is never converted to FE.")
                 .withStyle(ChatFormatting.DARK_GRAY));
         return anyItems ? 1 : 0;
+    }
+
+    /**
+     * Describes the public inventory boundary without mutating it. The simulated
+     * extraction count makes the audit useful for one-slot interfaces such as the
+     * Charging Station battery port and Matter Storage Matrix cell bay.
+     */
+    private static String describe(IItemHandler handler) {
+        if (handler == null) return "item handler unavailable";
+        int occupied = 0;
+        int extractable = 0;
+        for (int slot = 0; slot < handler.getSlots(); slot++) {
+            if (!handler.getStackInSlot(slot).isEmpty()) occupied++;
+            if (!handler.extractItem(slot, 1, true).isEmpty()) extractable++;
+        }
+        return "item handler, " + handler.getSlots() + " slot(s), " + occupied
+                + " occupied, " + extractable + " extractable";
     }
 }

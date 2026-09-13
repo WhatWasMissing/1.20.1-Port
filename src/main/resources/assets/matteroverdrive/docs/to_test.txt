@@ -109,6 +109,15 @@ Use a fresh world for the placement-policy check, and an existing world containi
 - [ ] Transported entities arrive on supported, collision-free space rather than inside solid blocks.
 - [ ] Transporter uses exact required FE and does not duplicate transports through chained infrastructure.
 
+## AE2 capability bridge
+
+- [ ] With AE2 15.4.10 installed, `/moae2` reports the public handler on the intended side and reports occupied/extractable slots without changing inventory.
+- [ ] Attach an ME Export Bus to a Charging Station and insert a rechargeable battery; confirm the station charges it and an Import Bus can retrieve it without exposing upgrade slots.
+- [ ] Attach an ME Storage/Import/Export Bus to a Matter Storage Matrix and move Matter Storage Cells; confirm cell NBT and capacity are preserved.
+- [ ] Fill a Matrix until removing a cell would exceed remaining capacity; confirm both player removal and AE2 extraction are refused and stored Matter is unchanged.
+- [ ] Reconnect both bus types after chunk unload/reload; confirm inventories and guarded cell-removal behavior persist without duplication or loss.
+- [ ] Confirm AE2 item automation, Forge Energy, Matter capability and Matter Network routing remain separate boundaries; no AE-to-FE conversion or ME/Matter merge is expected.
+
 ## Android progression / drones
 
 - [ ] Android HUD appears after conversion and keybinds cycle/activate/open the tree correctly.

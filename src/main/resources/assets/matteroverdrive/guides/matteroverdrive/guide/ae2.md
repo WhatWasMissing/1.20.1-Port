@@ -7,7 +7,7 @@ navigation:
 ---
 # Applied Energistics 2 Integration
 
-Matter Overdrive 1.20.1 integrates with Applied Energistics 2 15.4.10+ through the same Forge `IItemHandler` capability path used by AE2's own `ForgeExternalStorageStrategy` and `ItemHandlerAdapter`. This is the complete supported bridge: ME item buses see the public automation inventory of an MO machine without merging the two network systems.
+Matter Overdrive 1.20.1 integrates with Applied Energistics 2 15.4.10+ through the Forge `IItemHandler` capability path used by AE2's `ForgeExternalStorageStrategy` and item-handler facade. ME item buses see the public automation inventory of an MO machine without merging the two network systems.
 
 ## Supported automation targets
 
@@ -17,12 +17,14 @@ Matter Overdrive 1.20.1 integrates with Applied Energistics 2 15.4.10+ through t
 - **Molecular Inscriber:** primary/secondary input, output and energy-item inventory plus Forge Energy. Upgrade slots stay private.
 - **Replicator:** public pattern/output/energy inventory plus Forge Energy and Matter. Replication task/progress state remains machine-owned and is not exposed as ME storage.
 - **Pattern Storage:** Pattern Drive/energy inventory plus Forge Energy. Pattern Drive NBT remains on the item when moved by automation.
+- **Charging Station:** one public rechargeable-battery slot. ME Export Buses can feed a battery for charging and Import Buses can retrieve it; upgrade slots remain private.
+- **Matter Storage Matrix:** four public Matter Storage Cell slots. A cell cannot be extracted by automation if doing so would make stored Matter exceed the remaining capacity.
 
 ## Recommended bus use
 
 Use an **Export Bus** to feed machine inputs, an **Import Bus** to collect completed outputs, or a **Storage Bus** when you intentionally want the full public machine inventory visible to ME. AE2 respects each handler's normal insertion validity; MO never exposes its machine-upgrade inventory through the public handler.
 
-If an automation setup behaves unexpectedly, point at the machine and run `/moae2`. The runtime audit reports every face on which Forge item automation is visible, the slot count AE2 can discover, and whether FE/Matter capabilities are also present.
+If an automation setup behaves unexpectedly, point at the machine and run `/moae2`. The runtime audit reports every face on which Forge item automation is visible, the slot count AE2 can discover, occupied/extractable slot counts, and whether FE/Matter capabilities are also present.
 
 ## Energy and Matter
 

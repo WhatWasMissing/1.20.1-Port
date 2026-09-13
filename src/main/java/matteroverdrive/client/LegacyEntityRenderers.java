@@ -50,7 +50,7 @@ public final class LegacyEntityRenderers {
         @Override public ResourceLocation getTextureLocation(FacilityResearcherEntity e) { return T; }
     }
 
-    public static final class MutantScientistRenderer extends HumanoidMobRenderer<MutantScientistEntity, HumanoidModel<MutantScientistEntity>> { private static final ResourceLocation T=ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID,"textures/entities/hulking_scinetist.png"); public MutantScientistRenderer(EntityRendererProvider.Context c){super(c,new HumanoidModel<>(c.bakeLayer(ModelLayers.PLAYER)),0.9F);} @Override public ResourceLocation getTextureLocation(MutantScientistEntity e){return T;} }
+    public static final class MutantScientistRenderer extends HumanoidMobRenderer<MutantScientistEntity, HumanoidModel<MutantScientistEntity>> { private static final ResourceLocation T=ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID,"textures/entities/hulking_scientist.png"); public MutantScientistRenderer(EntityRendererProvider.Context c){super(c,new HumanoidModel<>(c.bakeLayer(ModelLayers.PLAYER)),0.9F);} @Override public ResourceLocation getTextureLocation(MutantScientistEntity e){return T;} }
     public static final class DroneRenderer extends MobRenderer<DroneEntity, DroneModel> {
         private static final ResourceLocation T = ResourceLocation.fromNamespaceAndPath(MatterOverdrive.MOD_ID,"textures/entities/drone_default.png");
         public DroneRenderer(EntityRendererProvider.Context c) { super(c, new DroneModel(c.bakeLayer(LegacyEntityClientEvents.DRONE_LAYER)), 0.5F); }

@@ -48,7 +48,7 @@ The active port still uses procedural translations of the five PNG templates plu
 
 ## AE2 15.4.10 integration
 
-The attached AE2 JAR confirms Storage/Import/Export automation goes through `ForgeExternalStorageStrategy` and `ItemHandlerAdapter`, which consume Forge item-handler capabilities. Matter Overdrive therefore does not need or want an invented ME network implementation.
+The attached AE2 JAR confirms Storage/Import/Export automation goes through `ForgeExternalStorageStrategy` and its `ExternalStorageFacade` item-handler path, which consumes Forge item-handler capabilities. Matter Overdrive therefore does not need or want an invented ME network implementation.
 
 Supported contract:
 - Tritanium Crates expose item storage.

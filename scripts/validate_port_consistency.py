@@ -8,7 +8,9 @@ before Gradle and produce a useful report even when the game cannot be launched.
 from __future__ import annotations
 
 import json
+import hashlib
 import re
+import struct
 from dataclasses import dataclass, asdict
 from pathlib import Path
 
@@ -209,6 +211,89 @@ def check_json_and_model_refs() -> None:
                     target = ASSETS / "textures" / f"{rel}.png"
                     if not target.exists():
                         add("error", "texture", f"{path.relative_to(ROOT)} references missing texture {ref}")
+
+def check_texture_resources() -> None:
+    """Audit raster headers, animation metadata, OBJ sidecars and duplicate assets."""
+    texture_root = ASSETS / "textures"
+    hashes: dict[str, list[Path]] = {}
+    for path in sorted(texture_root.rglob("*.png")):
+        try:
+            data = path.read_bytes()
+        except OSError as exc:
+            add("error", "texture", f"cannot read texture {path.relative_to(ROOT)}: {exc}")
+            continue
+        if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+            add("error", "texture", f"invalid PNG header: {path.relative_to(ROOT)}")
+        else:
+            width, height = struct.unpack(">II", data[16:24])
+            if width <= 0 or height <= 0:
+                add("error", "texture", f"PNG has invalid dimensions {width}x{height}: {path.relative_to(ROOT)}")
+        hashes.setdefault(hashlib.sha256(data).hexdigest(), []).append(path)
+
+    for group in hashes.values():
+        if len(group) > 1:
+            names = ", ".join(str(path.relative_to(ROOT)) for path in group)
+            add("warning", "texture", f"exact duplicate texture assets: {names}")
+
+    for path in sorted(texture_root.rglob("*.png.mcmeta")):
+        try:
+            json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            add("error", "texture", f"invalid animation metadata {path.relative_to(ROOT)}: {exc}")
+
+    for obj_path in sorted((ASSETS / "models").rglob("*.obj")):
+        try:
+            lines = obj_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError as exc:
+            add("error", "model", f"cannot read OBJ {obj_path.relative_to(ROOT)}: {exc}")
+            continue
+        for line in lines:
+            if not line.strip().lower().startswith("mtllib "):
+                continue
+            sidecar = obj_path.parent / line.split(None, 1)[1].strip()
+            if not sidecar.exists():
+                add("error", "model", f"{obj_path.relative_to(ROOT)} references missing material file {sidecar.name}")
+
+    for mtl_path in sorted((ASSETS / "models").rglob("*.mtl")):
+        for line in mtl_path.read_text(encoding="utf-8", errors="replace").splitlines():
+            parts = line.split()
+            if len(parts) < 2 or parts[0].lower() != "map_kd" or parts[1].startswith("#"):
+                continue
+            ref = parts[1]
+            if ref.startswith("matteroverdrive:"):
+                ref = ref.split(":", 1)[1]
+            elif ":" in ref:
+                continue
+            target = texture_root / f"{ref.removesuffix('.png')}.png"
+            if not target.exists():
+                add("error", "texture", f"{mtl_path.relative_to(ROOT)} references missing material texture {parts[1]}")
+
+    java_texture_re = re.compile(r'["/]textures/([^"\\]+\.png)')
+    for java_path in sorted((ROOT / "src/main/java").rglob("*.java")):
+        source = read(java_path)
+        for ref in java_texture_re.findall(source):
+            if not (texture_root / ref).exists():
+                add("error", "texture", f"{java_path.relative_to(ROOT)} references missing hard-coded texture textures/{ref}")
+
+def check_ae2_contract() -> None:
+    """Keep the optional AE2 bridge connected to public, guarded MO inventories."""
+    integration = read(ROOT / "src/main/java/matteroverdrive/integration/Ae2IntegrationEvents.java")
+    charging = read(ROOT / "src/main/java/matteroverdrive/blockentity/ChargingStationBlockEntity.java")
+    matrix = read(ROOT / "src/main/java/matteroverdrive/blockentity/MatterStorageMatrixBlockEntity.java")
+    for marker, label, source in (
+        ("ForgeCapabilities.ITEM_HANDLER", "AE2 audit item capability", integration),
+        ("ModList.get().isLoaded(\"ae2\")", "optional AE2 detection", integration),
+        ("AutomationItemHandler", "Charging Station public battery handler", charging),
+        ("AutomationItemHandler", "Matter Storage Matrix public cell handler", matrix),
+        ("canExtractCell", "Matter Storage Matrix extraction guard", matrix),
+    ):
+        if marker not in source:
+            add("error", "ae2", f"missing {label} contract marker: {marker}")
+    guide = read(ASSETS / "guides/matteroverdrive/guide/ae2.md")
+    reference = read(ROOT / "docs/reference/AE2_GUIDEME_INTEGRATION.md")
+    for marker in ("Charging Station", "Matter Storage Matrix", "/moae2"):
+        if marker not in guide or marker not in reference:
+            add("error", "ae2", f"AE2 documentation is missing {marker} coverage")
 
 def check_registry_resources() -> tuple[list[str], list[str]]:
     global ACTIVE_BLOCK_IDS, ACTIVE_BLOCK_ITEM_IDS, ACTIVE_ITEM_IDS
@@ -529,6 +614,8 @@ def write_reports(blocks: list[str], items: list[str]) -> None:
 def main() -> int:
     blocks, items = check_registry_resources()
     check_json_and_model_refs()
+    check_texture_resources()
+    check_ae2_contract()
     check_guides()
     check_retired_active_refs()
     check_facility_relics()

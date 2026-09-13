@@ -3,6 +3,7 @@ package matteroverdrive.blockentity;
 import matteroverdrive.capability.IMatterStorage;
 import matteroverdrive.capability.MachineMatterStorage;
 import matteroverdrive.capability.ModCapabilities;
+import matteroverdrive.compat.AutomationItemHandler;
 import matteroverdrive.item.MatterStorageCellItem;
 import matteroverdrive.registry.ModExtraBlockEntities;
 import net.minecraft.ChatFormatting;
@@ -18,7 +19,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +34,13 @@ public class MatterStorageMatrixBlockEntity extends BlockEntity {
         @Override public int getSlotLimit(int slot) { return 1; }
         @Override protected void onContentsChanged(int slot) { updateCapacity(); setChanged(); }
     };
+    /**
+     * AE2/Forge automation view of the removable capacity modules. Extraction is
+     * guarded by the same capacity invariant used by the player interaction path.
+     */
+    private final IItemHandler automationCells = new AutomationItemHandler(cells, slot -> true, this::canExtractCell);
     private final MachineMatterStorage matter = new MachineMatterStorage(BASE_CAPACITY, true, true, this::setChanged);
+    private LazyOptional<IItemHandler> itemCap = LazyOptional.of(() -> automationCells);
     private LazyOptional<IMatterStorage> matterCap = LazyOptional.of(() -> matter);
 
     public MatterStorageMatrixBlockEntity(BlockPos pos, BlockState state) { super(ModExtraBlockEntities.MATTER_STORAGE_MATRIX.get(), pos, state); }
@@ -42,6 +51,14 @@ public class MatterStorageMatrixBlockEntity extends BlockEntity {
             if (cells.getStackInSlot(i).getItem() instanceof MatterStorageCellItem cell) capacity += cell.capacity();
         }
         matter.setCapacity((int)Math.min(Integer.MAX_VALUE, capacity));
+    }
+
+    private boolean canExtractCell(int slot) {
+        if (slot < 0 || slot >= cells.getSlots()) return false;
+        ItemStack cell = cells.getStackInSlot(slot);
+        if (cell.isEmpty() || !(cell.getItem() instanceof MatterStorageCellItem storageCell)) return false;
+        int remainingCapacity = Math.max(BASE_CAPACITY, matter.getMatterCapacity() - storageCell.capacity());
+        return matter.getMatterStored() <= remainingCapacity;
     }
 
     public InteractionResult onUse(ServerPlayer player, InteractionHand hand) {
@@ -94,7 +111,8 @@ public class MatterStorageMatrixBlockEntity extends BlockEntity {
 
     @Override protected void saveAdditional(CompoundTag tag) { super.saveAdditional(tag); tag.put("Cells", cells.serializeNBT()); tag.putInt("Matter", matter.getMatterStored()); }
     @Override public void load(CompoundTag tag) { super.load(tag); if (tag.contains("Cells")) cells.deserializeNBT(tag.getCompound("Cells")); updateCapacity(); matter.setMatterStored(tag.getInt("Matter")); }
-    @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) { return cap == ModCapabilities.MATTER ? matterCap.cast() : super.getCapability(cap, side); }
-    @Override public void invalidateCaps() { super.invalidateCaps(); matterCap.invalidate(); }
-    @Override public void reviveCaps() { super.reviveCaps(); matterCap = LazyOptional.of(() -> matter); }
+    public ItemStackHandler getCellInventory() { return cells; }
+    @Override public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) { if (cap == ForgeCapabilities.ITEM_HANDLER) return itemCap.cast(); return cap == ModCapabilities.MATTER ? matterCap.cast() : super.getCapability(cap, side); }
+    @Override public void invalidateCaps() { super.invalidateCaps(); itemCap.invalidate(); matterCap.invalidate(); }
+    @Override public void reviveCaps() { super.reviveCaps(); itemCap = LazyOptional.of(() -> automationCells); matterCap = LazyOptional.of(() -> matter); }
 }
