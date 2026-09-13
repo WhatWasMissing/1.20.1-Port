@@ -66,11 +66,21 @@ for p in (PIECE, INFRA, STRUCTURE, MOD_BLOCKS, MOD_STRUCTURES, RESTORATION,
 
 for name in FACILITIES:
     require(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
-    require(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure_set/{name}.json")
 
-for folder in ("structure", "structure_set"):
-    for name in FACILITIES:
-        parse_json(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/{folder}/{name}.json")
+for name in FACILITIES:
+    parse_json(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
+
+# Matter Overdrive structure sets were deliberately retired.  The native structure
+# definitions remain compatibility scaffolding, while current placement is owned by
+# the compact feature pipeline and must not silently reintroduce structure_set data.
+structure_set_dir = ROOT / "src/main/resources/data/matteroverdrive/worldgen/structure_set"
+if structure_set_dir.is_dir():
+    shipped_sets = sorted(structure_set_dir.glob("*.json"))
+    if shipped_sets:
+        errors.append(
+            "retired Matter Overdrive structure_set resources are active: "
+            + ", ".join(str(path.relative_to(ROOT)) for path in shipped_sets)
+        )
 
 if PIECE.is_file():
     text = PIECE.read_text(encoding="utf-8")
@@ -180,9 +190,15 @@ if items.is_file() and archive.is_file():
             archives = []
             for pool in table["pools"]:
                 for entry in pool["entries"]:
-                    namespace, name = entry["name"].split(":", 1)
+                    if entry.get("type") == "minecraft:empty":
+                        continue
+                    item_name = entry.get("name")
+                    if not isinstance(item_name, str) or ":" not in item_name:
+                        errors.append(f"loot entry without an item name in {family}")
+                        continue
+                    namespace, name = item_name.split(":", 1)
                     if namespace == "matteroverdrive" and name not in registered:
-                        errors.append(f"unknown loot item {entry['name']} in {family}")
+                        errors.append(f"unknown loot item {item_name} in {family}")
                     if name == "facility_research": archives.append(entry)
             if family != "salvage":
                 if family.upper() + "(" not in archive_source: errors.append(f"unhandled research family: {family}")
@@ -194,7 +210,7 @@ if items.is_file() and archive.is_file():
 
 if LAYOUT_LAB.is_file():
     text = LAYOUT_LAB.read_text(encoding="utf-8")
-    for marker in ("FACILITY LAYOUT LAB PASSED: 18 layouts", "qa_core_link_west", "lower_lab_link", "surface_hatch", "lowered_step"):
+    for marker in ("FACILITY LAYOUT LAB V2 PASSED: 18 layouts", "qa_core_link_west", "lower_lab_link", "surface_hatch", "lowered_step"):
         if marker not in text: errors.append(f"facility visual QA lab missing regression marker: {marker}")
 
 for doc in (
@@ -214,7 +230,7 @@ print(f"  native facilities: {len(FACILITIES)}")
 print(f"  primary reusable piece types checked: {len(REQUIRED_PIECES)}")
 print(f"  infrastructure piece kinds checked: {len(INFRA_KINDS)}")
 print(f"  reusable industrial blocks checked: {len(INDUSTRIAL_BLOCKS)}")
-print("  structure + structure_set JSON: parseable")
+print("  native structure JSON: parseable; no active structure_set JSON")
 print("  facility loot: 7 tables, registered items, six matching research archives")
 print("  restoration/security hooks and stacked-door redstone state: present")
 print("  topology regression guards and visual layout lab: present")

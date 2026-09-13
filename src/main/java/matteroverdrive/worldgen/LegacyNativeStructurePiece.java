@@ -240,7 +240,7 @@ public final class LegacyNativeStructurePiece extends StructurePiece {
             set(level, clip, base.offset(6, 5, z), lamp);
         }
 
-        // Equipment wings. Star Map is intentionally absent: it is retired.
+        // Equipment wings use only active progression blocks.
         set(level, clip, base.offset(-6, 1, -6), block("android_station"));
         set(level, clip, base.offset(-3, 1, -6), block("replicator"));
         set(level, clip, base.offset(0, 1, -6), block("facility_network_controller"));

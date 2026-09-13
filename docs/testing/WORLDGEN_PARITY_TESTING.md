@@ -34,7 +34,7 @@ The port intentionally uses **legacy identity + modern execution**. Recovered fo
 - [ ] Generate only in fresh/new chunks.
 - [ ] Confirm the physical footprint is 21 x 21 rather than the previous ~19 x 19 translation.
 - [ ] Confirm the structure is sunk by the recovered -2 Y offset without burying its interior.
-- [ ] Confirm the recovered machine-role palette appears: Star Map, Replicator, Network Switch/Pipe, Charging Station, Pattern Monitor, Tritanium Crates and Android Station or Weapon Station.
+- [ ] Confirm the recovered machine-role palette appears: Replicator, Network Switch/Pipe, Charging Station, Pattern Monitor, Tritanium Crates and Android Station or Weapon Station.
 - [ ] Confirm 3-4 mixed Rogue Android defenders appear and persist.
 - [ ] Confirm the optional hostile unowned Drone does not count as a linked player Drone.
 - [ ] Confirm structure mobs do not duplicate after save/reload or chunk unload/reload.

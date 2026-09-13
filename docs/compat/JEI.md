@@ -12,7 +12,7 @@ Matter Overdrive supports **Just Enough Items (JEI)** as an optional client inte
 
 JEI automatically discovers all standard Matter Overdrive JSON crafting, shapeless, smelting and blasting recipes. No duplicate recipe registration is required for those recipes.
 
-Matter Overdrive also registers a JEI plugin that adds information pages for major custom machines and systems whose processing logic is implemented in Java rather than Minecraft recipe JSON. These pages explain the role of the Decomposer, Recycler, Matter Analyzer, Inscriber, Pattern Storage, Pattern Monitor, Replicator, Charging Station, Solar Panel, Fusion Reactor, Stabilizer, Transporter, Weapon Station, Matter Network blocks and Star Map.
+Matter Overdrive also registers a JEI plugin that adds information pages for major custom machines and systems whose processing logic is implemented in Java rather than Minecraft recipe JSON. These pages explain the role of the Decomposer, Recycler, Matter Analyzer, Inscriber, Pattern Storage, Pattern Monitor, Replicator, Charging Station, Solar Panel, Fusion Reactor, Stabilizer, Transporter, Weapon Station and Matter Network blocks.
 
 ## Optional dependency behavior
 

@@ -11,11 +11,11 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "matteroverdrive:star_map"
+          "name": "matteroverdrive:debug_matter_block"
         }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "matteroverdrive:blocks/star_map"
+  "random_sequence": "matteroverdrive:blocks/debug_matter_block"
 }

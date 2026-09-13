@@ -51,8 +51,6 @@ public final class MatterOverdriveJeiPlugin implements IModPlugin {
                 "Configurable Matter Overdrive network switching and routing component.");
         info(registration, "network_router",
                 "Routes Matter Overdrive network traffic according to configured destinations and filters.");
-        info(registration, "star_map",
-                "Opens the Matter Overdrive strategic Star Map system.");
     }
 
     private static void info(IRecipeRegistration registration, String blockId, String description) {

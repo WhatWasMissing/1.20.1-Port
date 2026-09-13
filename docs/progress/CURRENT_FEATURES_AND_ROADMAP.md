@@ -14,7 +14,7 @@ The detailed feature matrix is [WORKING_FEATURES.md](../reference/WORKING_FEATUR
 - Weapons: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE, heat/reload and Weapon Station module support.
 - Android: conversion, persistent core FE/HUD, four parts, four active abilities and the 30-node selectable perk tree.
 - Storage/resources: portable Tritanium Crates, Tritanium/Dilithium world generation, tools and armour.
-- Progression: Contract Market, contracts, Data Pad, current Star Map status UI, real Mad Scientist and Puny Humans quest slice.
+- Progression: Contract Market, contracts, Data Pad, real Mad Scientist and Puny Humans quest slice.
 - Security/Holo: owner-bound Security Protocol modes and a programmable persistent Holo Sign.
 - Legacy entities: real Rogue Android plus Failed Cow/Pig/Sheep/Chicken and Mad Scientist.
 
@@ -31,7 +31,7 @@ The latest Holo Sign retest confirms the thin monitor model and renamed-item pro
 
 ## Current implementation pass: original visual parity
 
-The active pass replaces generic cube approximations with legacy model geometry and texture mappings from the original jar. It includes Android/Weapon/Star Map stations, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage, Replicator, Charging Station, Space-Time Accelerator and Solar Panel, while retaining earlier Inscriber/Crate/armour/gun/transparency fixes.
+The active pass replaces generic cube approximations with legacy model geometry and texture mappings from the original jar. It includes Android/Weapon stations, Contract Market, Matter Analyzer, Decomposer, Recycler, Microwave, Pattern Monitor, Pattern Storage, Replicator, Charging Station, Space-Time Accelerator and Solar Panel, while retaining earlier Inscriber/Crate/armour/gun/transparency fixes.
 
 ## Highest remaining parity work
 
@@ -41,8 +41,7 @@ The active pass replaces generic cube approximations with legacy model geometry 
 4. Legacy structures/world events and their spawn ecosystems.
 5. Connected pipe geometry and full Pylon presentation.
 6. Remaining weapon renderer/module/animation parity.
-7. Full Star Map galaxy simulation.
-8. Deeper drive/network configuration and selected modern integration equivalents.
+7. Deeper drive/network configuration and selected modern integration equivalents.
 
 ## Important visual follow-up
 

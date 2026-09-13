@@ -214,7 +214,9 @@ public final class LegacyImageTemplatePlacer {
             case 0x4D8DD3 -> mo("pattern_monitor");
             case 0xDB9C3A -> mo("holo_sign");
             case 0x68B68C -> mo("matter_analyzer");
-            case 0x2CB0C7 -> mo("star_map");
+            // Retired strategic-map template pixels are deliberately left empty rather than
+            // resolving an inactive registry id when an old image is decoded.
+            case 0x2CB0C7 -> vanilla(Blocks.AIR);
             case 0x1B2FF7 -> mo("network_pipe");
             case 0x05EAAB -> mo("tritanium_crate");
             case 0x11003E -> mo("charging_station");

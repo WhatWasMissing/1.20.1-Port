@@ -238,7 +238,6 @@ public final class LegacyParityStructureFeature extends Feature<NoneFeatureConfi
         for (int z = -6; z <= 6; z += 3) set(level, base.offset(0, 5, z), z % 6 == 0 ? holo : vent);
 
         // Recovered legacy machine palette/roles from MOAndroidHouseBuilding.
-        set(level, base.offset(-6, 1, -6), block("star_map"));
         set(level, base.offset(-3, 1, -6), block("replicator"));
         set(level, base.offset(0, 1, -6), block("network_switch"));
         set(level, base.offset(1, 1, -6), block("network_pipe"));

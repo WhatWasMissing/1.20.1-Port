@@ -19,6 +19,8 @@ REPORT_DIR = ROOT / "build/reports"
 BLOCKS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModBlocks.java"
 OVERHAUL_BLOCKS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/OverhaulContent.java"
 ITEMS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModItems.java"
+EXOTIC_ITEMS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModExoticItems.java"
+DESTINY_PROFILES_JAVA = ROOT / "src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponProfile.java"
 STRUCTURES_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModStructures.java"
 STRUCTURE_JAVA = ROOT / "src/main/java/matteroverdrive/worldgen/TechnologyFacilityStructure.java"
 INVENTORY_JSON = ROOT / "PORT_INVENTORY.json"
@@ -65,6 +67,9 @@ class Finding:
     message: str
 
 findings: list[Finding] = []
+ACTIVE_BLOCK_IDS: set[str] = set()
+ACTIVE_BLOCK_ITEM_IDS: set[str] = set()
+ACTIVE_ITEM_IDS: set[str] = set()
 
 def add(severity: str, category: str, message: str) -> None:
     findings.append(Finding(severity, category, message))
@@ -88,6 +93,12 @@ def registered_blocks(text: str) -> list[str]:
     return re.findall(
         r'public\s+static\s+final\s+RegistryObject<Block>\s+\w+\s*='
         r'\s*register\("([^"\\]+)"', text)
+
+def registered_extra_items() -> list[str]:
+    exotic = re.findall(r'ITEMS\.register\("([^"\\]+)"', read(EXOTIC_ITEMS_JAVA))
+    destiny = re.findall(
+        r'^\s*[A-Z0-9_]+\("([^"\\]+)"', read(DESTINY_PROFILES_JAVA), re.MULTILINE)
+    return list(dict.fromkeys(exotic + destiny))
 
 def json_file(path: Path):
     try:
@@ -137,11 +148,49 @@ def walk_texture_values(node):
         for value in node:
             yield from walk_texture_values(value)
 
+def walk_keyed_values(node, keys: set[str]):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key in keys:
+                yield key, value
+            else:
+                yield from walk_keyed_values(value, keys)
+    elif isinstance(node, list):
+        for value in node:
+            yield from walk_keyed_values(value, keys)
+
+def check_active_data_refs(path: Path, obj) -> None:
+    """Check data references whose namespace is an active item/block registry id."""
+    relative = path.relative_to(DATA).as_posix()
+    if relative.startswith("recipes/"):
+        keys, valid = {"item"}, ACTIVE_ITEM_IDS
+    elif relative.startswith("loot_tables/"):
+        keys, valid = {"name"}, ACTIVE_ITEM_IDS
+    elif relative.startswith("tags/blocks/"):
+        keys, valid = {"values"}, ACTIVE_BLOCK_IDS
+    elif relative.startswith("tags/items/"):
+        keys, valid = {"values"}, ACTIVE_ITEM_IDS
+    else:
+        return
+
+    for key, value in walk_keyed_values(obj, keys):
+        values = value if isinstance(value, list) else [value]
+        for ref in values:
+            if not isinstance(ref, str) or not ref.startswith("matteroverdrive:"):
+                continue
+            identifier = ref.split(":", 1)[1]
+            if identifier.startswith("#") or "/" in identifier:
+                continue
+            if identifier not in valid:
+                add("error", "reference", f"{path.relative_to(ROOT)} has inactive {key} reference {ref}")
+
 def check_json_and_model_refs() -> None:
     for path in all_json_files():
         obj = json_file(path)
         if obj is None:
             continue
+        if path.is_relative_to(DATA):
+            check_active_data_refs(path, obj)
         posix = path.as_posix()
         if "assets/matteroverdrive/blockstates" in posix or "assets/matteroverdrive/models" in posix:
             for ref in walk_models(obj):
@@ -159,11 +208,18 @@ def check_json_and_model_refs() -> None:
                         add("error", "texture", f"{path.relative_to(ROOT)} references missing texture {ref}")
 
 def check_registry_resources() -> tuple[list[str], list[str]]:
+    global ACTIVE_BLOCK_IDS, ACTIVE_BLOCK_ITEM_IDS, ACTIVE_ITEM_IDS
     block_text, overhaul_text, item_text = read(BLOCKS_JAVA), read(OVERHAUL_BLOCKS_JAVA), read(ITEMS_JAVA)
     blocks = list(dict.fromkeys(java_list(block_text, "LEGACY_BLOCK_IDS") + registered_blocks(overhaul_text)))
     no_items = set(java_list(block_text, "NO_BLOCK_ITEM", "Set"))
     items = java_list(item_text, "STANDALONE_ITEM_IDS")
-    for label, values in (("block", blocks), ("standalone item", items)):
+    extra_items = registered_extra_items()
+    block_items = [block for block in blocks if block not in no_items]
+    all_items = block_items + items + extra_items
+    ACTIVE_BLOCK_IDS = set(blocks)
+    ACTIVE_BLOCK_ITEM_IDS = set(block_items)
+    ACTIVE_ITEM_IDS = set(all_items)
+    for label, values in (("block", blocks), ("standalone item", items), ("extra item", extra_items), ("item", all_items)):
         for value in sorted({x for x in values if values.count(x) > 1}):
             add("error", "registry", f"duplicate {label} id: {value}")
     for retired in sorted(RETIRED_ACTIVE_IDS):
@@ -183,12 +239,20 @@ def check_registry_resources() -> tuple[list[str], list[str]]:
         recipe_id = block.replace(".", "_")
         if block not in no_items and not (DATA / "recipes" / f"{recipe_id}.json").exists():
             add("warning", "recipe", f"active block {block} has no crafting recipe named {recipe_id}")
+        if block not in no_items and not (DATA / "loot_tables/blocks" / f"{block}.json").exists():
+            add("error", "loot", f"active block {block} has no block loot table")
     for item in items:
         key = f"item.matteroverdrive.{item}"
         if key not in lang and f"item.matteroverdrive.{item}.name" not in lang:
             add("warning", "localization", f"standalone item {item} has no modern localization key")
         if not (ASSETS / "models/item" / f"{item}.json").exists():
             add("warning", "resource", f"standalone item {item} has no item model")
+    for item in extra_items:
+        key = f"item.matteroverdrive.{item}"
+        if key not in lang and f"item.matteroverdrive.{item}.name" not in lang:
+            add("warning", "localization", f"registered extra item {item} has no modern localization key")
+        if not (ASSETS / "models/item" / f"{item}.json").exists():
+            add("warning", "resource", f"registered extra item {item} has no item model")
     return blocks, items
 
 def check_guides() -> None:
@@ -218,22 +282,54 @@ def check_guides() -> None:
             java_list(read(BLOCKS_JAVA), "LEGACY_BLOCK_IDS")
             + registered_blocks(read(OVERHAUL_BLOCKS_JAVA))))
         no_items = set(java_list(read(BLOCKS_JAVA), "NO_BLOCK_ITEM", "Set"))
+        sections = {
+            match.group(1): match.group(2)
+            for match in re.finditer(
+                r"(?ms)^### `([^`]+)`\n(.*?)(?=^### |^## |\Z)", block_text)
+        }
         for block in registered:
             heading = f"### `{block}`"
             if heading not in block_text:
                 add("error", "guideme", f"Block Reference is missing active block {block}")
                 continue
+            section = sections.get(block, "")
+            if not re.search(r"(?m)^Description:\s+\S", section):
+                add("error", "guideme", f"Block Reference is missing a description for {block}")
             if block in no_items:
                 continue
             item_link = f'<ItemLink id="matteroverdrive:{block}" />'
             recipe_id = block.replace(".", "_")
             recipe_link = f'<RecipeFor id="matteroverdrive:{recipe_id}" />'
-            if item_link not in block_text:
+            if item_link not in section:
                 add("error", "guideme", f"Block Reference is missing item image link for {block}")
-            if recipe_link not in block_text:
+            if recipe_link not in section:
                 add("error", "guideme", f"Block Reference is missing recipe link for {block}")
+            if not (ASSETS / "models/item" / f"{block}.json").exists():
+                add("error", "guideme", f"Block Reference image model is missing for {block}")
+            if not (DATA / "recipes" / f"{recipe_id}.json").exists():
+                add("error", "guideme", f"Block Reference recipe resource is missing for {block}")
     else:
         add("error", "guideme", "Block Reference page does not exist")
+
+def check_retired_active_refs() -> None:
+    """Keep retired strategic content out of active source and bundled content."""
+    retired_re = re.compile(r"\bstar[ _-]?map\b|\bstarmap\b", re.IGNORECASE)
+    paths: list[Path] = []
+    paths.extend(ROOT.joinpath("src/main/java").rglob("*.java"))
+    paths.extend(DATA.rglob("*.json"))
+    paths.extend(GUIDE_ROOT.rglob("*.md"))
+    paths.extend([
+        ASSETS / "docs/current_features.txt",
+        ASSETS / "docs/system_guide.txt",
+    ])
+    for path in paths:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            add("error", "source", f"cannot read active retired-content scan target {path.relative_to(ROOT)}: {exc}")
+            continue
+        if retired_re.search(text):
+            add("error", "retired-content", f"active source/resource mentions retired strategic content: {path.relative_to(ROOT)}")
 
 def check_facility_relics() -> None:
     """Verify themed relic drops resolve to the existing passive-protocol item."""
@@ -299,6 +395,55 @@ def check_vanilla_progression() -> None:
         if entity_id not in npc_source:
             add("error", "natural-spawn", f"village NPC population hook is missing {entity_id}")
 
+    overhaul_entity_source = read(ROOT / "src/main/java/matteroverdrive/event/OverhaulEntityEvents.java")
+    for entity_id in ("FIELD_SCIENTIST", "SYSTEMS_ENGINEER", "ASSIMILATOR", "PHASE_STALKER"):
+        if f"OverhaulContent.{entity_id}.get()" not in overhaul_entity_source:
+            add("error", "entity", f"attribute registration is missing {entity_id}")
+
+    for entity_source_path in (
+        ROOT / "src/main/java/matteroverdrive/entity/FieldScientistEntity.java",
+        ROOT / "src/main/java/matteroverdrive/entity/SystemsEngineerEntity.java",
+        ROOT / "src/main/java/matteroverdrive/entity/MadScientistEntity.java",
+    ):
+        entity_source = read(entity_source_path)
+        if "ContractInteractionEvents.recordConversation" not in entity_source:
+            add("error", "pda", f"NPC conversation is not connected to the PDA log: {entity_source_path.relative_to(ROOT)}")
+    for entity_source_path in (
+        ROOT / "src/main/java/matteroverdrive/entity/FieldScientistEntity.java",
+        ROOT / "src/main/java/matteroverdrive/entity/SystemsEngineerEntity.java",
+    ):
+        if "NpcAssignmentFlow.offer" not in read(entity_source_path):
+            add("error", "pda", f"NPC assignment flow is missing: {entity_source_path.relative_to(ROOT)}")
+
+    pda_source = read(ROOT / "src/main/java/matteroverdrive/item/DataPadItem.java")
+    for marker in ("ModNetwork.openDataPad", "ContractEvents.recordScan", "PlayerDiscoveryLog.record"):
+        if marker not in pda_source:
+            add("error", "pda", f"Data Pad integration is missing {marker}")
+    guide_source = read(ROOT / "src/main/java/matteroverdrive/client/GuideMeCompatEvents.java")
+    if "matteroverdrive:guide" not in guide_source and "GUIDE_ID" not in guide_source:
+        add("error", "guideme", "GuideME registration hook is missing the Matter Overdrive guide id")
+
+    artifact_source = read(ROOT / "src/main/java/matteroverdrive/item/ArtifactItem.java")
+    loadout_source = read(ROOT / "src/main/java/matteroverdrive/android/AndroidLoadout.java")
+    perk_source = read(ROOT / "src/main/java/matteroverdrive/event/AndroidLoadoutEvents.java")
+    for marker, source_name, source in (
+        ("RelicId", "ArtifactItem", artifact_source),
+        ("AndroidLoadout.selectArtifact", "ArtifactItem", artifact_source),
+        ("enum Artifact", "AndroidLoadout", loadout_source),
+        ("AndroidLoadout.hasArtifact", "AndroidLoadoutEvents", perk_source),
+    ):
+        if marker not in source:
+            add("error", "relic", f"relic behavior is missing {marker} in {source_name}")
+
+def check_native_destiny_assets() -> None:
+    """Report the known optional renderer asset gap without disabling its registry."""
+    data_path = ASSETS / "native_destiny/weapons.json"
+    texture_dir = ASSETS / "textures/native_destiny"
+    if not data_path.exists() or not texture_dir.is_dir() or not list(texture_dir.glob("*.png")):
+        add("warning", "destiny-visuals",
+            "native Destiny weapons are registered with valid item models/localization, but their bundled "
+            "native_destiny/weapons.json and weapon textures are still absent")
+
 def check_structure_architecture() -> None:
     registry = read(STRUCTURES_JAVA)
     structure = read(STRUCTURE_JAVA)
@@ -343,8 +488,10 @@ def main() -> int:
     blocks, items = check_registry_resources()
     check_json_and_model_refs()
     check_guides()
+    check_retired_active_refs()
     check_facility_relics()
     check_vanilla_progression()
+    check_native_destiny_assets()
     check_structure_architecture()
     check_inventory_scope()
     write_reports(blocks, items)

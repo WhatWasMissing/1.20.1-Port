@@ -82,7 +82,6 @@ New work:
 
 ## Deliberately deferred
 
-- Star Map still needs a deeper pass against the original galaxy/star/planet page model after the current data model is expanded further.
 - Complex legacy OBJ/custom-rendered models are not being re-enabled blindly; they need a dedicated 1.20.1 renderer pass.
 - Some legacy texture sheets, such as custom-rendered/OBJ-era assets, are not safe to map directly onto a modern cube model. Those should be handled individually after runtime screenshots identify which blocks still look wrong.
 - Generic legacy machine pages will only be added where equivalent 1.20.1 functionality exists; empty decorative controls will not be added for parity alone.

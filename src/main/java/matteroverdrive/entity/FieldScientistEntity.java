@@ -2,6 +2,7 @@ package matteroverdrive.entity;
 
 import matteroverdrive.quest.ResearchProgression;
 import matteroverdrive.quest.NpcAssignmentFlow;
+import matteroverdrive.event.ContractInteractionEvents;
 import matteroverdrive.registry.ModItems;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

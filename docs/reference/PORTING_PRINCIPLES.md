@@ -10,7 +10,7 @@ Preserve **legacy identity and functionality**, but prefer **modern 1.20.1 execu
 - Recovered capacities, timings, upgrade semantics and interaction rules when they define the original system.
 - Recognisable structure footprints, offsets, machine palettes, loot themes and occupants.
 - Weapon identities, module behaviour, aiming characteristics and visual language.
-- Android, Drone, Reactor, Transporter, Matter Network and Star Map gameplay concepts.
+- Android, Drone, Reactor, Transporter and Matter Network gameplay concepts.
 - Characteristic Matter Overdrive presentation and terminology.
 
 ## Modernise for 1.20.1
