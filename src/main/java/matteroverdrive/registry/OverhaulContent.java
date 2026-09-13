@@ -2,8 +2,10 @@ package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.block.EnvironmentalRegulatorBlock;
+import matteroverdrive.block.EnergyBankBlock;
 import matteroverdrive.block.QuantumFluxReactorBlock;
 import matteroverdrive.block.WallTerminalBlock;
+import matteroverdrive.blockentity.EnergyBankBlockEntity;
 import matteroverdrive.blockentity.EnvironmentalRegulatorBlockEntity;
 import matteroverdrive.blockentity.QuantumFluxReactorBlockEntity;
 import matteroverdrive.entity.AssimilatorEntity;
@@ -44,9 +46,11 @@ public final class OverhaulContent {
     public static final RegistryObject<Block> REACTOR_CASING=register("reactor_casing",()->new Block(machine()));
     public static final RegistryObject<Block> WALL_TERMINAL=register("wall_terminal",()->new WallTerminalBlock(decor().lightLevel(s->6)));
     public static final RegistryObject<Block> INDUSTRIAL_CEILING_GRID=register("industrial_ceiling_grid",()->new Block(decor().noOcclusion()));
+    public static final RegistryObject<Block> ENERGY_BANK=register("energy_bank",()->new EnergyBankBlock(machine()));
 
     public static final RegistryObject<BlockEntityType<QuantumFluxReactorBlockEntity>> QUANTUM_FLUX_REACTOR_BE=BLOCK_ENTITIES.register("quantum_flux_reactor",()->BlockEntityType.Builder.of(QuantumFluxReactorBlockEntity::new,QUANTUM_FLUX_REACTOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<EnvironmentalRegulatorBlockEntity>> ENVIRONMENTAL_REGULATOR_BE=BLOCK_ENTITIES.register("environmental_regulator",()->BlockEntityType.Builder.of(EnvironmentalRegulatorBlockEntity::new,ENVIRONMENTAL_REGULATOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<EnergyBankBlockEntity>> ENERGY_BANK_BE=BLOCK_ENTITIES.register("energy_bank",()->BlockEntityType.Builder.of(EnergyBankBlockEntity::new,ENERGY_BANK.get()).build(null));
 
     public static final RegistryObject<EntityType<FieldScientistEntity>> FIELD_SCIENTIST=ENTITY_TYPES.register("field_scientist",()->EntityType.Builder.of(FieldScientistEntity::new,MobCategory.CREATURE).sized(0.6F,1.95F).clientTrackingRange(8).build(new ResourceLocation(MatterOverdrive.MOD_ID,"field_scientist").toString()));
     public static final RegistryObject<EntityType<SystemsEngineerEntity>> SYSTEMS_ENGINEER=ENTITY_TYPES.register("systems_engineer",()->EntityType.Builder.of(SystemsEngineerEntity::new,MobCategory.CREATURE).sized(0.6F,1.95F).clientTrackingRange(8).build(new ResourceLocation(MatterOverdrive.MOD_ID,"systems_engineer").toString()));

@@ -95,6 +95,9 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         if (selected && !wasSelected) {
             tag.putBoolean(SELECTED_TAG, true);
             triggerAnimation(level, stack, "animation.model.draw");
+            if (!level.isClientSide && entity instanceof Player player) {
+                playProfileSound(level, player, profile.drawSound(), 0.75F);
+            }
         } else if (!selected && wasSelected) {
             tag.putBoolean(SELECTED_TAG, false);
         }
@@ -111,12 +114,15 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
     private void beginReload(Level level, Player player, ItemStack weapon) {
         CompoundTag tag = weapon.getOrCreateTag();
         if (isReloading(level, weapon)) return;
-        String animation = getMagazine(weapon) <= 0 ? "animation.model.reloadempty" : "animation.model.reload";
-        triggerAnimation(level, weapon, animation);
+        triggerAnimation(level, weapon, "animation.model.reload");
         tag.putLong(RELOAD_END_TAG, level.getGameTime() + profile.reloadTicks());
-        if (!level.isClientSide) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), matteroverdrive.registry.ModSounds.get("weapons.reload").get(), SoundSource.PLAYERS, 0.75F, 1.0F);
-        }
+        playProfileSound(level, player, profile.reloadSound(), 0.75F);
+    }
+
+    private static void playProfileSound(Level level, Player player, String soundId, float volume) {
+        if (level.isClientSide || soundId == null) return;
+        level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                ModDestinySounds.get(soundId), SoundSource.PLAYERS, volume, 1.0F);
     }
 
     private boolean fire(Level level, Player shooter, ItemStack weapon) {

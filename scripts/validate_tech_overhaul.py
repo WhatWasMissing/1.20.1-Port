@@ -15,6 +15,9 @@ BLOCKS = [
     "matter_excavator",
     "holographic_status_panel",
 ]
+OVERHAUL_BLOCKS = [
+    "energy_bank",
+]
 ITEMS = [
     "network_diagnostic_probe",
     "quantum_linker",
@@ -43,6 +46,7 @@ NEW_CRAFTABLES = [
     "chassis_shell_stealth",
     "chassis_shell_reactive",
     *BLOCKS,
+    *OVERHAUL_BLOCKS,
     *ITEMS,
 ]
 
@@ -61,6 +65,8 @@ JAVA = [
     "src/main/java/matteroverdrive/item/QuantumLinkerItem.java",
     "src/main/java/matteroverdrive/machine/MachineSideConfigurationData.java",
     "src/main/java/matteroverdrive/network/FacilityNetworkTelemetry.java",
+    "src/main/java/matteroverdrive/block/EnergyBankBlock.java",
+    "src/main/java/matteroverdrive/blockentity/EnergyBankBlockEntity.java",
 ]
 GUIDES = [
     "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/advanced_infrastructure.md",
@@ -79,7 +85,7 @@ def require(path: str):
     return p
 
 for path in JAVA + GUIDES: require(path)
-for block in BLOCKS:
+for block in BLOCKS + OVERHAUL_BLOCKS:
     require(f"src/main/resources/assets/matteroverdrive/blockstates/{block}.json")
     require(f"src/main/resources/assets/matteroverdrive/models/block/{block}.json")
     require(f"src/main/resources/assets/matteroverdrive/models/item/{block}.json")
@@ -121,11 +127,17 @@ energy_pipe_be = require("src/main/java/matteroverdrive/blockentity/EnergyPipeBl
 energy_pipe_block = require("src/main/java/matteroverdrive/block/EnergyPipeBlock.java")
 visual_pipe_block = require("src/main/java/matteroverdrive/block/VisualPipeBlock.java")
 hybrid_block = require("src/main/java/matteroverdrive/block/HybridConduitBlock.java")
+energy_bank_be = require("src/main/java/matteroverdrive/blockentity/EnergyBankBlockEntity.java")
 
 if mod_blocks.is_file():
     text = mod_blocks.read_text(encoding="utf-8")
     for block in BLOCKS:
         if f'"{block}"' not in text: errors.append(f"ModBlocks does not register {block}")
+overhaul_content = require("src/main/java/matteroverdrive/registry/OverhaulContent.java")
+if overhaul_content.is_file():
+    text = overhaul_content.read_text(encoding="utf-8")
+    for block in OVERHAUL_BLOCKS:
+        if f'register("{block}"' not in text: errors.append(f"OverhaulContent does not register {block}")
 if mod_items.is_file():
     text = mod_items.read_text(encoding="utf-8")
     for item in ITEMS:
@@ -156,6 +168,12 @@ if visual_pipe_block.is_file() and "neighbour.getBlock() instanceof HybridCondui
     errors.append("Matter Transport Pipe does not explicitly render a junction to Hybrid Conduit")
 if hybrid_block.is_file() and 'ModBlocks.get("matter_pipe")' not in hybrid_block.read_text(encoding="utf-8"):
     errors.append("Hybrid Conduit does not explicitly render a junction back to Matter Transport Pipe")
+if energy_bank_be.is_file():
+    text = energy_bank_be.read_text(encoding="utf-8")
+    for marker in ["ForgeCapabilities.ENERGY", "ModCapabilities.MATTER", "MatterNetworkUtil.transferMatter", "ENERGY_CAPACITY", "MATTER_CAPACITY"]:
+        if marker not in text: errors.append(f"Energy Bank is missing {marker}")
+    if "target instanceof FusionReactorIOBlockEntity" not in text:
+        errors.append("Energy Bank FE output does not guard the Reactor IO loop")
 
 for guide in [ROOT / "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/index.md", ROOT / "src/main/resources/assets/matteroverdrive/guides/matteroverdrive/guide/current_features.md"]:
     if guide.is_file() and "[Star Map]" in guide.read_text(encoding="utf-8"): errors.append(f"retired Star Map remains linked from active guide: {guide.relative_to(ROOT)}")
@@ -166,7 +184,7 @@ if errors:
     sys.exit(1)
 
 print("TECH OVERHAUL VALIDATION PASSED")
-print(f"  experimental blocks: {len(BLOCKS)}")
+print(f"  experimental blocks: {len(BLOCKS) + len(OVERHAUL_BLOCKS)}")
 print(f"  experimental standalone items/upgrades: {len(ITEMS)}")
 print(f"  new survival craftables with verified recipes: {len(list(dict.fromkeys(NEW_CRAFTABLES)))}")
 print("  explicit quantum relay links: present")

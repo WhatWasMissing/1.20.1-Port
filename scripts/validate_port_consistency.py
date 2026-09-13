@@ -436,13 +436,35 @@ def check_vanilla_progression() -> None:
             add("error", "relic", f"relic behavior is missing {marker} in {source_name}")
 
 def check_native_destiny_assets() -> None:
-    """Report the known optional renderer asset gap without disabling its registry."""
-    data_path = ASSETS / "native_destiny/weapons.json"
-    texture_dir = ASSETS / "textures/native_destiny"
-    if not data_path.exists() or not texture_dir.is_dir() or not list(texture_dir.glob("*.png")):
-        add("warning", "destiny-visuals",
-            "native Destiny weapons are registered with valid item models/localization, but their bundled "
-            "native_destiny/weapons.json and weapon textures are still absent")
+    """Verify every registered native Destiny weapon has its imported visual/audio resources."""
+    profile_ids = re.findall(
+        r'^\s*[A-Z0-9_]+\("([^"\\]+)"', read(DESTINY_PROFILES_JAVA), re.MULTILINE)
+    for weapon_id in profile_ids:
+        for kind, path in (
+            ("geometry", ASSETS / "native_destiny/geometry" / f"{weapon_id}.geo.json"),
+            ("animation", ASSETS / "native_destiny/animations" / f"{weapon_id}.animation.json"),
+            ("display transform", ASSETS / "native_destiny/transforms" / f"{weapon_id}.json"),
+            ("texture", ASSETS / "textures/native_destiny" / f"{weapon_id}.png"),
+        ):
+            if not path.exists():
+                add("error", "destiny-visuals", f"native Destiny {kind} is missing for {weapon_id}: {path.relative_to(ROOT)}")
+
+    sounds = json_file(ASSETS / "sounds.json")
+    sound_ids = re.findall(
+        r'\bregister\("([^"\\]+)"\)', read(ROOT / "src/main/java/matteroverdrive/registry/ModDestinySounds.java"))
+    if not isinstance(sounds, dict):
+        return
+    for sound_id in sound_ids:
+        if sound_id not in sounds:
+            add("error", "destiny-audio", f"registered native Destiny sound has no sounds.json entry: {sound_id}")
+            continue
+        for sound in sounds[sound_id].get("sounds", []) if isinstance(sounds[sound_id], dict) else []:
+            name = sound.get("name", "") if isinstance(sound, dict) else ""
+            if not name.startswith("matteroverdrive:destiny/"):
+                continue
+            source = ASSETS / "sounds" / (name.split(":", 1)[1] + ".ogg")
+            if not source.exists():
+                add("error", "destiny-audio", f"sounds.json entry {sound_id} references missing audio {name}")
 
 def check_structure_architecture() -> None:
     registry = read(STRUCTURES_JAVA)

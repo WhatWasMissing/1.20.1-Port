@@ -465,6 +465,11 @@ Description: Ore block that yields Tritanium.
 Image: <ItemLink id="matteroverdrive:tritanium_ore" />
 Crafting recipe: <RecipeFor id="matteroverdrive:tritanium_ore" />
 
+### `energy_bank`
+Description: Stores Forge Energy and Matter independently from reactor output, then supplies connected machines and Matter networks when they request it.
+Image: <ItemLink id="matteroverdrive:energy_bank" />
+Crafting recipe: <RecipeFor id="matteroverdrive:energy_bank" />
+
 ### `wall_terminal`
 Description: Inspects nearby FE-capable nodes and facility status.
 Image: <ItemLink id="matteroverdrive:wall_terminal" />

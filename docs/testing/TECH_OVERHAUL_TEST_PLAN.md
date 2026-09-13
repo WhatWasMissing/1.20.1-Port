@@ -18,6 +18,14 @@ This branch is intentionally isolated from `main` until the systems below pass l
 - Confirm 16,000,000 FE capacity and 32,768 FE/t throughput.
 - Comparator tracks fill level from 0-15.
 
+## Energy Bank
+
+- Reactor IO fills the bank's FE and Matter stores independently.
+- Full or disconnected consumers leave both resources retained in the bank.
+- FE output reaches direct machines and Energy Cable/Hybrid Conduit networks.
+- Matter output reaches Matter Pipe/Hybrid Conduit consumers and never feeds back into Reactor IO.
+- FE, Matter, output telemetry and comparator state persist through save/reload.
+
 ## Android Induction Relay
 
 - Converted Android charges at 32, 64 and 96 block modes.
@@ -62,6 +70,7 @@ The branch validator now treats the newly invented player-facing hardware as sur
 - Facility Network Controller and Anomaly Containment Unit.
 - All ten Android chassis modules.
 - Grid Capacitor, Android Induction Relay, Quantum Power Relay and Hybrid Conduit.
+- Energy Bank.
 - Matter Storage Matrix, Matter Excavator and Holographic Status Panel.
 - Network Diagnostic Probe and Quantum Linker.
 - 64k, 256k, 1M and 4M Matter Storage Cells.

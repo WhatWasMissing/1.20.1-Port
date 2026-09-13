@@ -31,6 +31,10 @@ The **Grid Capacitor** is the high-throughput buffer for larger installations. I
 
 Comparator output reports capacitor fill level.
 
+## Energy Bank
+
+The **Energy Bank** is a late-game dual-resource buffer for reactor installations. It stores **32,000,000 FE** and **1,000,000 Matter** independently, accepts both through its exposed capabilities, and supplies adjacent FE networks plus connected Matter Pipe/Hybrid Conduit networks when those networks have room. It does not convert FE into Matter or Matter into FE. Use the block for reactor output that should remain available after the reactor stops or consumers temporarily back up.
+
 ## Charging Station
 
 The **Charging Station** remains the local bridge between stationary FE generation and compatible portable Matter Overdrive energy storage.

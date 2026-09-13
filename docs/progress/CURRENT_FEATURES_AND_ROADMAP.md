@@ -8,7 +8,7 @@ The detailed feature matrix is [WORKING_FEATURES.md](../reference/WORKING_FEATUR
 ## Current playable systems
 
 - Matter loop: Decomposer, Recycler, Analyzer, Pattern Drives, Pattern Storage, Pattern Monitor, Replicator, Scanner, Portable Decomposer, Matter Containers and Matter Pipes.
-- FE/machines: Solar Panel, Heavy Energy Cable, Charging Station, Microwave, Space-Time Accelerator, Transporter and Molecular Inscriber.
+- FE/machines: Solar Panel, Heavy Energy Cable, Charging Station, Microwave, Space-Time Accelerator, Transporter, Molecular Inscriber and the testing-branch Energy Bank reactor buffer.
 - Item/pattern logistics: Network Pipe, Router, Switch and Pylon.
 - Reactor/gravity: Fusion Reactor ring, IO, shared ring power, mass-scaled output, anomaly hazards, stabilizers, Reactor Remote/guide/overlay and persistent controls.
 - Weapons: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE, heat/reload and Weapon Station module support.

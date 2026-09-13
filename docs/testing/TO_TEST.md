@@ -113,6 +113,9 @@ Use a fresh world or unexplored chunks.
 
 - [ ] Fusion ring validation identifies missing/wrong blocks correctly.
 - [ ] Reactor IO exports FE through chained Heavy Energy Cable infrastructure.
+- [ ] Energy Bank accepts FE and Matter from Reactor IO, retains both while consumers are full/offline, and outputs each resource later without converting or losing it.
+- [ ] Energy Bank FE output reaches direct machines and chained Heavy Energy Cable/Hybrid Conduit networks, while Matter output reaches Matter Pipe/Hybrid Conduit consumers without feeding back into the reactor.
+- [ ] Energy Bank FE/Matter contents and comparator/status values persist across save/reload and survive breaking/replacing unrelated adjacent cables.
 - [ ] Shared ring FE and configured stabilizer-from-reactor behavior still work.
 - [ ] RUN/SCRAM/redstone/overlay state persists.
 - [ ] Living entities consumed by an event horizon add anomaly mass once.

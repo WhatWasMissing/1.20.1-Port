@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["PHP","MCM","PHP"],"key":{"P":{"item":"matteroverdrive:tritanium_plate"},"H":{"item":"matteroverdrive:hc_battery"},"M":{"item":"matteroverdrive:matter_container"},"C":{"item":"matteroverdrive:isolinear_circuit_mk4"}},"result":{"item":"matteroverdrive:energy_bank"}}

@@ -27,6 +27,7 @@ Matter tooltips expose the effective value and diagnostic commands are available
 `testing/tech-overhaul` currently adds the following experimental systems:
 
 - **Grid Capacitor** - 16,000,000 FE high-throughput grid buffer.
+- **Energy Bank** - independent 32,000,000 FE / 1,000,000 Matter reactor buffer with FE and Matter network output.
 - **Android Induction Relay** - same-dimension wireless Android charging with 32/64/96-block range modes.
 - **Quantum Power Relay** - 16-channel same-dimension wireless FE links between loaded relays within 256 blocks.
 - **Matter Storage Matrix** - modular bulk Matter storage with four removable cell slots.

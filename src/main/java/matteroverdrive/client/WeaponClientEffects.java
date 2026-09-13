@@ -6,11 +6,13 @@ import matteroverdrive.item.weapon.EnergyWeaponItem;
 import matteroverdrive.item.weapon.WeaponModuleItem;
 import matteroverdrive.item.weapon.WeaponSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -116,14 +118,28 @@ public final class WeaponClientEffects {
 
         var pose = event.getPoseStack();
 
-        // Recovered 1.12 WeaponRenderHandler delta from hip -> aimed:
-        // X 0.13 -> 0, Y rotation 185 -> 180, X rotation 3 -> 0.
-        // WeaponItemRenderer adds +0.04 Y and -0.30 Z while zooming.
-        pose.translate(-0.13D * aimed,
-                0.04D * aimed + profile.recoilLift() * kick,
-                -0.30D * aimed + profile.recoilBack() * kick);
-        pose.mulPose(Axis.YP.rotationDegrees(-5.0F * aimed));
-        pose.mulPose(Axis.XP.rotationDegrees(-3.0F * aimed - profile.recoilPitch() * kick));
+        // The OBJ display transforms already place each weapon in the hand. Keep the
+        // runtime aim delta deliberately small so it does not double-apply the old 1.12
+        // transform and push the model out of the first-person camera.
+        pose.translate(-0.045D * aimed,
+                0.018D * aimed + profile.recoilLift() * kick,
+                -0.105D * aimed + profile.recoilBack() * kick);
+        pose.mulPose(Axis.YP.rotationDegrees(-1.5F * aimed));
+        pose.mulPose(Axis.XP.rotationDegrees(-0.75F * aimed - profile.recoilPitch() * kick));
+    }
+
+    @SubscribeEvent
+    public static void onThirdPersonWeaponPose(RenderPlayerEvent.Pre event) {
+        var player = event.getEntity();
+        if (!player.isUsingItem()
+                || player.getUsedItemHand() != InteractionHand.MAIN_HAND
+                || !(player.getMainHandItem().getItem() instanceof EnergyWeaponItem)) return;
+
+        // startUsingItem is the server-authoritative firing/aim state, but vanilla maps
+        // every custom UseAnim.NONE item to the generic ITEM arm pose. That pose looks
+        // like eating/holding-use forever in third person, so leave the arm in its
+        // ordinary held-item position while the weapon handles its own presentation.
+        event.getRenderer().getModel().rightArmPose = HumanoidModel.ArmPose.EMPTY;
     }
 
     @SubscribeEvent

@@ -1,6 +1,7 @@
 package matteroverdrive.network;
 
 import matteroverdrive.blockentity.FusionReactorIOBlockEntity;
+import matteroverdrive.blockentity.EnergyBankBlockEntity;
 import matteroverdrive.blockentity.MatterAnalyzerBlockEntity;
 import matteroverdrive.blockentity.NetworkSwitchBlockEntity;
 import matteroverdrive.blockentity.PatternMonitorBlockEntity;
@@ -66,7 +67,7 @@ public final class MatterNetworkUtil {
         while(!queue.isEmpty()&&visited.size()<MAX_NETWORK_NODES){BlockPos pipe=queue.removeFirst();if(!visited.add(pipe))continue;for(Direction direction:Direction.values()){BlockPos next=pipe.relative(direction);if(next.equals(origin)||!level.hasChunkAt(next))continue;if(isMatterPipe(level.getBlockState(next))){if(!visited.contains(next))queue.add(next.immutable());}else addMatterSource(level,next,direction.getOpposite(),origin,candidates);}}
         return resolve(level,candidates,true);
     }
-    private static void addMatterSource(Level level,BlockPos position,Direction side,BlockPos origin,Set<MatterEndpoint>candidates){if(position.equals(origin))return;BlockEntity be=level.getBlockEntity(position);if(be==null||be instanceof FusionReactorIOBlockEntity)return;candidates.add(new MatterEndpoint(position.immutable(),side));}
+    private static void addMatterSource(Level level,BlockPos position,Direction side,BlockPos origin,Set<MatterEndpoint>candidates){if(position.equals(origin))return;BlockEntity be=level.getBlockEntity(position);if(be==null||be instanceof FusionReactorIOBlockEntity||(be instanceof EnergyBankBlockEntity&&level.getBlockEntity(origin) instanceof FusionReactorIOBlockEntity))return;candidates.add(new MatterEndpoint(position.immutable(),side));}
     private static boolean canExtractMatter(Level level,MatterEndpoint endpoint){
         if(!MachineSideConfigurationData.allowsOutput(level,endpoint.pos(),endpoint.side(),MachineSideConfigurationData.Resource.MATTER))return false;
         BlockEntity be=level.getBlockEntity(endpoint.pos());return be!=null&&be.getCapability(ModCapabilities.MATTER,endpoint.side()).map(IMatterStorage::canExtract).orElse(false);
@@ -79,10 +80,11 @@ public final class MatterNetworkUtil {
 
     private static List<MatterEndpoint> findMatterEndpoints(Level level,BlockPos origin){
         ArrayDeque<BlockPos>queue=new ArrayDeque<>();Set<BlockPos>visited=new HashSet<>();Set<MatterEndpoint>candidates=new HashSet<>();
-        for(Direction direction:Direction.values()){BlockPos next=origin.relative(direction);if(!level.hasChunkAt(next))continue;if(isMatterPipe(level.getBlockState(next)))queue.add(next.immutable());else if(level.getBlockEntity(next)!=null)candidates.add(new MatterEndpoint(next.immutable(),direction.getOpposite()));}
-        while(!queue.isEmpty()&&visited.size()<MAX_NETWORK_NODES){BlockPos pipe=queue.removeFirst();if(!visited.add(pipe))continue;for(Direction direction:Direction.values()){BlockPos next=pipe.relative(direction);if(next.equals(origin)||!level.hasChunkAt(next))continue;if(isMatterPipe(level.getBlockState(next))){if(!visited.contains(next))queue.add(next.immutable());}else if(level.getBlockEntity(next)!=null)candidates.add(new MatterEndpoint(next.immutable(),direction.getOpposite()));}}
+        for(Direction direction:Direction.values()){BlockPos next=origin.relative(direction);if(!level.hasChunkAt(next))continue;if(isMatterPipe(level.getBlockState(next)))queue.add(next.immutable());else if(isMatterEndpoint(level,level.getBlockEntity(next),origin))candidates.add(new MatterEndpoint(next.immutable(),direction.getOpposite()));}
+        while(!queue.isEmpty()&&visited.size()<MAX_NETWORK_NODES){BlockPos pipe=queue.removeFirst();if(!visited.add(pipe))continue;for(Direction direction:Direction.values()){BlockPos next=pipe.relative(direction);if(next.equals(origin)||!level.hasChunkAt(next))continue;if(isMatterPipe(level.getBlockState(next))){if(!visited.contains(next))queue.add(next.immutable());}else if(isMatterEndpoint(level,level.getBlockEntity(next),origin))candidates.add(new MatterEndpoint(next.immutable(),direction.getOpposite()));}}
         return resolve(level,candidates,false);
     }
+    private static boolean isMatterEndpoint(Level level,BlockEntity blockEntity,BlockPos origin){return blockEntity!=null&&!blockEntity.getBlockPos().equals(origin)&&!(blockEntity instanceof FusionReactorIOBlockEntity)&&(!(blockEntity instanceof EnergyBankBlockEntity)||!(level.getBlockEntity(origin) instanceof EnergyBankBlockEntity));}
     private static List<MatterEndpoint> resolve(Level level,Set<MatterEndpoint>candidates,boolean extracting){
         List<MatterEndpoint>sorted=new ArrayList<>(candidates);sorted.sort(Comparator.comparingInt((MatterEndpoint e)->e.pos().getX()).thenComparingInt(e->e.pos().getY()).thenComparingInt(e->e.pos().getZ()).thenComparingInt(e->e.side().ordinal()));
         Map<BlockPos,MatterEndpoint>resolved=new LinkedHashMap<>();for(MatterEndpoint candidate:sorted){if(resolved.containsKey(candidate.pos()))continue;if(extracting?canExtractMatter(level,candidate):canReceiveMatter(level,candidate))resolved.put(candidate.pos(),candidate);}return new ArrayList<>(resolved.values());
