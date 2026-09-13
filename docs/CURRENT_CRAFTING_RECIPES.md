@@ -1,12 +1,35 @@
 # Matter Overdrive 1.20.1 - Current Recipe Reference
 
-> Synchronized with `src/main/resources/data/matteroverdrive/recipes` on the current `testing/tech-overhaul` branch. Do not hand-edit this file without regenerating it.
+> Auto-generated directly from `src/main/resources/data/matteroverdrive/recipes` on the current `main` branch. Do not hand-edit this file.
 
-**Crafting-table recipes:** 117
+**Crafting-table recipes:** 196  
 **Smelting/blasting/cooking recipes:** 10  
 **Other/unknown recipe JSONs:** 0
 
 ## Crafting-table recipes
+
+### `android_induction_relay`
+
+**Result:** `matteroverdrive:android_induction_relay`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+SMS
+CDC
+SBS
+```
+
+**Key:**
+
+- `S` = `matteroverdrive:s_magnet`
+- `M` = `matteroverdrive:me_conversion_matrix`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `D` = `matteroverdrive:dilithium_crystal`
+- `B` = `matteroverdrive:charging_station`
+
+---
 
 ### `android_pill_blue`
 
@@ -120,6 +143,29 @@ IRI
 
 ---
 
+### `anomaly_containment_unit`
+
+**Result:** `matteroverdrive:anomaly_containment_unit`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+TST
+IQI
+TMT
+```
+
+**Key:**
+
+- `T` = `matteroverdrive:tritanium_plate`
+- `S` = `matteroverdrive:spacetime_equalizer`
+- `I` = `matteroverdrive:isolinear_circuit_mk4`
+- `Q` = `matteroverdrive:quantum_fold_manipulator`
+- `M` = `matteroverdrive:integration_matrix`
+
+---
+
 ### `battery`
 
 **Result:** `matteroverdrive:battery`  
@@ -137,6 +183,45 @@ TDT
 
 - `T` = `matteroverdrive:tritanium_ingot`
 - `D` = `matteroverdrive:dilithium_crystal`
+- `R` = `minecraft:redstone`
+
+---
+
+### `blue_hazard_panel`
+
+**Result:** `matteroverdrive:blue_hazard_panel` x6  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+BLB
+TTT
+```
+
+**Key:**
+
+- `B` = `minecraft:blue_dye`
+- `L` = `minecraft:redstone_lamp`
+- `T` = `matteroverdrive:tritanium_plate`
+
+---
+
+### `cable_tray`
+
+**Result:** `matteroverdrive:cable_tray` x4  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+IRI
+III
+```
+
+**Key:**
+
+- `I` = `minecraft:iron_ingot`
 - `R` = `minecraft:redstone`
 
 ---
@@ -161,6 +246,136 @@ CRC
 - `B` = `matteroverdrive:battery`
 - `H` = `matteroverdrive:machine_casing`
 - `R` = `minecraft:redstone`
+
+---
+
+### `chassis_core_capacitor`
+
+**Result:** `matteroverdrive:chassis_core_capacitor`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:hc_battery`
+- `matteroverdrive:isolinear_circuit_mk3`
+
+---
+
+### `chassis_core_overclock`
+
+**Result:** `matteroverdrive:chassis_core_overclock`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:upgrade_power`
+- `matteroverdrive:isolinear_circuit_mk4`
+
+---
+
+### `chassis_frame_lightweight`
+
+**Result:** `matteroverdrive:chassis_frame_lightweight`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:upgrade_speed`
+- `matteroverdrive:tritanium_plate`
+
+---
+
+### `chassis_frame_reinforced`
+
+**Result:** `matteroverdrive:chassis_frame_reinforced`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:h_compensator`
+- `matteroverdrive:tritanium_block`
+
+---
+
+### `chassis_muscles_agility`
+
+**Result:** `matteroverdrive:chassis_muscles_agility`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:upgrade_speed`
+- `matteroverdrive:rogue_android_part_legs`
+
+---
+
+### `chassis_muscles_siege`
+
+**Result:** `matteroverdrive:chassis_muscles_siege`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:upgrade_power`
+- `matteroverdrive:rogue_android_part_arms`
+
+---
+
+### `chassis_optics_hunter`
+
+**Result:** `matteroverdrive:chassis_optics_hunter`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:matter_scanner`
+- `matteroverdrive:rogue_android_part_head`
+
+---
+
+### `chassis_optics_precision`
+
+**Result:** `matteroverdrive:chassis_optics_precision`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:sniper_scope`
+- `matteroverdrive:rogue_android_part_head`
+
+---
+
+### `chassis_shell_reactive`
+
+**Result:** `matteroverdrive:chassis_shell_reactive`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:forcefield_emitter`
+- `matteroverdrive:rogue_android_part_chest`
+
+---
+
+### `chassis_shell_stealth`
+
+**Result:** `matteroverdrive:chassis_shell_stealth`  
+**Type:** `minecraft:crafting_shapeless`
+
+**Ingredients:**
+
+- `matteroverdrive:integration_matrix`
+- `matteroverdrive:spacetime_equalizer`
+- `matteroverdrive:rogue_android_part_chest`
 
 ---
 
@@ -198,6 +413,25 @@ GRG
 - `minecraft:book`
 - `minecraft:paper`
 - `matteroverdrive:isolinear_circuit_mk1`
+
+---
+
+### `damaged_panel`
+
+**Result:** `matteroverdrive:damaged_panel` x2  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+ F 
+ P 
+```
+
+**Key:**
+
+- `F` = `minecraft:flint`
+- `P` = `matteroverdrive:tritanium_plate`
 
 ---
 
@@ -498,6 +732,811 @@ CRC
 
 ---
 
+### `destiny_4thhorseman`
+
+**Result:** `matteroverdrive:destiny_4thhorseman`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_badjuju`
+
+**Result:** `matteroverdrive:destiny_badjuju`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_bxr55battler`
+
+**Result:** `matteroverdrive:destiny_bxr55battler`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_chaperone`
+
+**Result:** `matteroverdrive:destiny_chaperone`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_cloudstrike`
+
+**Result:** `matteroverdrive:destiny_cloudstrike`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_deadman`
+
+**Result:** `matteroverdrive:destiny_deadman`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_fabianstrategy`
+
+**Result:** `matteroverdrive:destiny_fabianstrategy`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_fatebringer`
+
+**Result:** `matteroverdrive:destiny_fatebringer`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_firstcurse`
+
+**Result:** `matteroverdrive:destiny_firstcurse`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_gjallarhorn`
+
+**Result:** `matteroverdrive:destiny_gjallarhorn`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_gravitonlance`
+
+**Result:** `matteroverdrive:destiny_gravitonlance`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_hammerhead`
+
+**Result:** `matteroverdrive:destiny_hammerhead`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_hardlight`
+
+**Result:** `matteroverdrive:destiny_hardlight`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_icebreaker`
+
+**Result:** `matteroverdrive:destiny_icebreaker`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_jaderabbit`
+
+**Result:** `matteroverdrive:destiny_jaderabbit`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_legendofacrius`
+
+**Result:** `matteroverdrive:destiny_legendofacrius`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_lordofwolves`
+
+**Result:** `matteroverdrive:destiny_lordofwolves`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_midnightcoup`
+
+**Result:** `matteroverdrive:destiny_midnightcoup`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_necrochasm`
+
+**Result:** `matteroverdrive:destiny_necrochasm`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_nolandbeyond`
+
+**Result:** `matteroverdrive:destiny_nolandbeyond`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_originstory`
+
+**Result:** `matteroverdrive:destiny_originstory`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_outbreakprime`
+
+**Result:** `matteroverdrive:destiny_outbreakprime`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_reddeath`
+
+**Result:** `matteroverdrive:destiny_reddeath`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_stolenwill`
+
+**Result:** `matteroverdrive:destiny_stolenwill`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_thunderlord`
+
+**Result:** `matteroverdrive:destiny_thunderlord`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_tlaloc`
+
+**Result:** `matteroverdrive:destiny_tlaloc`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_tommysmatchbook`
+
+**Result:** `matteroverdrive:destiny_tommysmatchbook`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_touchofmalice`
+
+**Result:** `matteroverdrive:destiny_touchofmalice`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_trespasser`
+
+**Result:** `matteroverdrive:destiny_trespasser`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_truth`
+
+**Result:** `matteroverdrive:destiny_truth`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_universalremote`
+
+**Result:** `matteroverdrive:destiny_universalremote`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_whisper`
+
+**Result:** `matteroverdrive:destiny_whisper`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_witherhoard`
+
+**Result:** `matteroverdrive:destiny_witherhoard`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_zenmeteor`
+
+**Result:** `matteroverdrive:destiny_zenmeteor`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
+### `destiny_zhalo`
+
+**Result:** `matteroverdrive:destiny_zhalo`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+RHR
+PCP
+ B 
+```
+
+**Key:**
+
+- `R` = `matteroverdrive:weapon_receiver`
+- `H` = `matteroverdrive:weapon_handle`
+- `P` = `matteroverdrive:plasma_core`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:battery`
+
+---
+
 ### `dilithium_ore`
 
 **Result:** `matteroverdrive:dilithium_ore`  
@@ -515,6 +1554,119 @@ SDS
 
 - `S` = `minecraft:stone`
 - `D` = `matteroverdrive:dilithium_crystal`
+
+---
+
+### `drone_deployment_core`
+
+**Result:** `matteroverdrive:drone_deployment_core`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+ICI
+PBP
+ITI
+```
+
+**Key:**
+
+- `I` = `matteroverdrive:isolinear_circuit_mk2`
+- `C` = `matteroverdrive:plasma_core`
+- `P` = `matteroverdrive:tritanium_plate`
+- `B` = `matteroverdrive:battery`
+- `T` = `matteroverdrive:tritanium_ingot`
+
+---
+
+### `drone_fabricator`
+
+**Result:** `matteroverdrive:drone_fabricator`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+PTP
+CMC
+PBP
+```
+
+**Key:**
+
+- `P` = `matteroverdrive:tritanium_plate`
+- `T` = `matteroverdrive:tritanium_ingot`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `M` = `matteroverdrive:machine_casing`
+- `B` = `matteroverdrive:charging_station`
+
+---
+
+### `energy_bank`
+
+**Result:** `matteroverdrive:energy_bank`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+PHP
+MCM
+PHP
+```
+
+**Key:**
+
+- `P` = `matteroverdrive:tritanium_plate`
+- `H` = `matteroverdrive:hc_battery`
+- `M` = `matteroverdrive:matter_container`
+- `C` = `matteroverdrive:isolinear_circuit_mk4`
+
+---
+
+### `environmental_regulator`
+
+**Result:** `matteroverdrive:environmental_regulator`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+TCT
+EFE
+TCT
+```
+
+**Key:**
+
+- `T` = `matteroverdrive:tritanium_plate`
+- `C` = `matteroverdrive:isolinear_circuit_mk2`
+- `E` = `matteroverdrive:forcefield_emitter`
+- `F` = `matteroverdrive:machine_casing`
+
+---
+
+### `facility_network_controller`
+
+**Result:** `matteroverdrive:facility_network_controller`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+CNC
+RMR
+CFC
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `N` = `matteroverdrive:network_flash_drive`
+- `R` = `matteroverdrive:network_router`
+- `M` = `matteroverdrive:machine_casing`
+- `F` = `matteroverdrive:flash_drive`
 
 ---
 
@@ -648,6 +1800,28 @@ THT
 
 ---
 
+### `grid_capacitor`
+
+**Result:** `matteroverdrive:grid_capacitor`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+PHP
+CBC
+PHP
+```
+
+**Key:**
+
+- `P` = `matteroverdrive:tritanium_plate`
+- `H` = `matteroverdrive:hc_battery`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `B` = `matteroverdrive:machine_casing`
+
+---
+
 ### `h_compensator`
 
 **Result:** `matteroverdrive:h_compensator`  
@@ -735,6 +1909,109 @@ TRT
 
 ---
 
+### `holographic_floor_panel`
+
+**Result:** `matteroverdrive:holographic_floor_panel` x6  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+GGG
+TCT
+```
+
+**Key:**
+
+- `G` = `minecraft:glass_pane`
+- `T` = `matteroverdrive:tritanium_plate`
+- `C` = `matteroverdrive:isolinear_circuit_mk1`
+
+---
+
+### `holographic_status_panel`
+
+**Result:** `matteroverdrive:holographic_status_panel`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+GHG
+CNC
+GTG
+```
+
+**Key:**
+
+- `G` = `minecraft:glass_pane`
+- `H` = `matteroverdrive:holo_sign`
+- `C` = `matteroverdrive:isolinear_circuit_mk2`
+- `N` = `matteroverdrive:network_flash_drive`
+- `T` = `matteroverdrive:tritanium_plate`
+
+---
+
+### `hybrid_conduit`
+
+**Result:** `matteroverdrive:hybrid_conduit` x8  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+EME
+TCT
+EME
+```
+
+**Key:**
+
+- `E` = `matteroverdrive:heavy_matter_pipe`
+- `M` = `matteroverdrive:matter_pipe`
+- `T` = `matteroverdrive:tritanium_ingot`
+- `C` = `matteroverdrive:isolinear_circuit_mk2`
+
+---
+
+### `industrial_catwalk`
+
+**Result:** `matteroverdrive:industrial_catwalk` x6  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+P P
+III
+```
+
+**Key:**
+
+- `P` = `matteroverdrive:tritanium_plate`
+- `I` = `minecraft:iron_ingot`
+
+---
+
+### `industrial_ceiling_grid`
+
+**Result:** `matteroverdrive:industrial_ceiling_grid` x8  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+IRI
+RIR
+```
+
+**Key:**
+
+- `I` = `minecraft:iron_bars`
+- `R` = `matteroverdrive:tritanium_plate`
+
+---
+
 ### `industrial_glass`
 
 **Result:** `matteroverdrive:industrial_glass` x4  
@@ -752,6 +2029,25 @@ GPG
 
 - `G` = `minecraft:glass`
 - `P` = `matteroverdrive:tritanium_plate`
+
+---
+
+### `industrial_railing`
+
+**Result:** `matteroverdrive:industrial_railing` x6  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+I I
+PPP
+```
+
+**Key:**
+
+- `P` = `matteroverdrive:tritanium_plate`
+- `I` = `minecraft:iron_ingot`
 
 ---
 
@@ -947,6 +2243,51 @@ TMT
 
 ---
 
+### `matter_excavator`
+
+**Result:** `matteroverdrive:matter_excavator`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+SMS
+CDC
+SBS
+```
+
+**Key:**
+
+- `S` = `matteroverdrive:s_magnet`
+- `M` = `matteroverdrive:matter_scanner`
+- `C` = `matteroverdrive:isolinear_circuit_mk4`
+- `D` = `matteroverdrive:decomposer`
+- `B` = `matteroverdrive:machine_casing`
+
+---
+
+### `matter_network_terminal`
+
+**Result:** `matteroverdrive:matter_network_terminal`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+CRC
+DND
+CRC
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:isolinear_circuit_mk2`
+- `R` = `matteroverdrive:quantum_linker`
+- `D` = `matteroverdrive:tritanium_plate`
+- `N` = `matteroverdrive:network_diagnostic_probe`
+
+---
+
 ### `matter_pipe`
 
 **Result:** `matteroverdrive:matter_pipe` x8  
@@ -1014,6 +2355,109 @@ IRI
 
 ---
 
+### `matter_storage_cell_1m`
+
+**Result:** `matteroverdrive:matter_storage_cell_1m`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+CCC
+CIC
+CCC
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:matter_storage_cell_256k`
+- `I` = `matteroverdrive:isolinear_circuit_mk3`
+
+---
+
+### `matter_storage_cell_256k`
+
+**Result:** `matteroverdrive:matter_storage_cell_256k`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+CCC
+CIC
+CCC
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:matter_storage_cell_64k`
+- `I` = `matteroverdrive:isolinear_circuit_mk2`
+
+---
+
+### `matter_storage_cell_4m`
+
+**Result:** `matteroverdrive:matter_storage_cell_4m`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+CCC
+CIC
+CCC
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:matter_storage_cell_1m`
+- `I` = `matteroverdrive:isolinear_circuit_mk4`
+
+---
+
+### `matter_storage_cell_64k`
+
+**Result:** `matteroverdrive:matter_storage_cell_64k`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+TCT
+CMC
+TCT
+```
+
+**Key:**
+
+- `T` = `matteroverdrive:tritanium_plate`
+- `C` = `matteroverdrive:isolinear_circuit_mk1`
+- `M` = `matteroverdrive:matter_container`
+
+---
+
+### `matter_storage_matrix`
+
+**Result:** `matteroverdrive:matter_storage_matrix`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+CMC
+PBP
+CMC
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `M` = `matteroverdrive:matter_container`
+- `P` = `matteroverdrive:tritanium_plate`
+- `B` = `matteroverdrive:machine_casing`
+
+---
+
 ### `me_conversion_matrix`
 
 **Result:** `matteroverdrive:me_conversion_matrix`  
@@ -1056,6 +2500,28 @@ IRI
 - `S` = `minecraft:smooth_stone`
 - `H` = `matteroverdrive:machine_hull`
 - `R` = `minecraft:redstone`
+
+---
+
+### `network_diagnostic_probe`
+
+**Result:** `matteroverdrive:network_diagnostic_probe`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+ CF
+ WT
+W  
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:isolinear_circuit_mk2`
+- `F` = `matteroverdrive:network_flash_drive`
+- `W` = `matteroverdrive:tritanium_wrench`
+- `T` = `matteroverdrive:tritanium_plate`
 
 ---
 
@@ -1374,6 +2840,73 @@ THT
 
 ---
 
+### `quantum_flux_reactor`
+
+**Result:** `matteroverdrive:quantum_flux_reactor`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+TDT
+CMC
+TCT
+```
+
+**Key:**
+
+- `T` = `matteroverdrive:tritanium_plate`
+- `D` = `matteroverdrive:dilithium_crystal`
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `M` = `matteroverdrive:me_conversion_matrix`
+
+---
+
+### `quantum_linker`
+
+**Result:** `matteroverdrive:quantum_linker`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+IFI
+FQF
+ITI
+```
+
+**Key:**
+
+- `I` = `matteroverdrive:isolinear_circuit_mk3`
+- `F` = `matteroverdrive:network_flash_drive`
+- `Q` = `matteroverdrive:quantum_fold_manipulator`
+- `T` = `matteroverdrive:tritanium_ingot`
+
+---
+
+### `quantum_power_relay`
+
+**Result:** `matteroverdrive:quantum_power_relay`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+DQD
+CMC
+DPD
+```
+
+**Key:**
+
+- `D` = `matteroverdrive:dilithium_crystal`
+- `Q` = `matteroverdrive:quantum_fold_manipulator`
+- `C` = `matteroverdrive:isolinear_circuit_mk4`
+- `M` = `matteroverdrive:machine_casing`
+- `P` = `matteroverdrive:pylon`
+
+---
+
 ### `reactor_assembly_guide`
 
 **Result:** `matteroverdrive:reactor_assembly_guide`  
@@ -1384,6 +2917,26 @@ THT
 - `minecraft:book`
 - `matteroverdrive:fusion_reactor_coil`
 - `matteroverdrive:machine_hull`
+
+---
+
+### `reactor_casing`
+
+**Result:** `matteroverdrive:reactor_casing` x4  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+TTT
+THT
+TTT
+```
+
+**Key:**
+
+- `T` = `matteroverdrive:tritanium_plate`
+- `H` = `matteroverdrive:machine_hull`
 
 ---
 
@@ -1449,6 +3002,27 @@ ITI
 
 - `I` = `minecraft:iron_ingot`
 - `T` = `matteroverdrive:tritanium_ingot`
+- `R` = `minecraft:redstone`
+
+---
+
+### `security_door`
+
+**Result:** `matteroverdrive:security_door` x2  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+PCP
+PRP
+PCP
+```
+
+**Key:**
+
+- `P` = `matteroverdrive:tritanium_plate`
+- `C` = `matteroverdrive:isolinear_circuit_mk1`
 - `R` = `minecraft:redstone`
 
 ---
@@ -1618,6 +3192,24 @@ TTT
 **Key:**
 
 - `T` = `matteroverdrive:tritanium_ingot`
+
+---
+
+### `tritanium_bulkhead_panel`
+
+**Result:** `matteroverdrive:tritanium_bulkhead_panel` x8  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+TTT
+TTT
+```
+
+**Key:**
+
+- `T` = `matteroverdrive:tritanium_plate`
 
 ---
 
@@ -1977,6 +3569,28 @@ MUM
 
 ---
 
+### `upgrade_parallel_processing`
+
+**Result:** `matteroverdrive:upgrade_parallel_processing`  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+CIC
+UBU
+CIC
+```
+
+**Key:**
+
+- `C` = `matteroverdrive:isolinear_circuit_mk3`
+- `I` = `matteroverdrive:integration_matrix`
+- `U` = `matteroverdrive:upgrade_base`
+- `B` = `matteroverdrive:hc_battery`
+
+---
+
 ### `upgrade_power`
 
 **Result:** `matteroverdrive:upgrade_power`  
@@ -2085,6 +3699,49 @@ DHD
 - `P` = `matteroverdrive:plasma_core`
 - `Q` = `matteroverdrive:quantum_fold_manipulator`
 - `H` = `matteroverdrive:weapon_handle`
+
+---
+
+### `wall_terminal`
+
+**Result:** `matteroverdrive:wall_terminal` x2  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+GTG
+CIC
+TTT
+```
+
+**Key:**
+
+- `G` = `minecraft:glass_pane`
+- `T` = `matteroverdrive:tritanium_plate`
+- `C` = `minecraft:comparator`
+- `I` = `matteroverdrive:isolinear_circuit_mk1`
+
+---
+
+### `warning_light`
+
+**Result:** `matteroverdrive:warning_light` x2  
+**Type:** `minecraft:crafting_shaped`
+
+**Pattern:**
+
+```text
+ R 
+ L 
+ P 
+```
+
+**Key:**
+
+- `R` = `minecraft:redstone`
+- `L` = `matteroverdrive:decorative.tritanium_lamp`
+- `P` = `matteroverdrive:tritanium_plate`
 
 ---
 
