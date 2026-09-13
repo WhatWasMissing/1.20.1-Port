@@ -2,7 +2,7 @@
 
 Branch target: `testing/tech-overhaul`
 
-This pass adds an offline structure-design layer on top of the native Forge 1.20.1 `Structure` / `StructurePiece` implementation. It does **not** replace Minecraft world generation and does not restore the retired Star Map.
+This pass adds an offline structure-design layer on top of the native Forge 1.20.1 `Structure` / `StructurePiece` implementation. It does **not** replace Minecraft world generation, activate placement, or restore the retired Star Map. The structures are dormant in 0.7 until their visual/content review is complete.
 
 ## Why this exists
 
@@ -49,7 +49,7 @@ The QA fixes preserve the existing worldgen safety model:
 2. Infrastructure writes are checked against both the active chunk `BoundingBox` and the piece's own bounding box.
 3. No infrastructure piece force-loads chunks or spawns generation-time entities.
 4. Vertical access remains bounded to the facility piece footprint.
-5. Existing generated structures are not retrofitted; verify in fresh chunks.
+5. Existing generated structures are not retrofitted; use old generated saves for compatibility checks and a fresh world only to verify that dormant placement stays absent.
 6. The retired Star Map remains excluded from active worldgen and guides.
 
 ## What the visual lab can and cannot prove

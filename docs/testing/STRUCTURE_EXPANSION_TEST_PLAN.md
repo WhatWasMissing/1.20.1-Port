@@ -1,4 +1,6 @@
-# Structure Expansion Playtest Plan
+# Structure Expansion Playtest Plan (Deferred)
+
+> Release 0.7 policy: Matter Overdrive-authored structures are not naturally placed while their visual/content pass is unfinished. Use `docs/testing/TO_TEST.md` for the active checklist. The `/locate structure` targets below are future design-review targets or compatibility checks against older generated saves.
 
 Use this during the large playtest for the second-generation Matter Overdrive facilities on `testing/tech-overhaul`.
 
@@ -181,4 +183,3 @@ For every bad spawn, capture:
 - screenshot from outside and inside;
 - whether the problem appeared on first generation or only after reload;
 - whether the affected piece crosses a chunk border.
-

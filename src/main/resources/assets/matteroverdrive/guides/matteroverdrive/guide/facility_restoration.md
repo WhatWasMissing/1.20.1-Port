@@ -7,7 +7,7 @@ navigation:
 ---
 # Facility Restoration
 
-The six native technology facilities now support an optional recovery loop on newly generated sites. The loop does not gate normal crafting or the Mad Scientist campaign; it turns an abandoned facility into a self-contained exploration objective.
+The six native technology facilities retain an optional recovery loop for already-generated compatibility sites. Their definitions and recovery code are still source-validated, but placement is dormant in 0.7 while the visual/content review is unfinished. The loop does not gate normal crafting or the Mad Scientist campaign; it turns an existing abandoned facility into a self-contained exploration objective.
 
 ## Recovery sequence
 
@@ -30,7 +30,7 @@ Generated security is still finite, but defenders now keep a facility-specific r
 - Fusion Complexes use tougher, knockback-resistant **Containment Sentries**.
 - Black Sites use the strongest **Black Site Wardens**, with later reserve deployments reaching higher minimum Android levels.
 
-These profiles apply only to generated facility spawners. Player-built Android Spawners keep their FE-powered squad behaviour.
+These profiles apply only to facility spawners in already-generated compatibility sites. Player-built Android Spawners keep their FE-powered squad behaviour.
 
 ## Traversal and infrastructure
 
@@ -38,4 +38,4 @@ The restoration pass adds native chunk-clipped infrastructure pieces rather than
 
 The same **Industrial Catwalk**, **Industrial Railing**, **Cable Tray**, **Warning Light**, **Damaged Panel** and **Security Door** blocks are available to players and have survival recipes. Player-placed Security Doors outside generated facilities can be toggled by use or redstone.
 
-World-generation changes only affect fresh chunks.
+No Matter Overdrive-authored structure placement is active in new chunks. Existing generated sites remain the deferred compatibility/runtime check; natural hostile spawns, vanilla loot, village contacts and player-event PDA discoveries do not depend on them.

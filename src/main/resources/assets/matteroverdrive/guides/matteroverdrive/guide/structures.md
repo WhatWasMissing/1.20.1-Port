@@ -7,7 +7,7 @@ navigation:
 ---
 # World Structures
 
-Matter Overdrive adds abandoned facilities, crashed spacecraft, Android sites and gravitational anomalies to normal survival exploration. These structures are **optional discoveries**: they can introduce the scientist campaign, provide loot, encounters and lore, but they do not lock the technology tree. Experienced players may craft and use Matter Overdrive technology without finding every structure or completing the quests.
+Matter Overdrive retains abandoned-facility, crashed-spacecraft and Android-site definitions for compatibility with existing generated worlds and future reviewed encounters. In the 0.7 release, unfinished Matter Overdrive-authored structures are **not naturally placed in new worlds**. Gravitational Anomalies, vanilla exploration loot, village contacts and player-event lore remain active, so the technology tree does not depend on locating an MO structure.
 
 ## Vanilla exploration progression
 
@@ -15,69 +15,64 @@ Matter Overdrive progression is not dependent on finding a Matter Overdrive stru
 
 Themed relic sources include **Overclocked Relay** in stronghold libraries, **Swarm Beacon** in jungle temples, **Aegis Prism** in bastion treasure rooms, **Hunter Lens** in woodland mansions, **Nanite Crown** in buried treasure, **Capacitor Heart** in End Cities and **Phase Anchor** in Ancient Cities.
 
-> World-generation changes only affect **new or unexplored chunks**. If you update an existing world, travel beyond previously generated terrain when looking for these sites.
+> The 0.7 structure policy is deliberate: no MO structure set or compact-site biome modifier is active. Existing generated MO sites remain supported for compatibility; new worlds should use vanilla exploration, NPC assignments, crafted technology, field operations and recovered lore fragments for progression.
 
-## What to look for
+## Registered content and active routes
 
-| Structure | Where | Relative rarity | Why visit? |
-| --- | --- | --- | --- |
-| **Mad Scientist House** | Overworld surface | Common MO landmark | Best optional entry into scientist quests and research guidance. |
-| **Crashed Space Ship** | Overworld surface | Uncommon | Salvage, crates and occasional weapon technology. |
-| **Sand Pit** | Overworld surface | Uncommon | Legacy exploration site and salvage opportunity. |
-| **Android House** | Overworld surface | Rare | Dangerous Android encounter with a guaranteed high-tier defender. |
-| **Cargo Ship** | Overworld surface | Very rare | Large salvage site associated with contracts/logistics. |
-| **Underwater Base** | Ocean floor | Rare | Large submerged research/salvage site. Bring water-breathing equipment. |
-| **Gravitational Anomaly** | Overworld | Uncommon, dangerous | Natural route into anomaly research. Approach carefully. |
-| **Matter Observatory** | Stable Overworld terrain | Rare | Analyze the central sensor, inspect telemetry and recover anomaly research data. |
-| **Field Logistics Depot** | Stable Overworld terrain | Rare | Recharge equipment, extend a Matter Network route and recover field supplies. |
+| Content | New-world placement | Active player route |
+| --- | --- | --- |
+| **Registered MO structures and facilities** | Disabled | Existing-save compatibility; archive records are authenticated by player events. |
+| **Compact technology sites** | Disabled | Field Operations, NPC assignments and craftable technology. |
+| **Gravitational Anomaly** | Natural Overworld generation | Anomaly Engineering and event-horizon field operations. |
+| **Vanilla structures** | Natural vanilla generation | Matter Overdrive supplies, relics and recovered-lore fragments. |
 
 ## Matter Observatory
 
-The observatory is a compact field station rather than a decorative ruin. Its raised sensor mast marks the site from a distance, while the ring fence leaves a deliberate service approach. The Matter Analyzer is the scientific objective and the Facility Network Controller exposes the site's telemetry; bring power and a Data Pad if you want to continue the research trail. The site is only placed on a stable, mostly level nine-by-nine footprint, so it should not generate floating over ravines or with its entrance buried in a slope.
+The observatory remains a compact field-site definition rather than an active new-world landmark. Its Matter Analyzer, Facility Network Controller and telemetry concepts are available through craftable technology and the existing field-operation route; the visual definition is retained for compatibility and future review.
 
 ## Field Logistics Depot
 
-Depots are expedition infrastructure: a marked service approach leads to a Charging Station, Network Switch, pipe junction and two separated Tritanium caches. They are intentionally small enough to read as a maintained field stop rather than a full laboratory, and use the same stable-footprint rule as the Observatory. Their main value is extending powered logistics while travelling between larger facilities.
+Depots remain an expedition-infrastructure definition: Charging Station, Network Switch, pipe junction and Tritanium-cache concepts are represented by craftable systems, NPC assignments and Field Operations. The compact visual definition is dormant until its quality review is complete.
 
-All five compact technology sites have a deterministic salvage cache. The cache is assigned during generation and resolves lazily when opened, so chunk-safe placement does not depend on a loaded loot context. Entering a site with its paired machinery intact records a persistent field discovery, grants XP, a Data Pad and a site-specific research dossier. Use that dossier to archive the finding for a one-time upgrade and additional XP, then check the Data Pad's discovered-site count.
+The five compact technology sites retain their deterministic salvage and discovery contracts for existing content and source validation. New players reach the same investigation themes through the existing player-event routes: NPC assignments, technology acquisition, Field Operations and PDA-authenticated evidence. No new-world structure placement is required.
 
-The rarity descriptions above are intentionally approximate. They are more useful during survival play than promising an exact distance, because Minecraft placement attempts, biome eligibility and terrain checks all affect what a player actually encounters.
+The former rarity descriptions are intentionally retired. No placement spacing is promised for dormant MO-authored structures; only vanilla structure loot and natural Gravitational Anomalies remain part of new-world generation.
 
 ## Mad Scientist House
 
-This is the structure a new player should be happiest to find early. Mad Scientists provide the optional guided research campaign and explain Matter Overdrive systems in a suggested order.
+The Mad Scientist House definition remains available for already-generated worlds and compatibility checks. Mad Scientists themselves remain village-associated and provide the optional guided research campaign and explain Matter Overdrive systems in a suggested order.
 
 **You do not need to find one before using the mod.** If you already understand Matter Overdrive, normal recipes and material progression remain available without research clearance.
 
-The current survival tuning makes Scientist Houses substantially easier to encounter than before so the tutorial route can be discovered naturally rather than requiring a wiki or commands.
+The current 0.7 route makes that tutorial available through village contact events rather than requiring an MO-authored structure to generate.
 
 ## Crashed Space Ship
 
-The recovered ship template is **11 x 35**. Crashed ships are useful early exploration targets because their Tritanium Crates can contain Matter Overdrive salvage. The recovered population rules do not automatically add Android or Drone defenders, although the wreck itself may still be hazardous depending on terrain and nearby mobs.
+The recovered ship template is **11 x 35** and remains a compatibility definition for existing worlds. Its salvage, transporter and lore themes are now represented by vanilla loot, craftable technology and player-event archive routes.
 
-Weapon Stations can rarely contain generated energy weapon technology. Treat a wreck as a useful shortcut or bonus, not a mandatory progression step.
+Weapon Stations and vanilla loot remain valid sources of energy-weapon technology; no crashed-ship generation is required for progression.
 
 ## Android House
 
-The recovered template is **21 x 21** with a **-2 Y offset**. A generated house contains a Matter Overdrive machine palette and several Rogue Android defenders. The recovered rules use **3-5 ordinary defenders** and guarantee one stronger level-3 legendary ranged Rogue Android.
+The recovered template is **21 x 21** with a **-2 Y offset** and remains available for existing-save compatibility. Rogue Androids and ranged Rogue Androids now use the active natural hostile-spawn system rather than relying on an Android House generating.
 
-This is deliberately a higher-risk structure than the Scientist House. Prepare for combat before entering rather than treating it as an early-game tutorial building.
+The Android House is deliberately retained as a higher-risk compatibility definition; prepare for combat around the naturally spawning hostile Android population instead.
 
 ## Sand Pit
 
-The recovered template is **24 x 24** with a **-9 Y offset**. It is a legacy exploration/salvage location. Its authoritative generation hook does not automatically create Android or Drone defenders.
+The recovered template is **24 x 24** with a **-9 Y offset**. It is a dormant legacy exploration/salvage definition; its archive route is supplied by Matter Excavator acquisition and recovered evidence.
 
 ## Cargo Ship
 
-The recovered template is **58 x 23**, making this one of the largest surface discoveries. Cargo Ships are intentionally much rarer than Scientist Houses or wrecks. Their legacy population logic is associated with contracts and cargo rather than automatic combat defenders.
+The recovered template is **58 x 23**, making this one of the largest compatibility definitions. Cargo-ship themes remain available through contracts, logistics systems and the cargo archive route rather than natural MO placement.
 
-For the 1.20.1 survival pass the old extremely sparse placement has been relaxed so a player can realistically encounter one through long-distance exploration without making Cargo Ships commonplace.
+The former sparse-placement tuning is retired while the visual/content review is pending.
 
 ## Underwater Base
 
-The recovered template is **43 x 43** and generates on the ocean floor. This is a later exploration target simply because reaching and searching a large submerged facility is dangerous without preparation.
+The recovered template is **43 x 43** and remains an ocean-floor compatibility definition. Its NEREID archive route is available through event-driven evidence; it is not generated in new worlds.
 
-Bring water breathing, doors/air management or suitable Android abilities. The recovered population hook does not automatically spawn Rogue Androids or Drones.
+Water breathing, doors/air management and suitable Android abilities remain useful for any already-generated site, but no new-world Underwater Base placement is expected.
 
 ## Natural Gravitational Anomaly
 
@@ -89,38 +84,37 @@ Natural anomalies are not intended to be the only route to late-game anomaly exp
 
 ## Suggested exploration order
 
-For a first playthrough, a comfortable order is:
+For a first playthrough, a comfortable event-driven order is:
 
-1. **Mad Scientist House** - learn what the mod can do and optionally begin the research campaign.
-2. **Crashed Ship / Sand Pit** - collect salvage while establishing Matter Technology.
-3. **Android House** - tackle a dangerous combat site once equipped.
-4. **Cargo Ship / Underwater Base** - pursue rarer large facilities during automation and advanced-power exploration.
+1. **Village scientist contact** - learn what the mod can do and optionally begin the research campaign.
+2. **Matter Excavator / analyzer technology** - establish Matter Technology and authenticate the early archive.
+3. **Natural hostile encounters** - record Android and drone evidence once equipped.
+4. **Field Operations / vanilla exploration** - pursue logistics, power and anomaly evidence through events and loot.
 5. **Gravitational Anomaly** - investigate seriously once fusion/stabilizer technology is available.
 
 This is advice, **not an unlock chain**.
 
 ## If you cannot find a structure
 
-- Make sure you are exploring **new chunks** after installing/updating the mod.
-- Scientist Houses, wrecks and most legacy sites are Overworld discoveries; Underwater Bases require ocean terrain.
-- Do not spend hours searching for one structure just to progress: all core technology should remain independently craftable.
-- If a new test world produces none of these structures over substantial exploration, report the world seed and approximate explored distance. That is useful world-generation test data.
+- Do not search for an MO-authored structure in new chunks: its placement route is intentionally disabled.
+- Use village contacts, craft/pickup/mine/combat events, Field Operations and vanilla structure loot to progress.
+- Existing generated MO sites remain useful for compatibility testing; report any deserialization, cache or restoration regression.
 
 ## Port/parity note
 
-The structures are reconstructed from the 1.12.2 structure classes and recovered templates. Modern 1.20.1 terrain placement is used where necessary while source-backed dimensions and population behaviour are retained where practical. Exact visual/layout parity can continue to improve independently of survival functionality.
+The dormant definitions are reconstructed from the 1.12.2 structure classes and recovered templates. Native 1.20.1 serializers, pieces, caches and population hooks remain source-validated for existing content, while fresh-world placement is withheld until visual/layout parity and content quality are complete.
 
 
 ## Technology facilities and field research
 
-Six large facilities offer optional exploration rewards: Synthetic Manufacturing Plants, Matter Refineries, Quantum Relay Stations, Android Command Bunkers, Fusion Research Complexes and rare Black Sites.
+Six large facilities retain optional archive/reward definitions: Synthetic Manufacturing Plants, Matter Refineries, Quantum Relay Stations, Android Command Bunkers, Fusion Research Complexes and rare Black Sites. They are dormant in new worlds.
 
-Search shipping, processing, control, armoury and vault rooms for Tritanium caches. Each main cache contains themed supplies and a recovered research dossier. **Use the dossier** to archive its finding and earn a one-time equipment/XP reward for that facility family. Keep it to reread or share it with a friend. Repeated copies do not pay the same explorer again, and discoveries do not skip scientist assignments.
+Existing caches still contain themed supplies and recovered research dossiers. **Use the dossier** to archive its finding and earn a one-time equipment/XP reward for that facility family. New players can authenticate the same 16 archive records through technology acquisition, combat, mining, NPC assignments, Field Operations and recovered-lore fragments; repeated copies do not pay the same player again.
 
-Facility security stations run on finite emergency reserves and wake when a Survival player approaches. They deploy small guard groups over time. Clear the station before salvaging nearby equipment; an abandoned facility can still defend itself. Black Sites carry the strongest reserves and favour ranged defenders.
+Existing facility security stations retain finite emergency reserves and restoration state. The natural hostile-spawn system supplies new-world encounters independently; no facility must generate for hostile population progression.
 
-Some rooms have collapsed corners, damaged support machines and reduced security reserves. Surface facilities may also have broken service yards with lower-value salvage. New rewards and encounters appear only in newly generated facilities.
+Some dormant definitions include collapsed corners, damaged support machines and reduced security reserves. These remain compatibility content until a later visual/content pass; new rewards and encounters come from the event-driven routes described above.
 
 ### Optional investigation chain
 
-Some compact sites form an ordered investigation: **Android Relay Outpost -> Matter Observatory -> Anomaly Research Site**. Discovering the next site advances the per-player chain and the final site awards a Parallel Processing Upgrade. Your Data Pad reports the current step and the next lead, so the chain remains navigable after logging out or taking a break. The chain is optional, persistent and does not replace normal recipes or scientist assignments; discovering sites out of order still grants their ordinary dossier and discovery rewards.
+The compact-site themes form an ordered investigation: **Android Relay Outpost -> Matter Observatory -> Anomaly Research Site**. Because the site definitions are dormant, the investigation is advanced by existing player-event evidence and Field Operations rather than generated-site proximity. Your Data Pad reports the current step and the next lead, so the chain remains navigable after logging out or taking a break. The chain is optional, persistent and does not replace normal recipes or scientist assignments.

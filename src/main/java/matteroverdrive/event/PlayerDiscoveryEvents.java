@@ -24,6 +24,7 @@ public final class PlayerDiscoveryEvents {
         if (stack.isEmpty()) return;
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (!MatterOverdrive.MOD_ID.equals(id.getNamespace())) return;
+        StructureLoreEvents.discoverFromTechnology(player, id.getPath());
         if (PlayerDiscoveryLog.record(player, "craft:" + id,
                 "FABRICATION // " + stack.getHoverName().getString() + " assembled. PDA archived the construction result.")) {
             player.displayClientMessage(net.minecraft.network.chat.Component.literal("PDA // New fabrication log: " + stack.getHoverName().getString()), true);
@@ -35,6 +36,7 @@ public final class PlayerDiscoveryEvents {
         if (!(event.getPlayer() instanceof ServerPlayer player)) return;
         ResourceLocation id = BuiltInRegistries.BLOCK.getKey(event.getState().getBlock());
         if (!MatterOverdrive.MOD_ID.equals(id.getNamespace())) return;
+        StructureLoreEvents.discoverFromBlock(player, id.getPath());
         PlayerDiscoveryLog.record(player, "break:" + id,
                 "FIELD TEST // " + event.getState().getBlock().getName().getString() + " dismantled and its material response recorded.");
     }
@@ -44,6 +46,7 @@ public final class PlayerDiscoveryEvents {
         if (!(event.getSource().getEntity() instanceof ServerPlayer player)) return;
         ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(event.getEntity().getType());
         if (!MatterOverdrive.MOD_ID.equals(id.getNamespace())) return;
+        StructureLoreEvents.discoverFromEntity(player, id.getPath());
         if (PlayerDiscoveryLog.record(player, "encounter:" + id,
                 "ENCOUNTER // First confirmed neutralisation of " + event.getEntity().getDisplayName().getString() + ". Combat telemetry retained.")) {
             player.displayClientMessage(net.minecraft.network.chat.Component.literal("PDA // New encounter record"), true);

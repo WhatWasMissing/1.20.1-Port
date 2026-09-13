@@ -1,5 +1,6 @@
 package matteroverdrive.quest;
 
+import matteroverdrive.event.StructureLoreEvents;
 import matteroverdrive.item.RecoveredArtifactItem;
 import matteroverdrive.registry.ModItems;
 import matteroverdrive.android.AndroidLoadout;
@@ -129,6 +130,8 @@ public final class FieldOperations {
         root.remove(ACTIVE_KEY);
         root.remove(PROGRESS_KEY);
         save(player, root);
+
+        StructureLoreEvents.discoverFromFieldOperation(player, operation.target);
 
         player.giveExperiencePoints(50 + Math.min(200, completed * 5));
         ItemStack reward = reward(operation, completed);

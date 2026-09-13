@@ -227,6 +227,15 @@ public final class StructureLoreCatalog {
         return bit >= 0 && bit < RECORDS.size() ? RECORDS.get(bit) : null;
     }
 
+    /** Stable lookup used by player-event lore routes and migrated structure records. */
+    public static LoreRecord byId(String id) {
+        if (id == null || id.isBlank()) return null;
+        for (LoreRecord record : RECORDS) {
+            if (record.id().equals(id)) return record;
+        }
+        return null;
+    }
+
     /** 1-based archive lookup. */
     public static LoreRecord byArchiveIndex(int archiveIndex) {
         return archiveIndex >= 1 && archiveIndex <= ARCHIVE.size() ? ARCHIVE.get(archiveIndex - 1) : null;

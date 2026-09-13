@@ -1,8 +1,10 @@
-# Matter Overdrive 0.6 - Structure Generation Watchdog Test
+# Matter Overdrive 0.6 - Structure Generation Watchdog Test (Historical)
 
-This pass restores natural generation for the six native Matter Overdrive structures through Minecraft's `Structure` / `StructurePiece` pipeline. The old Feature-based multi-chunk placement path remains disabled.
+> Superseded for release 0.7: MO-authored structure placement is dormant. Use `docs/testing/TO_TEST.md` to verify that fresh worlds contain no MO-authored structures, and use an older generated save for compatibility checks. The spacing values below are historical design-review data, not active placement configuration.
 
-## Restored structure sets
+This historical pass documents the native `Structure` / `StructurePiece` path for the six legacy facilities. In release 0.7 the path is retained for existing-save compatibility but its natural placement is dormant; the old Feature-based multi-chunk placement path remains disabled.
+
+## Historical placement targets
 
 - `matteroverdrive:crashed_ship` - spacing 80, separation 24
 - `matteroverdrive:cargo_ship` - spacing 160, separation 48
@@ -45,4 +47,4 @@ If a hang occurs, leave the game frozen for at least 6-10 seconds before closing
 
 ## Current limitation
 
-This pass restores natural placement scheduling and the existing native structure geometry. It does not claim that every legacy occupant, loot table, decoration callback, or exact legacy template detail is complete. Those should be added only after the multi-chunk generation path proves stable.
+This historical pass described natural placement scheduling and the existing native structure geometry. Release 0.7 intentionally does not activate that scheduling because the structures are not yet up to the required visual/content standard. Any future placement pass must first complete the missing occupant, loot, decoration and exact-template review.

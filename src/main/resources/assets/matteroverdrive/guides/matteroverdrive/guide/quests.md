@@ -55,7 +55,7 @@ Current restored story routes include:
 - **Stem Bolts**;
 - **To the Power Of**.
 
-These routes are tied to Matter Overdrive's world structures and NPC interactions. Structure-backed quest acquisition has self-healing behavior where possible so an older generated structure can still establish the intended progression state after relevant port updates.
+These routes use Matter Overdrive NPC interactions and player-event evidence. Older generated structures can still establish intended compatibility state where available, but no new-world MO structure is required for quest or lore progression.
 
 ## Puny Humans
 

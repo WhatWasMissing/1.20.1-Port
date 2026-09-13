@@ -2,8 +2,8 @@
 setlocal
 where py >nul 2>nul
 if %errorlevel%==0 (
-  py -3 validate_structure_lore.py
+  py -3 scripts\validate_lore_events.py
 ) else (
-  python validate_structure_lore.py
+  python scripts\validate_lore_events.py
 )
 exit /b %errorlevel%

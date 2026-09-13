@@ -95,7 +95,7 @@ tasks.register('verifyBundledDocumentation') {
         }
 
         String guide = file('docs/reference/SYSTEM_GUIDE.md').getText('UTF-8')
-        ['## Simplified', '## Detailed', 'Status: PARTIAL', '# 28. Troubleshooting routes'].each { required ->
+        ['## Simplified', '## Detailed', 'Status: PARTIAL', '# 24. Troubleshooting routes'].each { required ->
             if (!guide.contains(required)) {
                 throw new GradleException("System Guide is missing required structure: ${required}")
             }

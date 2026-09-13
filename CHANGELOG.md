@@ -16,7 +16,7 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 - Added a dedicated Field Operations runtime/abuse/performance checklist to `TECH_OVERHAUL_TEST_PLAN.md`.
 - Added the complete merged tech-overhaul feature set: Energy Bank dual FE/Matter storage, Quantum Flux Reactor, Environmental Regulator, Wall Terminal, decorative reactor blocks and hybrid FE+Matter conduit routing.
 - Added persistent Energy Bank reactor-IO input, independent FE/Matter output, status/comparator telemetry and network-compatible buffering without resource conversion or feedback loops.
-- Added four Frontier Expedition structures: Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array.
+- Added dormant Frontier Expedition structure definitions for compatibility and future reviewed encounters: Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array. They are not naturally placed in new worlds.
 - Added natural hostile-spawn definitions for Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers, plus village Field Scientist and Systems Engineer population alongside Mad Scientists.
 - Added vanilla structure loot injection that preserves existing vanilla pools and supplies Matter Overdrive materials, with seven deterministic Legendary Relic sources.
 - Added themed Legendary Relic pools to the six main technology-facility caches, using the existing recovered artifact item and Android passive-protocol selection.
@@ -25,6 +25,8 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 - Connected every Destiny weapon to the existing Energy Weapon, Weapon System, battery/barrel/sights/colour/utility module and Weapon Station contracts.
 - Added source-transform first-person rendering, bounded aim/recoil presentation and third-person generic-use pose suppression for energy weapons.
 - Added GuideME block-reference descriptions, item image links and live recipe links for all active player-facing blocks, including Drone Fabricator and Matter Network Terminal.
+- Repurposed the 16-record structure archive, Frontier archive, environmental observations and ambient lore into existing player-event routes: technology acquisition, mining, combat, NPC assignments, Field Operations and recovered-fragment inspection.
+- Disabled the unfinished MO-authored structure-set and compact-site biome-modifier placement routes while retaining registered definitions, serializers and existing-save compatibility.
 - Added cross-checked static/resource validation for registries, JSON/model/texture references, loot, spawn, PDA, relic, weapon, Android, network and structure contracts.
 
 ### Changed
@@ -35,11 +37,11 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 ### Design direction
 
 - New systems should connect the existing exploration → research → machines/drones → automation → reactor/anomaly progression spine rather than exist as isolated crafting blocks.
-- Structure/world gameplay remains on native chunk-safe structure generation; the retired Star Map is not restored.
+- Structure/world gameplay keeps the registered chunk-safe serializers for compatibility, but unfinished Matter Overdrive-authored structures are not naturally placed in new worlds; vanilla loot and natural anomalies remain active. The retired Star Map is not restored.
 
 ### Testing status
 
-The release is source/resource validated. Runtime verification is still required for persistence, multiplayer isolation, Energy Bank throughput, compact-site recognition, facility generation, reward delivery, model transforms, audio playback, spawn rates and anomaly-operation completion. See `docs/testing/TO_TEST.md`.
+The release is source/resource validated. Runtime verification is still required for persistence, multiplayer isolation, Energy Bank throughput, old-save structure compatibility, event-driven lore delivery, reward delivery, model transforms, audio playback, spawn rates and anomaly-operation completion. See `docs/testing/TO_TEST.md`.
 
 ## 0.6 — Matter economy, survival/world integration and release consolidation
 

@@ -1,6 +1,7 @@
 package matteroverdrive.item;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.event.StructureLoreEvents;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.world.AmbientLoreCatalog;
 import matteroverdrive.world.AmbientLoreSavedData;
@@ -51,6 +52,7 @@ public final class RecoveredLoreFragmentItem extends Item {
             }
 
             AmbientLoreSavedData data = AmbientLoreSavedData.get(serverPlayer.serverLevel());
+            StructureLoreEvents.discoverFromAmbientFragment(serverPlayer, entry.siteId());
             boolean first = data.discover(serverPlayer.getUUID(), entry.id());
             serverPlayer.sendSystemMessage(Component.literal("[ " + entry.classification() + " ] " + entry.title())
                     .withStyle(ChatFormatting.AQUA));

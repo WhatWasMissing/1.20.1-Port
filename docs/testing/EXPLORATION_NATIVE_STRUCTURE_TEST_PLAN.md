@@ -1,4 +1,6 @@
-# Exploration-Native Structure Runtime Test Plan
+# Exploration-Native Structure Runtime Test Plan (Deferred)
+
+> Release 0.7 policy: structure placement is dormant. Do not use this plan to expect MO structures in fresh chunks; use `docs/testing/TO_TEST.md` for the active release checks and older generated saves for serializer compatibility.
 
 Branch: `feature/lead-dev-expansion-2026-09-11`
 

@@ -1,8 +1,10 @@
-# Matter Overdrive Total Structure Redesign — Runtime Test Plan
+# Matter Overdrive Total Structure Redesign — Deferred Runtime Test Plan
 
-Branch: `feature/lead-dev-expansion-2026-09-11`
+Branch: `main` / release `0.7`
 
-Status: implementation committed; local compile/runtime verification required.
+Status: deferred visual/content review. MO-authored structure placement is disabled in 0.7; use `docs/testing/TO_TEST.md` for the active release checklist and older generated saves for compatibility checks.
+
+Do not treat the `/locate structure` commands below as proof that fresh-world placement is active. They are retained design-review targets for a later explicitly approved placement pass.
 
 ## Build gate
 
@@ -13,7 +15,7 @@ Status: implementation committed; local compile/runtime verification required.
 
 ## Universal playthrough gate
 
-For every structure below, test at least three separate generated starts where practical. Do not merely inspect from creative flight: enter from terrain and play through the route on foot.
+For every retained structure below, test at least three separate generated starts where practical after placement is explicitly re-enabled. Do not merely inspect from creative flight: enter from terrain and play through the route on foot.
 
 Every structure must pass all of these:
 

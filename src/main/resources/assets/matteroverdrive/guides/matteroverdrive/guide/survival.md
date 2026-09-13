@@ -56,12 +56,12 @@ Natural Gravitational Anomalies can be discovered while exploring. They are dang
 
 ## Exploration
 
-Matter Overdrive structures provide optional alternate discoveries throughout a survival world:
+Matter Overdrive retains optional alternate discoveries for existing generated sites, but authored structures are dormant in new worlds in 0.7:
 
 - Scientist Houses introduce the guided campaign.
 - Crashed Ships and Sand Pits provide early exploration/salvage targets.
 - Android Houses are combat-oriented sites.
 - Cargo Ships and Underwater Bases are rarer large facilities.
-- Natural Gravitational Anomalies foreshadow the late game.
+- Natural Gravitational Anomalies foreshadow the late game and remain naturally available.
 
-None should be required simply to continue crafting the technology tree.
+New players do not need to locate an MO-authored structure. Technology acquisition, vanilla structure loot, village contacts, combat/mining events, Field Operations and recovered lore fragments continue the technology tree.

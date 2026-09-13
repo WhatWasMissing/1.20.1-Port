@@ -33,18 +33,69 @@ import java.util.UUID;
 public final class StructureLoreEvents {
     private static final Map<UUID, Long> LAST_SCANNED_CELL = new HashMap<>();
     private static final int ANOMALY_WARNING_RADIUS = 8;
+    private static final Map<String, String> TECHNOLOGY_ROUTES = Map.ofEntries(
+            Map.entry("matter_excavator", "sand_pit"),
+            Map.entry("matter_storage_matrix", "deep_matter_vault"),
+            Map.entry("matter_recycler", "matter_refinery"),
+            Map.entry("quantum_power_relay", "quantum_relay_station"),
+            Map.entry("transporter", "crashed_ship"),
+            Map.entry("gravitational_stabilizer", "underwater_base"),
+            Map.entry("android_pill_blue", "mad_scientist_house"),
+            Map.entry("android_induction_relay", "android_house"),
+            Map.entry("android_station", "synthetic_manufacturing_plant"),
+            Map.entry("security_door", "android_command_bunker"),
+            Map.entry("fusion_reactor_controller", "fusion_research_complex"),
+            Map.entry("facility_network_controller", "black_site"),
+            Map.entry("drone_fabricator", "autonomous_drone_foundry"),
+            Map.entry("anomaly_containment_unit", "anomaly_quarantine_site"),
+            Map.entry("quantum_linker", "orbital_recovery_array"),
+            Map.entry("data_pad", "cargo_ship"));
+    private static final Map<String, String> ENTITY_ROUTES = Map.ofEntries(
+            Map.entry("mad_scientist", "mad_scientist_house"),
+            Map.entry("defector_android", "android_house"),
+            Map.entry("rogue_android", "android_command_bunker"),
+            Map.entry("ranged_rogue_android", "android_command_bunker"),
+            Map.entry("drone", "autonomous_drone_foundry"),
+            Map.entry("mutant_scientist", "anomaly_quarantine_site"),
+            Map.entry("assimilator", "black_site"),
+            Map.entry("phase_stalker", "orbital_recovery_array"));
+    private static final Map<String, String> BLOCK_ROUTES = Map.ofEntries(
+            Map.entry("matter_excavator", "sand_pit"),
+            Map.entry("matter_storage_matrix", "deep_matter_vault"),
+            Map.entry("matter_recycler", "matter_refinery"),
+            Map.entry("quantum_power_relay", "quantum_relay_station"),
+            Map.entry("transporter", "crashed_ship"),
+            Map.entry("gravitational_stabilizer", "underwater_base"),
+            Map.entry("android_induction_relay", "android_house"),
+            Map.entry("android_station", "synthetic_manufacturing_plant"),
+            Map.entry("security_door", "android_command_bunker"),
+            Map.entry("fusion_reactor_controller", "fusion_research_complex"),
+            Map.entry("facility_network_controller", "black_site"),
+            Map.entry("drone_fabricator", "autonomous_drone_foundry"),
+            Map.entry("anomaly_containment_unit", "anomaly_quarantine_site"),
+            Map.entry("quantum_linker", "orbital_recovery_array"));
+    private static final Map<String, String> ASSIGNMENT_ROUTES = Map.of(
+            "field_scientist", "underwater_base",
+            "systems_engineer", "cargo_ship");
+    private static final Map<String, String> OPERATION_ROUTES = Map.of(
+            "android_relay_outpost", "quantum_relay_station",
+            "abandoned_matter_lab", "matter_refinery",
+            "field_logistics_depot", "cargo_ship",
+            "matter_observatory", "underwater_base",
+            "anomaly_research_site", "anomaly_quarantine_site",
+            "event_horizon", "orbital_recovery_array");
 
     private StructureLoreEvents() {}
 
     @SubscribeEvent
-    public static void playerTick(TickEvent.PlayerTickEvent event) {
+    public static void legacyPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !(event.player instanceof ServerPlayer player)) return;
         if (player.tickCount % 20 != 0) return;
         BlockPos pos = player.blockPosition();
         long cell = BlockPos.asLong(pos.getX() >> 3, pos.getY() >> 3, pos.getZ() >> 3);
         Long previous = LAST_SCANNED_CELL.put(player.getUUID(), cell);
         if (previous != null && previous == cell) return;
-        scan(player);
+        legacyStructureScan(player);
     }
 
     @SubscribeEvent
@@ -52,7 +103,42 @@ public final class StructureLoreEvents {
         LAST_SCANNED_CELL.remove(event.getEntity().getUUID());
     }
 
-    private static void scan(ServerPlayer player) {
+    /**
+     * Authenticates an archive record from a player action. This is the primary
+     * route now that Matter Overdrive-authored structures are not placed in new
+     * worlds; the structure scan below remains only as compatibility for old saves.
+     */
+    public static boolean discoverFromPlayerEvent(ServerPlayer player, String recordId) {
+        if (player == null) return false;
+        return discoverRecord(player, StructureLoreCatalog.byId(recordId));
+    }
+
+    public static boolean discoverFromTechnology(ServerPlayer player, String technologyId) {
+        return discoverFromPlayerEvent(player, TECHNOLOGY_ROUTES.get(technologyId));
+    }
+
+    public static boolean discoverFromEntity(ServerPlayer player, String entityId) {
+        return discoverFromPlayerEvent(player, ENTITY_ROUTES.get(entityId));
+    }
+
+    public static boolean discoverFromBlock(ServerPlayer player, String blockId) {
+        return discoverFromPlayerEvent(player, BLOCK_ROUTES.get(blockId));
+    }
+
+    public static boolean discoverFromAssignment(ServerPlayer player, String contactId) {
+        return discoverFromPlayerEvent(player, ASSIGNMENT_ROUTES.get(contactId));
+    }
+
+    public static boolean discoverFromFieldOperation(ServerPlayer player, String operationTarget) {
+        return discoverFromPlayerEvent(player, OPERATION_ROUTES.get(operationTarget));
+    }
+
+    public static boolean discoverFromAmbientFragment(ServerPlayer player, String siteId) {
+        return discoverFromPlayerEvent(player, siteId);
+    }
+
+    /** Existing generated structures only; new worlds have no placement data for these keys. */
+    private static void legacyStructureScan(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel level)) return;
         BlockPos pos = player.blockPosition();
         boolean anomalyNearby = nearNaturalAnomaly(level, pos);
@@ -68,43 +154,51 @@ public final class StructureLoreEvents {
 
             if (!anomalyNearby) sendStructureHazard(player, record.id());
 
-            StructureLoreSavedData data = StructureLoreSavedData.get(level);
-            int oldMask = data.mask(player.getUUID());
-            if (!data.discover(player.getUUID(), record.mask())) return;
-            int newMask = data.mask(player.getUUID());
-
-            ItemStack dossier = createDossier(record, data.count(player.getUUID()));
-            if (!player.getInventory().add(dossier)) player.drop(dossier, false);
-
-            int count = data.count(player.getUUID());
-            player.sendSystemMessage(Component.literal("RECOVERED RECORD: " + record.title()
-                            + " | Archive " + record.archiveIndex() + "/" + StructureLoreCatalog.RECORD_COUNT
-                            + " | Reconstruction " + count + "/" + StructureLoreCatalog.RECORD_COUNT)
-                    .withStyle(ChatFormatting.AQUA));
-            player.sendSystemMessage(Component.literal(record.timestamp() + " // " + record.chapter())
-                    .withStyle(ChatFormatting.DARK_AQUA));
-
-            ModNetwork.sendFacilityDiscovery(player, record.id(), record.facility(), record.title(),
-                    record.archiveIndex(), record.classification());
-
-            boolean reconstructionUnlocked = announceNewReconstructions(player, oldMask, newMask);
-            if (!reconstructionUnlocked) ModNetwork.sendPdaVoice(player, voiceLineFor(record.id()));
-
-            if (data.complete(player.getUUID())) {
-                player.giveExperiencePoints(500);
-                ItemStack reward = createClosedLoopArtifact();
-                if (!player.getInventory().add(reward)) player.drop(reward, false);
-                player.sendSystemMessage(Component.literal(
-                                "THE OVERDRIVE INCIDENT: archive complete. THE CLOSED LOOP reconstruction is now authenticated.")
-                        .withStyle(ChatFormatting.GOLD));
-                player.sendSystemMessage(Component.literal("Standing instruction retained: DO NOT COMPLETE THE LOOP.")
-                        .withStyle(ChatFormatting.RED));
-                ModNetwork.sendPdaVoice(player, "closed_loop");
-            }
+            discoverRecord(player, record);
             return;
         }
 
         if (!anomalyNearby) ModNetwork.sendEnvironmentalHazard(player, "none", "", "", 0);
+    }
+
+    private static boolean discoverRecord(ServerPlayer player, LoreRecord record) {
+        if (record == null) return false;
+        StructureLoreSavedData data = StructureLoreSavedData.get(player.serverLevel());
+        int oldMask = data.mask(player.getUUID());
+        if (!data.discover(player.getUUID(), record.mask())) return false;
+        int newMask = data.mask(player.getUUID());
+
+        ItemStack dossier = createDossier(record, data.count(player.getUUID()));
+        if (!player.getInventory().add(dossier)) player.drop(dossier, false);
+
+        int count = data.count(player.getUUID());
+        player.sendSystemMessage(Component.literal("RECOVERED RECORD: " + record.title()
+                        + " | Archive " + record.archiveIndex() + "/" + StructureLoreCatalog.RECORD_COUNT
+                        + " | Reconstruction " + count + "/" + StructureLoreCatalog.RECORD_COUNT)
+                .withStyle(ChatFormatting.AQUA));
+        player.sendSystemMessage(Component.literal(record.timestamp() + " // " + record.chapter())
+                .withStyle(ChatFormatting.DARK_AQUA));
+
+        ModNetwork.sendFacilityDiscovery(player, record.id(), record.facility(), record.title(),
+                record.archiveIndex(), record.classification());
+        EnvironmentalStorytellingEvents.observeFromPlayerEvent(player, record.id());
+        FrontierExpeditionEvents.discoverFromPlayerEvent(player, record.id());
+
+        boolean reconstructionUnlocked = announceNewReconstructions(player, oldMask, newMask);
+        if (!reconstructionUnlocked) ModNetwork.sendPdaVoice(player, voiceLineFor(record.id()));
+
+        if (data.complete(player.getUUID())) {
+            player.giveExperiencePoints(500);
+            ItemStack reward = createClosedLoopArtifact();
+            if (!player.getInventory().add(reward)) player.drop(reward, false);
+            player.sendSystemMessage(Component.literal(
+                            "THE OVERDRIVE INCIDENT: archive complete. THE CLOSED LOOP reconstruction is now authenticated.")
+                    .withStyle(ChatFormatting.GOLD));
+            player.sendSystemMessage(Component.literal("Standing instruction retained: DO NOT COMPLETE THE LOOP.")
+                    .withStyle(ChatFormatting.RED));
+            ModNetwork.sendPdaVoice(player, "closed_loop");
+        }
+        return true;
     }
 
     private static void sendStructureHazard(ServerPlayer player, String site) {

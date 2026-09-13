@@ -1,14 +1,14 @@
 # Frontier Expedition System
 
-Status: implemented in source/datapack on `feature/lead-dev-expansion-2026-09-11`; local compile and runtime verification are still required.
+Status: registered compatibility/event system in 0.7; natural MO placement is intentionally disabled while visual/content review is pending. Local compile and runtime verification are still required.
 
 ## Purpose
 
-The Frontier Expedition slice extends Matter Overdrive exploration with a second generation family that is intentionally larger and more dungeon-like than the compact field sites. It is built on native `Structure` / `StructurePiece` generation so Minecraft clips each room to the active chunk rather than synchronously stamping neighbouring chunks.
+The Frontier Expedition slice retains a second-generation family that is intentionally larger and more dungeon-like than the compact field sites. It is built on native `Structure` / `StructurePiece` generation so Minecraft clips each room to the active chunk rather than synchronously stamping neighbouring chunks. The definitions and serializers are dormant in new worlds until their visual/content review is complete.
 
 ## New structure family
 
-Four new facility classes are registered and placed through `worldgen/structure_set/frontier_expeditions.json`.
+Four facility classes are registered as dormant compatibility definitions. No `worldgen/structure_set` resource places them in new worlds.
 
 ### Deep Matter Vault
 
@@ -34,14 +34,14 @@ Damaged rooms can contain breached walls, cracked debris, cobwebs and inert repl
 
 ## Frontier Expedition progression
 
-`FrontierExpeditionEvents` performs a server-authoritative native-structure lookup only when a player enters a new chunk. It asks Minecraft's `StructureManager` whether the player's position is inside one of the four Frontier Expedition structures, so older facilities cannot accidentally satisfy the new expedition and no block-radius scan or chunk forcing is required.
+`FrontierExpeditionEvents` primarily authenticates a site class from existing player-event evidence routed by technology acquisition, archive-fragment inspection, NPC assignments and Field Operations. It retains a bounded native-structure lookup only as a fallback for structures already generated in older saves; no new placement resource can trigger it in a fresh world.
 
-Discoveries are persisted through `FrontierExpeditionSavedData` per player and per structure-start chunk. The ledger separately tracks a four-bit site-class mask so repeated facilities can be logged without duplicating the unique-class milestone.
+Discoveries are persisted through `FrontierExpeditionSavedData` per player using the existing ledger format. The ledger separately tracks a four-bit site-class mask so repeated evidence can be logged without duplicating the unique-class milestone.
 
 Rewards:
 
 - new site class: 40 XP and a `facility_research` dossier tagged with `FrontierArchive` and `FrontierProgress`;
-- additional location of a known class: 15 XP and another location dossier;
+- additional compatible evidence of a known class: 15 XP and another archive dossier;
 - all four unique site classes: 120 bonus XP plus a Parallel Processing Upgrade.
 
 The completion reward is issued only when the unique-site mask transitions to all four classes.
@@ -60,7 +60,7 @@ This turns occupied variants into an actual gameplay objective while leaving pea
 - every block write checks the current chunk clipping box;
 - no structure code force-loads chunks;
 - layout state is serialized with each piece;
-- discovery work is one native `StructureManager` membership query per candidate site class, only after a player crosses into a different chunk;
+- primary discovery work is event-driven; the compatibility fallback performs one native `StructureManager` membership query per candidate site class only after a player crosses into a different chunk;
 - threat-clearance lookups run only when a qualifying hostile actually dies;
 - saved data caps discovery/security keys and rejects oversized state growth;
 - missing Matter Overdrive decorative/machine blocks fall back to vanilla blocks during generation instead of crashing worldgen.
@@ -75,8 +75,8 @@ This turns occupied variants into an actual gameplay objective while leaving pea
 - `src/main/java/matteroverdrive/event/FrontierThreatEvents.java`
 - `src/main/java/matteroverdrive/registry/ModStructures.java`
 - four structure JSONs under `data/matteroverdrive/worldgen/structure/`
-- `data/matteroverdrive/worldgen/structure_set/frontier_expeditions.json`
+- no active Frontier structure-set resource is shipped in 0.7;
 
 ## Verification still required
 
-The connector environment can inspect and commit source but cannot run the local Gradle/Forge client used by the project. Before merging, run `gradlew.bat compileJava --no-daemon`, the repository sanity/resource checks, then the runtime test plan in a new world. Any generated layout that has an unreachable room, terrain-sealed entrance, missing machine, unsafe fall, impossible return path or chunk-border artifact should be treated as a blocking structure bug.
+The connector environment can inspect and commit source but cannot run the local Gradle/Forge client used by the project. Before merging, run `gradlew.bat compileJava --no-daemon`, the repository sanity/resource checks, then test that fresh worlds do not place MO-authored structures and that existing generated content remains compatible. Any retained layout that has an unreachable room, terrain-sealed entrance, missing machine, unsafe fall, impossible return path or chunk-border artifact should be treated as a blocking structure bug before placement is reconsidered.

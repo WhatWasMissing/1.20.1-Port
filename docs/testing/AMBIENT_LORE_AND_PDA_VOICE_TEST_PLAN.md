@@ -1,6 +1,8 @@
 # Ambient Lore and Expanded PDA Voice — Runtime Test Plan
 
-Branch: `feature/lead-dev-expansion-2026-09-11`
+> Release 0.7 note: all ambient fragments remain event-driven PDA content and do not require naturally generated MO structures. Use `docs/testing/TO_TEST.md` for the current deferred runtime checklist; this document retains historical audio/fragment checks.
+
+Branch: `main` / release `0.7`
 
 ## Static gate
 
@@ -10,7 +12,7 @@ Run:
 VALIDATE_ADVANCEMENT_DIALOGUE_QOL.bat
 ```
 
-Expected result: validator reports at least 64 PDA voice lines and exactly 32 optional physical lore records, with voice manifest parity and all ambient IDs present in the ambient loot table.
+Expected result: validator reports the current PDA voice bank and exactly 48 optional physical lore records, with voice manifest parity and all ambient IDs present in the ambient loot table. `python scripts/validate_lore_events.py` must also pass.
 
 ## Data load / build
 
@@ -25,7 +27,7 @@ Verify no advancement, loot-table, item-model or registry data errors occur duri
 
 ## Physical lore item
 
-Use `/loot` or structure exploration to obtain several `recovered_lore_fragment` items.
+Use `/loot` or an older generated compatibility site to obtain several `recovered_lore_fragment` items. New worlds do not naturally place unfinished MO-authored structures.
 
 For each sampled record verify:
 
@@ -41,7 +43,7 @@ Also test a deliberately invalid/no-NBT fragment in Creative. It should report t
 
 ## Chest discovery
 
-Generate fresh structures after installing this build. Old already-generated chests are not expected to retroactively gain new loot.
+Use source loot tables, vanilla structures in a fresh world, or older generated compatibility sites. New worlds are not expected to contain naturally placed unfinished MO-authored structures, and old chests are not expected to retroactively gain new loot.
 
 Verify at least one sample from each category:
 
@@ -82,7 +84,7 @@ Test at small GUI scale/window sizes and confirm the ninth sidebar tab does not 
 
 ## Facility-specific PDA discovery lines
 
-In a fresh test world or with fresh player SavedData, enter representative facilities and verify the first canonical discovery now uses a site-specific line after any immediate hazard warning.
+With fresh player SavedData, use the mapped player-event routes or enter representative older generated facilities and verify the first canonical discovery now uses a site-specific line after any immediate hazard warning.
 
 Test at least:
 
@@ -109,7 +111,7 @@ Authenticate 16 distinct optional records:
 
 - `Field Archivist` should unlock exactly once.
 
-Authenticate all 32:
+Authenticate all 48:
 
 - `Every Scrap Matters` should unlock exactly once;
 - challenge XP reward should apply once;

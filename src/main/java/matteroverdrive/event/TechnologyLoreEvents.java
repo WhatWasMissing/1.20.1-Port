@@ -75,7 +75,9 @@ public final class TechnologyLoreEvents {
         TechnologyLoreCatalog.TechRecord record = TechnologyLoreCatalog.byItemId(itemId);
         if (record == null) return false;
         TechnologyLoreSavedData data = TechnologyLoreSavedData.get(player.serverLevel());
-        if (!data.discover(player.getUUID(), itemId)) return false;
+        boolean firstTechnology = data.discover(player.getUUID(), itemId);
+        boolean firstArchiveRecord = StructureLoreEvents.discoverFromTechnology(player, itemId);
+        if (!firstTechnology) return firstArchiveRecord;
 
         int recovered = data.count(player.getUUID());
         player.sendSystemMessage(Component.literal("PDA // TECHNOLOGY INDEXED: " + record.title())

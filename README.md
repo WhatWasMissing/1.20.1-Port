@@ -32,9 +32,9 @@ The prerecorded PDA bank is optional at runtime. Missing recordings fall back to
 
 ## Current feature set
 
-Matter Overdrive 0.7 consolidates the 0.6 campaign/world-content line with the merged tech overhaul, dual-resource Energy Bank, expanded hostile/village population, deterministic loot relics, Frontier Expedition sites, PDA/GuideME audit coverage and the complete native Destiny GunPack weapon set.
+Matter Overdrive 0.7 consolidates the 0.6 campaign/world-content line with the merged tech overhaul, dual-resource Energy Bank, expanded hostile/village population, deterministic loot relics, dormant Frontier archive definitions, player-event lore routing, PDA/GuideME audit coverage and the complete native Destiny GunPack weapon set.
 
-For the current post-Star-Map source inventory, including the newer PDA/lore/dialogue/structure/voice systems, see **[Current Feature Inventory — 2026-09-11](docs/reference/CURRENT_FEATURES_2026-09-11.md)**.
+For the current post-Star-Map source inventory, including the newer PDA/lore/dialogue/structure/voice systems, see **[Working Features — 0.7](docs/reference/WORKING_FEATURES.md)**. The dated 0.6 inventory is retained as historical context.
 
 ### Matter economy and diagnostics
 
@@ -98,7 +98,7 @@ For the current post-Star-Map source inventory, including the newer PDA/lore/dia
 
 - Energy Bank dual FE/Matter storage fed by reactor IO and exposed to compatible FE/Matter networks.
 - Quantum Flux Reactor, Environmental Regulator, Wall Terminal, reactor/decorative blocks and hybrid FE+Matter conduit routing.
-- Frontier Expedition sites: Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array.
+- Frontier Expedition archive definitions: Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array; unfinished MO-authored sites are not naturally placed in new worlds.
 - Natural hostile spawning for Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers.
 - Village-associated Field Scientists, Systems Engineers and Mad Scientists with PDA contacts and existing contract flow.
 - Matter Overdrive supplies injected into selected vanilla structure loot while preserving vanilla pools, plus seven deterministic Legendary Relic sources and themed facility relic pools.
@@ -112,7 +112,7 @@ For the current post-Star-Map source inventory, including the newer PDA/lore/dia
 - Legacy contract and conversation support.
 - Active quest tracker HUD for current contracts and special quest states.
 - Transporter and bound Transport Flash Drives.
-- Survival/world-structure feasibility work consolidated into the release baseline, including the forward structure/campaign branch history.
+- Survival/world-structure compatibility work consolidated into the release baseline, including dormant structure serializers, vanilla loot integration and player-event lore in place of unfinished MO-authored natural generation.
 
 ### Materials and equipment
 

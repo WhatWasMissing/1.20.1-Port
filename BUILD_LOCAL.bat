@@ -28,6 +28,28 @@ if not %errorlevel%==0 (
     exit /b 1
 )
 
+if exist "scripts\validate_structure_expansion.py" (
+    echo.
+    echo Running dormant-structure placement validation...
+    %PYTHON_CMD% scripts\validate_structure_expansion.py
+    if not %errorlevel%==0 (
+        echo.
+        echo Build stopped because the structure placement gate failed.
+        exit /b 1
+    )
+)
+
+if exist "scripts\validate_lore_events.py" (
+    echo.
+    echo Running player-event lore validation...
+    %PYTHON_CMD% scripts\validate_lore_events.py
+    if not %errorlevel%==0 (
+        echo.
+        echo Build stopped because the lore event gate failed.
+        exit /b 1
+    )
+)
+
 if exist "scripts\validate_tech_overhaul.py" (
     echo.
     echo Running tech-overhaul packaging validation...

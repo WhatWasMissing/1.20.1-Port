@@ -78,28 +78,22 @@ for name in FRONTIER_SITES:
     require(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
     parse_json(ROOT / f"src/main/resources/data/matteroverdrive/worldgen/structure/{name}.json")
 
-# The six core facilities use direct native generation. The Frontier Expedition set is
-# intentionally retained as the placement contract for the four newer frontier sites.
+# All Matter Overdrive-authored structure definitions are dormant by policy. The
+# registered definitions and pieces remain for compatibility with existing saves and
+# future player-authored/event-authored encounters, but no new-world placement route
+# may ship until the structures pass a dedicated visual/content review.
 structure_set_dir = ROOT / "src/main/resources/data/matteroverdrive/worldgen/structure_set"
 if structure_set_dir.is_dir():
     shipped_sets = sorted(structure_set_dir.glob("*.json"))
-    unexpected_sets = [path for path in shipped_sets if path.name != "frontier_expeditions.json"]
-    if unexpected_sets:
+    if shipped_sets:
         errors.append(
-            "retired Matter Overdrive structure_set resources are active: "
-            + ", ".join(str(path.relative_to(ROOT)) for path in unexpected_sets)
+            "Matter Overdrive structure_set resources must be dormant: "
+            + ", ".join(str(path.relative_to(ROOT)) for path in shipped_sets)
         )
-    frontier_set = structure_set_dir / "frontier_expeditions.json"
-    if frontier_set.exists():
-        frontier = parse_json(frontier_set)
-        names = {
-            entry.get("structure", "").split(":", 1)[-1]
-            for entry in frontier.get("structures", [])
-            if isinstance(entry, dict)
-        } if isinstance(frontier, dict) else set()
-        for name in FRONTIER_SITES:
-            if name not in names:
-                errors.append(f"frontier expedition structure_set is missing {name}")
+
+technology_sites = ROOT / "src/main/resources/data/matteroverdrive/forge/biome_modifier/technology_sites.json"
+if technology_sites.exists():
+    errors.append("technology_sites biome modifier must be absent while MO-authored sites are dormant")
 
 if PIECE.is_file():
     text = PIECE.read_text(encoding="utf-8")
@@ -277,7 +271,7 @@ print(f"  native facilities: {len(FACILITIES)}")
 print(f"  primary reusable piece types checked: {len(REQUIRED_PIECES)}")
 print(f"  infrastructure piece kinds checked: {len(INFRA_KINDS)}")
 print(f"  reusable industrial blocks checked: {len(INDUSTRIAL_BLOCKS)}")
-print("  native structure JSON: parseable; no active structure_set JSON")
+print("  native structure JSON: parseable; all MO-authored placement routes dormant")
 print("  facility loot: 7 tables, registered items, six matching research archives")
 print("  restoration/security hooks and stacked-door redstone state: present")
 print("  topology regression guards and visual layout lab: present")

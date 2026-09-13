@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Static audit of every active Matter Overdrive world structure.
+"""Static audit of every retained Matter Overdrive world structure.
 
 This is intentionally independent of Forge: it checks the data-pack contract,
-registration coverage, rarity spacing, terrain tags and the Java implementation
-families. It does not claim to replace an in-game fresh-chunk test.
+registration coverage, terrain tags and the Java implementation families. In 0.7
+the authored structures are dormant compatibility definitions, not active
+fresh-world placement. It does not claim to replace an in-game test.
 """
 from __future__ import annotations
 
@@ -37,7 +38,6 @@ def main() -> int:
     discovery = read(JAVA / "world/TechnologySiteDiscoverySavedData.java")
     contracts = read(JAVA / "event/ContractEvents.java")
     datapad = read(JAVA / "item/DataPadItem.java")
-    modifier = load(ROOT / "src/main/resources/data/matteroverdrive/forge/biome_modifier/technology_sites.json")
     facility_piece = read(JAVA / "worldgen/TechnologyFacilityStructurePiece.java")
     modern_facility = read(JAVA / "worldgen/TechnologyFacilityStructure.java")
     metadata_markers = ("record RoomMetadata", "metadata(Room room)", "MORole", "MORequired", "MOConnectorAxis")
@@ -46,50 +46,17 @@ def main() -> int:
     if not metadata_contract["serialized"]:
         errors.append("native facilities: room/connector metadata contract is not serialized")
 
-    frontier_set_path = DATA / "structure_set" / "frontier_expeditions.json"
-    frontier_set = load(frontier_set_path) if frontier_set_path.is_file() else None
-    frontier_ids = {
-        entry.get("structure", "").removeprefix("matteroverdrive:")
-        for entry in (frontier_set or {}).get("structures", [])
-    }
-    modern_facility_ids = {
-        "synthetic_manufacturing_plant", "matter_refinery", "quantum_relay_station",
-        "android_command_bunker", "fusion_research_complex", "black_site",
-    }
-    legacy_ids = {"crashed_ship", "cargo_ship", "underwater_base", "mad_scientist_house", "android_house", "sand_pit"}
-
     for path in structures:
         name = path.stem
         data = load(path)
-        set_path = DATA / "structure_set" / path.name
-        if set_path.is_file():
-            structure_set = load(set_path)
-        elif name in frontier_ids and frontier_set is not None:
-            # Frontier sites intentionally share one weighted random-spread set.
-            structure_set = frontier_set
-        elif name in modern_facility_ids and "findGenerationPoint" in modern_facility:
-            # Modern facilities are assembled by their registered native Structure
-            # implementation instead of one legacy structure_set per facility.
-            structure_set = None
-        elif name in legacy_ids and "LegacyParityStructureFeature" in legacy:
-            # Legacy parity structures remain available through the compatibility
-            # feature and do not require per-site random-spread definitions.
-            structure_set = None
-        else:
-            errors.append(f"{name}: missing matching structure_set or active native generation contract")
-            continue
+        # Every MO-authored structure is intentionally dormant. Definitions and
+        # serializers are still audited for save compatibility, but placement is
+        # supplied by neither structure_set nor biome-modifier resources.
+        structure_set = None
         if data.get("biomes") not in ("#minecraft:is_overworld", "#minecraft:is_ocean"):
             errors.append(f"{name}: unsupported biome tag {data.get('biomes')!r}")
         if data.get("step") not in ("surface_structures", "underground_structures"):
             errors.append(f"{name}: invalid generation step {data.get('step')!r}")
-        placement = structure_set.get("placement", {}) if structure_set is not None else {}
-        if structure_set is not None:
-            spacing = placement.get("spacing", 0)
-            separation = placement.get("separation", -1)
-            if not isinstance(spacing, int) or spacing <= 0:
-                errors.append(f"{name}: invalid spacing")
-            if not isinstance(separation, int) or separation < 0 or separation >= spacing:
-                errors.append(f"{name}: separation must be non-negative and less than spacing")
         if data.get("biomes") == "#minecraft:is_ocean" and data.get("step") != "surface_structures":
             errors.append(f"{name}: ocean site is not a surface structure")
         if name in {"android_command_bunker", "black_site"} and data.get("step") != "underground_structures":
@@ -97,10 +64,9 @@ def main() -> int:
         if not re.search(r'(?:register|type|facilityType|frontierType)\("' + re.escape(name) + r'"', registered):
             errors.append(f"{name}: missing native registration")
         records.append({"id": name, "biomes": data.get("biomes"), "step": data.get("step"),
-                        "spacing": placement.get("spacing") if structure_set is not None else None,
-                        "separation": placement.get("separation") if structure_set is not None else None,
-                        "generation_contract": "shared_structure_set" if structure_set is not None
-                        else ("modern_native_structure" if name in modern_facility_ids else "legacy_compatibility_feature")})
+                        "spacing": None,
+                        "separation": None,
+                        "generation_contract": "dormant_compatibility_definition"})
 
     compact = {"abandoned_matter_lab", "android_relay_outpost", "anomaly_research_site", "matter_observatory", "field_logistics_depot"}
     for name in compact:
@@ -110,8 +76,6 @@ def main() -> int:
             errors.append(f"{name}: missing configured feature")
         if not (DATA / "placed_feature" / f"{name}.json").is_file():
             errors.append(f"{name}: missing placed feature")
-        if f"matteroverdrive:{name}" not in modifier.get("features", []):
-            errors.append(f"{name}: absent from technology site biome modifier")
     for marker in ("MATTER_OBSERVATORY", "FIELD_LOGISTICS_DEPOT", "suitableSite"):
         if marker not in sites:
             errors.append(f"compact sites: missing implementation marker {marker}")
@@ -164,7 +128,7 @@ def main() -> int:
               "errors": errors, "warnings": warnings}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-    print(f"STRUCTURE AUDIT {'PASSED' if not errors else 'FAILED'}: {len(records)} native structures; {len(compact)} compact systems")
+    print(f"STRUCTURE AUDIT {'PASSED' if not errors else 'FAILED'}: {len(records)} dormant structures; {len(compact)} dormant compact systems")
     for issue in errors + warnings:
         print(f"  - {issue}")
     print(f"  report: {OUT.relative_to(ROOT)}")

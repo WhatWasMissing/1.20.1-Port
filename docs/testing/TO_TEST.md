@@ -20,6 +20,7 @@ Or run the static gates individually:
 ```text
 python scripts/facility_layout_lab.py --check-only
 python scripts/validate_structure_expansion.py
+python scripts/validate_lore_events.py
 python scripts/validate_port_consistency.py
 python scripts/validate_android_consistency.py
 python scripts/validate_weapon_consistency.py
@@ -29,14 +30,14 @@ python scripts/validate_weapon_renderer_consistency.py
 
 Attach `build/reports/m2-port-consistency.md` when reporting static-audit warnings.
 
-## Highest priority: facility QA v2
+## Highest priority: structure placement policy and lore events
 
-Use a fresh world or unexplored chunks.
+Use a fresh world for the placement-policy check, and an existing world containing previously generated MO content for compatibility checks.
 
 - [ ] Layout lab reports all **18** technology-facility layouts reachable.
-- [ ] Generate/locate all six facility families without world creation or exploration hangs.
-- [ ] Cross chunk boundaries while each site generates; neighbouring chunks complete normally.
-- [ ] Save/reload beside every family with no missing-piece/deserialization errors.
+- [ ] Confirm a fresh world does **not** naturally place MO-authored structures, Frontier sites or compact technology sites.
+- [ ] Confirm vanilla structures still generate normally and retain injected Matter Overdrive loot/relic behavior.
+- [ ] In an existing save, load previously generated MO content with no missing-piece/deserialization errors.
 - [ ] Android Bunker layout 1: reach the west second Android Bay through the new Z connector.
 - [ ] Android Bunker layout 2: reach the east second Android Bay through the mirrored connector.
 - [ ] Relay/Fusion recovery terminals remain reachable before secure access is restored.
@@ -47,13 +48,10 @@ Use a fresh world or unexplored chunks.
 
 ## Terrain / exterior integration
 
-- [ ] Surface-facility entrance aprons meet ordinary flat/sloped terrain naturally.
-- [ ] Short support piers fill local drop-offs without producing giant pillars into caves/ravines.
-- [ ] Salvage yards in layouts 1/2 no longer visibly float over small depressions.
-- [ ] Relay mast plinths support the elevated mast bases without blocking circulation.
-- [ ] Bunker and Fusion approach support does not bury or obstruct the existing exterior stairs.
-- [ ] Black Site hatch crown is visible at terrain level but remains subtler than a surface facility.
-- [ ] New terrain pieces never overwrite bedrock or unrelated terrain outside their own footprint.
+- [ ] Existing generated surface-facility entrance aprons meet ordinary flat/sloped terrain naturally.
+- [ ] Existing generated salvage yards and relay mast plinths do not float or block circulation.
+- [ ] Existing generated bunker/Fusion approach support does not bury or obstruct exterior stairs.
+- [ ] Existing generated terrain pieces never overwrite bedrock or unrelated terrain outside their own footprint.
 
 ## Facility restoration / rewards / security
 
@@ -64,8 +62,10 @@ Use a fresh world or unexplored chunks.
 - [ ] Facility-specific Android names/stats/reserves match the intended family.
 - [ ] Restoring a facility stands down unused generated reserve without deleting already deployed defenders.
 - [ ] Player-built Android Spawners retain normal FE/squad behavior.
-- [ ] Frontier Expedition sites (Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array) generate from the registered frontier structure set and retain readable routes, salvage and discovery state.
-- [ ] Frontier site caches resolve their nested salvage/ambient-lore loot tables without replacing the surrounding facility loot.
+- [ ] Frontier archive records (Deep Matter Vault, Autonomous Drone Foundry, Anomaly Quarantine Site and Orbital Recovery Array) unlock from player-event evidence and retain their existing per-player ledger/reward state.
+- [ ] Existing generated Frontier-site caches resolve their nested salvage/ambient-lore loot tables without replacing surrounding facility loot.
+- [ ] Crafting/acquiring mapped technology, mining mapped blocks, defeating mapped hostiles, receiving an NPC assignment and completing a Field Operation each authenticate the corresponding PDA archive record.
+- [ ] Using every recovered-lore fragment displays its catalogued text, persists its ambient-lore record and links the fragment's site to the PDA archive.
 - [ ] In fresh vanilla structures, verify selected chest types receive Matter Overdrive supplies without replacing their vanilla loot.
 - [ ] Verify the seven rare vanilla Legendary Relic sources: Stronghold Library=Overclocked Relay, Jungle Temple=Swarm Beacon, Bastion Treasure=Aegis Prism, Woodland Mansion=Hunter Lens, Buried Treasure=Nanite Crown, End City=Capacitor Heart and Ancient City=Phase Anchor.
 - [ ] Main facility caches have a rare themed Legendary Relic pool: Manufacturing=Overclocked Relay, Bunker=Swarm Beacon/Aegis Prism, Black Site=Hunter Lens, Refinery=Nanite Crown, Relay=Capacitor Heart and Fusion=Phase Anchor.
@@ -151,8 +151,8 @@ Use a fresh world or unexplored chunks.
 
 ## Legacy/world-content regression
 
-- [ ] Legacy native structures still generate in new chunks: crashed ship, cargo ship, underwater base, Mad Scientist house, Android house and Sand Pit.
-- [ ] Compact abandoned lab / Android relay / anomaly research features remain small and do not reproduce historical wide-Feature stalls.
+- [ ] Existing generated legacy structures still load in old chunks: crashed ship, cargo ship, underwater base, Mad Scientist house, Android house and Sand Pit.
+- [ ] New chunks do not place legacy structures, compact sites or Frontier structures through Matter Overdrive resources.
 - [ ] Natural gravitational anomalies generate conservatively and persist.
 - [ ] Structure occupants do not duplicate on reload or count incorrectly toward player spawner ownership caps.
 - [ ] Underwater-base interiors remain dry.
@@ -163,4 +163,5 @@ Use a fresh world or unexplored chunks.
 - [ ] GuideME index opens every active system page and local links resolve.
 - [ ] Current Features and in-game testing documentation identify the 0.7 line accurately.
 - [ ] No active registered content shows missing-model purple/black textures.
+- [ ] Every 16-record structure-lore and ambient-lore event route is reachable without generated MO structures.
 - [ ] No current guide, registry or worldgen path restores the retired Star Map.

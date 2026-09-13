@@ -1,5 +1,6 @@
 package matteroverdrive.quest;
 
+import matteroverdrive.event.StructureLoreEvents;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.progression.PlayerDiscoveryLog;
@@ -47,6 +48,7 @@ public final class NpcAssignmentFlow {
             player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
             PlayerDiscoveryLog.record(player, "assignment:" + contactId + ":" + assignmentId,
                     "ASSIGNMENT // " + speaker + " issued " + ContractItem.title(assignment) + ".");
+            StructureLoreEvents.discoverFromAssignment(player, contactId);
 
             java.util.ArrayList<String> lines = new java.util.ArrayList<>(briefing);
             lines.add(ContractItem.title(assignment));

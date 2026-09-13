@@ -1,23 +1,25 @@
 # Exploration-Native Structure Architecture — 2026-09-11
 
 ## Goal
-All generated Matter Overdrive structures are now exploration/dungeon content rather than a source of free fully-functional machinery.
+The retained Matter Overdrive structure definitions are designed as exploration/dungeon content rather than a source of free fully-functional machinery. They are dormant in 0.7 while visual/content quality is reviewed.
 
-New-world structures follow:
+If placement is approved in a later release, new-world structures should follow:
 
 `terrain -> readable entrance -> critical path -> guarded focal reward -> optional story/salvage rooms -> return route`
 
 No intended playthrough requires mining, pillaring, flight, or placing blocks.
 
-## Active generators
+## Retained definitions
 - Legacy six: `LegacyVanillaStructurePiece`
 - Modern six: `ModernExplorationStructurePiece`
 - Frontier four: `FrontierExplorationStructurePiece`
 
+No Matter Overdrive `structure_set` or structure biome modifier places these definitions in new worlds in 0.7. The piece serializers remain registered for existing-save compatibility and future review.
+
 The previous piece serializers remain registered so old worlds can still deserialize already-generated structures.
 
 ## Reward policy
-Active exploration generators may place:
+If reactivated after review, exploration generators may place:
 - seeded Tritanium loot caches;
 - finite facility-security Android spawners guarding focal rewards;
 - vanilla/decorative industrial wreckage;
@@ -25,13 +27,13 @@ Active exploration generators may place:
 
 They must not directly place functioning Matter Overdrive production/network/reactor machines.
 
-`StructureExplorationSanitizer` remains as an old-world/fallback safety net. It is no longer the primary design mechanism for new structures.
+`StructureExplorationSanitizer` remains as an old-world/fallback safety net. It is not an active new-world placement mechanism in 0.7.
 
 ## Legacy sites
 Crashed Ship, Cargo Ship, Underwater Base, Mad Scientist Lab, Android Safehouse and Excavation Site use exploration-native layouts. A dedicated `LegacyTraversalRepairPiece` is authored after the Mad Scientist shell so the basement stair cannot be erased by room generation.
 
 ## Modern facilities
-Synthetic Manufacturing Plant, Matter Refinery, Quantum Relay Station, Android Command Bunker, Fusion Research Complex and Black Site now generate from `ModernExplorationStructurePiece`.
+Synthetic Manufacturing Plant, Matter Refinery, Quantum Relay Station, Android Command Bunker, Fusion Research Complex and Black Site retain their `ModernExplorationStructurePiece` definitions for compatibility and future review. They do not generate in new worlds in 0.7.
 
 The old `TechnologyFacilityStructurePiece`, infrastructure and terrain piece types remain registered for save compatibility but are not assembled into new structure starts.
 

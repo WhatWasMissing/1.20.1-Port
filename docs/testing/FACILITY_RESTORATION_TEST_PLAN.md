@@ -1,20 +1,22 @@
 # Facility Restoration / Infrastructure Runtime Test Plan
 
-Use a **fresh test world or unexplored chunks** on `testing/tech-overhaul`. Existing facilities are not retrofitted.
+Use `docs/testing/TO_TEST.md` as the release checklist. For this deferred plan, use a fresh world only to confirm that MO-authored placement is absent, then use a copy of an older save containing already-generated facilities for compatibility checks. Existing facilities are not retrofitted.
 
 Before launching Minecraft, run:
 
 ```text
 python scripts/facility_layout_lab.py --check-only
 python scripts/validate_structure_expansion.py
+python scripts/validate_lore_events.py
 ```
 
 Both must pass. The layout lab should report **18 layouts**.
 
-## 1. Worldgen safety
+## 1. Placement policy and compatibility safety
 
-- Generate/locate all six native technology facility families.
-- Cross chunk borders repeatedly while the site generates. World creation and exploration must not hang.
+- Confirm a fresh world does **not** naturally place the six native facility families, compact sites or Frontier sites.
+- Confirm vanilla structures and natural Gravitational Anomalies remain available.
+- In a copy of an older save, load each previously generated facility across chunk borders. World loading and exploration must not hang.
 - Save/reload while standing in each facility. No missing-piece or structure deserialization error should appear.
 - Confirm service spines, gates, ladders, exterior approaches and the Black Site vault stair do not write outside their owning structure pieces into unrelated terrain.
 - Repeat at least one facility with its structure start close to a chunk corner.
@@ -136,5 +138,5 @@ After functional traversal passes, inspect at least one example of every family 
 - Re-run generated facility loot/dossier tests from `STRUCTURE_EXPANSION_TEST_PLAN.md`.
 - Verify generated crate loot still resolves once and never refills.
 - Verify finite security reserve persistence and Peaceful suppression.
-- Verify the six legacy structure families and compact anomaly Features still generate.
+- Verify the six legacy structure families remain loadable in older generated saves; no new-world MO placement is expected.
 - Confirm the retired Star Map has not returned to active registration, guides or worldgen.

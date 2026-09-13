@@ -1,7 +1,7 @@
-# Matter Overdrive Alpha Version 3 - Complete System Guide
+# Matter Overdrive 0.7 - Complete System Guide
 
 Made by MVQ1303
-Branch: testing/main
+Branch: main
 
 This guide explains the current playable systems in the 1.20.1 port. Use the index to jump to a system. The guide remembers the last page you had open.
 
@@ -44,11 +44,11 @@ Status: PLAYABLE / TESTING world content.
 ## Simplified
 - Mine Tritanium and Dilithium.
 - Build basic FE and matter machines.
-- Explore fresh chunks for Matter Overdrive structures and natural anomalies.
-- Salvage crates and fight structure defenders for faster progression.
+- Explore fresh chunks for natural anomalies and vanilla structures carrying Matter Overdrive loot.
+- Use player-event discoveries, village contacts and recovered evidence for Matter Overdrive progression.
 
 ## Detailed
-Tritanium and Dilithium remain the core machine/material progression. Fresh chunks can contain crashed ships, cargo ships, underwater bases, Mad Scientist houses, Android Houses and Sand Pits. These structures contain persisted Tritanium Crate salvage and persistent inhabitants such as Rogue Androids, Ranged Rogue Androids, Drones, Mad Scientists and Failed animals.
+Tritanium and Dilithium remain the core machine/material progression. Matter Overdrive-authored structure definitions are dormant in 0.7 because their unfinished visual/content pass is not ready for natural generation. Their serializers and existing-save hooks remain available for compatibility; new players progress through technology acquisition, combat, mining, village contacts, Field Operations, recovered lore fragments and Matter Overdrive loot injected into vanilla structures.
 
 Natural Gravitational Anomalies can generate in fresh Overworld chunks at the conservative 1.7-style candidate frequency of roughly 1/200 chunks. Their starting mass is 2,048-10,240 and they immediately use the same pull/event-horizon/mass-growth backend as reactor anomalies.
 
@@ -188,9 +188,9 @@ Status: PLAYABLE.
 Claim/Access/Remove protocols enforce ownership/access. Tritanium Wrench dismantling is security-aware and returns supported state/contents rather than bypassing claims.
 
 # 23. Restored structures and salvage
-Status: TESTING exploration content.
+Status: TESTING compatibility content; dormant in new-world generation.
 
-Crashed Ship: salvage plus mixed Rogue Android defenders. Cargo Ship: larger salvage, multiple Android defenders and possible hostile Drone. Underwater Base: salvage plus hostile occupants. Mad Scientist House: circuitry/machine salvage, Mad Scientist and possible Failed animal. Android House: Android/battery/network salvage plus defenders. Sand Pit: lower-tier tritanium/matter salvage with Android guardian and possible Drone.
+Crashed Ship, Cargo Ship, Underwater Base, Mad Scientist House, Android House and Sand Pit retain their salvage, population and restoration hooks for already-generated content. They are not selected in new chunks. New-world hostile entities, vanilla loot, village contacts and PDA player-event lore provide the active exploration/progression routes.
 
 # 24. Troubleshooting routes
 

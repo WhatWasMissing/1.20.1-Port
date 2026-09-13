@@ -1,6 +1,6 @@
 # Matter Overdrive Structure Expansion
 
-This branch now contains a second-generation structure system built around the port's expanded technology rather than only legacy parity.
+This branch retains a second-generation structure system built around the port's expanded technology rather than only legacy parity. In 0.7 the definitions, pieces, loot and restoration hooks are source-validated but intentionally dormant: unfinished Matter Overdrive-authored structures are not naturally placed in new worlds. Their story content is routed through player events until a later visual/content review approves placement.
 
 ## Compact field-site family
 
@@ -13,11 +13,11 @@ A damaged synthetic communications and charging post using the Android Induction
 ### Anomaly Research Site
 A hardened observation/containment site using the Facility Network Controller and Holographic Status Panel with containment-themed hardware.
 
-These remain intentionally compact procedural Features.
+These remain intentionally compact procedural Feature definitions for compatibility and future reviewed encounters. Their biome placement modifier is disabled in 0.7.
 
 ## Native multi-chunk facility family
 
-Large facilities use Minecraft's native `Structure` / `StructurePiece` system rather than wide synchronous Feature stamping. Each room, corridor, gantry, tower or shaft is an independent piece and writes only inside the chunk-local `BoundingBox` supplied to `postProcess`.
+Large facilities use Minecraft's native `Structure` / `StructurePiece` system rather than wide synchronous Feature stamping. Each room, corridor, gantry, tower or shaft is an independent piece and writes only inside the chunk-local `BoundingBox` supplied to `postProcess`. Their structure definitions are dormant in 0.7; this implementation remains for existing-save compatibility, source validation and future event-authored encounters.
 
 Implemented facilities:
 
@@ -145,9 +145,9 @@ The current legacy refresh includes:
 - Underwater Base given radial illuminated circulation, hull ribs and more current Matter-network hardware.
 - Sand Pit reframed as a buried industrial excavation with exposed tritanium deck, gantries, lighting and excavator hardware.
 
-## Generated rewards and research (9 September pass)
+## Compatibility rewards and research (9 September pass)
 
-All six native facility families now seed real Tritanium crate rewards. Seven data-pack loot tables under `loot_tables/chests/facilities/` cover the six families plus low-value exterior salvage. Generation stores the table id and a world-seed/position-derived seed in the crate; table evaluation waits for server inventory access, automation access, opening, or the existing crate-item drop path. Pending metadata survives save/reload and a resolved cache is not refilled by opening it again. Player-crafted crates remain ordinary storage.
+All six native facility families retain real Tritanium crate rewards for existing generated content. Seven data-pack loot tables under `loot_tables/chests/facilities/` cover the six families plus low-value exterior salvage. Existing generated caches preserve table ids, deterministic seeds and one-time resolution across save/reload. New-world MO placement is disabled; player-crafted crates remain ordinary storage.
 
 | Facility | Cache locations | Loot focus | First dossier reward |
 | --- | --- | --- | --- |
@@ -162,7 +162,7 @@ Every main cache contains its family research dossier. Use the dossier to record
 
 ## Finite security encounters
 
-Generated Android Spawners are explicitly configured as facility security. They activate within 16 blocks of a non-creative, non-spectator player, release at most one Android per 200 ticks, and spend a finite persisted reserve without needing an external FE supply. Peaceful suppresses deployment without consuming the reserve. A failed spawn retries after the normal interval without spending a charge. Spawning checks loaded candidate chunks and collision before insertion. Surviving defenders persist and guard their station.
+Existing generated Android Spawners are explicitly configured as facility security. They activate within 16 blocks of a non-creative, non-spectator player, release at most one Android per 200 ticks, and spend a finite persisted reserve without needing an external FE supply. Peaceful suppresses deployment without consuming the reserve. A failed spawn retries after the normal interval without spending a charge. Spawning checks loaded candidate chunks and collision before insertion. Surviving defenders persist and guard their station. No new-world MO structure is required for the natural hostile-spawn system.
 
 | Facility | Security rooms | Reserve per station | Ranged chance |
 | --- | --- | --- | --- |
@@ -204,7 +204,7 @@ Run the lightweight source gate before a local Minecraft build:
 python scripts/validate_structure_expansion.py
 ```
 
-It verifies the six native structure JSON definitions, asserts that no retired Matter Overdrive `structure_set` resources are shipped, checks modern reusable piece types, stable layout-variant wiring, chunk-local clipping guard, referenced Matter Overdrive block ids and retired-system exclusion.
+It verifies all native structure JSON definitions as dormant compatibility resources, asserts that no Matter Overdrive `structure_set` or structure biome-modifier resources are shipped, checks modern reusable piece types, stable layout-variant wiring, chunk-local clipping guard, referenced Matter Overdrive block ids and retired-system exclusion. The companion `python scripts/validate_lore_events.py` gate proves the 16-record archive and ambient lore are reachable through player events.
 
 The full tech-overhaul static gate remains:
 
@@ -214,23 +214,17 @@ python scripts/validate_tech_overhaul.py
 
 A normal local Gradle build and in-game generation test are still required before release because static validation cannot prove Mojang/Forge runtime API behaviour.
 
-## Current compact-site rarity
+## Current compact-site placement policy
 
-- Android Relay Outpost: approximately 1 placement attempt per 260 eligible chunks.
-- Abandoned Matter Laboratory: approximately 1 per 320 eligible chunks.
-- Anomaly Research Site: approximately 1 per 420 eligible chunks.
+No compact-site placement attempts are active in 0.7. The definitions remain available for compatibility and are represented in player-event/Field Operation routes.
 
-All three target Overworld biomes and run in the surface-structures generation step.
+## Current large-facility placement policy
 
-## Current large-facility rarity intent
-
-Large facilities are intentionally much rarer than compact field sites. The Black Site is the rarest and is intended to function as an endgame exploration discovery rather than routine world clutter.
-
-Exact spacing/separation should be tuned during the upcoming large playtest rather than aggressively regression-tested during this development pass.
+No large-facility placement attempts are active in 0.7. The Black Site and other facilities remain dormant until their visual/content pass is complete.
 
 ## Next structure work
 
-- extend recovered research into richer optional objectives after this discovery/reward pass;
+- extend event-driven recovered research into richer optional objectives after this discovery/reward pass;
 - add more exterior silhouette variants after visual feedback;
 - add dedicated railings, cable trays, wall light strips, blast doors and hazard-marking blocks if visual testing shows the existing decorative palette is insufficient;
 - tune finite encounter budgets and equipment rewards from survival feedback;

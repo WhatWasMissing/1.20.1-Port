@@ -1,5 +1,7 @@
 # Matter Overdrive 1.20.1 — Current Feature Inventory
 
+> Historical 0.6 inventory. The active 0.7 feature reference is [`WORKING_FEATURES.md`](WORKING_FEATURES.md), mirrored in the GuideME Current Features page.
+
 Date: 2026-09-11  
 Branch: `main`  
 Release line: `0.6`  
