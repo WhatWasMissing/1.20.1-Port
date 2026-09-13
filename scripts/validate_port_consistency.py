@@ -452,6 +452,9 @@ def check_native_destiny_assets() -> None:
     sounds = json_file(ASSETS / "sounds.json")
     sound_ids = re.findall(
         r'\bregister\("([^"\\]+)"\)', read(ROOT / "src/main/java/matteroverdrive/registry/ModDestinySounds.java"))
+    if len(sound_ids) != len(set(sound_ids)):
+        duplicates = sorted({sound_id for sound_id in sound_ids if sound_ids.count(sound_id) > 1})
+        add("error", "destiny-audio", f"duplicate native Destiny sound registrations: {', '.join(duplicates)}")
     if not isinstance(sounds, dict):
         return
     for sound_id in sound_ids:

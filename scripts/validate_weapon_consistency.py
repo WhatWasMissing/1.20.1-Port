@@ -13,8 +13,20 @@ FILES = {
     "client": ROOT / "src/main/java/matteroverdrive/client/WeaponClientEffects.java",
     "native_renderer": ROOT / "src/main/java/matteroverdrive/client/NativeDestinyWeaponRenderer.java",
     "native_library": ROOT / "src/main/java/matteroverdrive/client/NativeDestinyVisualLibrary.java",
+    "native_item": ROOT / "src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponItem.java",
     "destiny_profile": ROOT / "src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponProfile.java",
     "destiny_sounds": ROOT / "src/main/java/matteroverdrive/registry/ModDestinySounds.java",
+}
+ACTUAL_DESTINY_AUDIO = {
+    "ace_fire.ogg", "ace_fire_3p.ogg", "ace_reload.ogg",
+    "hawkmoon_draw.ogg", "hawkmoon_fire.ogg", "hawkmoon_fire_3p.ogg", "hawkmoon_reload.ogg",
+    "khvostov_draw.ogg", "khvostov_fire.ogg", "khvostov_fire_3p.ogg", "khvostov_reload.ogg",
+    "last_word_draw.ogg", "last_word_fire.ogg", "last_word_fire_3p.ogg", "last_word_reload.ogg",
+    "mida_multi_draw.ogg", "mida_multi_fire.ogg", "mida_multi_fire_3p.ogg", "mida_multi_reload.ogg",
+    "montecarlo_fire.ogg", "montecarlo_fire_3p.ogg", "montecarlo_reload.ogg",
+    "sim_draw.ogg", "sim_fire.ogg", "sim_fire_3p.ogg", "sim_reload.ogg",
+    "s_regime_fire.ogg", "s_regime_fire_3p.ogg", "s_regime_reload.ogg",
+    "thorn_draw.ogg", "thorn_fire.ogg", "thorn_fire_3p.ogg", "thorn_reload.ogg",
 }
 errors = []
 
@@ -40,6 +52,7 @@ def main():
     client = read("client")
     native_renderer = read("native_renderer")
     native_library = read("native_library")
+    native_item = read("native_item")
     profile = read("destiny_profile")
     destiny_sounds = read("destiny_sounds")
 
@@ -64,6 +77,14 @@ def main():
     need(native_library, "native_destiny/geometry/", "native Destiny geometry resource loader")
     need(native_library, "native_destiny/animations/", "native Destiny animation resource loader")
     need(native_library, 'geometryRoot.getAsJsonArray("minecraft:geometry")', "Bedrock geometry parser")
+    need(native_item, "thirdPersonFireSound()", "native Destiny third-person fire routing")
+    need(native_item, "playFireSound(level, shooter, volume, pitch)", "native Destiny perspective fire audio")
+
+    actual_audio_dir = ROOT / "src/main/resources/assets/matteroverdrive/sounds/destiny/actual"
+    for filename in ACTUAL_DESTINY_AUDIO:
+        path = actual_audio_dir / filename
+        if not path.is_file() or path.stat().st_size == 0:
+            errors.append(f"missing exact Destiny GunPack audio: {path.relative_to(ROOT)}")
 
     profile_ids = re.findall(r'^\s*[A-Z0-9_]+\("([^"\\]+)"', profile, re.MULTILINE)
     if len(profile_ids) != 14:

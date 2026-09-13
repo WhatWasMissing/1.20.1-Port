@@ -609,7 +609,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_khvostov_draw",
+        "name": "matteroverdrive:destiny/actual/khvostov_draw",
         "stream": false
       }
     ]
@@ -636,7 +636,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_khvostov_reload",
+        "name": "matteroverdrive:destiny/actual/khvostov_reload",
         "stream": false
       }
     ]
@@ -654,7 +654,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_khvostov7g02",
+        "name": "matteroverdrive:destiny/actual/khvostov_fire",
         "stream": false
       }
     ]
@@ -708,7 +708,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_hawkmoon",
+        "name": "matteroverdrive:destiny/actual/hawkmoon_fire",
         "stream": false
       }
     ]
@@ -726,7 +726,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_hawkmoon_draw",
+        "name": "matteroverdrive:destiny/actual/hawkmoon_draw",
         "stream": false
       }
     ]
@@ -780,7 +780,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_surosregime",
+        "name": "matteroverdrive:destiny/actual/s_regime_fire",
         "stream": false
       }
     ]
@@ -807,7 +807,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_montecarlo",
+        "name": "matteroverdrive:destiny/actual/montecarlo_fire",
         "stream": false
       }
     ]
@@ -825,7 +825,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_montecarlo_reload",
+        "name": "matteroverdrive:destiny/actual/montecarlo_reload",
         "stream": false
       }
     ]
@@ -888,7 +888,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_midamultitool",
+        "name": "matteroverdrive:destiny/actual/mida_multi_fire",
         "stream": false
       }
     ]
@@ -960,7 +960,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_aceofspades",
+        "name": "matteroverdrive:destiny/actual/ace_fire",
         "stream": false
       }
     ]
@@ -1005,7 +1005,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_thorn",
+        "name": "matteroverdrive:destiny/actual/thorn_fire",
         "stream": false
       }
     ]
@@ -1032,7 +1032,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_thorn_reload",
+        "name": "matteroverdrive:destiny/actual/thorn_reload",
         "stream": false
       }
     ]
@@ -1050,7 +1050,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_sleepersimulant_draw",
+        "name": "matteroverdrive:destiny/actual/sim_draw",
         "stream": false
       }
     ]
@@ -1068,7 +1068,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_sleepersimulant_fire",
+        "name": "matteroverdrive:destiny/actual/sim_fire",
         "stream": false
       }
     ]
@@ -1086,7 +1086,7 @@
     "category": "player",
     "sounds": [
       {
-        "name": "matteroverdrive:destiny/destiny_sleepersimulant_reload",
+        "name": "matteroverdrive:destiny/actual/sim_reload",
         "stream": false
       }
     ]
@@ -1114,6 +1114,159 @@
     "sounds": [
       {
         "name": "matteroverdrive:weapon/sniper_rifle_fire",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_aceofspades_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/ace_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/hawkmoon_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_midamultitool_draw": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/mida_multi_draw",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_midamultitool_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/mida_multi_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_surosregime_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/s_regime_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thelastword_draw": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/last_word_draw",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thelastword_reload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/last_word_reload",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thorn_draw": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/thorn_draw",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_aceofspades_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/ace_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_hawkmoon_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/hawkmoon_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_khvostov7g02_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/khvostov_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_midamultitool_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/mida_multi_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_montecarlo_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/montecarlo_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_sleepersimulant_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/sim_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_surosregime_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/s_regime_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thelastword_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/last_word_fire_3p",
+        "stream": false
+      }
+    ]
+  },
+  "destiny_thorn_3p": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "matteroverdrive:destiny/actual/thorn_fire_3p",
         "stream": false
       }
     ]

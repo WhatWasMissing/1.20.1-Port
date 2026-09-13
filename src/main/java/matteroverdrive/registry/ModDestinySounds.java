@@ -80,6 +80,27 @@ public final class ModDestinySounds {
         // for drop-in Mythoclast recordings in a resource pack or future asset pass.
         register("destiny_vex_mythoclast_fire");
         register("destiny_vex_mythoclast_linear_fire");
+
+        // Exact first-/third-person and reload/draw recordings from the supplied
+        // Destiny GunPack. The primary events above remain stable for the older
+        // profiles; these IDs keep the source-specific 3P routing explicit.
+        register("destiny_aceofspades_3p");
+        register("destiny_aceofspades_reload");
+        register("destiny_hawkmoon_3p");
+        register("destiny_hawkmoon_reload");
+        register("destiny_khvostov7g02_3p");
+        register("destiny_midamultitool_3p");
+        register("destiny_midamultitool_draw");
+        register("destiny_midamultitool_reload");
+        register("destiny_montecarlo_3p");
+        register("destiny_sleepersimulant_3p");
+        register("destiny_surosregime_3p");
+        register("destiny_surosregime_reload");
+        register("destiny_thelastword_3p");
+        register("destiny_thelastword_draw");
+        register("destiny_thelastword_reload");
+        register("destiny_thorn_3p");
+        register("destiny_thorn_draw");
     }
 
     private static void register(String id) {

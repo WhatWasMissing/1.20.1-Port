@@ -6,6 +6,7 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -153,9 +154,26 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
             if (entityHit.getEntity() instanceof LivingEntity target) target.hurt(level.damageSources().playerAttack(shooter), profile.damage());
         }
         spawnBeam(level, start, impact);
-        level.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), ModDestinySounds.get(profile.fireSound()), SoundSource.PLAYERS,
-                profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT ? 1.35F : 0.95F, 0.97F + shooter.getRandom().nextFloat() * 0.06F);
+        float volume = profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT ? 1.35F : 0.95F;
+        float pitch = 0.97F + shooter.getRandom().nextFloat() * 0.06F;
+        playFireSound(level, shooter, volume, pitch);
         return true;
+    }
+
+    private void playFireSound(Level level, Player shooter, float volume, float pitch) {
+        if (profile.thirdPersonFireSound() == null || !(shooter instanceof ServerPlayer serverShooter)) {
+            level.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(),
+                    ModDestinySounds.get(profile.fireSound()), SoundSource.PLAYERS, volume, pitch);
+            return;
+        }
+
+        // The GunPack supplies separate listener mixes. Send the external mix to every
+        // nearby client except the shooter, then deliver the first-person mix directly
+        // to the firing player so both perspectives use the actual Destiny recording.
+        level.playSound(serverShooter, shooter.getX(), shooter.getY(), shooter.getZ(),
+                ModDestinySounds.get(profile.thirdPersonFireSound()), SoundSource.PLAYERS, volume, pitch);
+        serverShooter.playNotifySound(ModDestinySounds.get(profile.fireSound()),
+                SoundSource.PLAYERS, volume, pitch);
     }
 
     private boolean shotDelayPassed(Level level, ItemStack weapon) {

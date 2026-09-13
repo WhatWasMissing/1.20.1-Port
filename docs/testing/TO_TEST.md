@@ -168,6 +168,7 @@ Use a fresh world or unexplored chunks.
 - [ ] Ion Sniper aim/FOV, Sniper Scope override and recoil behavior match the current recovered parity values.
 - [ ] Weapon Station slots/modules persist and its stats update immediately after module changes.
 - [ ] First/third-person weapon transforms remain visible and correctly oriented.
+- [ ] Ace of Spades, Hawkmoon, Khvostov, MIDA, Monte Carlo, Sleeper Simulant, SUROS Regime, The Last Word and Thorn use the supplied Destiny GunPack first-person fire mix for the shooter, third-person fire mix for other clients, and exact available draw/reload samples.
 
 ## Legacy/world-content regression
 
