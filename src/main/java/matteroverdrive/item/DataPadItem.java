@@ -3,6 +3,7 @@ package matteroverdrive.item;
 import matteroverdrive.event.ContractEvents;
 import matteroverdrive.matter.MatterValueRegistry;
 import matteroverdrive.network.ModNetwork;
+import matteroverdrive.progression.PlayerDiscoveryLog;
 import matteroverdrive.quest.LegacyStoryContracts;
 import matteroverdrive.quest.ResearchCampaignQuestFlow;
 import matteroverdrive.quest.ResearchProgression;
@@ -31,9 +32,9 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Data Pad scanner plus persistent research-campaign journal. */
+/** Compact PDA: player-driven research log, scanner and contract status. */
 public class DataPadItem extends Item {
-    public static final int HISTORY_CAPACITY = 16;
+    public static final int HISTORY_CAPACITY = 12;
     private static final String HISTORY_TAG = "DataPadScanHistory";
 
     public DataPadItem(Properties properties) { super(properties.stacksTo(1)); }
@@ -47,20 +48,23 @@ public class DataPadItem extends Item {
         return InteractionResultHolder.sidedSuccess(dataPad, level.isClientSide);
     }
 
-    /** The normal Data Pad doubles as a lightweight research journal without adding another mandatory item. */
     private static List<String> journalLines(ServerPlayer player, ItemStack dataPad) {
         List<String> lines = new ArrayList<>();
-        lines.add("=== RESEARCH PROGRAMME ===");
-        lines.add("Current: " + ResearchProgression.status(player));
-        lines.add("Assignment: " + (ScientistStoryQuestFlow.complete(player)
+        lines.add("STATUS // " + ResearchProgression.status(player));
+        lines.add("ASSIGNMENT // " + (ScientistStoryQuestFlow.complete(player)
                 ? ResearchCampaignQuestFlow.status(player)
                 : ScientistStoryQuestFlow.status(player)));
-        lines.add("--- Progression ---");
-        lines.addAll(ResearchProgression.roadmap(player));
-        List<String> history = getHistory(dataPad);
-        if (!history.isEmpty()) {
-            lines.add("--- Scan History ---");
-            lines.addAll(history);
+        List<String> discoveries = PlayerDiscoveryLog.lines(player);
+        if (discoveries.isEmpty()) {
+            lines.add("PDA // No experimental discoveries yet. Craft, scan, dismantle and test Matter Overdrive technology.");
+        } else {
+            lines.add("--- PERSONAL DISCOVERIES ---");
+            lines.addAll(discoveries);
+        }
+        List<String> scans = getHistory(dataPad);
+        if (!scans.isEmpty()) {
+            lines.add("--- RECENT SCANS ---");
+            lines.addAll(scans);
         }
         return lines;
     }
@@ -71,32 +75,24 @@ public class DataPadItem extends Item {
         ItemStack dataPad = context.getItemInHand();
         BlockState state = context.getLevel().getBlockState(context.getClickedPos());
         ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-
-        if (isLegacyQuestScanner(dataPad) && context.getPlayer() instanceof ServerPlayer serverPlayer && isLegacyScanTarget(blockId)) {
-            ItemStack blockItem = new ItemStack(state.getBlock().asItem());
-            int matter = MatterValueRegistry.getMatter(blockItem);
-            String displayName = blockItem.isEmpty() ? state.getBlock().getName().getString() : blockItem.getHoverName().getString();
-            String entry = displayName + " | " + blockId + " | " + matter + " kM";
-            record(dataPad, entry);
-            ContractEvents.recordScan(serverPlayer, blockId);
-            if (state.getDestroySpeed(context.getLevel(), context.getClickedPos()) >= 0.0F) context.getLevel().destroyBlock(context.getClickedPos(), false, serverPlayer);
-            serverPlayer.sendSystemMessage(Component.literal("Research sample recorded: " + displayName).withStyle(ChatFormatting.LIGHT_PURPLE));
-            serverPlayer.getInventory().setChanged();
-            serverPlayer.inventoryMenu.broadcastChanges();
-            return InteractionResult.CONSUME;
-        }
-
         ItemStack blockItem = new ItemStack(state.getBlock().asItem());
         int matter = MatterValueRegistry.getMatter(blockItem);
         String displayName = blockItem.isEmpty() ? state.getBlock().getName().getString() : blockItem.getHoverName().getString();
         String entry = displayName + " | " + blockId + " | " + matter + " kM";
         record(dataPad, entry);
-        if (context.getPlayer() != null) {
-            context.getPlayer().sendSystemMessage(Component.literal("Data Pad recorded: " + entry).withStyle(matter > 0 ? ChatFormatting.AQUA : ChatFormatting.GRAY));
-            if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
-                serverPlayer.getInventory().setChanged();
-                serverPlayer.inventoryMenu.broadcastChanges();
+
+        if (context.getPlayer() instanceof ServerPlayer serverPlayer) {
+            ContractEvents.recordScan(serverPlayer, blockId);
+            PlayerDiscoveryLog.record(serverPlayer, "scan:" + blockId,
+                    "ANALYSIS // " + displayName + " scanned. Matter value measured at " + matter + " kM.");
+            if (isLegacyQuestScanner(dataPad) && isLegacyScanTarget(blockId)) {
+                if (state.getDestroySpeed(context.getLevel(), context.getClickedPos()) >= 0.0F) context.getLevel().destroyBlock(context.getClickedPos(), false, serverPlayer);
+                serverPlayer.sendSystemMessage(Component.literal("Research sample recorded: " + displayName).withStyle(ChatFormatting.LIGHT_PURPLE));
+            } else {
+                serverPlayer.sendSystemMessage(Component.literal("PDA recorded: " + entry).withStyle(matter > 0 ? ChatFormatting.AQUA : ChatFormatting.GRAY));
             }
+            serverPlayer.getInventory().setChanged();
+            serverPlayer.inventoryMenu.broadcastChanges();
         }
         return InteractionResult.CONSUME;
     }
@@ -133,16 +129,9 @@ public class DataPadItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
-        List<String> history = getHistory(stack);
-        if (isLegacyQuestScanner(stack)) {
-            tooltip.add(Component.literal("Mad Scientist research scanner").withStyle(ChatFormatting.LIGHT_PURPLE));
-            tooltip.add(Component.literal("Scans and destroys Wheat, Carrots and Potatoes; advances matching research quests.").withStyle(ChatFormatting.GRAY));
-        } else {
-            tooltip.add(Component.literal("Research journal, guide and block scan history").withStyle(ChatFormatting.AQUA));
-        }
-        tooltip.add(Component.literal("Recorded blocks: " + history.size() + "/" + HISTORY_CAPACITY).withStyle(ChatFormatting.GRAY));
-        if (!history.isEmpty()) tooltip.add(Component.literal("Latest: " + history.get(0)).withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Use on a block to record it; use in air to open research status.").withStyle(ChatFormatting.DARK_GRAY));
+        if (isLegacyQuestScanner(stack)) tooltip.add(Component.literal("Scientist research scanner").withStyle(ChatFormatting.LIGHT_PURPLE));
+        else tooltip.add(Component.literal("Personal research log and matter scanner").withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.literal("Use on blocks to analyse them; use in air to open the PDA.").withStyle(ChatFormatting.GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
     }
 }

@@ -1,9 +1,0 @@
-{
-  "structures": [{"structure": "matteroverdrive:synthetic_manufacturing_plant", "weight": 1}],
-  "placement": {
-    "type": "minecraft:random_spread",
-    "salt": 24587131,
-    "spacing": 120,
-    "separation": 36
-  }
-}
