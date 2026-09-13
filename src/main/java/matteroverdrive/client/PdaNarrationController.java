@@ -14,6 +14,7 @@ public final class PdaNarrationController {
     /** Returns true when narration was submitted to Minecraft's narrator. */
     public static boolean read(String text) {
         if (text == null || text.isBlank()) return false;
+        if (!PdaVoiceSettings.isEnabled()) return false;
         Minecraft minecraft = Minecraft.getInstance();
         if (!minecraft.getNarrator().isActive()) {
             if (minecraft.player != null) {

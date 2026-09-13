@@ -203,7 +203,7 @@ public class DocumentationScreen extends Screen {
         graphics.fill(right - 1, top, right, bottom, BORDER_COLOR);
         int titleWidth = Math.max(1, panelWidth - 24);
         graphics.drawCenteredString(font, Component.literal(fit(title.getString(), titleWidth)), width / 2, top + 9, BORDER_COLOR);
-        graphics.drawCenteredString(font, Component.literal(fit("Matter Overdrive Alpha 0.2 • Made by MVQ1303", titleWidth)),
+        graphics.drawCenteredString(font, Component.literal(fit("Matter Overdrive " + MatterOverdrive.DISPLAY_VERSION + " • Made by " + MatterOverdrive.AUTHOR, titleWidth)),
                 width / 2, top + 21, MUTED_COLOR);
         graphics.drawCenteredString(font, Component.literal(fit(String.format("Page %d / %d", pageIndex + 1, pages.size()), titleWidth)),
                 width / 2, bottom + 7, MUTED_COLOR);

@@ -23,7 +23,7 @@ Generation follows daylight rather than producing full power at all times. If a 
 
 Heavy Energy Cable is the normal FE transport line. Each cable currently buffers **8,192 FE** and can move up to **1,024 FE/t per side**.
 
-The tech-overhaul branch adds per-side FE policy to supported machines. A valid cable path is not sufficient if the receiving face is configured as OUTPUT or DISABLED. Use the **Network Diagnostic Probe** in Energy mode to inspect/cycle the exact face.
+The 0.7 release adds per-side FE policy to supported machines. A valid cable path is not sufficient if the receiving face is configured as OUTPUT or DISABLED. Use the **Network Diagnostic Probe** in Energy mode to inspect/cycle the exact face.
 
 ## Grid Capacitor
 
@@ -39,7 +39,7 @@ The **Energy Bank** is a late-game dual-resource buffer for reactor installation
 
 The **Charging Station** remains the local bridge between stationary FE generation and compatible portable Matter Overdrive energy storage.
 
-For Android bases, the tech-overhaul branch adds an **Android Induction Relay**. It stores **2,000,000 FE**, accepts up to **16,384 FE/t**, wirelessly supplies up to **8,192 FE/t**, and supports **32 / 64 / 96 block** same-dimension charging ranges. It does not create FE and does not charge across dimensions.
+For Android bases, the 0.7 release adds an **Android Induction Relay**. It stores **2,000,000 FE**, accepts up to **16,384 FE/t**, wirelessly supplies up to **8,192 FE/t**, and supports **32 / 64 / 96 block** same-dimension charging ranges. It does not create FE and does not charge across dimensions.
 
 Every successful Android charge debits the relay's stored FE. Adjacent FE sources are also checked against their configured output face before power is pulled, so a disabled or input-only source side cannot leak power into the relay.
 
@@ -53,7 +53,7 @@ Adjacent relay transfers respect the target machine's configured input face and 
 
 ## Machine upgrades
 
-Matter Overdrive machines support Speed, Power, Fail-Safe, Range, Power Storage, Hyper Speed and Matter Storage where appropriate. The tech-overhaul branch also adds **Parallel Processing** for the Decomposer and Replicator.
+Matter Overdrive machines support Speed, Power, Fail-Safe, Range, Power Storage, Hyper Speed and Matter Storage where appropriate. The 0.7 release also adds **Parallel Processing** for the Decomposer and Replicator.
 
 Do not assume that upgrades are free throughput. Faster or parallel processing can raise instantaneous FE/Matter demand. If a machine becomes inconsistent after upgrading it, compare its supply rate against the new workload.
 

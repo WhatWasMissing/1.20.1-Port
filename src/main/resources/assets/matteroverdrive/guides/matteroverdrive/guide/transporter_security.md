@@ -92,4 +92,4 @@ The **Tritanium Wrench** safely rotates/disassembles supported machines, but dis
 
 **Machine worked before upgrades but not after:** compare current FE demand and effective timing/range with the available supply.
 
-The Transporter remains a local same-dimension entity-movement system in the active 0.6 port.
+The Transporter remains a local same-dimension entity-movement system in the active 0.7 port.

@@ -18,7 +18,7 @@ VERIFY_M2_BUILD.bat
 A pass produces:
 
 ```text
-build\libs\matteroverdrive-0.8.0.0-alpha.4.1.jar
+build\libs\matteroverdrive-0.7.jar
 ```
 
 Launch the development client with:

@@ -141,7 +141,9 @@ public final class ClientPdaNotificationManager {
             activeTicks = offlineDuration + 14;
             return;
         }
-        if (minecraft.getNarrator().isActive()) PdaNarrationController.read("P D A. " + active.text());
+        if (PdaVoiceSettings.isEnabled() && minecraft.getNarrator().isActive()) {
+            PdaNarrationController.read("P D A. " + active.text());
+        }
         activeTicks = Math.max(70, Math.min(260, 30 + active.text().length() * 2));
     }
 

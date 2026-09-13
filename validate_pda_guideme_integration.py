@@ -35,7 +35,7 @@ if "new DataPadScreen(history, loreMask)" not in text["opener"]:
     errors.append("ClientDataPadOpener does not open the lore-aware PDA screen")
 
 # Server-authoritative lore archive sync.
-for needle in ("int loreMask", "writeVarInt(packet.loreMask", "ClientDataPadOpener.open(packet.history, packet.loreMask)"):
+for needle in ("int loreMask", "writeVarInt(packet.loreMask", "ClientDataPadOpener.open(packet.history, packet.loreMask"):
     if needle not in text["packet"]:
         errors.append(f"DataPadOpenPacket missing lore sync marker: {needle}")
 if "StructureLoreSavedData.get" not in text["network"] or ".mask(p.getUUID())" not in text["network"]:

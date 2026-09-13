@@ -95,7 +95,7 @@ If the controller is generating but an external machine is not charging:
 4. extend the cable chain one segment at a time;
 5. check the destination machine's FE capability and free storage.
 
-The 0.6 line contains explicit fixes for chained-cable discovery, break/replace behavior and the old external-transfer bottleneck. A reproducible case where only the first cable works should be reported rather than accepted as intended reactor behavior.
+The 0.7 line contains explicit fixes for chained-cable discovery, break/replace behavior and the old external-transfer bottleneck. A reproducible case where only the first cable works should be reported rather than accepted as intended reactor behavior.
 
 ## Safety equipment
 

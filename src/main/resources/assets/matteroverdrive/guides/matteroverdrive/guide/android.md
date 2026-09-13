@@ -46,13 +46,13 @@ Current hardware choices are:
 - **Stealth Shell** - crouching consumes FE to cloak.
 - **Reactive Shell** - hardens the chassis below half health.
 
-The tech-overhaul branch fixes the **Capacitor Core** so its extra 50,000 FE is real storage capacity rather than tooltip-only capacity. Charging systems, the HUD and the Skill Tree use the chassis-adjusted maximum, and percentage-based loadout effects use that same effective reserve. A normal Android therefore evaluates 50%/75% effects at 50,000/75,000 FE; a Capacitor-Core Android evaluates them at 75,000/112,500 FE. Removing or replacing a capacity-granting core permanently clamps stored FE to the new maximum, so excess charge cannot remain hidden in player data and reappear when the core is reinstalled.
+The 0.7 release fixes the **Capacitor Core** so its extra 50,000 FE is real storage capacity rather than tooltip-only capacity. Charging systems, the HUD and the Skill Tree use the chassis-adjusted maximum, and percentage-based loadout effects use that same effective reserve. A normal Android therefore evaluates 50%/75% effects at 50,000/75,000 FE; a Capacitor-Core Android evaluates them at 75,000/112,500 FE. Removing or replacing a capacity-granting core permanently clamps stored FE to the new maximum, so excess charge cannot remain hidden in player data and reappear when the core is reinstalled.
 
 The station also provides direct buttons for **Core Ability Cycle**, **Skill Tree**, and **Class Matrix**, so normal Android configuration can start from one machine.
 
 ## Android charging
 
-The Android Station still charges nearby Androids when supplied with FE. For larger bases, the tech-overhaul branch adds the **Android Induction Relay**:
+The Android Station still charges nearby Androids when supplied with FE. For larger bases, the 0.7 release adds the **Android Induction Relay**:
 
 - stores **2,000,000 FE**;
 - accepts up to **16,384 FE/t**;

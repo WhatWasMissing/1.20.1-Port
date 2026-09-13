@@ -1,8 +1,10 @@
 package matteroverdrive.client.screen;
 
+import matteroverdrive.MatterOverdrive;
 import matteroverdrive.client.ClientDocumentationOpener;
 import matteroverdrive.client.GuideMeCompatEvents;
 import matteroverdrive.client.PdaNarrationController;
+import matteroverdrive.client.PdaVoiceSettings;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.network.ModNetwork;
 import matteroverdrive.quest.ContractStageSupport;
@@ -75,6 +77,7 @@ public class DataPadScreen extends Screen {
     private Button previousButton;
     private Button nextButton;
     private Button manualButton;
+    private Button voiceToggleButton;
     private Button readAloudButton;
     private Button stopNarrationButton;
 
@@ -100,7 +103,8 @@ public class DataPadScreen extends Screen {
         int sidebarX = left + 8;
         int buttonY = top + 40;
         int manualY = panelBottom() - 28;
-        int available = Math.max(Tab.values().length * 9, manualY - buttonY - 5);
+        int voiceY = manualY - 22;
+        int available = Math.max(Tab.values().length * 9, voiceY - buttonY - 5);
         int spacing = Math.max(9, Math.min(17, available / Tab.values().length));
         int buttonHeight = Math.max(8, spacing - 2);
         for (Tab value : Tab.values()) {
@@ -110,6 +114,9 @@ public class DataPadScreen extends Screen {
             buttonY += spacing;
         }
 
+        voiceToggleButton = addRenderableWidget(Button.builder(Component.literal(PdaVoiceSettings.buttonLabel()),
+                ignored -> toggleVoice())
+                .bounds(sidebarX, voiceY, 100, 20).build());
         String manualLabel = GuideMeCompatEvents.isAvailable() ? "TECH MANUAL • GUIDEME" : "TECH MANUAL • BUILT-IN";
         manualButton = addRenderableWidget(Button.builder(Component.literal(manualLabel),
                 ignored -> ClientDocumentationOpener.openTechnicalManual())
@@ -181,6 +188,9 @@ public class DataPadScreen extends Screen {
 
     private void refreshControls() {
         for (int i = 0; i < tabButtons.size(); i++) tabButtons.get(i).active = Tab.values()[i] != tab;
+        if (voiceToggleButton != null) {
+            voiceToggleButton.setMessage(Component.literal(PdaVoiceSettings.buttonLabel()));
+        }
         List<Entry> ambient = ambientEntries();
         List<TechRecord> technology = technologyEntries();
         boolean navigable = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FACILITIES
@@ -212,13 +222,22 @@ public class DataPadScreen extends Screen {
         boolean narrationTab = tab == Tab.DATA_BANK || tab == Tab.INCIDENT || tab == Tab.FIELD_LOGS || tab == Tab.TECHNOLOGY;
         if (readAloudButton != null) {
             readAloudButton.visible = narrationTab;
-            readAloudButton.active = narratable;
+            readAloudButton.active = narratable && PdaVoiceSettings.isEnabled();
         }
         if (stopNarrationButton != null) {
             stopNarrationButton.visible = narrationTab;
             stopNarrationButton.active = narratable;
         }
         refreshContractButtons();
+    }
+
+    private void toggleVoice() {
+        boolean enabled = PdaVoiceSettings.toggle();
+        if (minecraft != null && minecraft.player != null) {
+            minecraft.player.displayClientMessage(Component.literal(
+                    "PDA voice: " + (enabled ? "ON" : "OFF") + " — captions remain enabled."), true);
+        }
+        refreshControls();
     }
 
     private boolean canNarrateCurrentLore() {
@@ -330,7 +349,7 @@ public class DataPadScreen extends Screen {
         border(graphics, left, top, right, bottom, CYAN_DIM);
         graphics.fill(left + 112, top, left + 113, bottom, CYAN_DIM);
 
-        graphics.drawString(font, Component.literal("MO // PERSONAL DATA ASSISTANT"), left + 9, top + 9, CYAN, false);
+        graphics.drawString(font, Component.literal("MO " + MatterOverdrive.DISPLAY_VERSION + " // PERSONAL DATA ASSISTANT"), left + 9, top + 9, CYAN, false);
         graphics.drawString(font, Component.literal("ARCHIVE " + recoveredCount() + "/" + StructureLoreCatalog.RECORD_COUNT),
                 right - 92, top + 9, recoveredCount() == StructureLoreCatalog.RECORD_COUNT ? GOOD : ORANGE, false);
         graphics.drawString(font, Component.literal(tab.label), contentLeft + 10, top + 30, TEXT, false);

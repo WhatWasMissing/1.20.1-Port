@@ -35,6 +35,7 @@ public final class PdaEmbeddedAudio {
     private PdaEmbeddedAudio() {}
 
     public static synchronized int playVoice(String id) {
+        if (!PdaVoiceSettings.isEnabled()) return 0;
         String text = PdaVoiceLineCatalog.line(id);
         if (text.isBlank()) return 0;
         stopVoice();

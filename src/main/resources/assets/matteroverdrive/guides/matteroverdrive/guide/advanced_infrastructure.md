@@ -7,7 +7,7 @@ navigation:
 ---
 # Advanced Infrastructure
 
-The **tech-overhaul testing branch** adds a set of late-game infrastructure systems that extend Matter Overdrive's existing FE, Matter and Matter Network mechanics. These systems are experimental until they have passed runtime testing.
+The **0.7 release** adds a set of late-game infrastructure systems that extend Matter Overdrive's existing FE, Matter and Matter Network mechanics. Their runtime verification remains tracked in the release testing checklist.
 
 ## Facility Network Controller
 
@@ -61,7 +61,7 @@ The Hybrid Conduit does **not** merge the logical Matter Network task layer into
 
 ## Crafting availability
 
-All player-facing hardware introduced by the recent Android/facility/tech-overhaul work is intended to be craftable in survival. The local tech-overhaul validator now checks that each of these additions has a recipe and that the recipe produces its matching Matter Overdrive registry ID. This includes the Facility Network Controller, Anomaly Containment Unit, Android chassis modules, all new infrastructure blocks, the Network Diagnostic Probe, Quantum Linker, Matter Storage Cells and Parallel Processing Upgrade.
+All player-facing hardware introduced by the recent Android/facility/0.7 work is intended to be craftable in survival. The local 0.7 validator checks that each of these additions has a recipe and that the recipe produces its matching Matter Overdrive registry ID. This includes the Facility Network Controller, Anomaly Containment Unit, Android chassis modules, all new infrastructure blocks, the Network Diagnostic Probe, Quantum Linker, Matter Storage Cells and Parallel Processing Upgrade.
 
 If `BUILD_LOCAL.bat` reports a missing or mismatched new-system recipe, treat that as a packaging regression rather than an optional creative-only item.
 

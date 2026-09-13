@@ -98,6 +98,8 @@ config override WAV
 
 On Windows, local OS speech uses `System.Speech.Synthesis.SpeechSynthesizer`. Missing prerecorded lines therefore remain audible where Windows speech is available and never hide gameplay information.
 
+The voice preference defaults to enabled. Open the PDA and use its `VOICE: ON/OFF` button, or press `P` in the world (also listed under Controls), to toggle spoken short callouts and long-form read-aloud narration. The choice persists in `config/matteroverdrive_pda_voice.dat`; captions and PDA text remain available when voice is disabled.
+
 ## 6. Export the complete PDA voice queue
 
 Run:

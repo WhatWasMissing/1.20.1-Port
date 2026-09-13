@@ -1,5 +1,6 @@
 package matteroverdrive.item;
 
+import matteroverdrive.MatterOverdrive;
 import matteroverdrive.network.ModNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -62,7 +63,7 @@ public class DocumentationItem extends Item {
                                 List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("Right-click to open " + document.title + ".")
                 .withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("Bundled with Matter Overdrive Alpha 0.2")
+        tooltip.add(Component.literal("Bundled with Matter Overdrive " + MatterOverdrive.DISPLAY_VERSION)
                 .withStyle(ChatFormatting.GRAY));
         super.appendHoverText(stack, level, tooltip, flag);
     }

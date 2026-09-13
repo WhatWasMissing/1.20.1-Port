@@ -688,6 +688,7 @@
   "key.matteroverdrive.android_activate_ability": "Activate Android Ability",
   "key.matteroverdrive.android_cycle_ability": "Cycle Android Ability",
   "key.matteroverdrive.android_skill_tree": "Open Android Skill Tree",
+  "key.matteroverdrive.pda_voice_toggle": "Toggle PDA Voice",
   "machine.tooltip.energy": "Charged",
   "machine.tooltip.matter": "Matter",
   "material.tritanium": "Tritanium",

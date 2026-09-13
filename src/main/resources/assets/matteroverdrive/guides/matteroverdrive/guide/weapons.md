@@ -11,7 +11,7 @@ Matter Overdrive energy weapons are rechargeable weapons with their own heat, ch
 
 ## Current weapon family
 
-The 0.6 line includes the restored Matter Overdrive weapon framework and player-facing entries such as the **Phaser Rifle**, **Ion Sniper** and **Plasma Shotgun**. Exact handling differs by weapon type, but they share the same basic rules: internal FE, heat, reload/charging behavior and supported weapon modules.
+The 0.7 line includes the restored Matter Overdrive weapon framework and player-facing entries such as the **Phaser Rifle**, **Ion Sniper** and **Plasma Shotgun**. Exact handling differs by weapon type, but they share the same basic rules: internal FE, heat, reload/charging behavior and supported weapon modules.
 
 ## Weapon HUD
 
@@ -77,7 +77,7 @@ If a weapon behaves incorrectly, test it in this order:
 6. Does firing consume the weapon's intended source rather than another gun?
 7. Does removing/swapping a battery clamp internal FE to the new capacity permanently?
 
-The 0.6 testing line has specifically addressed zero-energy firing, cross-weapon energy drain, heat/reload state, battery-capacity shrink and weapon-station persistence, so regressions in those areas are worth reporting with the held weapon, charge values and game mode.
+The 0.7 testing line has specifically addressed zero-energy firing, cross-weapon energy drain, heat/reload state, battery-capacity shrink and weapon-station persistence, so regressions in those areas are worth reporting with the held weapon, charge values and game mode.
 
 ## Rendering and placement
 

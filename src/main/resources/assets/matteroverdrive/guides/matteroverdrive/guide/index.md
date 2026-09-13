@@ -6,13 +6,13 @@ navigation:
 item_ids:
   - matteroverdrive:data_pad
 ---
-# Matter Overdrive 0.6
+# Matter Overdrive 0.7
 
-Welcome to the Matter Overdrive field manual for the current **0.6 development line**, maintained by MVQ1303. This GuideME edition is the primary player-facing **how-to guide** when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
+Welcome to the Matter Overdrive field manual for the current **0.7 release line**, maintained by MVQ1303. This GuideME edition is the primary player-facing **how-to guide** when GuideME is installed; the Data Pad remains the gameplay tool for scanning, contracts and scan history.
 
-The `testing/tech-overhaul` branch contains experimental late-game infrastructure that is intentionally isolated from `main` until it passes local build and runtime testing. Those systems are documented under [Advanced Infrastructure](advanced_infrastructure.md).
+The 0.7 release includes the expanded late-game infrastructure systems documented under [Advanced Infrastructure](advanced_infrastructure.md). Runtime verification for the merged release remains tracked in the testing checklist.
 
-The system pages below are maintained alongside the repository feature/testing references. For a compact implementation/parity overview, see [Current Features](current_features.md). Implemented features may still require runtime verification in the 0.6 testing pass.
+The system pages below are maintained alongside the repository feature/testing references. For a compact implementation/parity overview, see [Current Features](current_features.md). Implemented features may still require runtime verification in the 0.7 testing pass.
 
 ## Survival start
 

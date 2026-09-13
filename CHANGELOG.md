@@ -28,11 +28,13 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 - Repurposed the 16-record structure archive, Frontier archive, environmental observations and ambient lore into existing player-event routes: technology acquisition, mining, combat, NPC assignments, Field Operations and recovered-fragment inspection.
 - Disabled the unfinished MO-authored structure-set and compact-site biome-modifier placement routes while retaining registered definitions, serializers and existing-save compatibility.
 - Added cross-checked static/resource validation for registries, JSON/model/texture references, loot, spawn, PDA, relic, weapon, Android, network and structure contracts.
+- Added a persistent PDA voice preference with an in-PDA `VOICE: ON/OFF` control and `P` keybind. Spoken callouts and long-form read-aloud narration can be disabled without removing captions or PDA text.
 
 ### Changed
 
 - Compact technology-site recognition now feeds both one-time discovery rewards and repeatable Field Operations while preserving the one-time dossier/XP guard.
 - Event-horizon detection now also services the Anomaly doctrine when `Horizon Exposure` is active, while continuing to advance normal anomaly contracts in parallel.
+- Updated all active in-game version surfaces and GuideME release pages to identify the launch line as Matter Overdrive 0.7.
 
 ### Design direction
 

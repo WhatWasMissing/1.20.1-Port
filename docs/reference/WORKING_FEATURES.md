@@ -58,7 +58,7 @@ Natural Gravitational Anomaly generation remains conservative and uses the share
 
 ## PDA, GuideME and presentation
 
-The Data Pad opens the server-authoritative PDA journal, records scans, technology inspection and player-event lore, displays research/contract/contact/discovery state and falls back cleanly when GuideME is unavailable. GuideME registration points to the Matter Overdrive guide; current feature, power, Android, weapon, specialist, structure, infrastructure and block-reference pages use local links plus live item/recipe references. Every active player-facing block has a documented description, item image model, recipe and block resource contract.
+The Data Pad opens the server-authoritative PDA journal, records scans, technology inspection and player-event lore, displays research/contract/contact/discovery state and falls back cleanly when GuideME is unavailable. PDA voice callouts and long-form read-aloud narration can be toggled from the PDA's `VOICE: ON/OFF` control or the `P` key; disabling voice stops spoken output immediately while captions and PDA text remain available. GuideME registration points to the Matter Overdrive guide; current feature, power, Android, weapon, specialist, structure, infrastructure and block-reference pages use local links plus live item/recipe references. Every active player-facing block has a documented description, item image model, recipe and block resource contract.
 
 The title/briefing screens describe world-based discovery and the retired strategic map without exposing it as active content. No active strategic-map block, registry, worldgen path or progression system is shipped.
 

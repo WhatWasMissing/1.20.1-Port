@@ -170,6 +170,7 @@ Use a fresh world for the placement-policy check, and an existing world containi
 
 - [ ] Save/reload preserves machine inventories, FE, matter, upgrades, Android state, patrol data, quests/contracts and facility restoration state.
 - [ ] GuideME index opens every active system page and local links resolve.
+- [ ] PDA voice defaults to ON, toggles from the PDA `VOICE` button and the `P` key, persists after restart, and leaves captions/PDA text available when OFF.
 - [ ] Current Features and in-game testing documentation identify the 0.7 line accurately.
 - [ ] No active registered content shows missing-model purple/black textures.
 - [ ] Every 16-record structure-lore and ambient-lore event route is reachable without generated MO structures.

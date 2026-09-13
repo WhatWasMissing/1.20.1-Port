@@ -29,6 +29,7 @@ For a clean checkout/build walkthrough plus the complete local neural-voice work
 - **[Setup and PDA Voice Bank Guide](docs/SETUP_AND_PDA_VOICE_GUIDE.md)** — Java/Forge setup, validation, Gradle build, voice-queue export, neural source naming, ICARUS reference handling, synthetic post-processing, config overrides, JAR bundling/injection and runtime smoke testing.
 
 The prerecorded PDA bank is optional at runtime. Missing recordings fall back to local OS speech, then Minecraft Narrator, while captions/text remain available.
+Spoken PDA output can be toggled from the PDA's `VOICE: ON/OFF` button or with `P` in the world; the preference persists per client instance.
 
 ## Current feature set
 

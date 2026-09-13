@@ -25,7 +25,7 @@ def forbid(text: str, path: str, *tokens: str):
 network_path = "src/main/java/matteroverdrive/network/ModNetwork.java"
 network = read(network_path)
 require(network, network_path,
-        'PROTOCOL = "16"',
+        'PROTOCOL = "17"',
         "FacilityDiscoveryPacket.class",
         "EnvironmentalHazardPacket.class",
         "sendFacilityDiscovery",
@@ -53,8 +53,12 @@ require(audio, audio_path,
         "MO_PDA_TEXT",
         "synthesize(pattern",
         'case "ui_startup"', 'case "ui_record"', 'case "ui_facility"',
-        'case "ui_hazard"', 'case "ui_comm"')
+        'case "ui_hazard"', 'case "ui_comm"', "PdaVoiceSettings.isEnabled()")
 forbid(audio, audio_path, "http://", "https://", "fal.ai", "elevenlabs", "api_key", "API_KEY")
+
+settings_path = "src/main/java/matteroverdrive/client/PdaVoiceSettings.java"
+settings = read(settings_path)
+require(settings, settings_path, "matteroverdrive_pda_voice.dat", "enabled = true", "PdaNarrationController.stop")
 
 overlay_path = "src/main/java/matteroverdrive/client/PresentationOverlay.java"
 overlay = read(overlay_path)
@@ -94,6 +98,10 @@ for token in [
 welcome_path = "src/main/java/matteroverdrive/event/ModWelcomeEvents.java"
 welcome = read(welcome_path)
 require(welcome, welcome_path, 'sendPdaVoice(player, "field_link")')
+
+input_path = "src/main/java/matteroverdrive/client/PdaVoiceInput.java"
+voice_input = read(input_path)
+require(voice_input, input_path, "TOGGLE_VOICE", "PdaVoiceSettings.toggle()", "captions remain enabled")
 
 title_path = "src/main/java/matteroverdrive/client/screen/MatterOverdriveTitleScreen.java"
 title = read(title_path)

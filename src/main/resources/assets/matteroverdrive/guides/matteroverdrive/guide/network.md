@@ -15,7 +15,7 @@ Matter Overdrive uses several different connection types. They look related, but
 
 Heavy Energy Cable moves **Forge Energy (FE)**. Use it between generators, batteries and machines that expose an FE capability. The current cable implementation has an **8,192 FE internal buffer** and can transfer up to **1,024 FE/t per side**.
 
-On the tech-overhaul branch, configured FE faces matter. If the cable reaches a machine but the selected face is configured as OUTPUT or DISABLED, that machine will not accept FE from that side.
+In the 0.7 release, configured FE faces matter. If the cable reaches a machine but the selected face is configured as OUTPUT or DISABLED, that machine will not accept FE from that side.
 
 A Fusion Reactor's internal ring power bus is special: blocks that belong to the reactor ring can share reactor FE internally. Once power leaves that structure, use Reactor IO and energy cable for ordinary external consumers.
 
@@ -23,7 +23,7 @@ A Fusion Reactor's internal ring power bus is special: blocks that belong to the
 
 Matter Transport Pipe moves **Matter Plasma**, not items or FE. Connect it to machines that expose Matter storage/capability, such as the matter-processing chain, Matter Storage Matrix and supported Reactor IO connections.
 
-The tech-overhaul branch adds six-face Matter policies. INPUT, OUTPUT, BOTH and DISABLED are enforced by real Matter routing. If a pipe appears correctly connected but no Matter moves, inspect the exact machine face touched by the pipe.
+The 0.7 release adds six-face Matter policies. INPUT, OUTPUT, BOTH and DISABLED are enforced by real Matter routing. If a pipe appears correctly connected but no Matter moves, inspect the exact machine face touched by the pipe.
 
 ### Hybrid Conduit
 
@@ -51,7 +51,7 @@ Channel changes persist. When diagnosing an apparently disconnected network, ver
 
 ## Router priority
 
-A Matter Network can contain multiple Routers. The tech-overhaul branch adds Router priority so one active executor can be selected predictably. The highest-priority powered Router on the channel becomes the executor; ties are resolved deterministically by position.
+A Matter Network can contain multiple Routers. The 0.7 release adds Router priority so one active executor can be selected predictably. The highest-priority powered Router on the channel becomes the executor; ties are resolved deterministically by position.
 
 This allows a primary/backup design instead of relying on placement order. Existing destination filtering, Network Flash Drive routing, speed upgrades, route history and FE-per-item accounting remain part of the router backend.
 
@@ -111,7 +111,7 @@ A useful troubleshooting order is:
 
 The Replicator can accept local work and network-queued replication work. Network connectivity does **not** provide free resources: the machine still requires the same FE, Matter and valid pattern it would need when used directly.
 
-On the tech-overhaul branch the Replicator can also use **Parallel Processing Upgrades**. Multiple lanes increase throughput when resources and output space exist, but also raise instantaneous FE/Matter demand.
+In the 0.7 release the Replicator can also use **Parallel Processing Upgrades**. Multiple lanes increase throughput when resources and output space exist, but also raise instantaneous FE/Matter demand.
 
 ## Applied Energistics 2
 
