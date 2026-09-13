@@ -6,6 +6,13 @@ import matteroverdrive.block.QuantumFluxReactorBlock;
 import matteroverdrive.block.WallTerminalBlock;
 import matteroverdrive.blockentity.EnvironmentalRegulatorBlockEntity;
 import matteroverdrive.blockentity.QuantumFluxReactorBlockEntity;
+import matteroverdrive.entity.AssimilatorEntity;
+import matteroverdrive.entity.FieldScientistEntity;
+import matteroverdrive.entity.PhaseStalkerEntity;
+import matteroverdrive.entity.SystemsEngineerEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -22,36 +29,31 @@ import java.util.Map;
 
 /** New content isolated from legacy registries so old save IDs remain untouched. */
 public final class OverhaulContent {
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MatterOverdrive.MOD_ID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MatterOverdrive.MOD_ID);
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MatterOverdrive.MOD_ID);
-    public static final Map<String, RegistryObject<Block>> BLOCKS_BY_ID = new LinkedHashMap<>();
-    public static final Map<String, RegistryObject<Item>> BLOCK_ITEMS = new LinkedHashMap<>();
+    public static final DeferredRegister<Block> BLOCKS=DeferredRegister.create(ForgeRegistries.BLOCKS,MatterOverdrive.MOD_ID);
+    public static final DeferredRegister<Item> ITEMS=DeferredRegister.create(ForgeRegistries.ITEMS,MatterOverdrive.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES,MatterOverdrive.MOD_ID);
+    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES=DeferredRegister.create(ForgeRegistries.ENTITY_TYPES,MatterOverdrive.MOD_ID);
+    public static final Map<String,RegistryObject<Block>> BLOCKS_BY_ID=new LinkedHashMap<>();
+    public static final Map<String,RegistryObject<Item>> BLOCK_ITEMS=new LinkedHashMap<>();
 
-    public static final RegistryObject<Block> QUANTUM_FLUX_REACTOR = register("quantum_flux_reactor", () -> new QuantumFluxReactorBlock(machine()));
-    public static final RegistryObject<Block> ENVIRONMENTAL_REGULATOR = register("environmental_regulator", () -> new EnvironmentalRegulatorBlock(machine()));
-    public static final RegistryObject<Block> TRITANIUM_BULKHEAD_PANEL = register("tritanium_bulkhead_panel", () -> new Block(decor()));
-    public static final RegistryObject<Block> HOLOGRAPHIC_FLOOR_PANEL = register("holographic_floor_panel", () -> new Block(decor().lightLevel(s -> 8)));
-    public static final RegistryObject<Block> BLUE_HAZARD_PANEL = register("blue_hazard_panel", () -> new Block(decor().lightLevel(s -> 4)));
-    public static final RegistryObject<Block> REACTOR_CASING = register("reactor_casing", () -> new Block(machine()));
-    public static final RegistryObject<Block> WALL_TERMINAL = register("wall_terminal", () -> new WallTerminalBlock(decor().lightLevel(s -> 6)));
-    public static final RegistryObject<Block> INDUSTRIAL_CEILING_GRID = register("industrial_ceiling_grid", () -> new Block(decor().noOcclusion()));
+    public static final RegistryObject<Block> QUANTUM_FLUX_REACTOR=register("quantum_flux_reactor",()->new QuantumFluxReactorBlock(machine()));
+    public static final RegistryObject<Block> ENVIRONMENTAL_REGULATOR=register("environmental_regulator",()->new EnvironmentalRegulatorBlock(machine()));
+    public static final RegistryObject<Block> TRITANIUM_BULKHEAD_PANEL=register("tritanium_bulkhead_panel",()->new Block(decor()));
+    public static final RegistryObject<Block> HOLOGRAPHIC_FLOOR_PANEL=register("holographic_floor_panel",()->new Block(decor().lightLevel(s->8)));
+    public static final RegistryObject<Block> BLUE_HAZARD_PANEL=register("blue_hazard_panel",()->new Block(decor().lightLevel(s->4)));
+    public static final RegistryObject<Block> REACTOR_CASING=register("reactor_casing",()->new Block(machine()));
+    public static final RegistryObject<Block> WALL_TERMINAL=register("wall_terminal",()->new WallTerminalBlock(decor().lightLevel(s->6)));
+    public static final RegistryObject<Block> INDUSTRIAL_CEILING_GRID=register("industrial_ceiling_grid",()->new Block(decor().noOcclusion()));
 
-    public static final RegistryObject<BlockEntityType<QuantumFluxReactorBlockEntity>> QUANTUM_FLUX_REACTOR_BE = BLOCK_ENTITIES.register("quantum_flux_reactor",
-            () -> BlockEntityType.Builder.of(QuantumFluxReactorBlockEntity::new, QUANTUM_FLUX_REACTOR.get()).build(null));
-    public static final RegistryObject<BlockEntityType<EnvironmentalRegulatorBlockEntity>> ENVIRONMENTAL_REGULATOR_BE = BLOCK_ENTITIES.register("environmental_regulator",
-            () -> BlockEntityType.Builder.of(EnvironmentalRegulatorBlockEntity::new, ENVIRONMENTAL_REGULATOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<QuantumFluxReactorBlockEntity>> QUANTUM_FLUX_REACTOR_BE=BLOCK_ENTITIES.register("quantum_flux_reactor",()->BlockEntityType.Builder.of(QuantumFluxReactorBlockEntity::new,QUANTUM_FLUX_REACTOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<EnvironmentalRegulatorBlockEntity>> ENVIRONMENTAL_REGULATOR_BE=BLOCK_ENTITIES.register("environmental_regulator",()->BlockEntityType.Builder.of(EnvironmentalRegulatorBlockEntity::new,ENVIRONMENTAL_REGULATOR.get()).build(null));
 
-    private OverhaulContent() {}
+    public static final RegistryObject<EntityType<FieldScientistEntity>> FIELD_SCIENTIST=ENTITY_TYPES.register("field_scientist",()->EntityType.Builder.of(FieldScientistEntity::new,MobCategory.CREATURE).sized(0.6F,1.95F).clientTrackingRange(8).build(new ResourceLocation(MatterOverdrive.MOD_ID,"field_scientist").toString()));
+    public static final RegistryObject<EntityType<SystemsEngineerEntity>> SYSTEMS_ENGINEER=ENTITY_TYPES.register("systems_engineer",()->EntityType.Builder.of(SystemsEngineerEntity::new,MobCategory.CREATURE).sized(0.6F,1.95F).clientTrackingRange(8).build(new ResourceLocation(MatterOverdrive.MOD_ID,"systems_engineer").toString()));
+    public static final RegistryObject<EntityType<AssimilatorEntity>> ASSIMILATOR=ENTITY_TYPES.register("assimilator",()->EntityType.Builder.of(AssimilatorEntity::new,MobCategory.MONSTER).sized(0.6F,1.95F).clientTrackingRange(8).build(new ResourceLocation(MatterOverdrive.MOD_ID,"assimilator").toString()));
+    public static final RegistryObject<EntityType<PhaseStalkerEntity>> PHASE_STALKER=ENTITY_TYPES.register("phase_stalker",()->EntityType.Builder.of(PhaseStalkerEntity::new,MobCategory.MONSTER).sized(0.6F,1.95F).clientTrackingRange(8).build(new ResourceLocation(MatterOverdrive.MOD_ID,"phase_stalker").toString()));
 
-    private static RegistryObject<Block> register(String id, java.util.function.Supplier<Block> factory) {
-        RegistryObject<Block> block = BLOCKS.register(id, factory);
-        BLOCKS_BY_ID.put(id, block);
-        BLOCK_ITEMS.put(id, ITEMS.register(id, () -> new BlockItem(block.get(), new Item.Properties())));
-        return block;
-    }
-
-    private static BlockBehaviour.Properties machine() { return BlockBehaviour.Properties.of().strength(5.0F, 15.0F).requiresCorrectToolForDrops().sound(SoundType.METAL); }
-    private static BlockBehaviour.Properties decor() { return BlockBehaviour.Properties.of().strength(3.0F, 8.0F).requiresCorrectToolForDrops().sound(SoundType.METAL); }
-    public static Map<String, RegistryObject<Block>> blocks() { return Collections.unmodifiableMap(BLOCKS_BY_ID); }
+    private OverhaulContent(){}
+    private static RegistryObject<Block> register(String id,java.util.function.Supplier<Block> factory){RegistryObject<Block> block=BLOCKS.register(id,factory);BLOCKS_BY_ID.put(id,block);BLOCK_ITEMS.put(id,ITEMS.register(id,()->new BlockItem(block.get(),new Item.Properties())));return block;}
+    private static BlockBehaviour.Properties machine(){return BlockBehaviour.Properties.of().strength(5.0F,15.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);}private static BlockBehaviour.Properties decor(){return BlockBehaviour.Properties.of().strength(3.0F,8.0F).requiresCorrectToolForDrops().sound(SoundType.METAL);}public static Map<String,RegistryObject<Block>> blocks(){return Collections.unmodifiableMap(BLOCKS_BY_ID);}
 }
