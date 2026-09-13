@@ -445,19 +445,26 @@ def check_native_destiny_assets() -> None:
             ("animation", ASSETS / "native_destiny/animations" / f"{weapon_id}.animation.json"),
             ("display transform", ASSETS / "native_destiny/transforms" / f"{weapon_id}.json"),
             ("texture", ASSETS / "textures/native_destiny" / f"{weapon_id}.png"),
+            ("item model", ASSETS / "models/item" / f"{weapon_id}.json"),
         ):
             if not path.exists():
                 add("error", "destiny-visuals", f"native Destiny {kind} is missing for {weapon_id}: {path.relative_to(ROOT)}")
 
     sounds = json_file(ASSETS / "sounds.json")
-    sound_ids = re.findall(
-        r'\bregister\("([^"\\]+)"\)', read(ROOT / "src/main/java/matteroverdrive/registry/ModDestinySounds.java"))
+    sound_source = read(ROOT / "src/main/java/matteroverdrive/registry/ModDestinySounds.java")
+    sound_ids = re.findall(r'\bregister\("([^"\\]+)"\)', sound_source)
+    profile_sound_ids = set()
+    for line in read(DESTINY_PROFILES_JAVA).splitlines():
+        if not re.match(r'^\s*[A-Z0-9_]+\("', line):
+            continue
+        values = re.findall(r'"(destiny_[a-z0-9_]+)"', line)
+        profile_sound_ids.update(values[1:])
     if len(sound_ids) != len(set(sound_ids)):
         duplicates = sorted({sound_id for sound_id in sound_ids if sound_ids.count(sound_id) > 1})
         add("error", "destiny-audio", f"duplicate native Destiny sound registrations: {', '.join(duplicates)}")
     if not isinstance(sounds, dict):
         return
-    for sound_id in sound_ids:
+    for sound_id in set(sound_ids) | profile_sound_ids:
         if sound_id not in sounds:
             add("error", "destiny-audio", f"registered native Destiny sound has no sounds.json entry: {sound_id}")
             continue

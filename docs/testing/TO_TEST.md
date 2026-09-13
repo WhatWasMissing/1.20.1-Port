@@ -169,6 +169,7 @@ Use a fresh world or unexplored chunks.
 - [ ] Weapon Station slots/modules persist and its stats update immediately after module changes.
 - [ ] First/third-person weapon transforms remain visible and correctly oriented.
 - [ ] Ace of Spades, Hawkmoon, Khvostov, MIDA, Monte Carlo, Sleeper Simulant, SUROS Regime, The Last Word and Thorn use the supplied Destiny GunPack first-person fire mix for the shooter, third-person fire mix for other clients, and exact available draw/reload samples.
+- [ ] Verify the 35 additional native GunPack conversions appear in the creative tab and can be crafted, render with their imported models/textures, play their available source fire/third-person audio, and accept Weapon Station battery/barrel/sights/colour/utility modules.
 
 ## Legacy/world-content regression
 

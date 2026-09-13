@@ -44,6 +44,17 @@ def need(text, marker, label):
         errors.append(f"missing {label}: {marker}")
 
 
+def destiny_profile_event_ids(profile_source):
+    """Return sound arguments, excluding each enum entry's item id."""
+    event_ids = set()
+    for line in profile_source.splitlines():
+        if not re.match(r'^\s*[A-Z0-9_]+\("', line):
+            continue
+        values = re.findall(r'"(destiny_[a-z0-9_]+)"', line)
+        event_ids.update(values[1:])
+    return event_ids
+
+
 def main():
     weapon = read("weapon")
     system = read("system")
@@ -77,8 +88,13 @@ def main():
     need(native_library, "native_destiny/geometry/", "native Destiny geometry resource loader")
     need(native_library, "native_destiny/animations/", "native Destiny animation resource loader")
     need(native_library, 'geometryRoot.getAsJsonArray("minecraft:geometry")', "Bedrock geometry parser")
+    need(native_library, 'frame.has("post")', "GunPack post-keyframe animation support")
     need(native_item, "thirdPersonFireSound()", "native Destiny third-person fire routing")
     need(native_item, "playFireSound(level, shooter, volume, pitch)", "native Destiny perspective fire audio")
+    need(native_item, "supportsModule(WeaponModuleItem module)", "native Destiny module compatibility")
+    need(native_item, "WeaponSystem.energyMultiplier(weapon)", "native Destiny energy module scaling")
+    need(native_item, "WeaponSystem.damageMultiplier(weapon)", "native Destiny damage module scaling")
+    need(native_item, "WeaponSystem.getColor(weapon)", "native Destiny colour module rendering")
 
     actual_audio_dir = ROOT / "src/main/resources/assets/matteroverdrive/sounds/destiny/actual"
     for filename in ACTUAL_DESTINY_AUDIO:
@@ -86,9 +102,14 @@ def main():
         if not path.is_file() or path.stat().st_size == 0:
             errors.append(f"missing exact Destiny GunPack audio: {path.relative_to(ROOT)}")
 
+    expanded_audio = sorted(actual_audio_dir.glob("destiny_*.ogg"))
+    for path in expanded_audio:
+        if path.stat().st_size == 0:
+            errors.append(f"empty expanded Destiny GunPack audio: {path.relative_to(ROOT)}")
+
     profile_ids = re.findall(r'^\s*[A-Z0-9_]+\("([^"\\]+)"', profile, re.MULTILINE)
-    if len(profile_ids) != 14:
-        errors.append(f"expected 14 imported Destiny weapon profiles, found {len(profile_ids)}")
+    if len(profile_ids) != 49:
+        errors.append(f"expected 49 imported Destiny weapon profiles, found {len(profile_ids)}")
     for weapon_id in profile_ids:
         for relative in (
                 f"src/main/resources/assets/matteroverdrive/native_destiny/geometry/{weapon_id}.geo.json",
@@ -97,6 +118,23 @@ def main():
                 f"src/main/resources/assets/matteroverdrive/textures/native_destiny/{weapon_id}.png"):
             if not (ROOT / relative).is_file():
                 errors.append(f"missing imported Destiny asset: {relative}")
+        item_model = ROOT / "src/main/resources/assets/matteroverdrive/models/item" / f"{weapon_id}.json"
+        if not item_model.is_file():
+            errors.append(f"missing imported Destiny item model: {item_model.relative_to(ROOT)}")
+
+    recipe_dir = ROOT / "src/main/resources/data/matteroverdrive/recipes"
+    destiny_recipes = sorted(recipe_dir.glob("destiny_*.json"))
+    if len(destiny_recipes) != 35:
+        errors.append(f"expected 35 additional Destiny recipes, found {len(destiny_recipes)}")
+    for recipe_path in destiny_recipes:
+        try:
+            recipe = json.loads(recipe_path.read_text(encoding="utf-8"))
+            result_id = recipe.get("result", {}).get("item")
+            expected_id = f"matteroverdrive:{recipe_path.stem}"
+            if result_id != expected_id or recipe_path.stem not in profile_ids:
+                errors.append(f"Destiny recipe result is not connected to its profile: {recipe_path.relative_to(ROOT)}")
+        except Exception as exc:
+            errors.append(f"cannot parse Destiny recipe {recipe_path.relative_to(ROOT)}: {exc}")
 
     sounds_path = ROOT / "src/main/resources/assets/matteroverdrive/sounds.json"
     try:
@@ -104,9 +142,14 @@ def main():
     except Exception as exc:
         errors.append(f"cannot parse Destiny sounds resource: {exc}")
         sounds = {}
-    for sound_id in re.findall(r'register\("([^"\\]+)"\)', destiny_sounds):
+    registered_ids = set(re.findall(r'register\("([^"\\]+)"\)', destiny_sounds))
+    profile_sound_ids = destiny_profile_event_ids(profile)
+    for sound_id in registered_ids | profile_sound_ids:
         if sound_id not in sounds:
             errors.append(f"registered Destiny sound has no sounds.json entry: {sound_id}")
+    for path in expanded_audio:
+        if path.stem not in sounds:
+            errors.append(f"expanded Destiny audio has no sounds.json entry: {path.stem}")
 
     if errors:
         print(f"WEAPON CONSISTENCY FAILED: {len(errors)} issue(s)")

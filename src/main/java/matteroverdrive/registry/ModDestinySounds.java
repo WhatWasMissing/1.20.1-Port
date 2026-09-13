@@ -1,6 +1,7 @@
 package matteroverdrive.registry;
 
 import matteroverdrive.MatterOverdrive;
+import matteroverdrive.item.weapon.NativeDestinyWeaponProfile;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraftforge.registries.DeferredRegister;
@@ -101,11 +102,25 @@ public final class ModDestinySounds {
         register("destiny_thelastword_reload");
         register("destiny_thorn_3p");
         register("destiny_thorn_draw");
+
+        // Every native Destiny profile owns its core fire/perspective/draw/reload IDs.
+        // Deriving these registrations from the profile keeps an imported weapon from
+        // becoming playable with a missing SoundEvent registration.
+        for (NativeDestinyWeaponProfile profile : NativeDestinyWeaponProfile.values()) {
+            registerIfAbsent(profile.fireSound());
+            registerIfAbsent(profile.thirdPersonFireSound());
+            registerIfAbsent(profile.drawSound());
+            registerIfAbsent(profile.reloadSound());
+        }
     }
 
     private static void register(String id) {
         SOUNDS.put(id, SOUND_EVENTS.register(id,
                 () -> SoundEvent.createVariableRangeEvent(new ResourceLocation(MatterOverdrive.MOD_ID, id))));
+    }
+
+    private static void registerIfAbsent(String id) {
+        if (id != null && !SOUNDS.containsKey(id)) register(id);
     }
 
     public static SoundEvent get(String id) {

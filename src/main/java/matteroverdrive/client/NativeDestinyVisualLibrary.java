@@ -120,10 +120,7 @@ public final class NativeDestinyVisualLibrary {
             float nowTicks = minecraft.level.getGameTime() + partialTick;
             String activeName = NativeDestinyWeaponItem.activeAnimation(stack);
             long startTick = NativeDestinyWeaponItem.animationStart(stack);
-            AnimationClip active = animations.get(activeName);
-            if (active == null && activeName.endsWith("fire2")) {
-                active = animations.get("animation.model.fire");
-            }
+            AnimationClip active = findAnimation(activeName);
             if (active != null && startTick > 0L) {
                 float seconds = Math.max(0.0F, (nowTicks - startTick) / 20.0F);
                 if (seconds <= active.length + 0.05F) {
@@ -132,11 +129,40 @@ public final class NativeDestinyVisualLibrary {
                 }
             }
 
-            AnimationClip idle = animations.get("animation.model.idle");
+            AnimationClip idle = findAnimation("animation.model.idle");
             if (idle != null && idle.length > 0.0F) {
                 float seconds = (nowTicks / 20.0F) % idle.length;
                 applyClip(idle, seconds);
             }
+        }
+
+        /**
+         * Accept both the already-normalised Matter Overdrive animation names and the
+         * native GunPack names. The source pack calls the firing clip {@code shoot},
+         * the idle clip {@code static_idle}, and uses separate tactical/empty reload
+         * clips, so resolving aliases here keeps the weapon item independent of the
+         * source pack's naming conventions.
+         */
+        private AnimationClip findAnimation(String requested) {
+            AnimationClip direct = animations.get(requested);
+            if (direct != null) return direct;
+            return switch (requested) {
+                case "animation.model.idle" -> firstAnimation("static_idle", "idle");
+                case "animation.model.draw" -> firstAnimation("draw");
+                case "animation.model.reload" -> firstAnimation(
+                        "reload_tactical", "reload", "reload_loop", "reload_intro", "reload_empty");
+                case "animation.model.fire", "animation.model.fire2" -> firstAnimation(
+                        "shoot", "fire", "static_semi");
+                default -> null;
+            };
+        }
+
+        private AnimationClip firstAnimation(String... names) {
+            for (String name : names) {
+                AnimationClip clip = animations.get(name);
+                if (clip != null) return clip;
+            }
+            return null;
         }
 
         private void reset() {
@@ -397,15 +423,44 @@ public final class NativeDestinyVisualLibrary {
         }
 
         static CubeSpec parse(JsonObject object) {
-            JsonArray uv = object.getAsJsonArray("uv");
+            JsonElement uvElement = object.get("uv");
+            float[] uv = parseUv(uvElement);
             return new CubeSpec(
                     Vec3.parse(object.getAsJsonArray("origin")),
                     Vec3.parse(object.getAsJsonArray("size")),
                     object.has("pivot") ? Vec3.parse(object.getAsJsonArray("pivot")) : null,
                     object.has("rotation") ? Vec3.parse(object.getAsJsonArray("rotation")) : Vec3.ZERO,
                     object.has("inflate") ? object.get("inflate").getAsFloat() : 0.0F,
-                    uv.get(0).getAsFloat(), uv.get(1).getAsFloat(),
+                    uv[0], uv[1],
                     object.has("mirror") && object.get("mirror").getAsBoolean());
+        }
+
+        /**
+         * Bedrock geometry may use either Blockbench's compact [u, v] form or a
+         * per-face UV object. Vanilla's CubeListBuilder accepts one anchor for its
+         * standard box atlas layout, so use the source north face as that anchor when
+         * importing the richer form. This preserves the source texture placement for
+         * the visible face while keeping the loader compatible with both source packs.
+         */
+        private static float[] parseUv(JsonElement element) {
+            if (element == null || element.isJsonNull()) return new float[] {0.0F, 0.0F};
+            if (element.isJsonArray()) {
+                JsonArray array = element.getAsJsonArray();
+                return new float[] {array.get(0).getAsFloat(), array.get(1).getAsFloat()};
+            }
+            if (element.isJsonObject()) {
+                JsonObject faces = element.getAsJsonObject();
+                for (String face : List.of("north", "south", "east", "west", "up", "down")) {
+                    JsonElement candidate = faces.get(face);
+                    if (candidate == null || !candidate.isJsonObject()) continue;
+                    JsonElement faceUv = candidate.getAsJsonObject().get("uv");
+                    if (faceUv != null && faceUv.isJsonArray()) {
+                        JsonArray array = faceUv.getAsJsonArray();
+                        return new float[] {array.get(0).getAsFloat(), array.get(1).getAsFloat()};
+                    }
+                }
+            }
+            return new float[] {0.0F, 0.0F};
         }
     }
 
@@ -471,9 +526,25 @@ public final class NativeDestinyVisualLibrary {
                         JsonArray vector = rawFrame.isJsonArray()
                                 ? rawFrame.getAsJsonArray()
                                 : frame == null ? null : frame.getAsJsonArray("vector");
+                        // GunPack/Blockbench keyframes commonly store the actual
+                        // value in pre/post fields rather than a direct vector.
+                        // Prefer post (the value held at the keyframe), then fall
+                        // back to pre so those source clips do not lose their
+                        // reload, draw, or recoil poses during import.
+                        if (vector == null && frame != null) {
+                            vector = frame.has("post") ? frame.getAsJsonArray("post")
+                                    : frame.has("pre") ? frame.getAsJsonArray("pre") : null;
+                        }
                         if (vector == null) continue;
+                        String easing = "linear";
+                        if (frame != null) {
+                            if (frame.has("easing")) easing = frame.get("easing").getAsString();
+                            else if (frame.has("lerp_mode") && "catmullrom".equals(frame.get("lerp_mode").getAsString())) {
+                                easing = "linear";
+                            }
+                        }
                         frames.add(new Keyframe(time, Vec3.parse(vector),
-                                frame != null && frame.has("easing") ? frame.get("easing").getAsString() : "linear"));
+                                easing));
                     } catch (NumberFormatException ignored) {
                     }
                 }
