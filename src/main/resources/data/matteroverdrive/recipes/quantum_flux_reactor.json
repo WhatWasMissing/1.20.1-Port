@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["TDT","CMC","TCT"],"key":{"T":{"item":"matteroverdrive:tritanium_plate"},"D":{"item":"matteroverdrive:dilithium_crystal"},"C":{"item":"matteroverdrive:isolinear_circuit_mk3"},"M":{"item":"matteroverdrive:me_conversion_matrix"}},"result":{"item":"matteroverdrive:quantum_flux_reactor"}}

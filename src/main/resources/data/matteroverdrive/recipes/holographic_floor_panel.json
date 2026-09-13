@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["GGG","TCT"],"key":{"G":{"item":"minecraft:glass_pane"},"T":{"item":"matteroverdrive:tritanium_plate"},"C":{"item":"matteroverdrive:isolinear_circuit_mk1"}},"result":{"item":"matteroverdrive:holographic_floor_panel","count":6}}

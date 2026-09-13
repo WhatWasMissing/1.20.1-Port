@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["TCT","EFE","TCT"],"key":{"T":{"item":"matteroverdrive:tritanium_plate"},"C":{"item":"matteroverdrive:isolinear_circuit_mk2"},"E":{"item":"matteroverdrive:forcefield_emitter"},"F":{"item":"matteroverdrive:machine_casing"}},"result":{"item":"matteroverdrive:environmental_regulator"}}
