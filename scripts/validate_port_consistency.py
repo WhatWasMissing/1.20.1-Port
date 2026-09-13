@@ -42,6 +42,21 @@ RELIC_MODEL_DATA = {
     "CAPACITOR_HEART": 1006,
     "PHASE_ANCHOR": 1007,
 }
+VANILLA_LOOT_TARGETS = {
+    "chests/simple_dungeon", "chests/abandoned_mineshaft", "chests/shipwreck_supply",
+    "chests/desert_pyramid", "chests/pillager_outpost", "chests/nether_bridge",
+    "chests/stronghold_corridor", "chests/stronghold_crossing", "chests/stronghold_library",
+    "chests/jungle_temple", "chests/bastion_treasure", "chests/woodland_mansion",
+    "chests/buried_treasure", "chests/end_city_treasure", "chests/ancient_city",
+}
+NATURAL_SPAWN_MODIFIERS = {
+    "rogue_android_spawns.json": "matteroverdrive:rogue_android",
+    "ranged_rogue_android_spawns.json": "matteroverdrive:ranged_rogue_android",
+    "drone_spawns.json": "matteroverdrive:drone",
+    "mutant_scientist_spawns.json": "matteroverdrive:mutant_scientist",
+    "assimilator_spawns.json": "matteroverdrive:assimilator",
+    "phase_stalker_spawns.json": "matteroverdrive:phase_stalker",
+}
 
 @dataclass
 class Finding:
@@ -260,6 +275,30 @@ def check_facility_relics() -> None:
         if not texture_path.exists():
             add("error", "relic-resource", f"missing relic texture for {relic_id}")
 
+def check_vanilla_progression() -> None:
+    loot_source = read(ROOT / "src/main/java/matteroverdrive/event/VanillaLootEvents.java")
+    if "LootTableLoadEvent" not in loot_source or ".addPool" not in loot_source:
+        add("error", "vanilla-loot", "vanilla loot injection hook is missing")
+    for target in sorted(VANILLA_LOOT_TARGETS):
+        if target not in loot_source:
+            add("error", "vanilla-loot", f"vanilla loot target is missing from injection map: minecraft:{target}")
+
+    placement_source = read(ROOT / "src/main/java/matteroverdrive/event/LegacyEntityEvents.java")
+    for filename, entity_id in NATURAL_SPAWN_MODIFIERS.items():
+        path = DATA / "forge/biome_modifier" / filename
+        obj = json_file(path)
+        if not isinstance(obj, dict) or obj.get("type") != "forge:add_spawns":
+            add("error", "natural-spawn", f"invalid natural spawn modifier: {path.relative_to(ROOT)}")
+        elif obj.get("spawners", {}).get("type") != entity_id:
+            add("error", "natural-spawn", f"natural spawn modifier {filename} targets the wrong entity")
+        if entity_id.rsplit(":", 1)[-1].upper() not in placement_source.upper():
+            add("error", "natural-spawn", f"spawn placement registration is missing for {entity_id}")
+
+    npc_source = read(ROOT / "src/main/java/matteroverdrive/event/VillageNpcSpawnEvents.java")
+    for entity_id in ("FieldScientistEntity", "SystemsEngineerEntity", "MadScientistEntity"):
+        if entity_id not in npc_source:
+            add("error", "natural-spawn", f"village NPC population hook is missing {entity_id}")
+
 def check_structure_architecture() -> None:
     registry = read(STRUCTURES_JAVA)
     structure = read(STRUCTURE_JAVA)
@@ -305,6 +344,7 @@ def main() -> int:
     check_json_and_model_refs()
     check_guides()
     check_facility_relics()
+    check_vanilla_progression()
     check_structure_architecture()
     check_inventory_scope()
     write_reports(blocks, items)

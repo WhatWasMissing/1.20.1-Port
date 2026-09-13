@@ -66,6 +66,8 @@ Village Field Scientists, Systems Engineers and Mad Scientists now form the play
 
 Facility caches now have rare, themed **Legendary Relics** that install the existing Android passive protocols: Overclocked Relay, Swarm Beacon, Aegis Prism, Hunter Lens, Nanite Crown, Capacitor Heart and Phase Anchor. Their themed drops connect facility exploration to meaningful Android build choices without adding another progression currency.
 
+Vanilla exploration is also part of the progression route: practical Matter Overdrive supplies are injected into selected vanilla structure chests, while the seven Legendary Relics have rare themed drops in strongholds, temples, bastions, mansions, buried treasure, End Cities and Ancient Cities. Rogue Androids, ranged Rogue Androids, Drones, Assimilators, Phase Stalkers and rare Mutant Scientists can naturally appear in the Overworld; the three progression NPCs remain village-associated.
+
 ## Weapons
 
 Implemented: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload and module effects. Weapon Station exposes its real module slots and live statistics. Exact remaining module mesh placement and full legacy first-person animation choreography still need visual parity work.

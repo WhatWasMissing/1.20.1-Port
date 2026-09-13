@@ -11,6 +11,14 @@ Matter Overdrive's research story is delivered through people in the world. The
 specialists can appear near vanilla villages, so the lore is discovered during
 survival play rather than hidden in a separate menu.
 
+## NPC roster
+
+- **Field Scientist** - introduces scanning, Matter measurement and the first decomposer assignments.
+- **Systems Engineer** - explains FE, Matter and Network separation and issues practical power/logistics assignments.
+- **Mad Scientist** - handles Android conversion, long-form research, legacy recovery and the optional Cocktail of Ascension.
+
+These are the complete current Matter Overdrive progression NPCs. They appear around vanilla villages and record first contact, dialogue and objectives through the existing PDA field log.
+
 ## Field Scientist
 
 Field Scientists catalogue reproducible experiments: scanning blocks, measuring

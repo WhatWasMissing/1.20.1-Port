@@ -11,3 +11,11 @@ Matter Overdrive progression no longer relies on generated MO structures.
 - Phase Stalkers briefly phase out and accelerate while pursuing a target.
 
 Village specialists are created through a bounded village population hook, not by bringing the retired Matter Overdrive structures back into world generation.
+
+## Complete NPC roster
+
+- **Field Scientist** - Matter scanning, Matter measurement and first decomposer assignments.
+- **Systems Engineer** - FE, Matter and Network separation, plus power/logistics assignments.
+- **Mad Scientist** - Android conversion, the long-form research campaign and Cocktail of Ascension.
+
+These are the current progression NPCs. Failed animals are creature variants, while Rogue Androids, Assimilators, Phase Stalkers, Drones and the Mutant Scientist are hostile entities rather than NPCs.

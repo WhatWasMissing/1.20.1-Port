@@ -5,6 +5,7 @@ import matteroverdrive.entity.DroneEntity;
 import matteroverdrive.entity.MutantScientistEntity;
 import matteroverdrive.entity.RogueAndroidEntity;
 import matteroverdrive.registry.ModEntities;
+import matteroverdrive.registry.OverhaulContent;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.entity.animal.Cow;
@@ -38,6 +39,18 @@ public final class LegacyEntityEvents {
                 SpawnPlacementRegisterEvent.Operation.REPLACE);
         event.register(ModEntities.RANGED_ROGUE_ANDROID.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
                 (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random) && random.nextFloat() < 0.035F,
+                SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.DRONE.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random)
+                        && random.nextFloat() < 0.02F, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(ModEntities.MUTANT_SCIENTIST.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random)
+                        && random.nextFloat() < 0.004F, SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(OverhaulContent.ASSIMILATOR.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random),
+                SpawnPlacementRegisterEvent.Operation.REPLACE);
+        event.register(OverhaulContent.PHASE_STALKER.get(), SpawnPlacements.Type.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, spawnType, pos, random) -> Monster.checkMonsterSpawnRules(type, level, spawnType, pos, random),
                 SpawnPlacementRegisterEvent.Operation.REPLACE);
     }
 }

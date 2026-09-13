@@ -37,6 +37,7 @@ Attach `build/reports/m2-port-consistency.md` when reporting static-audit warnin
 - [ ] Confirm the Mad Scientist campaign still issues its sequential story/research assignments without duplicate contracts.
 - [ ] Relog and reopen the PDA: research status, assignment text, contact lore and scan history remain available.
 - [ ] Confirm PDA manual fallback opens without GuideME and GuideME opens the same current manual when installed.
+- [ ] In a fresh Overworld, remain near a village until Field Scientist, Systems Engineer and Mad Scientist appear; confirm each remains present after save/reload and records one PDA contact.
 
 ## Wireless FE transfer
 
@@ -93,6 +94,8 @@ Use a fresh world or unexplored chunks.
 - [ ] Facility-specific Android names/stats/reserves match the intended family.
 - [ ] Restoring a facility stands down unused generated reserve without deleting already deployed defenders.
 - [ ] Player-built Android Spawners retain normal FE/squad behavior.
+- [ ] In fresh vanilla structures, verify selected chest types receive Matter Overdrive supplies without replacing their vanilla loot.
+- [ ] Verify the seven rare vanilla Legendary Relic sources: Stronghold Library=Overclocked Relay, Jungle Temple=Swarm Beacon, Bastion Treasure=Aegis Prism, Woodland Mansion=Hunter Lens, Buried Treasure=Nanite Crown, End City=Capacitor Heart and Ancient City=Phase Anchor.
 - [ ] Main facility caches have a rare themed Legendary Relic pool: Manufacturing=Overclocked Relay, Bunker=Swarm Beacon/Aegis Prism, Black Site=Hunter Lens, Refinery=Nanite Crown, Relay=Capacitor Heart and Fusion=Phase Anchor.
 - [ ] Relic items show a glint, distinct model/texture and dynamic protocol name; right-clicking as an Android installs the matching existing passive and consumes the relic.
 - [ ] A non-Android cannot consume a relic, an already-installed protocol is not consumed twice, and the selected protocol persists after relog/save reload.
@@ -149,6 +152,7 @@ Use a fresh world or unexplored chunks.
 - [ ] Ordnance affects ranged drone arrows, Ordnance Link applies Slowness II to ranged hits, and Hunter Network/Target Link/Hunter Lens each contribute their documented glowing-target bonuses.
 - [ ] Owned drones/android squads never attack owner/allies and cannot be silently stolen by another player.
 - [ ] Patrol/guard/hold/escort state and patrol drives persist after save/reload and level-up.
+- [ ] In a fresh Overworld at night, confirm natural hostile spawns can produce Rogue Androids, ranged Rogue Androids, Drones, Assimilators and Phase Stalkers; verify the Mutant Scientist remains exceptionally rare and does not flood the hostile mob cap.
 
 ## Weapons
 
