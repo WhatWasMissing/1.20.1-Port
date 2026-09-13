@@ -57,6 +57,26 @@
           "name": "matteroverdrive:emergency_ration"
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:artifact",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{RelicId:\"NANITE_CROWN\",CustomModelData:1005}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 24
+        }
+      ]
     }
   ]
 }

@@ -57,6 +57,41 @@
           "name": "matteroverdrive:emergency_ration"
         }
       ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:artifact",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{RelicId:\"SWARM_BEACON\",CustomModelData:1002}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "matteroverdrive:artifact",
+          "weight": 1,
+          "functions": [
+            {
+              "function": "minecraft:set_nbt",
+              "tag": "{RelicId:\"AEGIS_PRISM\",CustomModelData:1003}"
+            }
+          ]
+        },
+        {
+          "type": "minecraft:empty",
+          "weight": 22
+        }
+      ]
     }
   ]
 }

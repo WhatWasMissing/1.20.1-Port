@@ -72,9 +72,9 @@ public final class AndroidLoadout {
         HUNTER_ARRAY("Hunter-Killer Array", "Utility", 3, "Every 2s, scan 26 blocks and mark hostiles for 4.5s while applying 3s Weakness I."),
         RECURSIVE_CORE("Recursive Core", "Utility", 2, "Held-battery crouch charging gains +512 FE/t; every damaging Android ability hit restores 250 FE."),
         PHASE_NAVIGATOR("Phase Navigator", "Utility", 3, "Teleport gains +6 blocks range, 20% shorter cooldown, stronger post-blink buffs and +1,000 FE; cloak exit is also stronger."),
-        COMMAND_UPLINK("Command Uplink", "Drone Commander", 3, "Owned drone damage +15% and command-support effects are reinforced."),
-        SWARM_LOGIC("Swarm Logic", "Drone Commander", 3, "With multiple drones, fleet damage scales up and nearby drone repair is strengthened."),
-        GUARDIAN_DIRECTIVE("Guardian Directive", "Drone Commander", 2, "Nearby owned drones continuously receive at least Resistance II."),
+        COMMAND_UPLINK("Command Uplink", "Drone Commander", 3, "Extends the protected support envelope and grants owned drones Speed II."),
+        SWARM_LOGIC("Swarm Logic", "Drone Commander", 3, "With multiple drones, nearby fleet repair is strengthened."),
+        GUARDIAN_DIRECTIVE("Guardian Directive", "Drone Commander", 2, "Extends the protected drone envelope to 40 blocks; nearby drones receive Resistance II."),
         PREDATOR_CHAIN("Predator Chain", "Hunter-Killer", 3, "Damage against glowing targets +20% and each hit restores 250 FE."),
         EXECUTION_ROUTER("Execution Router", "Hunter-Killer", 2, "Deal +20% damage to glowing targets or enemies at/below 40% health."),
         STABILIZED_OPTICS("Stabilized Optics", "Precision Frame", 3, "Deal +22% damage to glowing targets."),
@@ -137,7 +137,7 @@ public final class AndroidLoadout {
         REPAIR_BEACON("Fragment of Repair Beacon", "Owned drones regenerate while close to their operator."),
         TARGET_LINK("Fragment of Target Link", "Owned drones deal +20% damage to glowing targets."),
         ESCORT("Fragment of Escort", "Take 10% less damage while an owned drone is nearby."),
-        ORDNANCE("Fragment of Ordnance", "Owned drone damage +20%.");
+        ORDNANCE("Fragment of Ordnance", "Ranged drone projectiles +20% damage.");
 
         public final String displayName;
         public final String description;
@@ -152,7 +152,7 @@ public final class AndroidLoadout {
         NANITE_CROWN("Nanite Recovery", "Makes recurring repair cheaper and substantially stronger; below 70% health it also repairs 2 HP every 2s for 100 FE."),
         HUNTER_LENS("Hunter Protocol", "Hunter Array range +18 blocks; marked targets take +15% player damage and +20% drone damage."),
         PHASE_ANCHOR("Phase Stability", "Cloak movement from Fragment of the Veil becomes Speed IV and lasts longer."),
-        SWARM_BEACON("Swarm Support", "Nearby drones gain stronger resistance and repair, plus +18% damage."),
+        SWARM_BEACON("Swarm Support", "Nearby drones gain Resistance III and a strong repair pulse."),
         CAPACITOR_HEART("Capacitor Feedback", "Damaging ability hits restore 400 FE at high charge; while above 50% FE, regenerate 250 FE/s.");
 
         public final String displayName;
@@ -163,12 +163,12 @@ public final class AndroidLoadout {
     public enum DronePerk {
         COMMAND_AUTHORITY(2, "Command Authority", "Extends the effective command/support envelope for your owned drone fleet."),
         TARGETING_SUITE(3, "Targeting Suite", "Owned drone damage +18%."),
-        REINFORCED_DRONES(4, "Reinforced Drones", "Owned drones near you continuously gain Resistance II."),
+        REINFORCED_DRONES(4, "Reinforced Drones", "Owned drones near you continuously gain Resistance III."),
         FIELD_REPAIR(5, "Field Repair", "Owned drones regenerate near their operator."),
-        HUNTER_NETWORK(6, "Hunter Network", "Owned drones gain the marked-target damage bonus against glowing enemies."),
+        HUNTER_NETWORK(6, "Hunter Network", "Owned drones deal +10% damage to glowing marked targets."),
         SWARM_COHESION(7, "Swarm Cohesion", "Multiple deployed drones increase fleet damage, scaling with fleet size."),
-        ESCORT_PROTOCOL(8, "Escort Protocol", "Take 10% less damage while an owned drone is nearby."),
-        ORDNANCE_LINK(9, "Ordnance Link", "Owned drone damage gains another +22% multiplier."),
+        ESCORT_PROTOCOL(8, "Escort Protocol", "Take an additional 5% less damage while an owned drone is nearby."),
+        ORDNANCE_LINK(9, "Ordnance Link", "Ranged drone projectiles apply Slowness II for 2 seconds."),
         OVERMIND(10, "Synthetic Overmind", "DRONE CAPSTONE: drone damage +25% and nearby drones gain stronger Resistance and regeneration.");
 
         public final int level;

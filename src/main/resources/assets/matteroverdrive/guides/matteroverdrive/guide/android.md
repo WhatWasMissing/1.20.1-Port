@@ -109,6 +109,19 @@ Android level progression is persistent. The skill tree grants **one Ascension P
 
 Aspects, Fragments and passive protocols sit above the physical body/chassis layer. Chassis choices therefore do not replace subclass choices: a Drone Commander can still run a Reinforced Frame, while a Precision Frame build can use Siege Myomers or a Stealth Shell.
 
+### Legendary relics
+
+Rare facility caches can contain **Legendary Relics**. Right-click a relic as an Android to install its existing passive protocol; only one protocol can be active at a time, and relics are not a separate currency or progression tree.
+
+- **Overclocked Relay** - Synthetic Manufacturing Plant; installs Overclock Protocol.
+- **Swarm Beacon** or **Aegis Prism** - Android Command Bunker; installs Swarm Support or Aegis Protocol.
+- **Hunter Lens** - Black Site; installs Hunter Protocol.
+- **Nanite Crown** - Matter Refinery; installs Nanite Recovery.
+- **Capacitor Heart** - Quantum Relay Station; installs Capacitor Feedback.
+- **Phase Anchor** - Fusion Research Complex; installs Phase Stability.
+
+Relics are consumed when installed and are rejected safely by non-Android players, so finding one gives an Android build a meaningful facility-linked choice without replacing the normal loadout controls.
+
 ## Linking and commanding drones
 
 Interact with an unowned drone to link it. Linked drones remember their owner and command mode. Sneak-interacting with your own drone releases the link.

@@ -64,6 +64,8 @@ Linked Drones support FOLLOW, HOLD, DEFENSIVE, PASSIVE and AGGRESSIVE modes with
 
 Village Field Scientists, Systems Engineers and Mad Scientists now form the player-facing research cast. Their conversations, issued assignments and first-contact lore are recorded by the existing PDA field log, while objectives remain normal transferable contracts.
 
+Facility caches now have rare, themed **Legendary Relics** that install the existing Android passive protocols: Overclocked Relay, Swarm Beacon, Aegis Prism, Hunter Lens, Nanite Crown, Capacitor Heart and Phase Anchor. Their themed drops connect facility exploration to meaningful Android build choices without adding another progression currency.
+
 ## Weapons
 
 Implemented: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload and module effects. Weapon Station exposes its real module slots and live statistics. Exact remaining module mesh placement and full legacy first-person animation choreography still need visual parity work.

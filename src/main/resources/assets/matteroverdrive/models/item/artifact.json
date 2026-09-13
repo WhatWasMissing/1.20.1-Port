@@ -2,5 +2,14 @@
   "parent": "item/generated",
   "textures": {
     "layer0": "matteroverdrive:item/artifact_empty"
-  }
+  },
+  "overrides": [
+    {"predicate":{"custom_model_data":1001},"model":"matteroverdrive:item/relic_overclocked_relay"},
+    {"predicate":{"custom_model_data":1002},"model":"matteroverdrive:item/relic_swarm_beacon"},
+    {"predicate":{"custom_model_data":1003},"model":"matteroverdrive:item/relic_aegis_prism"},
+    {"predicate":{"custom_model_data":1004},"model":"matteroverdrive:item/relic_hunter_lens"},
+    {"predicate":{"custom_model_data":1005},"model":"matteroverdrive:item/relic_nanite_crown"},
+    {"predicate":{"custom_model_data":1006},"model":"matteroverdrive:item/relic_capacitor_heart"},
+    {"predicate":{"custom_model_data":1007},"model":"matteroverdrive:item/relic_phase_anchor"}
+  ]
 }

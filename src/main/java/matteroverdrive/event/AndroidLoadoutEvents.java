@@ -13,6 +13,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -133,28 +134,34 @@ public final class AndroidLoadoutEvents {
 
     private static void applyDroneSupport(ServerPlayer player) {
         boolean commandAuthority = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.COMMAND_AUTHORITY);
-        double supportRadius = commandAuthority ? 48.0D : 30.0D;
+        boolean guardianDirective = AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.GUARDIAN_DIRECTIVE);
+        double supportRadius = commandAuthority ? 48.0D : guardianDirective ? 40.0D : 30.0D;
         List<DroneEntity> drones = ownedDrones(player, supportRadius);
         if (drones.isEmpty()) return;
 
         boolean swarmPassive = AndroidLoadout.hasArtifact(player, AndroidLoadout.Artifact.SWARM_BEACON);
-        boolean sentinel = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.SENTINEL) || swarmPassive;
-        boolean repair = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.REPAIR_BEACON)
-                || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.FIELD_REPAIR) || swarmPassive;
-        boolean reinforced = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.REINFORCED_DRONES)
-                || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.OVERMIND)
-                || AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.GUARDIAN_DIRECTIVE) || swarmPassive;
+        boolean sentinel = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.SENTINEL);
+        boolean repairBeacon = AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.REPAIR_BEACON);
+        boolean fieldRepair = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.FIELD_REPAIR);
+        boolean overmind = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.OVERMIND);
+        boolean reinforced = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.REINFORCED_DRONES);
+        boolean swarmLogic = AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.SWARM_LOGIC);
 
         for (DroneEntity drone : drones) {
             if (commandAuthority) drone.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 35, 1, true, false, false));
-            if (sentinel || reinforced) {
-                int amplifier = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.OVERMIND) || swarmPassive ? 2 : 1;
-                drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 35, amplifier, true, false, false));
-            }
-            if (repair && drone.getHealth() < drone.getMaxHealth()) {
-                float amount = AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.OVERMIND) ? 2.0F : 1.0F;
+            int resistanceAmplifier = -1;
+            if (sentinel || guardianDirective) resistanceAmplifier = Math.max(resistanceAmplifier, 1);
+            if (reinforced || overmind || swarmPassive) resistanceAmplifier = Math.max(resistanceAmplifier, 2);
+            if (resistanceAmplifier >= 0)
+                drone.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 35, resistanceAmplifier, true, false, false));
+            if (drone.getHealth() < drone.getMaxHealth()) {
+                float amount = 0.0F;
+                if (repairBeacon) amount += 0.5F;
+                if (fieldRepair) amount += 1.0F;
                 if (swarmPassive) amount += 1.0F;
-                if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.SWARM_LOGIC) && drones.size() >= 2) amount += 0.75F;
+                if (overmind) amount += 1.0F;
+                if (swarmLogic && drones.size() >= 2) amount += 0.75F;
+                if (amount <= 0.0F) continue;
                 drone.heal(amount);
             }
         }
@@ -191,21 +198,25 @@ public final class AndroidLoadoutEvents {
         if (sourceEntity instanceof DroneEntity drone && drone.getOwner() instanceof ServerPlayer owner
                 && AndroidData.isAndroid(owner) && event.getAmount() > 0.0F) {
             float multiplier = 1.0F;
+            boolean ranged = event.getSource().getDirectEntity() instanceof Arrow;
             if (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.TARGETING_SUITE)) multiplier *= 1.18F;
-            if (AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.ORDNANCE)) multiplier *= 1.20F;
-            if (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.ORDNANCE_LINK)) multiplier *= 1.22F;
-            if (AndroidLoadout.hasAspect(owner, AndroidLoadout.Aspect.COMMAND_UPLINK)) multiplier *= 1.15F;
-            if (AndroidLoadout.hasArtifact(owner, AndroidLoadout.Artifact.SWARM_BEACON)) multiplier *= 1.18F;
+            if (ranged && AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.ORDNANCE)) multiplier *= 1.20F;
             if (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.OVERMIND)) multiplier *= 1.25F;
-            if (event.getEntity().hasEffect(MobEffects.GLOWING)
-                    && (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.HUNTER_NETWORK)
-                    || AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.TARGET_LINK)
-                    || AndroidLoadout.hasArtifact(owner, AndroidLoadout.Artifact.HUNTER_LENS))) multiplier *= 1.20F;
-            int nearby = ownedDrones(owner, AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.COMMAND_AUTHORITY) ? 48.0D : 30.0D).size();
-            if (nearby >= 2 && (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.SWARM_COHESION)
-                    || AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.PACK_TACTICS)
-                    || AndroidLoadout.hasAspect(owner, AndroidLoadout.Aspect.SWARM_LOGIC))) multiplier *= 1.0F + Math.min(0.35F, nearby * 0.055F);
+            if (event.getEntity().hasEffect(MobEffects.GLOWING)) {
+                if (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.HUNTER_NETWORK)) multiplier *= 1.10F;
+                if (AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.TARGET_LINK)) multiplier *= 1.20F;
+                if (AndroidLoadout.hasArtifact(owner, AndroidLoadout.Artifact.HUNTER_LENS)) multiplier *= 1.20F;
+            }
+            double supportRadius = AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.COMMAND_AUTHORITY) ? 48.0D
+                    : AndroidLoadout.hasAspect(owner, AndroidLoadout.Aspect.GUARDIAN_DIRECTIVE) ? 40.0D : 30.0D;
+            int nearby = ownedDrones(owner, supportRadius).size();
+            float fleetScale = 0.0F;
+            if (AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.SWARM_COHESION)) fleetScale += 0.055F;
+            if (AndroidLoadout.hasFragment(owner, AndroidLoadout.Fragment.PACK_TACTICS)) fleetScale += 0.035F;
+            if (nearby >= 2 && fleetScale > 0.0F) multiplier *= 1.0F + Math.min(0.35F, nearby * fleetScale);
             event.setAmount(event.getAmount() * multiplier);
+            if (ranged && AndroidLoadout.hasDronePerk(owner, AndroidLoadout.DronePerk.ORDNANCE_LINK))
+                event.getEntity().addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 40, 1, true, false, false));
             return;
         }
 
@@ -261,8 +272,10 @@ public final class AndroidLoadoutEvents {
             if (AndroidData.isShieldEnabled(player)) multiplier *= 0.82F;
         }
         if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.RESOLVE) && player.getHealth() <= player.getMaxHealth() * 0.35F) multiplier *= 0.82F;
-        if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.ESCORT) || AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.ESCORT_PROTOCOL))
-            if (!ownedDrones(player, 20.0D).isEmpty()) multiplier *= 0.90F;
+        if (!ownedDrones(player, 20.0D).isEmpty()) {
+            if (AndroidLoadout.hasFragment(player, AndroidLoadout.Fragment.ESCORT)) multiplier *= 0.90F;
+            if (AndroidLoadout.hasDronePerk(player, AndroidLoadout.DronePerk.ESCORT_PROTOCOL)) multiplier *= 0.95F;
+        }
 
         if (AndroidLoadout.hasAspect(player, AndroidLoadout.Aspect.REACTIVE_EXOSHELL)) {
             long now = player.level().getGameTime();

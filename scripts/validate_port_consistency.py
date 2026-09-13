@@ -25,6 +25,23 @@ INVENTORY_JSON = ROOT / "PORT_INVENTORY.json"
 LANG_JSON = ASSETS / "lang/en_us.json"
 GUIDE_ROOT = ASSETS / "guides/matteroverdrive/guide"
 RETIRED_ACTIVE_IDS = {"star_map"}
+FACILITY_RELICS = {
+    "synthetic_manufacturing_plant": {"OVERCLOCKED_RELAY"},
+    "android_command_bunker": {"SWARM_BEACON", "AEGIS_PRISM"},
+    "black_site": {"HUNTER_LENS"},
+    "matter_refinery": {"NANITE_CROWN"},
+    "quantum_relay_station": {"CAPACITOR_HEART"},
+    "fusion_research_complex": {"PHASE_ANCHOR"},
+}
+RELIC_MODEL_DATA = {
+    "OVERCLOCKED_RELAY": 1001,
+    "SWARM_BEACON": 1002,
+    "AEGIS_PRISM": 1003,
+    "HUNTER_LENS": 1004,
+    "NANITE_CROWN": 1005,
+    "CAPACITOR_HEART": 1006,
+    "PHASE_ANCHOR": 1007,
+}
 
 @dataclass
 class Finding:
@@ -203,6 +220,46 @@ def check_guides() -> None:
     else:
         add("error", "guideme", "Block Reference page does not exist")
 
+def check_facility_relics() -> None:
+    """Verify themed relic drops resolve to the existing passive-protocol item."""
+    found: dict[str, str] = {}
+    for table_name, expected in FACILITY_RELICS.items():
+        path = DATA / "loot_tables/chests/facilities" / f"{table_name}.json"
+        table = json_file(path)
+        if not isinstance(table, dict):
+            continue
+        text = json.dumps(table)
+        relic_ids = set(re.findall(r'RelicId:\\"([A-Z_]+)\\"', text))
+        for relic_id in sorted(relic_ids - expected):
+            add("error", "relic-loot", f"{table_name} contains relic {relic_id} outside its themed drop")
+        for relic_id in sorted(relic_ids):
+            if relic_id in found and found[relic_id] != table_name:
+                add("error", "relic-loot", f"Legendary Relic {relic_id} is duplicated in {found[relic_id]} and {table_name}")
+            found[relic_id] = table_name
+        missing = expected - relic_ids
+        for relic_id in sorted(missing):
+            add("error", "relic-loot", f"{table_name} is missing themed Legendary Relic {relic_id}")
+
+    for relic_id in sorted(set(RELIC_MODEL_DATA) - set(found)):
+        add("error", "relic-loot", f"Legendary Relic {relic_id} is not present in a main facility loot table")
+
+    artifact_model = json_file(ASSETS / "models/item/artifact.json")
+    overrides = artifact_model.get("overrides", []) if isinstance(artifact_model, dict) else []
+    override_models = {
+        entry.get("model"): entry.get("predicate", {}).get("custom_model_data")
+        for entry in overrides if isinstance(entry, dict)
+    }
+    for relic_id, model_data in RELIC_MODEL_DATA.items():
+        model_name = f"matteroverdrive:item/relic_{relic_id.lower()}"
+        if override_models.get(model_name) != model_data:
+            add("error", "relic-resource", f"artifact item model lacks CustomModelData {model_data} override for {relic_id}")
+        model_path = ASSETS / "models/item" / f"relic_{relic_id.lower()}.json"
+        texture_path = ASSETS / "textures/item" / f"relic_{relic_id.lower()}.png"
+        if not model_path.exists():
+            add("error", "relic-resource", f"missing relic model for {relic_id}")
+        if not texture_path.exists():
+            add("error", "relic-resource", f"missing relic texture for {relic_id}")
+
 def check_structure_architecture() -> None:
     registry = read(STRUCTURES_JAVA)
     structure = read(STRUCTURE_JAVA)
@@ -247,6 +304,7 @@ def main() -> int:
     blocks, items = check_registry_resources()
     check_json_and_model_refs()
     check_guides()
+    check_facility_relics()
     check_structure_architecture()
     check_inventory_scope()
     write_reports(blocks, items)

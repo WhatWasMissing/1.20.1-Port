@@ -93,6 +93,9 @@ Use a fresh world or unexplored chunks.
 - [ ] Facility-specific Android names/stats/reserves match the intended family.
 - [ ] Restoring a facility stands down unused generated reserve without deleting already deployed defenders.
 - [ ] Player-built Android Spawners retain normal FE/squad behavior.
+- [ ] Main facility caches have a rare themed Legendary Relic pool: Manufacturing=Overclocked Relay, Bunker=Swarm Beacon/Aegis Prism, Black Site=Hunter Lens, Refinery=Nanite Crown, Relay=Capacitor Heart and Fusion=Phase Anchor.
+- [ ] Relic items show a glint, distinct model/texture and dynamic protocol name; right-clicking as an Android installs the matching existing passive and consumes the relic.
+- [ ] A non-Android cannot consume a relic, an already-installed protocol is not consumed twice, and the selected protocol persists after relog/save reload.
 
 ## Matter economy and machines
 
@@ -141,6 +144,9 @@ Use a fresh world or unexplored chunks.
 - [ ] HUD XP progress matches the nonlinear Skill Tree thresholds (150, 400, 800, 1,400, 2,250, 3,400, 5,000, 7,200, 10,000 total XP).
 - [ ] HUD available Ascension Points matches the Skill Tree: one point every two Android levels, maximum five at level 10.
 - [ ] Drone Matrix level and selected behavior persist.
+- [ ] Drone support overlap audit: Command Authority provides the 48-block envelope and Speed II, Guardian Directive provides the 40-block envelope and Resistance II, and Reinforced Drones upgrades resistance to Resistance III.
+- [ ] Drone repair sources stack as distinct contributions, while Swarm Logic improves repair only for fleets of at least two; it does not silently duplicate fleet damage scaling.
+- [ ] Ordnance affects ranged drone arrows, Ordnance Link applies Slowness II to ranged hits, and Hunter Network/Target Link/Hunter Lens each contribute their documented glowing-target bonuses.
 - [ ] Owned drones/android squads never attack owner/allies and cannot be silently stolen by another player.
 - [ ] Patrol/guard/hold/escort state and patrol drives persist after save/reload and level-up.
 
