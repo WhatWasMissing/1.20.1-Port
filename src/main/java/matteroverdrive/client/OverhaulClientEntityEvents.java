@@ -1,19 +1,15 @@
 package matteroverdrive.client;
 
 import matteroverdrive.MatterOverdrive;
-import matteroverdrive.entity.AssimilatorEntity;
-import matteroverdrive.entity.FieldScientistEntity;
-import matteroverdrive.entity.PhaseStalkerEntity;
-import matteroverdrive.entity.SystemsEngineerEntity;
 import matteroverdrive.registry.OverhaulContent;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.EntityRenderersEvent;
 import net.minecraft.client.renderer.entity.VillagerRenderer;
 import net.minecraft.client.renderer.entity.ZombieRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
