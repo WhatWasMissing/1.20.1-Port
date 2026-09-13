@@ -1,6 +1,7 @@
 package matteroverdrive.blockentity;
 
 import matteroverdrive.capability.MachineEnergyStorage;
+import matteroverdrive.machine.MachineSideConfigurationData;
 import matteroverdrive.registry.ModExtraBlockEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -53,8 +54,10 @@ public class QuantumPowerRelayBlockEntity extends BlockEntity {
         int remaining = Math.min(TRANSFER, energy.getMaxEnergyStored() - energy.getEnergyStored());
         for (Direction direction : Direction.values()) {
             if (remaining <= 0) break;
-            BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
+            BlockPos neighborPos = worldPosition.relative(direction);
+            BlockEntity neighbor = level.getBlockEntity(neighborPos);
             if (neighbor == null || neighbor instanceof QuantumPowerRelayBlockEntity) continue;
+            if (!MachineSideConfigurationData.allowsOutput(level, neighborPos, direction.getOpposite(), MachineSideConfigurationData.Resource.ENERGY)) continue;
             IEnergyStorage source = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
             if (source == null || !source.canExtract()) continue;
             int accepted = Math.min(source.extractEnergy(remaining, true), energy.receiveEnergy(remaining, true));
@@ -104,8 +107,10 @@ public class QuantumPowerRelayBlockEntity extends BlockEntity {
         int budget = Math.min(TRANSFER, energy.getEnergyStored());
         for (Direction direction : Direction.values()) {
             if (budget <= 0) break;
-            BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
+            BlockPos neighborPos = worldPosition.relative(direction);
+            BlockEntity neighbor = level.getBlockEntity(neighborPos);
             if (neighbor == null || neighbor instanceof QuantumPowerRelayBlockEntity) continue;
+            if (!MachineSideConfigurationData.allowsInput(level, neighborPos, direction.getOpposite(), MachineSideConfigurationData.Resource.ENERGY)) continue;
             IEnergyStorage receiver = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
             if (receiver == null || !receiver.canReceive()) continue;
             int accepted = receiver.receiveEnergy(budget, true);

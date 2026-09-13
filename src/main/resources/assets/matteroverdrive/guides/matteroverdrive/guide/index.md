@@ -28,6 +28,8 @@ The scientist/research campaign is an optional guided progression path rather th
 ## Reference
 
 - [Current Features](current_features.md)
+- [Block Reference](blocks.md)
+- [Specialists and Lore](specialists.md)
 
 ## Systems
 

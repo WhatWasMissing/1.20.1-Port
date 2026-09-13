@@ -3,6 +3,7 @@ package matteroverdrive.blockentity;
 import matteroverdrive.android.AndroidChassisData;
 import matteroverdrive.android.AndroidData;
 import matteroverdrive.capability.MachineEnergyStorage;
+import matteroverdrive.machine.MachineSideConfigurationData;
 import matteroverdrive.registry.ModExtraBlockEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,9 @@ import java.util.List;
 /** Wireless same-dimension Android charging relay inspired by player-transmitter style tech. */
 public class AndroidInductionRelayBlockEntity extends BlockEntity {
     public static final int CAPACITY = 2_000_000, INPUT = 16_384, OUTPUT = 8_192, BASE_RANGE = 32;
-    private final MachineEnergyStorage energy = new MachineEnergyStorage(CAPACITY, INPUT, 0, this::setChanged);
+    // The wireless Android output and adjacent FE output both debit this buffer.
+    // A zero extraction limit made chargeAndroids() deliver charge without consuming FE.
+    private final MachineEnergyStorage energy = new MachineEnergyStorage(CAPACITY, INPUT, OUTPUT, this::setChanged);
     private LazyOptional<IEnergyStorage> energyCap = LazyOptional.of(() -> energy);
     private int range = BASE_RANGE, lastTransfer;
     private long sequence;
@@ -39,8 +42,9 @@ public class AndroidInductionRelayBlockEntity extends BlockEntity {
     private void pullEnergy() {
         if (level == null) return; int remaining = Math.min(INPUT, energy.getMaxEnergyStored() - energy.getEnergyStored());
         for (Direction direction : Direction.values()) {
-            if (remaining <= 0) break; BlockEntity neighbor = level.getBlockEntity(worldPosition.relative(direction));
+            if (remaining <= 0) break; BlockPos neighbourPos = worldPosition.relative(direction); BlockEntity neighbor = level.getBlockEntity(neighbourPos);
             if (neighbor == null || neighbor instanceof AndroidInductionRelayBlockEntity) continue;
+            if (!MachineSideConfigurationData.allowsOutput(level, neighbourPos, direction.getOpposite(), MachineSideConfigurationData.Resource.ENERGY)) continue;
             IEnergyStorage source = neighbor.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).orElse(null);
             if (source == null || !source.canExtract()) continue;
             int offered = source.extractEnergy(remaining, true), accepted = energy.receiveEnergy(offered, true);

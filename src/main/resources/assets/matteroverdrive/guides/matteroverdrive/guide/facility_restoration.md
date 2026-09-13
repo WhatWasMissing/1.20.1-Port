@@ -38,4 +38,4 @@ The restoration pass adds native chunk-clipped infrastructure pieces rather than
 
 The same **Industrial Catwalk**, **Industrial Railing**, **Cable Tray**, **Warning Light**, **Damaged Panel** and **Security Door** blocks are available to players and have survival recipes. Player-placed Security Doors outside generated facilities can be toggled by use or redstone.
 
-World-generation changes only affect fresh chunks. The retired Star Map is not part of this system.
+World-generation changes only affect fresh chunks. This restoration loop is local to the facility and does not add a separate strategic travel layer.

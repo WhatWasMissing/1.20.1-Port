@@ -2,6 +2,7 @@ package matteroverdrive.block;
 
 import matteroverdrive.blockentity.EnergyPipeBlockEntity;
 import matteroverdrive.blockentity.HybridConduitBlockEntity;
+import matteroverdrive.registry.ModBlocks;
 import matteroverdrive.registry.ModExtraBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,7 +26,8 @@ public class HybridConduitBlock extends EnergyPipeBlock {
         // keeps the render state symmetric with matter/network pipes instead of relying
         // on a block entity appearing a tick later, which previously left visible gaps.
         return super.canVisuallyConnect(level, pos, direction, neighbour)
-                || neighbour.getBlock() instanceof VisualPipeBlock;
+                || neighbour.getBlock() instanceof VisualPipeBlock
+                || neighbour.is(ModBlocks.get("matter_pipe").get());
     }
 
     @Nullable

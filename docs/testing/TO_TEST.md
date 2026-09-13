@@ -28,6 +28,36 @@ python scripts/validate_network_transport_consistency.py
 
 Attach `build/reports/m2-port-consistency.md` when reporting static-audit warnings.
 
+## PDA, lore and village specialists
+
+- [ ] Find a Field Scientist, Systems Engineer and Mad Scientist near a vanilla village.
+- [ ] Speak to each specialist and confirm the contact is recorded once in the PDA field log.
+- [ ] Confirm Field Scientist assignments issue the existing Matter Technology contracts and progress through crafting/placement events.
+- [ ] Confirm Systems Engineer assignments issue the existing network/power contracts and progress through placement events.
+- [ ] Confirm the Mad Scientist campaign still issues its sequential story/research assignments without duplicate contracts.
+- [ ] Relog and reopen the PDA: research status, assignment text, contact lore and scan history remain available.
+- [ ] Confirm PDA manual fallback opens without GuideME and GuideME opens the same current manual when installed.
+
+## Wireless FE transfer
+
+- [ ] Charge an Android through an Android Induction Relay and confirm the relay's FE buffer decreases by the amount delivered.
+- [ ] Confirm the Induction Relay never charges across dimensions and splits output fairly between nearby Androids.
+- [ ] Feed a Quantum Power Relay from an adjacent FE source and confirm an explicitly linked same-dimension relay receives FE.
+- [ ] Confirm a nearby unlinked Quantum Power Relay receives zero wireless FE.
+- [ ] Configure an adjacent source/output face as DISABLED and confirm a relay does not pull through that face.
+- [ ] Configure an adjacent consumer/input face as DISABLED and confirm a relay does not push through that face.
+- [ ] Clear a Quantum Linker pair and confirm transfer stops on the next server tick without FE duplication.
+- [ ] Save/reload both relays with loaded chunks and confirm energy and reciprocal links persist.
+
+## GuideME blocks and block assets
+
+- [ ] Open GuideME's Block Reference and verify every registered block has an item image and an embedded current crafting recipe.
+- [ ] Open representative machine, pipe, decorative, crate, reactor and security-door entries from the reference page.
+- [ ] Confirm the block reference contains no active retired-system page or broken local link.
+- [ ] Run the block/resource audit and confirm no registered block has a missing blockstate, item model, recipe or loot table.
+- [ ] Inspect the main block palette in-world: Heavy Energy Cable, Matter Pipe, Network Pipe and Hybrid Conduit remain visually distinct.
+- [ ] Inspect decorative plates, vents, crates and reactor panels in a placed 3D room; confirm faces, collision and rotations are readable.
+
 ## Highest priority: facility QA v2
 
 Use a fresh world or unexplored chunks.

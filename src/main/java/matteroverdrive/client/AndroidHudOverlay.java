@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = MatterOverdrive.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class AndroidHudOverlay {
     private static final int PANEL_WIDTH = 226;
-    private static final int PANEL_HEIGHT = 118;
+    private static final int PANEL_HEIGHT = 136;
     private AndroidHudOverlay() {}
 
     @SubscribeEvent public static void render(RenderGuiOverlayEvent.Post event) {
@@ -31,10 +31,14 @@ public final class AndroidHudOverlay {
         int fill=Math.max(0,Math.min(bw,Math.round(bw*energy/(float)capacity))); g.fill(bx,by,bx+fill,by+5,energy<low?0xFFFF8A2B:0xFF35CFFF);
         g.drawString(mc.font,compact(energy)+" / "+compact(capacity)+" FE",bx,by+7,energy<low?0xFFFFB45B:0xFFB5DFFF,false);
         int level=AndroidClientState.level(); int unspent=Math.max(0, AndroidData.skillPointsForLevel(level)-Long.bitCount(AndroidClientState.selectedPerks()));
-        String progress="L"+level+(unspent>0?" // "+unspent+" POINT"+(unspent==1?"":"S"):"")+" // "+coreState();
+        int levelStart=AndroidData.experienceForLevel(level);
+        int nextLevel=level>=AndroidData.MAX_LEVEL?levelStart:AndroidData.experienceForLevel(level+1);
+        int xpInto=Math.max(0,AndroidClientState.experience()-levelStart);
+        int xpSpan=Math.max(1,nextLevel-levelStart);
+        String progress="L"+level+" XP "+xpInto+"/"+(nextLevel==levelStart?"MAX":xpSpan)+(unspent>0?" // "+unspent+" POINT"+(unspent==1?"":"S"):"")+" // "+coreState();
         g.drawString(mc.font,progress,bx,y+35,coreStateColor(),false);
         g.drawString(mc.font,"LOADOUT // A"+AndroidClientState.aspectCount()+" F"+AndroidClientState.fragmentCount()+" // "+AndroidClientState.artifact().displayName,bx,y+47,0xFFB5C8D2,false);
-        int sy=y+62;
+        int sy=y+76;
         drawAbilitySlot(g,mc,bx,sy,bw,"H",AndroidClassAbilities.classAbilityName(spec),AndroidClientState.classAbilityCooldownTicks(),AndroidClassAbilities.classCooldownTicks(spec),AndroidClassAbilities.classEnergyCost(spec),AndroidClassAbilities.REQUIRED_LEVEL,energy);
         drawAbilitySlot(g,mc,bx,sy+18,bw,"N",AndroidClassAbilities.techAbilityName(spec),AndroidClientState.techAbilityCooldownTicks(),AndroidClassAbilities.techCooldownTicks(spec),AndroidClassAbilities.techEnergyCost(spec),AndroidClassAbilities.REQUIRED_LEVEL,energy);
         drawAbilitySlot(g,mc,bx,sy+36,bw,"G",spec.ultimate.displayName,AndroidClientState.ultimateCooldownTicks(),spec.ultimate.cooldownTicks,spec.ultimate.energyCost,AndroidUltimates.REQUIRED_LEVEL,energy);

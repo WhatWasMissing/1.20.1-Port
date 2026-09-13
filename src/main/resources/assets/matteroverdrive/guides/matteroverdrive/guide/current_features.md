@@ -62,6 +62,8 @@ Implemented: Android conversion, FE/HUD, body parts, persistent skill tree, clas
 
 Linked Drones support FOLLOW, HOLD, DEFENSIVE, PASSIVE and AGGRESSIVE modes with a dedicated Drone Management screen. The tech-overhaul branch adds Android Induction Relay wireless charging and fixes Capacitor Core capacity so its extra 50,000 FE is usable storage.
 
+Village Field Scientists, Systems Engineers and Mad Scientists now form the player-facing research cast. Their conversations, issued assignments and first-contact lore are recorded by the existing PDA field log, while objectives remain normal transferable contracts.
+
 ## Weapons
 
 Implemented: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE payment, heat/overheat, reload and module effects. Weapon Station exposes its real module slots and live statistics. Exact remaining module mesh placement and full legacy first-person animation choreography still need visual parity work.
@@ -81,10 +83,6 @@ Implemented: Empty/Claim/Access/Remove security protocols, security-aware wrench
 ## Optional integrations
 
 When GuideME is installed, this manual is the primary player-facing how-to guide and the Data Pad remains the scanning/contract tool. When Applied Energistics 2 is installed, public Forge item capabilities allow normal Storage Bus/import/export-style automation on audited Matter Overdrive inventories without merging ME and Matter Overdrive networks or inventing AE-to-FE conversion.
-
-## Permanent project direction
-
-The **Star Map system is retired**. It is not part of the active feature set or future roadmap and should not be restored as part of parity or new-content work.
 
 ## Remaining high-value work
 

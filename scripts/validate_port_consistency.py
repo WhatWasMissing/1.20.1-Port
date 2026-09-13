@@ -17,6 +17,7 @@ ASSETS = ROOT / "src/main/resources/assets/matteroverdrive"
 DATA = ROOT / "src/main/resources/data/matteroverdrive"
 REPORT_DIR = ROOT / "build/reports"
 BLOCKS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModBlocks.java"
+OVERHAUL_BLOCKS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/OverhaulContent.java"
 ITEMS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModItems.java"
 STRUCTURES_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModStructures.java"
 STRUCTURE_JAVA = ROOT / "src/main/java/matteroverdrive/worldgen/TechnologyFacilityStructure.java"
@@ -50,6 +51,12 @@ def java_list(text: str, name: str, constructor: str = "List") -> list[str]:
         return []
     return re.findall(r'"([^"\\]+)"', match.group(1))
 
+def registered_blocks(text: str) -> list[str]:
+    """Parse block registrations whose item/model resources must be audited."""
+    return re.findall(
+        r'public\s+static\s+final\s+RegistryObject<Block>\s+\w+\s*='
+        r'\s*register\("([^"\\]+)"', text)
+
 def json_file(path: Path):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -66,6 +73,11 @@ def resolve_model(ref: str) -> Path | None:
         return None
     if ref.startswith("matteroverdrive:"):
         rel = ref.split(":", 1)[1]
+        # Forge OBJ loaders use a resource path with an explicit .obj suffix.
+        # Treat that as the actual model resource instead of appending .json;
+        # the previous audit reported every valid OBJ as missing JSON.
+        if rel.endswith(".obj"):
+            return ASSETS / rel
         return ASSETS / "models" / f"{rel}.json"
     return None
 
@@ -115,8 +127,8 @@ def check_json_and_model_refs() -> None:
                         add("error", "texture", f"{path.relative_to(ROOT)} references missing texture {ref}")
 
 def check_registry_resources() -> tuple[list[str], list[str]]:
-    block_text, item_text = read(BLOCKS_JAVA), read(ITEMS_JAVA)
-    blocks = java_list(block_text, "LEGACY_BLOCK_IDS")
+    block_text, overhaul_text, item_text = read(BLOCKS_JAVA), read(OVERHAUL_BLOCKS_JAVA), read(ITEMS_JAVA)
+    blocks = list(dict.fromkeys(java_list(block_text, "LEGACY_BLOCK_IDS") + registered_blocks(overhaul_text)))
     no_items = set(java_list(block_text, "NO_BLOCK_ITEM", "Set"))
     items = java_list(item_text, "STANDALONE_ITEM_IDS")
     for label, values in (("block", blocks), ("standalone item", items)):
@@ -136,6 +148,9 @@ def check_registry_resources() -> tuple[list[str], list[str]]:
             add("warning", "localization", f"active block {block} lacks {key}")
         if block not in no_items and not (ASSETS / "models/item" / f"{block}.json").exists():
             add("warning", "resource", f"block item {block} has no item model")
+        recipe_id = block.replace(".", "_")
+        if block not in no_items and not (DATA / "recipes" / f"{recipe_id}.json").exists():
+            add("warning", "recipe", f"active block {block} has no crafting recipe named {recipe_id}")
     for item in items:
         key = f"item.matteroverdrive.{item}"
         if key not in lang and f"item.matteroverdrive.{item}.name" not in lang:
@@ -163,6 +178,30 @@ def check_guides() -> None:
                 target = target.with_suffix(".md")
             if not target.exists():
                 add("warning", "guideme", f"broken local link in {path.relative_to(ROOT)}: {raw}")
+
+    block_page = GUIDE_ROOT / "blocks.md"
+    if block_page.exists():
+        block_text = read(block_page)
+        registered = list(dict.fromkeys(
+            java_list(read(BLOCKS_JAVA), "LEGACY_BLOCK_IDS")
+            + registered_blocks(read(OVERHAUL_BLOCKS_JAVA))))
+        no_items = set(java_list(read(BLOCKS_JAVA), "NO_BLOCK_ITEM", "Set"))
+        for block in registered:
+            heading = f"### `{block}`"
+            if heading not in block_text:
+                add("error", "guideme", f"Block Reference is missing active block {block}")
+                continue
+            if block in no_items:
+                continue
+            item_link = f'<ItemLink id="matteroverdrive:{block}" />'
+            recipe_id = block.replace(".", "_")
+            recipe_link = f'<RecipeFor id="matteroverdrive:{recipe_id}" />'
+            if item_link not in block_text:
+                add("error", "guideme", f"Block Reference is missing item image link for {block}")
+            if recipe_link not in block_text:
+                add("error", "guideme", f"Block Reference is missing recipe link for {block}")
+    else:
+        add("error", "guideme", "Block Reference page does not exist")
 
 def check_structure_architecture() -> None:
     registry = read(STRUCTURES_JAVA)

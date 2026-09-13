@@ -3,6 +3,7 @@ package matteroverdrive.event;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.ContractItem;
 import matteroverdrive.quest.ContractStageSupport;
+import matteroverdrive.progression.PlayerDiscoveryLog;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -59,6 +60,9 @@ public final class ContractInteractionEvents {
     /** Used by server-authoritative NPC interaction handlers to restore legacy conversation objectives. */
     public static void recordConversation(ServerPlayer player, ResourceLocation entityType) {
         if (player == null || entityType == null) return;
+        String contact = entityType.getPath().replace('_', ' ');
+        PlayerDiscoveryLog.record(player, "contact:" + entityType,
+                "CONTACT // " + contact + " added to the PDA field log.");
         advanceMatching(player, 1, contract -> "conversation".equals(ContractItem.type(contract))
                 && ContractItem.matchesTarget(contract, entityType.toString()));
     }
