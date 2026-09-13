@@ -1,0 +1,126 @@
+import groovy.json.JsonSlurper
+
+/*
+ * Sound/resource integrity gate.
+ *
+ * Kept separate from build.gradle so the rules stay readable. settings.gradle
+ * applies this script to the root project before the normal build script runs.
+ */
+def verifySoundResourcesTask = tasks.register('verifySoundResources') {
+    group = 'verification'
+    description = 'Validates registered sound ids, sounds.json targets, Java sound lookups, and audio asset hygiene.'
+
+    doLast {
+        def modId = 'matteroverdrive'
+        def soundJsonFile = file("src/main/resources/assets/${modId}/sounds.json")
+        def soundRegistryFile = file('src/main/java/matteroverdrive/registry/ModSounds.java')
+        if (!soundJsonFile.isFile()) throw new GradleException("Missing sound definition file: ${soundJsonFile}")
+        if (!soundRegistryFile.isFile()) throw new GradleException("Missing sound registry source: ${soundRegistryFile}")
+
+        def json = new JsonSlurper()
+        def definitions = json.parse(soundJsonFile)
+        if (!(definitions instanceof Map)) throw new GradleException('sounds.json must contain a JSON object')
+
+        def registrySource = soundRegistryFile.getText('UTF-8')
+        def listStart = registrySource.indexOf('SOUND_IDS = List.of(')
+        if (listStart < 0) throw new GradleException('Could not locate ModSounds.SOUND_IDS')
+        def listEnd = registrySource.indexOf(');', listStart)
+        if (listEnd < 0) throw new GradleException('Could not locate end of ModSounds.SOUND_IDS')
+        def registryBlock = registrySource.substring(listStart, listEnd)
+        def registered = [] as LinkedHashSet<String>
+        (registryBlock =~ /"([^"]+)"/).each { match -> registered.add(match[1]) }
+
+        def defined = definitions.keySet() as LinkedHashSet<String>
+        def missingDefinitions = registered - defined
+        def unregisteredDefinitions = defined - registered
+        if (!missingDefinitions.isEmpty()) {
+            throw new GradleException("Registered sound ids missing from sounds.json: ${missingDefinitions.sort()}")
+        }
+        if (!unregisteredDefinitions.isEmpty()) {
+            throw new GradleException("sounds.json contains unregistered sound ids: ${unregisteredDefinitions.sort()}")
+        }
+
+        def referencedOgg = [] as LinkedHashSet<String>
+        definitions.each { eventId, eventSpec ->
+            if (!(eventSpec instanceof Map) || !(eventSpec.sounds instanceof List) || eventSpec.sounds.isEmpty()) {
+                throw new GradleException("Sound event ${eventId} has no sound samples")
+            }
+            eventSpec.sounds.each { rawSample ->
+                String name
+                String type = 'sound'
+                if (rawSample instanceof String) {
+                    name = rawSample
+                } else if (rawSample instanceof Map) {
+                    name = rawSample.name
+                    if (rawSample.type instanceof String) type = rawSample.type
+                } else {
+                    throw new GradleException("Unsupported sample entry for ${eventId}: ${rawSample}")
+                }
+                if (!name) throw new GradleException("Sound event ${eventId} contains a sample without a name")
+                if (type == 'event') return
+
+                String namespace = modId
+                String path = name
+                int separator = name.indexOf(':')
+                if (separator >= 0) {
+                    namespace = name.substring(0, separator)
+                    path = name.substring(separator + 1)
+                }
+                if (namespace == modId) {
+                    def oggPath = "src/main/resources/assets/${namespace}/sounds/${path}.ogg"
+                    referencedOgg.add(oggPath)
+                    if (!file(oggPath).isFile()) {
+                        throw new GradleException("Missing OGG sample for ${eventId}: ${oggPath}")
+                    }
+                }
+            }
+        }
+
+        // Regression guard: the legacy 1.12.2 sounds.json accidentally routed
+        // shield power-down to the power-up sample. Do not preserve that bug.
+        def shieldDown = definitions['android.shield_power_down']
+        def shieldNames = (shieldDown?.sounds ?: []).collect { sample ->
+            sample instanceof Map ? sample.name?.toString() : sample?.toString()
+        }.findAll { it != null }
+        if (!shieldNames.contains("${modId}:shield_power_down") || shieldNames.any { it.contains('shield_power_up') }) {
+            throw new GradleException("android.shield_power_down must use ${modId}:shield_power_down, got ${shieldNames}")
+        }
+
+        // WAV is deliberately forbidden in the shipped asset tree. PDA speech is
+        // optional/generated and must not grow the jar into a pre-rendered voice bank.
+        def wavFiles = fileTree("src/main/resources/assets/${modId}") { include '**/*.wav', '**/*.WAV' }.files
+        if (!wavFiles.isEmpty()) {
+            throw new GradleException("Bundled WAV assets are not allowed; convert small effects to OGG or use the optional PDA voice route: ${wavFiles}")
+        }
+
+        def javaLookups = [] as LinkedHashSet<String>
+        fileTree('src/main/java') { include '**/*.java' }.files.each { javaFile ->
+            def source = javaFile.getText('UTF-8')
+            (source =~ /ModSounds\.get\(\s*"([^"]+)"\s*\)/).each { match -> javaLookups.add(match[1]) }
+        }
+        def unknownLookups = javaLookups - registered
+        if (!unknownLookups.isEmpty()) {
+            throw new GradleException("Java references unknown ModSounds ids: ${unknownLookups.sort()}")
+        }
+
+        def actualOgg = fileTree("src/main/resources/assets/${modId}/sounds") { include '**/*.ogg' }.files
+        def orphanOgg = actualOgg.findAll { !referencedOgg.contains(project.relativePath(it).replace('\\', '/')) }
+        if (!orphanOgg.isEmpty()) {
+            logger.warn("Unreferenced Matter Overdrive OGG assets (${orphanOgg.size()}): " + orphanOgg.collect { project.relativePath(it) }.sort())
+        }
+
+        println 'SOUND RESOURCE VERIFICATION PASSED'
+        println "  registered=${registered.size()}"
+        println "  definitions=${defined.size()}"
+        println "  referencedOgg=${referencedOgg.size()}"
+        println "  javaLookups=${javaLookups.size()}"
+        println "  orphanOgg=${orphanOgg.size()} (warning only)"
+    }
+}
+
+// Attach the sound gate to both resource processing and the normal verification lifecycle.
+tasks.configureEach { task ->
+    if (task.name == 'processResources' || task.name == 'check') {
+        task.dependsOn verifySoundResourcesTask
+    }
+}
