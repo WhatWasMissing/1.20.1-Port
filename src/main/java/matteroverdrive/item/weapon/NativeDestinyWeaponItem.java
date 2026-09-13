@@ -154,7 +154,7 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         Vec3 direction = applySpread(shooter.getLookAngle(), getSpread(weapon, shooter),
                 shooter.getRandom().nextGaussian(), shooter.getRandom().nextGaussian());
         traceAndApply(level, shooter, weapon, direction,
-                getRange(weapon), getDamage(weapon), true);
+                getRange(weapon), getWeaponDamage(weapon), true);
         float volume = profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT ? 1.35F : 0.95F;
         float pitch = 0.97F + shooter.getRandom().nextFloat() * 0.06F;
         playFireSound(level, shooter, volume, pitch);
@@ -236,7 +236,7 @@ public final class NativeDestinyWeaponItem extends EnergyWeaponItem {
         return Math.max(1, Math.round(profile.energyPerShot() * WeaponSystem.energyMultiplier(weapon)));
     }
 
-    private float getDamage(ItemStack weapon) {
+    private float getWeaponDamage(ItemStack weapon) {
         return profile.damage() * WeaponSystem.damageMultiplier(weapon);
     }
 
