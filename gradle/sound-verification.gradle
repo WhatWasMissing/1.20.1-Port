@@ -104,7 +104,8 @@ def verifySoundResourcesTask = tasks.register('verifySoundResources') {
         def shieldNames = (shieldDown?.sounds ?: []).collect { sample ->
             sample instanceof Map ? sample.name?.toString() : sample?.toString()
         }.findAll { it != null }
-        if (!shieldNames.contains("${modId}:shield_power_down") || shieldNames.any { it.contains('shield_power_up') }) {
+        def expectedShieldDown = "${modId}:shield_power_down".toString()
+        if (!shieldNames.contains(expectedShieldDown) || shieldNames.any { it.contains('shield_power_up') }) {
             throw new GradleException("android.shield_power_down must use ${modId}:shield_power_down, got ${shieldNames}")
         }
 
