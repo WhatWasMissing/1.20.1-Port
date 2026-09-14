@@ -1,6 +1,6 @@
 package matteroverdrive.item.weapon;
 
-import matteroverdrive.registry.ModDestinySounds;
+import matteroverdrive.registry.ModExoticSounds
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -129,7 +129,7 @@ public class VexMythoclastItem extends Item {
         }
         spawnBeam(level, start, impact, linear);
         level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                ModDestinySounds.get(linear ? "destiny_vex_mythoclast_linear_fire" : "destiny_vex_mythoclast_fire"),
+                ModExoticSounds.get(linear ? "vex_mythoclast_linear_fire" : "vex_mythoclast_fire"),
                 SoundSource.PLAYERS, linear ? 1.35F : 0.95F, linear ? 0.84F : 1.08F);
         if (linear && getCharges(stack) <= 0) setLinearMode(stack, false);
         return true;

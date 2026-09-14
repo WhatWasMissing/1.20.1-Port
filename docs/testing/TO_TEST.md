@@ -23,9 +23,7 @@ python scripts/validate_structure_expansion.py
 python scripts/validate_lore_events.py
 python scripts/validate_port_consistency.py
 python scripts/validate_android_consistency.py
-python scripts/validate_weapon_consistency.py
 python scripts/validate_network_transport_consistency.py
-python scripts/validate_weapon_renderer_consistency.py
 ```
 
 Attach `build/reports/m2-port-consistency.md` when reporting static-audit warnings.
@@ -155,8 +153,6 @@ Use a fresh world for the placement-policy check, and an existing world containi
 - [ ] Sprint, jump, stop, swap slots and rapidly re-equip several times; the weapon never becomes invisible or stuck at an old transform.
 - [ ] Weapon Station slots/modules persist and its stats update immediately after module changes.
 - [ ] Third-person, GUI, dropped-item and fixed/item-frame weapon rendering remain visible and correctly oriented.
-- [ ] Ace of Spades, Hawkmoon, Khvostov, MIDA, Monte Carlo, Sleeper Simulant, SUROS Regime, The Last Word and Thorn use the supplied Destiny source fire mixes and exact available draw/reload samples.
-- [ ] Verify the 35 additional native GunPack conversions appear in the creative tab and can be crafted, render with their imported models/textures, play their available source fire/third-person audio, and accept Weapon Station battery/barrel/sights/colour/utility modules.
 
 ## Legacy/world-content regression
 

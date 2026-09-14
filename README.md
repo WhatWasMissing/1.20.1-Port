@@ -33,7 +33,7 @@ Spoken PDA output can be toggled from the PDA's `VOICE: ON/OFF` button or with `
 
 ## Current feature set
 
-Matter Overdrive 0.7 consolidates the 0.6 campaign/world-content line with the merged tech overhaul, dual-resource Energy Bank, expanded hostile/village population, deterministic loot relics, dormant Frontier archive definitions, player-event lore routing, PDA/GuideME audit coverage and the complete native Destiny GunPack weapon set.
+Matter Overdrive 0.7 consolidates the 0.6 campaign/world-content line with the merged tech overhaul, dual-resource Energy Bank, expanded hostile/village population, deterministic loot relics, dormant Frontier archive definitions, player-event lore routing, PDA/GuideME audit coverage and the standalone Vex Mythoclast exotic.
 
 For the current post-Star-Map source inventory, including the newer PDA/lore/dialogue/structure/voice systems, see **[Working Features — 0.7](docs/reference/WORKING_FEATURES.md)**. The dated 0.6 inventory is retained as historical context.
 
@@ -89,11 +89,9 @@ For the current post-Star-Map source inventory, including the newer PDA/lore/dia
 - Energy weapons, weapon batteries and weapon modules.
 - Weapon heat and reload behavior.
 - Weapon Station persistence and typed module slots.
-- Native weapon integration alongside Point Blank compatibility support.
+- Standalone Vex Mythoclast exotic with primary and Temporal Linear firing modes.
 - Android combat hooks for subclass abilities, passives and drone support.
-- 49 native Destiny energy-weapon profiles, including 35 additional GunPack conversions with imported geometry, textures, source audio, available animations and display transforms.
-- Destiny weapons use the existing battery, barrel, sights, colour, utility and Weapon Station module paths.
-- First-person source transforms, bounded ADS/recoil presentation and third-person generic-use pose suppression.
+- First-person firearm transforms, bounded ADS/recoil presentation and third-person generic-use pose suppression.
 
 ### 0.7 tech overhaul and exploration
 

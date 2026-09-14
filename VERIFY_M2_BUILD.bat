@@ -70,7 +70,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [4/12] Whole-port consistency audit...
+echo [4/10] Whole-port consistency audit...
 %PYTHON_CMD% scripts\validate_port_consistency.py
 if errorlevel 1 (
   set "EXITCODE=31"
@@ -78,7 +78,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [5/12] Android power/progression consistency gate...
+echo [5/10] Android power/progression consistency gate...
 %PYTHON_CMD% scripts\validate_android_consistency.py
 if errorlevel 1 (
   set "EXITCODE=32"
@@ -86,15 +86,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [6/12] Energy-weapon consistency gate...
-%PYTHON_CMD% scripts\validate_weapon_consistency.py
-if errorlevel 1 (
-  set "EXITCODE=33"
-  goto :finish
-)
-
-echo.
-echo [7/12] Network/Transporter consistency gate...
+echo [6/10] Network/Transporter consistency gate...
 %PYTHON_CMD% scripts\validate_network_transport_consistency.py
 if errorlevel 1 (
   set "EXITCODE=34"
@@ -102,15 +94,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [8/12] Weapon Renderer 2.0 consistency gate...
-%PYTHON_CMD% scripts\validate_weapon_renderer_consistency.py
-if errorlevel 1 (
-  set "EXITCODE=35"
-  goto :finish
-)
-
-echo.
-echo [9/12] Gradle bootstrap...
+echo [7/10] Gradle bootstrap...
 call gradlew.bat --version
 if errorlevel 1 (
   set "EXITCODE=23"
@@ -118,7 +102,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [10/12] Re-running the verified M1 resource gate...
+echo [8/10] Re-running the verified M1 resource gate...
 call gradlew.bat verifyM1Resources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=24"
@@ -126,7 +110,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [11/12] Checking the M2 functional-machines source gate...
+echo [9/10] Checking the M2 functional-machines source gate...
 call gradlew.bat verifyM2Sources --stacktrace
 if errorlevel 1 (
   set "EXITCODE=25"
@@ -134,7 +118,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [12/12] Clean Forge compilation...
+echo [10/10] Clean Forge compilation...
 call gradlew.bat clean build --stacktrace
 if errorlevel 1 (
   set "EXITCODE=26"

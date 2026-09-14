@@ -17,8 +17,8 @@ This is the source-of-truth feature summary and is mirrored by the GuideME **Cur
 - Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers have natural hostile-spawn definitions; Field Scientists, Systems Engineers and Mad Scientists populate vanilla villages.
 - Vanilla structure loot keeps its original pools and receives Matter Overdrive supplies plus seven deterministic Legendary Relic sources. Six main facility loot pools also contain their themed relics.
 - The PDA, GuideME pages, relic behavior, facility discovery, source/resource validators and deferred test plan are connected to the same active registries and progression systems.
-- The native Destiny set now contains 49 energy-weapon profiles: 14 retained profiles and 35 additional GunPack conversions with imported geometry, textures, source audio, available animations and per-weapon display transforms. Every profile uses the existing Energy Weapon and Weapon Station module contracts.
-- First-person firearm presentation uses the imported display transforms and bounded ADS delta. Third-person generic held-use posing is suppressed while an energy weapon is active, so aiming does not look like continuous vanilla item use.
+- The Vex Mythoclast is retained as the single external-inspired exotic weapon; its primary and Temporal Linear modes use dedicated sound events while all other firearms use the native Matter Overdrive weapon path.
+- First-person firearm presentation uses bounded ADS/recoil transforms. Third-person generic held-use posing is suppressed while an energy weapon is active, so aiming does not look like continuous vanilla item use.
 
 ## Matter, power and machines
 
@@ -40,11 +40,11 @@ Natural hostile spawning uses Forge biome modifiers for the six configured entit
 
 ## Weapons
 
-Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun, Omni Tool, Vex Mythoclast and 49 native Destiny weapons use FE payment, heat/overheat where applicable, reload, recoil and current weapon module effects. Weapon Station retains its real Weapon/Battery/Color/Barrel/Sights/Utility slots on every page and packs installed modules back into the weapon without losing or exceeding final capacity.
+Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun, Omni Tool and Vex Mythoclast use FE payment, heat/overheat where applicable, reload, recoil and current weapon module effects. Weapon Station retains its real Weapon/Battery/Color/Barrel/Sights/Utility slots on every page and packs installed modules back into the weapon without losing or exceeding final capacity.
 
 Ion Sniper uses the recovered 0.40 base zoom multiplier while aimed; Sniper Scope uses the recovered 0.85 override through the scope-first/base-second rule. Scope accuracy/range effects remain server-authoritative. Camera recoil reacts to actual shot timestamps and heat. Energy sourcing is limited to the weapon's stored energy, installed creative battery, explicit Energy Packs and real `WeaponBatteryItem` sources; unrelated energy weapons are never used as batteries.
 
-The 35 additional GunPack conversions have native vanilla-rendered geometry, source UV textures, available source animations, source fire/third-person fire recordings and available draw/reload recordings. The loader accepts normalized and native `static_idle`/`shoot`/reload names, compact and per-face Bedrock UV forms, and explicit static-idle fallback for models without source animation clips. Stolen Will uses the source-defined shared Universal Remote fire samples. The five original profiles absent from the GunPack keep their existing recordings. All Destiny profiles accept battery, barrel, sights, colour and utility module effects through the Matter Overdrive Weapon System and Weapon Station.
+
 
 ## Structures, loot and exploration
 

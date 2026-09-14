@@ -14,12 +14,10 @@ def verifySoundResourcesTask = tasks.register('verifySoundResources') {
         def modId = 'matteroverdrive'
         def soundJsonFile = file("src/main/resources/assets/${modId}/sounds.json")
         def soundRegistryFile = file('src/main/java/matteroverdrive/registry/ModSounds.java')
-        def destinySoundRegistryFile = file('src/main/java/matteroverdrive/registry/ModDestinySounds.java')
-        def destinyProfileFile = file('src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponProfile.java')
+        def exoticSoundRegistryFile = file('src/main/java/matteroverdrive/registry/ModExoticSounds.java')
         if (!soundJsonFile.isFile()) throw new GradleException("Missing sound definition file: ${soundJsonFile}")
         if (!soundRegistryFile.isFile()) throw new GradleException("Missing sound registry source: ${soundRegistryFile}")
-        if (!destinySoundRegistryFile.isFile()) throw new GradleException("Missing Destiny sound registry source: ${destinySoundRegistryFile}")
-        if (!destinyProfileFile.isFile()) throw new GradleException("Missing Destiny weapon profile source: ${destinyProfileFile}")
+        if (!exoticSoundRegistryFile.isFile()) throw new GradleException("Missing exotic sound registry source: ${exoticSoundRegistryFile}")
 
         def json = new JsonSlurper()
         def definitions = json.parse(soundJsonFile)
@@ -34,23 +32,8 @@ def verifySoundResourcesTask = tasks.register('verifySoundResources') {
         def registered = [] as LinkedHashSet<String>
         (registryBlock =~ /"([^"]+)"/).each { match -> registered.add(match[1]) }
 
-        // Native Destiny weapons use a separate DeferredRegister. Its explicit
-        // legacy/source-specific events live in ModDestinySounds, while the
-        // profile-derived fire/3P/draw/reload events are registered through
-        // registerIfAbsent(profile.*). Include both sides in the same resource
-        // contract so sounds.json is checked against the registrations that
-        // actually exist at runtime.
-        def destinyRegistrySource = destinySoundRegistryFile.getText('UTF-8')
-        (destinyRegistrySource =~ /register\("([^"]+)"\)/).each { match -> registered.add(match[1]) }
-
-        def profileSource = destinyProfileFile.getText('UTF-8')
-        def profileSoundPattern = /,\s*(null|"destiny_[a-z0-9_]+")\s*,\s*(null|"destiny_[a-z0-9_]+")\s*,\s*(null|"destiny_[a-z0-9_]+")\s*,\s*(null|"destiny_[a-z0-9_]+")\s*\),?/
-        (profileSource =~ profileSoundPattern).each { match ->
-            (1..4).each { index ->
-                String value = match[index]
-                if (value != 'null') registered.add(value.substring(1, value.length() - 1))
-            }
-        }
+        def exoticRegistrySource = exoticSoundRegistryFile.getText('UTF-8')
+        (exoticRegistrySource =~ /register\("([^"]+)"\)/).each { match -> registered.add(match[1]) }
 
         def defined = definitions.keySet() as LinkedHashSet<String>
         def missingDefinitions = registered - defined
@@ -119,7 +102,7 @@ def verifySoundResourcesTask = tasks.register('verifySoundResources') {
         def javaLookups = [] as LinkedHashSet<String>
         fileTree('src/main/java') { include '**/*.java' }.files.each { javaFile ->
             def source = javaFile.getText('UTF-8')
-            (source =~ /ModSounds\.get\(\s*"([^"]+)"\s*\)/).each { match -> javaLookups.add(match[1]) }
+            (source =~ /Mod(?:Sounds|ExoticSounds)\.get\(\s*"([^"]+)"\s*\)/).each { match -> javaLookups.add(match[1]) }
         }
         def unknownLookups = javaLookups - registered
         if (!unknownLookups.isEmpty()) {

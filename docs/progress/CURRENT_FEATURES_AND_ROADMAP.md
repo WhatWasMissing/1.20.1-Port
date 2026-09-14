@@ -11,7 +11,7 @@ The detailed feature matrix is [WORKING_FEATURES.md](../reference/WORKING_FEATUR
 - FE/machines: Solar Panel, Heavy Energy Cable, Charging Station, Microwave, Space-Time Accelerator, Transporter, Molecular Inscriber and the testing-branch Energy Bank reactor buffer.
 - Item/pattern logistics: Network Pipe, Router, Switch and Pylon.
 - Reactor/gravity: Fusion Reactor ring, IO, shared ring power, mass-scaled output, anomaly hazards, stabilizers, Reactor Remote/guide/overlay and persistent controls.
-- Weapons: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun and Omni Tool with FE, heat/reload and Weapon Station module support, plus 49 native Destiny energy weapons with imported GunPack visual/audio assets and the same module platform.
+- Weapons: Phaser, Phaser Rifle, Ion Sniper, Plasma Shotgun, Omni Tool and Vex Mythoclast with FE, heat/reload and Weapon Station module support.
 - Android: conversion, persistent core FE/HUD, four parts, four active abilities and the 30-node selectable perk tree.
 - Storage/resources: portable Tritanium Crates, Tritanium/Dilithium world generation, tools and armour.
 - Progression: Contract Market, contracts, Data Pad, real Mad Scientist and Puny Humans quest slice.
@@ -40,8 +40,7 @@ The active pass replaces generic cube approximations with legacy model geometry 
 3. Ranged Rogue Androids, drones and richer entity equipment/AI.
 4. Legacy structures/world events and their spawn ecosystems.
 5. Connected pipe geometry and full Pylon presentation.
-6. Runtime verification of the native Destiny weapon renderer, module presentation and imported animation clips.
-7. Deeper drive/network configuration and selected modern integration equivalents.
+6. Deeper drive/network configuration and selected modern integration equivalents.
 
 ## Important visual follow-up
 

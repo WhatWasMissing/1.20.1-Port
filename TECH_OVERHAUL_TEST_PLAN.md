@@ -63,8 +63,8 @@ The Data Pad now exposes repeatable research-stage operations that connect exist
 
 ## Vex Mythoclast audio pass
 
-- Primary fire must call the dedicated `destiny_vex_mythoclast_fire` SoundEvent rather than the generic Matter Overdrive phaser event.
-- Temporal Linear fire must call the dedicated `destiny_vex_mythoclast_linear_fire` SoundEvent rather than the generic sniper event.
+- Primary fire must call the dedicated `vex_mythoclast_fire` SoundEvent rather than the generic Matter Overdrive phaser event.
+- Temporal Linear fire must call the dedicated `vex_mythoclast_linear_fire` SoundEvent rather than the generic sniper event.
 - Verify the two modes remain independently resource-pack-overridable through their dedicated IDs.
 
 ## Follow-up network-system ideas

@@ -3,8 +3,6 @@ package matteroverdrive.client;
 import com.mojang.math.Axis;
 import matteroverdrive.MatterOverdrive;
 import matteroverdrive.item.weapon.EnergyWeaponItem;
-import matteroverdrive.item.weapon.NativeDestinyWeaponItem;
-import matteroverdrive.item.weapon.NativeDestinyWeaponProfile;
 import matteroverdrive.item.weapon.VexMythoclastItem;
 import matteroverdrive.item.weapon.WeaponModuleItem;
 import matteroverdrive.item.weapon.WeaponSystem;
@@ -71,15 +69,6 @@ public final class WeaponClientEffects {
     }
 
     private static double aimZoom(ItemStack stack) {
-        if (stack.getItem() instanceof NativeDestinyWeaponItem destiny) {
-            NativeDestinyWeaponProfile profile = destiny.profile();
-            if (profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT) return 0.55D;
-            if (profile == NativeDestinyWeaponProfile.MIDA_MULTI_TOOL
-                    || profile == NativeDestinyWeaponProfile.CHAOS_DOGMA
-                    || profile == NativeDestinyWeaponProfile.PROXIMA_CENTAURI_II
-                    || profile == NativeDestinyWeaponProfile.TRAX_CALLUM_1) return 0.72D;
-            return profile.automatic() ? 0.86D : 0.82D;
-        }
         if (stack.getItem() instanceof VexMythoclastItem vex) {
             return vex.isLinearMode(stack) ? 0.62D : 0.78D;
         }
@@ -111,7 +100,7 @@ public final class WeaponClientEffects {
         if (stack.getItem() instanceof VexMythoclastItem vex && vex.isLinearMode(stack)) {
             wantedCharge = Mth.clamp(triggerTicks / 12.0F, 0.0F, 1.0F);
         } else if (stack.getItem() instanceof EnergyWeaponItem weapon
-                && !(stack.getItem() instanceof NativeDestinyWeaponItem)) {
+                ) {
             wantedCharge = switch (weapon.getWeaponType()) {
                 case ION_SNIPER -> Mth.clamp(triggerTicks / 12.0F, 0.0F, 1.0F);
                 case PLASMA_SHOTGUN -> Mth.clamp(triggerTicks / 20.0F, 0.0F, 1.0F);
@@ -129,7 +118,7 @@ public final class WeaponClientEffects {
                 WeaponRenderProfile profile = WeaponRenderProfile.forStack(stack);
                 float heatMultiplier = 1.0F;
                 if (stack.getItem() instanceof EnergyWeaponItem weapon
-                        && !(stack.getItem() instanceof NativeDestinyWeaponItem)) {
+                        ) {
                     heatMultiplier += weapon.getHeat(stack) / Math.max(1.0F, weapon.getMaxHeat(stack));
                 }
                 float base = profile.recoilPitch() * heatMultiplier;
@@ -155,9 +144,6 @@ public final class WeaponClientEffects {
     }
 
     private static long shotTimestamp(ItemStack stack) {
-        if (stack.getItem() instanceof NativeDestinyWeaponItem) {
-            return stack.getOrCreateTag().getLong(NativeDestinyWeaponItem.LAST_SHOT_TAG);
-        }
         if (stack.getItem() instanceof VexMythoclastItem) {
             return stack.getOrCreateTag().getLong("VexLastShot");
         }
@@ -204,8 +190,7 @@ public final class WeaponClientEffects {
                                                 float aimed, float charged, float kick,
                                                 float equipProgress, float swingProgress,
                                                 float partialTick) {
-        boolean authoredBase = stack.getItem() instanceof NativeDestinyWeaponItem
-                || stack.getItem() instanceof VexMythoclastItem;
+        boolean authoredBase = stack.getItem() instanceof VexMythoclastItem;
 
         if (!authoredBase) {
             // Recovered MO first-person base; FIXED contributes the 180-degree Y rotation.

@@ -6,7 +6,7 @@ This backlog is derived from the current feature inventory and is intentionally 
 
 | Item | Value | Dependencies | Validation |
 |---|---|---|---|
-| Resolve any runtime-reported weapon visibility or transform failures | High | Native Destiny renderer, source assets | Fresh client log plus first/third-person screenshots for every weapon family |
+| Resolve any runtime-reported weapon visibility or transform failures | High | Weapon renderer and source assets | Fresh client log plus first/third-person screenshots for every weapon family |
 | Validate structure generation and traversal in a fresh world | High | Native `Structure`/`StructurePiece` generation | Structure test plan, screenshots, no generation exceptions |
 
 ## Incomplete existing feature

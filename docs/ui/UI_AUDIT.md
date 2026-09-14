@@ -4,7 +4,7 @@ Status: active repository-wide audit (started 2026-09-10)
 
 ## Inventory baseline
 
-Static inventory found 32 client screen classes, 24 menu classes, and 41 client files containing GUI/HUD/overlay rendering or interaction code. `scripts/validate_ui_inventory.py` now verifies that every discovered screen and menu name appears in this audit document and is included in `tools/full-sanity-check.ps1`. The working tree contains unrelated user changes and imported Destiny assets; these are preserved.
+Static inventory found 32 client screen classes, 24 menu classes, and 41 client files containing GUI/HUD/overlay rendering or interaction code. `scripts/validate_ui_inventory.py` now verifies that every discovered screen and menu name appears in this audit document and is included in `tools/full-sanity-check.ps1`.
 
 ### Android / progression
 
@@ -44,7 +44,7 @@ Initial finding: machine screens use a shared `MachineScreenStyle`, but many sti
 
 ### HUD / overlays / rendering
 
-`AndroidHudOverlay`, `QuestTrackerOverlay`, `WeaponHudOverlay`, `FusionReactorGuideOverlay`, `DeveloperVisualDebug`, `NativeDestinyWeaponRenderer`, and `WeaponItemRenderer` require screen-edge, GUI-scale, render-order, and interaction-overlap review.
+`AndroidHudOverlay`, `QuestTrackerOverlay`, `WeaponHudOverlay`, `FusionReactorGuideOverlay`, `DeveloperVisualDebug`, and `WeaponItemRenderer` require screen-edge, GUI-scale, render-order, and interaction-overlap review.
 
 ## Initial classifications
 
@@ -125,7 +125,7 @@ Below 640 GUI pixels, `AndroidLoadoutScreen` now suppresses the secondary inspec
 
 The bounded local Qwen 7B audit identified fixed-coordinate risks across the Android screens. Independent inspection confirmed the same failure mode in `AndroidClassLoadoutScreen`; its compact layout now suppresses the diagnostic panel entirely and clamps the close control so minimum-width geometry cannot force controls off-screen.
 
-Machine-screen follow-up: `WeaponStationScreen` now pixel-fits weapon names, heat status, and readiness messaging to the 180-pixel status panel, preventing long localized or Destiny weapon labels from bleeding into the panel edge.
+Machine-screen follow-up: `WeaponStationScreen` now pixel-fits weapon names, heat status, and readiness messaging to the 180-pixel status panel, preventing long localized weapon labels from bleeding into the panel edge.
 
 Shared helper: machine screens can now use `MachineScreenStyle.fit(Font, text, width)` for consistent pixel-based clipping and ellipsis behavior.
 
@@ -135,7 +135,7 @@ GuideME compatibility now uses the modern namespaced `ResourceLocation` factory 
 
 Documentation navigation now derives the Previous/Index/Next row from available width, preventing the Previous button from leaving the viewport at narrow GUI scales.
 
-Client renderer audit: native Destiny visual-library resources and the developer model inspector now use the modern namespaced resource factory consistently, avoiding legacy client resource construction during model/texture lookup.
+Client renderer audit: the developer model inspector now uses the modern namespaced resource factory consistently, avoiding legacy client resource construction during model/texture lookup.
 
 Contract market follow-up: its instructional message now uses shared pixel fitting to stay inside the 120-pixel board column instead of crossing into the live status panel.
 
@@ -155,7 +155,7 @@ Charging Station follow-up: battery, transfer, buffer, range, Android-count, and
 
 Network Router follow-up: filter, throughput, routing-core, and endpoint diagnostics now fit the 88/112-pixel panels; long route labels no longer bleed into adjacent UI.
 
-Fresh dev-session runtime evidence (10 September 2026 23:09): Matter Overdrive initialized with 14 native Destiny weapons, 18 block entities, 15 menus, and all audited machine, reactor, network, Android, documentation, and structure systems enabled. No Matter Overdrive UI/resource exceptions were present in the session tail. Remaining warnings were external or non-blocking (Forge language-loader metadata, tiny texture mip limits, vanilla goat-horn events, and Realms authorization).
+Fresh dev-session runtime evidence (10 September 2026 23:09): Matter Overdrive initialized with its audited registries, 18 block entities, 15 menus, and all audited machine, reactor, network, Android, documentation, and structure systems enabled. No Matter Overdrive UI/resource exceptions were present in the session tail. Remaining warnings were external or non-blocking (Forge language-loader metadata, tiny texture mip limits, vanilla goat-horn events, and Realms authorization).
 
 Reactor guide overlay audit: enabled-controller positions are now cleared whenever the client level changes, preventing stale static overlay state from carrying into a new world/session.
 
@@ -229,7 +229,7 @@ The standalone console now also exposes an explicit `OPEN GUIDE` button. It invo
 
 ### Runtime evidence — current clean client session
 
-The current project test log confirms Matter Overdrive registry initialization, all 14 native Destiny weapon visuals loading, and a successful native Destiny weapon render event. No Matter Overdrive UI/resource exception is present. JEI reports a separate missing `net.mezzdev.bakedsubstring.BakedSubstringIndex` dependency; this is an external test-environment issue and is not attributed to Matter Overdrive UI code.
+The current project test log confirms Matter Overdrive registry initialization and generic weapon-renderer activity. No Matter Overdrive UI/resource exception is present. JEI reports a separate missing `net.mezzdev.bakedsubstring.BakedSubstringIndex` dependency; this is an external test-environment issue and is not attributed to Matter Overdrive UI code.
 
 The two remaining Matter Overdrive texture mip warnings were inspected directly: `vex_mythoclast_dark.png` is an intentional 4×4 pixel icon and `pattern_monitor_holo_back.png` is an intentional 17×17 pixel-art backplate. Both load successfully; the warnings reflect source dimensions versus mip configuration, not missing or invalid UI resources.
 

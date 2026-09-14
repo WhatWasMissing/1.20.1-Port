@@ -2,7 +2,6 @@ package matteroverdrive.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import matteroverdrive.item.weapon.EnergyWeaponItem;
-import matteroverdrive.item.weapon.NativeDestinyWeaponItem;
 import matteroverdrive.item.weapon.VexMythoclastItem;
 import matteroverdrive.item.weapon.WeaponModuleItem;
 import matteroverdrive.item.weapon.WeaponSystem;
@@ -22,8 +21,6 @@ import net.minecraft.world.level.Level;
  * use the recovered FIXED-model pose reconstructed by WeaponClientEffects.
  */
 public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
-    private static NativeDestinyWeaponRenderer nativeDestinyRenderer;
-
     public WeaponItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
                 Minecraft.getInstance().getEntityModels());
@@ -33,11 +30,6 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
     public void renderByItem(ItemStack weapon, ItemDisplayContext displayContext,
                              PoseStack poseStack, MultiBufferSource buffer,
                              int packedLight, int packedOverlay) {
-        if (weapon.getItem() instanceof NativeDestinyWeaponItem) {
-            nativeDestinyRenderer().renderByItem(weapon, displayContext, poseStack, buffer,
-                    packedLight, packedOverlay);
-            return;
-        }
         if (weapon.getItem() instanceof EnergyWeaponItem) {
             renderWeaponAndOptic(weapon, displayContext, poseStack, buffer, packedLight, packedOverlay);
             return;
@@ -48,10 +40,6 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
     /** Renders any firearm owned by Renderer 2.0 after its animation pose is applied. */
     public void renderFirstPerson(ItemStack weapon, PoseStack poseStack,
                                   MultiBufferSource buffer, int packedLight, int packedOverlay) {
-        if (weapon.getItem() instanceof NativeDestinyWeaponItem) {
-            nativeDestinyRenderer().renderNative(weapon, poseStack, buffer, packedLight, packedOverlay);
-            return;
-        }
         if (weapon.getItem() instanceof VexMythoclastItem) {
             renderAuthoredFirstPerson(weapon, poseStack, buffer, packedLight, packedOverlay);
             return;
@@ -65,11 +53,6 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
         // A silent no-op here produces an apparently missing first-person model.
         renderVanillaFallback(weapon, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND,
                 poseStack, buffer, packedLight, packedOverlay);
-    }
-
-    private static NativeDestinyWeaponRenderer nativeDestinyRenderer() {
-        if (nativeDestinyRenderer == null) nativeDestinyRenderer = new NativeDestinyWeaponRenderer();
-        return nativeDestinyRenderer;
     }
 
     private static void renderAuthoredFirstPerson(ItemStack weapon, PoseStack poseStack,

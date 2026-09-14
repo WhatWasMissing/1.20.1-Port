@@ -1,8 +1,6 @@
 package matteroverdrive.client;
 
 import matteroverdrive.item.weapon.EnergyWeaponItem;
-import matteroverdrive.item.weapon.NativeDestinyWeaponItem;
-import matteroverdrive.item.weapon.NativeDestinyWeaponProfile;
 import matteroverdrive.item.weapon.VexMythoclastItem;
 import net.minecraft.world.item.ItemStack;
 
@@ -25,31 +23,6 @@ public record WeaponRenderProfile(
                     0.045F, 0.012F, 2.65F,
                     0.007F, 0.32F,
                     0.035F, 1.65F);
-        }
-        if (stack.getItem() instanceof NativeDestinyWeaponItem destiny) {
-            NativeDestinyWeaponProfile profile = destiny.profile();
-            if (profile == NativeDestinyWeaponProfile.SLEEPER_SIMULANT) {
-                return new WeaponRenderProfile(
-                        0.105F, 0.030F, 5.60F,
-                        0.004F, 0.18F,
-                        0.020F, 1.10F);
-            }
-            if (profile.automatic()) {
-                return new WeaponRenderProfile(
-                        0.038F, 0.010F, 2.05F,
-                        0.008F, 0.36F,
-                        0.000F, 0.00F);
-            }
-            if (profile.rpm() <= 160) {
-                return new WeaponRenderProfile(
-                        0.068F, 0.018F, 3.65F,
-                        0.006F, 0.28F,
-                        0.000F, 0.00F);
-            }
-            return new WeaponRenderProfile(
-                    0.050F, 0.014F, 2.80F,
-                    0.006F, 0.30F,
-                    0.000F, 0.00F);
         }
         if (stack.getItem() instanceof EnergyWeaponItem weapon) return forWeapon(weapon);
         return new WeaponRenderProfile(0.035F, 0.010F, 2.0F, 0.008F, 0.35F, 0.0F, 0.0F);

@@ -22,7 +22,6 @@ BLOCKS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModBlocks.java"
 OVERHAUL_BLOCKS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/OverhaulContent.java"
 ITEMS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModItems.java"
 EXOTIC_ITEMS_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModExoticItems.java"
-DESTINY_PROFILES_JAVA = ROOT / "src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponProfile.java"
 STRUCTURES_JAVA = ROOT / "src/main/java/matteroverdrive/registry/ModStructures.java"
 STRUCTURE_JAVA = ROOT / "src/main/java/matteroverdrive/worldgen/TechnologyFacilityStructure.java"
 INVENTORY_JSON = ROOT / "PORT_INVENTORY.json"
@@ -98,12 +97,10 @@ def registered_blocks(text: str) -> list[str]:
 
 def registered_extra_items() -> list[str]:
     exotic = re.findall(r'ITEMS\.register\("([^"\\]+)"', read(EXOTIC_ITEMS_JAVA))
-    destiny = re.findall(
-        r'^\s*[A-Z0-9_]+\("([^"\\]+)"', read(DESTINY_PROFILES_JAVA), re.MULTILINE)
     direct = re.findall(
         r'public\s+static\s+final\s+RegistryObject<Item>\s+\w+\s*=\s*ITEMS\.register\("([^"\\]+)"',
         read(ITEMS_JAVA))
-    return list(dict.fromkeys(exotic + destiny + direct))
+    return list(dict.fromkeys(exotic + direct))
 
 def json_file(path: Path):
     try:
@@ -526,47 +523,6 @@ def check_vanilla_progression() -> None:
         if marker not in source:
             add("error", "relic", f"relic behavior is missing {marker} in {source_name}")
 
-def check_native_destiny_assets() -> None:
-    """Verify every registered native Destiny weapon has its imported visual/audio resources."""
-    profile_ids = re.findall(
-        r'^\s*[A-Z0-9_]+\("([^"\\]+)"', read(DESTINY_PROFILES_JAVA), re.MULTILINE)
-    for weapon_id in profile_ids:
-        for kind, path in (
-            ("geometry", ASSETS / "native_destiny/geometry" / f"{weapon_id}.geo.json"),
-            ("animation", ASSETS / "native_destiny/animations" / f"{weapon_id}.animation.json"),
-            ("display transform", ASSETS / "native_destiny/transforms" / f"{weapon_id}.json"),
-            ("texture", ASSETS / "textures/native_destiny" / f"{weapon_id}.png"),
-            ("item model", ASSETS / "models/item" / f"{weapon_id}.json"),
-        ):
-            if not path.exists():
-                add("error", "destiny-visuals", f"native Destiny {kind} is missing for {weapon_id}: {path.relative_to(ROOT)}")
-
-    sounds = json_file(ASSETS / "sounds.json")
-    sound_source = read(ROOT / "src/main/java/matteroverdrive/registry/ModDestinySounds.java")
-    sound_ids = re.findall(r'\bregister\("([^"\\]+)"\)', sound_source)
-    profile_sound_ids = set()
-    for line in read(DESTINY_PROFILES_JAVA).splitlines():
-        if not re.match(r'^\s*[A-Z0-9_]+\("', line):
-            continue
-        values = re.findall(r'"(destiny_[a-z0-9_]+)"', line)
-        profile_sound_ids.update(values[1:])
-    if len(sound_ids) != len(set(sound_ids)):
-        duplicates = sorted({sound_id for sound_id in sound_ids if sound_ids.count(sound_id) > 1})
-        add("error", "destiny-audio", f"duplicate native Destiny sound registrations: {', '.join(duplicates)}")
-    if not isinstance(sounds, dict):
-        return
-    for sound_id in set(sound_ids) | profile_sound_ids:
-        if sound_id not in sounds:
-            add("error", "destiny-audio", f"registered native Destiny sound has no sounds.json entry: {sound_id}")
-            continue
-        for sound in sounds[sound_id].get("sounds", []) if isinstance(sounds[sound_id], dict) else []:
-            name = sound.get("name", "") if isinstance(sound, dict) else ""
-            if not name.startswith("matteroverdrive:destiny/"):
-                continue
-            source = ASSETS / "sounds" / (name.split(":", 1)[1] + ".ogg")
-            if not source.exists():
-                add("error", "destiny-audio", f"sounds.json entry {sound_id} references missing audio {name}")
-
 def check_structure_architecture() -> None:
     registry = read(STRUCTURES_JAVA)
     structure = read(STRUCTURE_JAVA)
@@ -620,7 +576,6 @@ def main() -> int:
     check_retired_active_refs()
     check_facility_relics()
     check_vanilla_progression()
-    check_native_destiny_assets()
     check_structure_architecture()
     check_inventory_scope()
     write_reports(blocks, items)

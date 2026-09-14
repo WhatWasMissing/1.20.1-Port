@@ -20,9 +20,7 @@ All notable changes to the Matter Overdrive 1.20.1 port are documented here.
 - Added natural hostile-spawn definitions for Rogue Androids, Ranged Rogue Androids, Drones, Mutant Scientists, Assimilators and Phase Stalkers, plus village Field Scientist and Systems Engineer population alongside Mad Scientists.
 - Added vanilla structure loot injection that preserves existing vanilla pools and supplies Matter Overdrive materials, with seven deterministic Legendary Relic sources.
 - Added themed Legendary Relic pools to the six main technology-facility caches, using the existing recovered artifact item and Android passive-protocol selection.
-- Added 35 additional native Destiny GunPack weapon conversions, bringing the registered native Destiny set to 49 energy weapons.
-- Imported per-weapon Destiny geometry, textures, source audio, available animations and display transforms; added native animation-name aliases and static-idle fallbacks for models without source clips.
-- Connected every Destiny weapon to the existing Energy Weapon, Weapon System, battery/barrel/sights/colour/utility module and Weapon Station contracts.
+- Scoped the weapon roster to Matter Overdrive's native energy weapons and the standalone Vex Mythoclast exotic; removed the unscoped native Destiny/GunPack weapon set and its bundled audio/assets.
 - Added source-transform first-person rendering, bounded aim/recoil presentation and third-person generic-use pose suppression for energy weapons.
 - Added GuideME block-reference descriptions, item image links and live recipe links for all active player-facing blocks, including Drone Fabricator and Matter Network Terminal.
 - Repurposed the 16-record structure archive, Frontier archive, environmental observations and ambient lore into existing player-event routes: technology acquisition, mining, combat, NPC assignments, Field Operations and recovered-fragment inspection.

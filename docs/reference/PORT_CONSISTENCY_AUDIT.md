@@ -6,7 +6,7 @@
 
 Current Java registries are authoritative:
 
-1. `ModBlocks` / `ModItems`, `OverhaulContent`, exotic-item registrations, and the native Destiny profile registry;
+1. `ModBlocks` / `ModItems`, `OverhaulContent`, and exotic-item registrations;
 2. active assets and data resources;
 3. GuideME and current testing/reference documentation;
 4. historical parity inventories and old handoffs only as reference material.
@@ -17,7 +17,7 @@ Current Java registries are authoritative:
 
 The audit currently covers:
 
-- duplicate IDs and active registry coverage for blocks, block items, standalone items, exotic items, and native Destiny profiles;
+- duplicate IDs and active registry coverage for blocks, block items, standalone items, and exotic items;
 - blockstates, block/item models, block loot tables, recipes, tags, and English localization for active content;
 - cross-reference validation for recipe, loot-table, and tag item/block IDs;
 - JSON parsing across Matter Overdrive asset/data resources, plus model bounds and model-to-texture references;
@@ -28,7 +28,7 @@ The audit currently covers:
 
 The retired-content guard scans active Java, data, GuideME, and bundled current documentation. Historical inventories, parity records, and retired-content tests may still mention the Star Map so they can document or enforce its retired status; those references are not active implementation.
 
-Malformed JSON, missing active resource references, invalid active IDs, missing block loot, incomplete GuideME entries, retired-content reactivation, duplicate IDs, and loss of the native facility piece architecture are hard failures. The native Destiny item registrations have valid item models, localization, geometry, textures, animations, display transforms, and source audio; those implementation-specific contracts are included in the active resource audit.
+Malformed JSON, missing active resource references, invalid active IDs, missing block loot, incomplete GuideME entries, retired-content reactivation, duplicate IDs, and loss of the native facility piece architecture are hard failures. The standalone Vex Mythoclast has valid item-model, localization, recipe, and dedicated sound-event coverage; those implementation-specific contracts are included in the active resource audit.
 
 ## Reports
 

@@ -192,17 +192,13 @@ tasks.register('verifyM1Resources') {
                 file('src/main/java/matteroverdrive/registry/ModExoticItems.java'),
                 ~/ITEMS\.register\("([^"]+)"/
         )
-        def destinyItemIds = matchedIds(
-                file('src/main/java/matteroverdrive/item/weapon/NativeDestinyWeaponProfile.java'),
-                ~/(?m)^\s*[A-Z0-9_]+\("([^"]+)"/
-        )
         def directItemIds = matchedIds(
                 file('src/main/java/matteroverdrive/registry/ModItems.java'),
                 ~/public\s+static\s+final\s+RegistryObject<Item>\s+\w+\s*=\s*ITEMS\.register\("([^"]+)"/
         )
-        def activeItemIds = (activeBlockItemIds + standaloneItemIds + exoticItemIds + destinyItemIds + directItemIds).unique()
+        def activeItemIds = (activeBlockItemIds + standaloneItemIds + exoticItemIds + directItemIds).unique()
         def active = [blocks: activeBlockIds, blockItems: activeBlockItemIds,
-                      standaloneItems: standaloneItemIds, extraItems: exoticItemIds + destinyItemIds + directItemIds]
+                      standaloneItems: standaloneItemIds, extraItems: exoticItemIds + directItemIds]
 
         active.blocks.each { id ->
             [
@@ -233,7 +229,7 @@ tasks.register('verifyM1Resources') {
                 throw new GradleException("Missing active block localization: ${id}")
             }
         }
-        (standaloneItemIds + exoticItemIds + destinyItemIds + directItemIds).each { id ->
+        (standaloneItemIds + exoticItemIds + directItemIds).each { id ->
             if (!language.containsKey("item.${mod_id}.${id}".toString()) && !language.containsKey("item.${mod_id}.${id}.name".toString())) {
                 throw new GradleException("Missing active item localization: ${id}")
             }

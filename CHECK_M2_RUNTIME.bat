@@ -11,10 +11,10 @@ echo.
 
 if not exist "%LOG%" goto :fail30
 
-findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=90, blockItems=87, standaloneItems=122, sounds=57, nativeDestinyWeapons=14" "%LOG%" >nul
+findstr /c:"M1 VERIFY: Matter Overdrive registry shell initialized - blocks=90, blockItems=87, standaloneItems=122, sounds=57" "%LOG%" >nul
 if errorlevel 1 goto :fail31
 echo [PASS] Live registry counts are correct.
-echo        blocks=90, blockItems=87, standaloneItems=122, sounds=57, nativeDestinyWeapons=14
+echo        blocks=90, blockItems=87, standaloneItems=122, sounds=57
 
 findstr /c:"M2 VERIFY: machine foundation initialized - blockEntities=19, menus=16" "%LOG%" >nul
 if errorlevel 1 goto :fail32
