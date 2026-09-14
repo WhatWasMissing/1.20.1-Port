@@ -2,7 +2,7 @@
 
 > Auto-generated directly from `src/main/resources/data/matteroverdrive/recipes` on the current `main` branch. Do not hand-edit this file.
 
-**Crafting-table recipes:** 161  
+**Crafting-table recipes:** 161
 **Smelting/blasting/cooking recipes:** 10  
 **Other/unknown recipe JSONs:** 0
 

@@ -1,6 +1,6 @@
 package matteroverdrive.item.weapon;
 
-import matteroverdrive.registry.ModExoticSounds
+import matteroverdrive.registry.ModExoticSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
